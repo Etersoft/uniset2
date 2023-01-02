@@ -402,11 +402,13 @@ void OPCUAGate::updateLoop()
                 if( it->second.stype == UniversalIO::DI )
                 {
                     auto set = it->second.node.read<bool>();
+                    mylog6 << "(updateLoop): sid=" << it->first << " set=" << set << endl;
                     shm->localSetValue(it->second.it, it->first, set ? 1 : 0, getId());
                 }
                 else if( it->second.stype == UniversalIO::AI )
                 {
                     auto value = it->second.node.read<long>();
+                    mylog6 << "(updateLoop): sid=" << it->first << " value=" << value << endl;
                     shm->localSetValue(it->second.it, it->first, value, getId());
                 }
             }

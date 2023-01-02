@@ -24,7 +24,7 @@ libUniSet2OPCUAGate_la_CXXFLAGS = -I$(top_builddir)/extensions/include \
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(pkgincludedir)/extensions/opcuagate
+devel_includedir = $(pkgincludedir)/extensions/opcua
 
 pkgconfigdir   = $(libdir)/pkgconfig
 pkgconfig_DATA = libUniSet2OPCUAGate.pc
