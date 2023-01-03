@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 extern "C" {
 #include <open62541/server_config_default.h>
+#include <open62541/plugin/log_stdout.h>
 }
 #include <cmath>
 #include <sstream>
@@ -48,18 +49,34 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
     updatePause_msec = it.getPIntProp("updatePause", updatePause_msec);
 
+    myinfo << myname << "(init): OPC UA server port=" << port << endl;
+
     opcServer->setLogger([this](auto level, auto category, auto msg)
     {
-        mylog->level5()
-                << "[" << opcua::getLogLevelName(level) << "] "
-                << "[" << opcua::getLogCategoryName(category) << "] "
-                << msg << std::endl;
+        mylog->level5() << myname
+                        << "[" << opcua::getLogLevelName(level) << "] "
+                        << "[" << opcua::getLogCategoryName(category) << "] "
+                        << msg << std::endl;
     });
 
     auto opcConfig = opcServer->getConfig();
     opcConfig->shutdownDelay = it.getPIntProp("shutdownDelay", opcConfig->shutdownDelay);
     opcConfig->maxSubscriptions = it.getPIntProp("maxSubscriptions", opcConfig->maxSubscriptions);
     opcConfig->maxSessions = it.getPIntProp("maxSessions", opcConfig->maxSessions);
+
+    UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
+
+    if( mylog->is_warn() )
+        loglevel = UA_LOGLEVEL_WARNING;
+
+    if( mylog->is_level5() )
+        loglevel = UA_LOGLEVEL_INFO;
+
+    if( mylog->is_level9() )
+        loglevel = UA_LOGLEVEL_DEBUG;
+
+    opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
+
     ioNode = unisetstd::make_unique<IONode>(opcServer->getRootNode().addFolder(opcua::NodeId("io"), "I/O"));
     ioNode->node.setDescription("I/O", "en-US");
 
@@ -129,6 +146,8 @@ void OPCUAGate::readConfiguration()
         if( uniset::check_filter(it, s_field, s_fvalue) )
             initVariable(it);
     }
+
+    myinfo << myname << "(readConfiguration): init " << variables.size() << " variables" << endl;
 }
 // -----------------------------------------------------------------------------
 bool OPCUAGate::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
@@ -151,7 +170,7 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
 
     if( sid == DefaultObjectId )
     {
-        mycrit << "(initVariable): (" << DefaultObjectId << ") Unknown Sensor ID for "
+        mycrit << myname << "(initVariable): (" << DefaultObjectId << ") Unknown Sensor ID for "
                << sname << endl;
         return false;
     }
@@ -163,7 +182,7 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
 
     if( realIOType == UniversalIO::UnknownIOType )
     {
-        mycrit << "(initVariable): Unknown iotype " << it.getProp("iotype")
+        mycrit << myname << "(initVariable): Unknown iotype " << it.getProp("iotype")
                << " for " << sname << endl;
         return false;
     }
@@ -174,7 +193,7 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
 
     if( rwmode == "none" )
     {
-        myinfo << "(initVariable): rwmode='none'. Skip sensor " << sname << endl;
+        myinfo << myname << "(initVariable): rwmode='none'. Skip sensor " << sname << endl;
         return false;
     }
 
@@ -228,12 +247,24 @@ void OPCUAGate::step()
 {
 }
 //------------------------------------------------------------------------------
+CORBA::Boolean OPCUAGate::exist()
+{
+    bool ret = UObject_SK::exist();
+
+    if( !ret )
+        return false;
+
+    return active;
+}
+//------------------------------------------------------------------------------
 void OPCUAGate::sysCommand( const uniset::SystemMessage* sm )
 {
     UObject_SK::sysCommand(sm);
 
     if( sm->command == SystemMessage::StartUp )
     {
+        active  = true;
+        myinfo << myname << "(sysCommand): init " << variables.size() << " variables" << endl;
         serverThread->start();
         updateThread->start();
     }
@@ -249,13 +280,25 @@ void OPCUAGate::serverLoop()
     if( opcServer == nullptr )
         return;
 
+    PassiveTimer ptAct(activateTimeout);
+
+    while( !activated && !ptAct.checkTime() )
+    {
+        myinfo << myname << "(serverLoop): wait activate..." << endl;
+        msleep(300);
+
+        if( activated )
+            break;
+    }
+
+    myinfo << myname << "(serverLoop): started..." << endl;
     opcServer->run();
-    dinfo << myname << "(serverLoop): finished..." << endl;
+    myinfo << myname << "(serverLoop): terminated..." << endl;
 }
 // -----------------------------------------------------------------------------
 bool OPCUAGate::deactivateObject()
 {
-    active = false;
+    activated = false;
 
     if( opcServer )
         opcServer->stop();
@@ -346,14 +389,14 @@ void OPCUAGate::askSensors( UniversalIO::UIOCommand cmd )
         }
         catch( const uniset::Exception& ex )
         {
-            mycrit << "(askSensors): " << ex << endl;
+            mycrit << myname << "(askSensors): " << ex << endl;
         }
     }
 }
 // -----------------------------------------------------------------------------
 void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
 {
-    mylog4 << "(sensorInfo): sm->id=" << sm->id << " val=" << sm->value << endl;
+    mylog4 << myname << "(sensorInfo): sm->id=" << sm->id << " val=" << sm->value << endl;
     auto it = variables.find(sm->id);
 
     if( it == variables.end() )
@@ -368,24 +411,25 @@ void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
     }
     catch( std::exception& ex )
     {
-        mycrit << "(sensorInfo): " << ex.what() << endl;
+        mycrit << myname << "(sensorInfo): " << ex.what() << endl;
     }
 }
 // -----------------------------------------------------------------------------
 void OPCUAGate::updateLoop()
 {
+    myinfo << myname << "(updateLoop): started..." << endl;
     PassiveTimer ptAct(activateTimeout);
 
     while( !activated && !ptAct.checkTime() )
     {
-        cout << myname << "(updateLoop): wait activate..." << endl;
+        myinfo << myname << "(updateLoop): wait activate..." << endl;
         msleep(300);
 
         if( activated )
             break;
     }
 
-    while( active )
+    while( activated )
     {
         for(  auto it = variables.begin(); it != variables.end(); it++ )
         {
@@ -402,19 +446,19 @@ void OPCUAGate::updateLoop()
                 if( it->second.stype == UniversalIO::DI )
                 {
                     auto set = it->second.node.read<bool>();
-                    mylog6 << "(updateLoop): sid=" << it->first << " set=" << set << endl;
+                    mylog6 << myname << "(updateLoop): sid=" << it->first << " set=" << set << endl;
                     shm->localSetValue(it->second.it, it->first, set ? 1 : 0, getId());
                 }
                 else if( it->second.stype == UniversalIO::AI )
                 {
                     auto value = it->second.node.read<long>();
-                    mylog6 << "(updateLoop): sid=" << it->first << " value=" << value << endl;
+                    mylog6 << myname << "(updateLoop): sid=" << it->first << " value=" << value << endl;
                     shm->localSetValue(it->second.it, it->first, value, getId());
                 }
             }
             catch( const std::exception& ex )
             {
-                mycrit << "(updateLoop): sid=" << it->first
+                mycrit << myname << "(updateLoop): sid=" << it->first
                        << "[" << it->second.stype
                        << "] update error: " << ex.what() << endl;
             }
@@ -423,6 +467,6 @@ void OPCUAGate::updateLoop()
         msleep(updatePause_msec);
     }
 
-    myinfo << "(updateLoop): terminated.." << endl;
+    myinfo << myname << "(updateLoop): terminated.." << endl;
 }
 // -----------------------------------------------------------------------------

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+	
+	<settings>
+	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+	    <OPCUAGate name="OPCUAGate" port="44999"/>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+		<nodes port="2809">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+			<item id="1" iotype="DI" name="DI1_S" textname="DI sensor 1"/>
+			<item id="2" iotype="AI" name="AI1_S" textname="AI sensor 1"/>
+			<item id="3" iotype="AI" name="AO1_S" textname="AO output 1" opcua_rwmode="w"/>
+			<item id="4" iotype="DI" name="DO1_S" textname="DO output 1" opcua_rwmode="w"/>
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="OPCUAGate"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+</UNISETPLC>
