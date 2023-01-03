@@ -28,6 +28,18 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
+// ( val, confval, default val )
+static const std::string init3_str( const std::string& s1, const std::string& s2, const std::string& s3 )
+{
+    if( !s1.empty() )
+        return s1;
+
+    if( !s2.empty() )
+        return s2;
+
+    return s3;
+}
+// -----------------------------------------------------------------------------
 OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                      const string& prefix ):
     UObject_SK(objId, cnode, string(prefix + "-")),
@@ -63,7 +75,6 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     opcConfig->shutdownDelay = it.getPIntProp("shutdownDelay", opcConfig->shutdownDelay);
     opcConfig->maxSubscriptions = it.getPIntProp("maxSubscriptions", opcConfig->maxSubscriptions);
     opcConfig->maxSessions = it.getPIntProp("maxSessions", opcConfig->maxSessions);
-
     UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
 
     if( mylog->is_warn() )
@@ -93,6 +104,10 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
                 auto root = opcServer->getRootNode();
                 root.setDescription(nIt.getProp("textname"), "ru-RU");
                 root.setDisplayName(nIt.getProp("name"), "en-US");
+
+                auto opcAddr = init3_str(nIt.getProp("opcua_ip"), nIt.getProp("ip"), "127.0.0.1");
+                opcConfig->customHostname = UA_String_fromChars( opcAddr.c_str() );
+                myinfo << myname << "(init): OPC UA address " << opcAddr << endl;
                 break;
             }
         }

@@ -248,7 +248,8 @@
 
                 unet_multicast_ip2="227.0.31.1"
                 unet_multicast_port2="3120"
-                unet_multicast_sender_ip2="192.168.0.47">
+                unet_multicast_sender_ip2="192.168.0.47"
+				opcua_ip="0.0.0.0">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>
