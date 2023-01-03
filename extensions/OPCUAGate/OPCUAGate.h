@@ -18,6 +18,7 @@
 #define _OPCUAGate_H_
 // -----------------------------------------------------------------------------
 #include <memory>
+#include <atomic>
 #include <unordered_map>
 #include "open62541pp/open62541pp.h"
 #include "UObject_SK.h"
@@ -84,11 +85,10 @@ namespace uniset
             void serverLoopTerminate();
             void serverLoop();
             void updateLoop();
+            void update();
 
             bool initVariable(UniXML::iterator& it);
-
             bool readItem(const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec);
-
             void readConfiguration();
 
             std::shared_ptr<SMInterface> shm;
@@ -118,6 +118,7 @@ namespace uniset
             std::string s_field;
             std::string s_fvalue;
             uniset::timeout_t updatePause_msec = { 200 };
+            std::atomic_bool firstUpdate = false;
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset

@@ -297,14 +297,14 @@ void OPCUAGate::serverLoop()
 
     PassiveTimer ptAct(activateTimeout);
 
-    while( !activated && !ptAct.checkTime() )
+    while( (!activated || !firstUpdate.load()) && !ptAct.checkTime() )
     {
         myinfo << myname << "(serverLoop): wait activate..." << endl;
         msleep(300);
-
-        if( activated )
-            break;
     }
+
+    if( !firstUpdate )
+        mywarn << myname << "(serverLoop): first update [FAILED]..." << endl;
 
     myinfo << myname << "(serverLoop): started..." << endl;
     opcServer->run();
@@ -439,49 +439,55 @@ void OPCUAGate::updateLoop()
     {
         myinfo << myname << "(updateLoop): wait activate..." << endl;
         msleep(300);
-
-        if( activated )
-            break;
     }
+
+    firstUpdate = false;
+    update();
+    myinfo << myname << "(updateLoop): first update [ok].." << endl;
+    firstUpdate = true;
 
     while( activated )
     {
-        for(  auto it = variables.begin(); it != variables.end(); it++ )
-        {
-            try
-            {
-                if( !shm->isLocalwork() )
-                {
-                    if( it->second.stype == UniversalIO::DO )
-                        it->second.node.write(shm->localGetValue(it->second.it, it->first) ? true : false);
-                    else if( it->second.stype == UniversalIO::AO )
-                        it->second.node.write(shm->localGetValue(it->second.it, it->first));
-                }
-
-                if( it->second.stype == UniversalIO::DI )
-                {
-                    auto set = it->second.node.read<bool>();
-                    mylog6 << myname << "(updateLoop): sid=" << it->first << " set=" << set << endl;
-                    shm->localSetValue(it->second.it, it->first, set ? 1 : 0, getId());
-                }
-                else if( it->second.stype == UniversalIO::AI )
-                {
-                    auto value = it->second.node.read<long>();
-                    mylog6 << myname << "(updateLoop): sid=" << it->first << " value=" << value << endl;
-                    shm->localSetValue(it->second.it, it->first, value, getId());
-                }
-            }
-            catch( const std::exception& ex )
-            {
-                mycrit << myname << "(updateLoop): sid=" << it->first
-                       << "[" << it->second.stype
-                       << "] update error: " << ex.what() << endl;
-            }
-        }
-
+        update();
         msleep(updatePause_msec);
     }
 
     myinfo << myname << "(updateLoop): terminated.." << endl;
+}
+// -----------------------------------------------------------------------------
+void OPCUAGate::update()
+{
+    for(auto it = this->variables.begin(); it != this->variables.end(); it++ )
+    {
+        try
+        {
+            if( !this->shm->isLocalwork() )
+            {
+                if( it->second.stype == UniversalIO::DO )
+                    it->second.node.write(this->shm->localGetValue(it->second.it, it->first) ? true : false);
+                else if( it->second.stype == UniversalIO::AO )
+                    it->second.node.write(this->shm->localGetValue(it->second.it, it->first));
+            }
+
+            if( it->second.stype == UniversalIO::DI )
+            {
+                auto set = it->second.node.read<bool>();
+                mylog6 << this->myname << "(updateLoop): sid=" << it->first << " set=" << set << endl;
+                this->shm->localSetValue(it->second.it, it->first, set ? 1 : 0, this->getId());
+            }
+            else if( it->second.stype == UniversalIO::AI )
+            {
+                auto value = it->second.node.read<long>();
+                mylog6 << this->myname << "(updateLoop): sid=" << it->first << " value=" << value << endl;
+                this->shm->localSetValue(it->second.it, it->first, value, this->getId());
+            }
+        }
+        catch( const std::exception& ex )
+        {
+            mycrit << this->myname << "(updateLoop): sid=" << it->first
+                   << "[" << it->second.stype
+                   << "] update error: " << ex.what() << endl;
+        }
+    }
 }
 // -----------------------------------------------------------------------------
