@@ -52,6 +52,8 @@ namespace uniset
 
             virtual ~OPCUAGate();
 
+            virtual CORBA::Boolean exist() override;
+
             /*! глобальная функция для инициализации объекта */
             static std::shared_ptr<OPCUAGate> init_opcuagate(int argc, const char* const* argv,
                     uniset::ObjectId shmID,

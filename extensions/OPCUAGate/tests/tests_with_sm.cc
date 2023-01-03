@@ -55,10 +55,10 @@ int main(int argc, const char* argv[] )
         int tout = 6000;
         PassiveTimer pt(tout);
 
-        while( !pt.checkTime() && !act->exist() && !opc->exist() && !shm->exist() )
-            msleep(100);
+        while( !pt.checkTime() || !act->exist() || !opc->exist() || !shm->exist() )
+            msleep(300);
 
-        if( !act->exist() )
+        if( !shm->exist() )
         {
             cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
             return 1;
