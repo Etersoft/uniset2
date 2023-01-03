@@ -88,8 +88,8 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
 
     opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
 
-    ioNode = unisetstd::make_unique<IONode>(opcServer->getRootNode().addFolder(opcua::NodeId("io"), "I/O"));
-    ioNode->node.setDescription("I/O", "en-US");
+    auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId("uniset"), "uniset");
+    uroot.setDescription("uniset i/o", "en");
 
     auto localNode = conf->getLocalNode();
     auto nodes = conf->getXMLNodesSection();
@@ -101,12 +101,16 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
         {
             if( nIt.getIntProp("id") == localNode )
             {
-                auto root = opcServer->getRootNode();
-                root.setDescription(nIt.getProp("textname"), "ru-RU");
-                root.setDisplayName(nIt.getProp("name"), "en-US");
+                const auto uname = nIt.getProp("name");
+                auto unode = uroot.addFolder(opcua::NodeId(uname), uname);
+                unode.setDescription(nIt.getProp("textname"), "ru-RU");
+                unode.setDisplayName(uname, "en");
+
+                ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId("io"), "I/O"));
+                ioNode->node.setDescription("I/O", "en-US");
 
                 auto opcAddr = init3_str(nIt.getProp("opcua_ip"), nIt.getProp("ip"), "127.0.0.1");
-                opcConfig->customHostname = UA_String_fromChars( opcAddr.c_str() );
+                opcServer->setCustomHostname(opcAddr);
                 myinfo << myname << "(init): OPC UA address " << opcAddr << endl;
                 break;
             }
