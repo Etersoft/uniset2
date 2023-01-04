@@ -54,15 +54,14 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
 
     UniXML::iterator it(cnode);
 
-    auto ip = conf->getArgParam("--" + argprefix + "-host", "");
-    auto port = conf->getArgPInt("--" + argprefix + "-port", it.getProp("port"), 4840);
+    auto ip = conf->getArgParam("--" + argprefix + "host", "");
+    auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
 
     opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
     opcServer->setApplicationName(it.getProp2("appName", "uniset2 OPC UA gate"));
     opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server.gate"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
     updatePause_msec = conf->getArgPInt("--" + argprefix + "-updatepause", it.getProp("updatePause"), (int)updatePause_msec);
-
     myinfo << myname << "(init): OPC UA server " << ip << ":" << port << endl;
 
     opcServer->setLogger([this](auto level, auto category, auto msg)
@@ -74,9 +73,14 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     });
 
     auto opcConfig = opcServer->getConfig();
-    opcConfig->shutdownDelay = conf->getArgPInt("--" + argprefix + "-shutdownDelay", it.getProp("shutdownDelay"), (int)opcConfig->shutdownDelay);
-    opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "-maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
-    opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "-maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
+    opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
+    opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
+
+    myinfo << myname << "(init): OPC UA server: "
+           << " maxSessions=" << opcConfig->maxSessions
+           << " maxSubscriptions=" << opcConfig->maxSubscriptions
+           << endl;
+
     UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
 
     if( mylog->is_warn() )
@@ -346,7 +350,6 @@ void OPCUAGate::help_print()
     cout << "--prefix-updatepause msec     - Пауза между обновлением информации в или из SM. По умолчанию 200" << endl;
     cout << "--prefix-host ip              - IP на котором слушает OPC UA сервер" << endl;
     cout << "--prefix-port port            - Порт на котором слушает OPC UA сервер" << endl;
-    cout << "--prefix-shutdownDelay msec   - Пауза на завершение работы сервера" << endl;
     cout << "--prefix-maxSubscriptions num - Максимальное количество подписок" << endl;
     cout << "--prefix-maxSessions num      - Максимальное количество сессий" << endl;
     cout << endl;

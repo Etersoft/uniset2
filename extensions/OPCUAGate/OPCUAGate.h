@@ -36,6 +36,7 @@ namespace uniset
       - \ref sec_OPCUAGate_Comm
       - \ref sec_OPCUAGate_Conf
       - \ref sec_OPCUAGate_Sesnros_Conf
+      - \ref sec_OPCUAGate_Folders
 
     \section sec_OPCUAGate_Comm Общее описание OPCUAGate
     Данная реализация построена на использовании проекта https://github.com/open62541/open62541
@@ -54,7 +55,6 @@ namespace uniset
     \code
      <OPCUAGate name="OPCUAGate" port="4840"
          appName="uniset2 OPC UA gate"
-         shutdownDelay="5000"
          maxSubscriptions="10"
          maxSessions="10"
          updatePause="200"
@@ -103,6 +103,13 @@ namespace uniset
        - \b none - не предоставлять доступ к датчику (не будет виден через OPC UA)
 
      По умолчанию все датчики доступны только на чтение.
+
+    \section sec_OPCUAGate_Folders Структура OPC UA узла
+    При запуске в дереве объектов создаётся специальный корневой объект "uniset", внутри которого регистрируются
+    остальные доступные для работы объекты. В частности каждый uniset-узел регистрирует свои датчики в разделе
+    \b "uniset/имя_узла/io/xxx". На рисунке представлен пример иерархии объектов
+
+     \image html uniset-opcua-folders.png
     */
     // -----------------------------------------------------------------------------
     /*! Реализация OPCUAGate */
