@@ -54,14 +54,16 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
 
     UniXML::iterator it(cnode);
 
-    auto port = it.getPIntProp("port", 4840);
+    auto ip = conf->getArgParam("--" + argprefix + "-host", "");
+    auto port = conf->getArgPInt("--" + argprefix + "-port", it.getProp("port"), 4840);
+
     opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
     opcServer->setApplicationName(it.getProp2("appName", "uniset2 OPC UA gate"));
     opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server.gate"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
-    updatePause_msec = it.getPIntProp("updatePause", (int)updatePause_msec);
+    updatePause_msec = conf->getArgPInt("--" + argprefix + "-updatepause", it.getProp("updatePause"), (int)updatePause_msec);
 
-    myinfo << myname << "(init): OPC UA server port=" << port << endl;
+    myinfo << myname << "(init): OPC UA server " << ip << ":" << port << endl;
 
     opcServer->setLogger([this](auto level, auto category, auto msg)
     {
@@ -72,9 +74,9 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     });
 
     auto opcConfig = opcServer->getConfig();
-    opcConfig->shutdownDelay = it.getPIntProp("shutdownDelay", (int)opcConfig->shutdownDelay);
-    opcConfig->maxSubscriptions = it.getPIntProp("maxSubscriptions", (int)opcConfig->maxSubscriptions);
-    opcConfig->maxSessions = it.getPIntProp("maxSessions", (int)opcConfig->maxSessions);
+    opcConfig->shutdownDelay = conf->getArgPInt("--" + argprefix + "-shutdownDelay", it.getProp("shutdownDelay"), (int)opcConfig->shutdownDelay);
+    opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "-maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
+    opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "-maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
     UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
 
     if( mylog->is_warn() )
@@ -109,9 +111,9 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
                 ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId("io"), "I/O"));
                 ioNode->node.setDescription("I/O", "en-US");
 
-                auto opcAddr = init3_str(nIt.getProp("opcua_ip"), nIt.getProp("ip"), "127.0.0.1");
+                auto opcAddr = init3_str(ip, nIt.getProp2("opcua_ip", nIt.getProp("ip")), "127.0.0.1");
                 opcServer->setCustomHostname(opcAddr);
-                myinfo << myname << "(init): OPC UA address " << opcAddr << endl;
+                myinfo << myname << "(init): OPC UA address " << opcAddr << ":" << port << endl;
                 break;
             }
         }
@@ -334,20 +336,28 @@ bool OPCUAGate::deactivateObject()
 // -----------------------------------------------------------------------------
 void OPCUAGate::help_print()
 {
-    cout << " Default prefix='rrd'" << endl;
+    cout << "Default prefix='opcua'" << endl;
     cout << "--prefix-name        - ID for rrdstorage. Default: OPCUAGate1. " << endl;
     cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
     cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
     cout << endl;
-    cout << " Logs: " << endl;
+    cout << "OPC UA:" << endl;
+    cout << "--prefix-updatepause msec     - Пауза между обновлением информации в или из SM. По умолчанию 200" << endl;
+    cout << "--prefix-host ip              - IP на котором слушает OPC UA сервер" << endl;
+    cout << "--prefix-port port            - Порт на котором слушает OPC UA сервер" << endl;
+    cout << "--prefix-shutdownDelay msec   - Пауза на завершение работы сервера" << endl;
+    cout << "--prefix-maxSubscriptions num - Максимальное количество подписок" << endl;
+    cout << "--prefix-maxSessions num      - Максимальное количество сессий" << endl;
+    cout << endl;
+    cout << "Logs:" << endl;
     cout << "--prefix-log-...            - log control" << endl;
     cout << "             add-levels ...  " << endl;
     cout << "             del-levels ...  " << endl;
     cout << "             set-levels ...  " << endl;
     cout << "             logfile filanme " << endl;
     cout << "             no-debug " << endl;
-    cout << " LogServer: " << endl;
+    cout << "LogServer: " << endl;
     cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
     cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
     cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
