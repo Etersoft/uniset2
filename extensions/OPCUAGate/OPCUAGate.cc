@@ -59,7 +59,7 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     opcServer->setApplicationName(it.getProp2("appName", "uniset2 OPC UA gate"));
     opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server.gate"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
-    updatePause_msec = it.getPIntProp("updatePause", updatePause_msec);
+    updatePause_msec = it.getPIntProp("updatePause", (int)updatePause_msec);
 
     myinfo << myname << "(init): OPC UA server port=" << port << endl;
 
@@ -72,9 +72,9 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     });
 
     auto opcConfig = opcServer->getConfig();
-    opcConfig->shutdownDelay = it.getPIntProp("shutdownDelay", opcConfig->shutdownDelay);
-    opcConfig->maxSubscriptions = it.getPIntProp("maxSubscriptions", opcConfig->maxSubscriptions);
-    opcConfig->maxSessions = it.getPIntProp("maxSessions", opcConfig->maxSessions);
+    opcConfig->shutdownDelay = it.getPIntProp("shutdownDelay", (int)opcConfig->shutdownDelay);
+    opcConfig->maxSubscriptions = it.getPIntProp("maxSubscriptions", (int)opcConfig->maxSubscriptions);
+    opcConfig->maxSessions = it.getPIntProp("maxSessions", (int)opcConfig->maxSessions);
     UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
 
     if( mylog->is_warn() )
@@ -160,7 +160,7 @@ void OPCUAGate::readConfiguration()
         return;
     }
 
-    for( ; it.getCurrent(); it.goNext() )
+    for( ; it; it++ )
     {
         if( uniset::check_filter(it, s_field, s_fvalue) )
             initVariable(it);
@@ -216,7 +216,6 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
         return false;
     }
 
-
     if( rwmode == "w" )
     {
         if( realIOType == UniversalIO::DI || realIOType == UniversalIO::DO )
@@ -237,10 +236,9 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
     if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
         opctype = opcua::Type::Boolean;
 
-    auto vnode = ioNode->node.addVariable(
-                     opcua::NodeId(it.getProp("name")),
-                     it.getProp("name"),
-                     opctype);
+    auto vnode = ioNode->node.addVariable(opcua::NodeId(sname), sname, opctype);
+    vnode.setDescription(it.getProp("textname"), "ru-RU");
+    vnode.setDisplayName(sname, "en");
 
     // init default value
     int64_t defVal = (int64_t)it.getPIntProp("default", 0);
@@ -252,9 +250,6 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
         bool set = defVal ? true : false;
         vnode.write(set);
     }
-
-    vnode.setDescription(it.getProp("textname"), "ru-RU");
-    vnode.setDisplayName(it.getProp("name"), "en-US");
 
     auto i = variables.emplace(sid, vnode);
     i.first->second.stype = iotype;
