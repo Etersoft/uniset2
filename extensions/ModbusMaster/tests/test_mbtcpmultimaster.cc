@@ -82,7 +82,7 @@ static void InitTest()
             msleep(200);
 
         CHECK( mbs1->isRunning() );
-        msleep(7000);
+        msleep(7200);
         CHECK( ui->getValue(slaveNotRespond) == 0 );
     }
 

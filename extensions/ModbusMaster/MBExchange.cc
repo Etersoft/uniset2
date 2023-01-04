@@ -48,7 +48,7 @@ namespace uniset
             throw uniset::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
 
         auto conf = uniset_conf();
-        mutex_start.setName(myname + "_mutgc7vdgchex_start");
+        mutex_start.setName(myname + "_mutex_start");
 
         string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
 
