@@ -3,7 +3,7 @@ m4_include(package.m4)
 AT_COLOR_TESTS
 
 AT_INIT([Uniset test suite])
-   
+
 m4_include(../tests/tests.at)
 m4_include(../extensions/SharedMemory/tests/sm-tests.at)
 m4_include(../extensions/tests/extensions-tests.at)

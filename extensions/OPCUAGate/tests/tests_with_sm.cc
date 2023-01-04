@@ -30,7 +30,6 @@ int main(int argc, const char* argv[] )
 
         int returnCode = session.applyCommandLine( argc, argv );
         auto conf = uniset_init(argc, argv);
-
         bool apart = findArgParam("--apart", argc, argv) != -1;
 
         auto shm = SharedMemory::init_smemory(argc, argv);
@@ -38,7 +37,7 @@ int main(int argc, const char* argv[] )
         if( !shm )
             return 1;
 
-        auto opc = OPCUAGate::init_opcuagate(argc, argv, shm->getId(), shm, "opcua");
+        auto opc = OPCUAGate::init_opcuagate(argc, argv, shm->getId(), (apart ? nullptr : shm ), "opcua");
 
         if( !opc )
             return 1;

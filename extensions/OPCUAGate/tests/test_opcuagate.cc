@@ -1,9 +1,7 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
-#include <time.h>
 #include <limits>
 #include <memory>
-#include <iostream>
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "client.h"
