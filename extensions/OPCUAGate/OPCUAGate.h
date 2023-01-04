@@ -31,7 +31,7 @@ namespace uniset
 {
     // -----------------------------------------------------------------------------
     /*!
-    \page page_OPCUAGate (OPCUAGate) Коннектор к uniset поддерживающий протокол OPC-UA
+    \page page_OPCUAGate Поддержка работы с OPC-UA
 
       - \ref sec_OPCUAGate_Comm
       - \ref sec_OPCUAGate_Conf
@@ -52,7 +52,7 @@ namespace uniset
     в которой указываются настроечные параметры по умолчанию.
     Пример:
     \code
-     <OPCUAGate name="OPCUAGate1" port="4840"
+     <OPCUAGate name="OPCUAGate" port="4840"
          appName="uniset2 OPC UA gate"
          shutdownDelay="5000"
          maxSubscriptions="10"
@@ -69,16 +69,16 @@ namespace uniset
 
     Часть параметров берётся из настроек текущего локального узла в секции <nodes>
     \code
-     <nodes ...>
-        <item id="3000" ip="127.0.0.1" name="node2" textname="Локальный узел"
-           opcua_ip="0.0.0.0"
-        />
-     ...
+     <LocalNode name="localhost"/>
+     ..
+     <nodes>
+        <item id="3000" ip="127.0.0.1" name="node2" textname="Локальный узел" opcua_ip="0.0.0.0" .../>
+        ...
      </nodes>
      \endcode
-     В частности параметр \b opcua_ip - позволяет задать адрес на котором будет слушать OPC UA сервер.
-     По умолчанию адрес берётся из параметра \b ip.
-     В качестве \a browseName берётся \b name в качестве \a description - \b textname
+    В частности параметр \b opcua_ip - позволяет задать адрес на котором будет слушать OPC UA сервер.
+    <br>По умолчанию адрес берётся из параметра \b ip.
+    <br>В качестве \a browseName берётся \b name в качестве \a description - \b textname
 
     См. так же help \a uniset2-opcuagate -h
 
