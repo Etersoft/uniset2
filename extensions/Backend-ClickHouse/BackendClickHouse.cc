@@ -209,12 +209,14 @@ void BackendClickHouse::help_print( int argc, const char* const* argv )
     cout << "--prefix-name                - ID. Default: BackendClickHouse." << endl;
     cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << endl;
-    cout << " OpenTSDB: " << endl;
-    cout << "--prefix-host  ip                         - OpenTSDB: host. Default: localhost" << endl;
-    cout << "--prefix-port  num                        - OpenTSDB: port. Default: 4242" << endl;
-    cout << "--prefix-prefix name                      - OpenTSDB: prefix for data" << endl;
-    cout << "--prefix-tags  'TAG1=VAL1 TAG2=VAL2...'   - OpenTSDB: tags for data" << endl;
-    cout << "--prefix-reconnect-time msec              - Time for attempts to connect to DB. Default: 5 sec" << endl;
+    cout << " ClickHouse: " << endl;
+    cout << "--prefix-host  ip                        - host. Default: localhost" << endl;
+    cout << "--prefix-port  num                       - port. Default: 9000" << endl;
+    cout << "--prefix-dbuser user                     - DB user" << endl;
+    cout << "--prefix-dbpass pass                     - DB pass" << endl;
+    cout << "--prefix-dbname name                     - DB name" << endl;
+    cout << "--prefix-tags 'TAG1=VAL1 TAG2=VAL2...'   - tags for data" << endl;
+    cout << "--prefix-reconnect-time msec             - Time for attempts to connect to DB. Default: 5 sec" << endl;
     cout << endl;
     cout << "--prefix-buf-size  sz        - Buffer before save to DB. Default: 500" << endl;
     cout << "--prefix-buf-maxsize  sz     - Maximum size for buffer (drop messages). Default: 5000" << endl;
@@ -498,7 +500,7 @@ std::string BackendClickHouse::getMonitInfo() const
         << " reconnect=" << reconnectTime
         << " bufSyncTime=" << bufSyncTime
         << " bufSize=" << bufSize
-        << " tsdbTags: ";
+        << " tags: ";
 
     for( const auto& t : globalTags )
         inf << t.first << "=" << t.second << " ";

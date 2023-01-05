@@ -39,7 +39,7 @@ namespace uniset
 
         Пример секции конфигурации:
     \code
-            <BackendClickHouse name="BackendClickHouse1" dbhost="localhost" dbport="4242" dbuser="" dbpass=""
+            <BackendClickHouse name="BackendClickHouse1" dbhost="localhost" dbport="9000" dbuser="" dbpass=""
                       filter_field="clickhouse" filter_value="1"
                       tags="TAG1=VAL1 TAG2=VAL2 ..."/>
 
