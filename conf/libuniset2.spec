@@ -81,7 +81,7 @@ BuildRequires: libmosquitto-devel
 %endif
 
 %if_enabled opcua
-BuildRequires: libopen62541-devel libopen62541pp-devel
+BuildRequires: libopen62541-devel libopen62541pp-devel >= 0.0.1-alt2
 %endif
 
 

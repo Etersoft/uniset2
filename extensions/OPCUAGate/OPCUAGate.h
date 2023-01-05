@@ -167,18 +167,18 @@ namespace uniset
 
             struct IOVariable
             {
-                opcua::VariableNode node;
+                opcua::Node node;
                 IOController::IOStateList::iterator it;
                 UniversalIO::IOType stype = {UniversalIO::AI};
-                IOVariable(const opcua::VariableNode& n) : node(n) {};
+                IOVariable(const opcua::Node& n) : node(n) {};
             };
 
             std::unordered_map<ObjectId, IOVariable> variables;
 
             struct IONode
             {
-                opcua::ObjectNode node;
-                IONode( const opcua::ObjectNode& n ):  node(n) {};
+                opcua::Node node;
+                IONode( const opcua::Node& n ):  node(n) {};
             };
 
         private:

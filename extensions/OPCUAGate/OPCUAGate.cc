@@ -245,6 +245,9 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
     auto vnode = ioNode->node.addVariable(opcua::NodeId(sname), sname, opctype);
     vnode.setDescription(it.getProp("textname"), "ru-RU");
     vnode.setDisplayName(sname, "en");
+    vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ);
+    if( iotype == UniversalIO::AI || iotype == UniversalIO::DI )
+        vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ|UA_ACCESSLEVELMASK_WRITE);
 
     // init default value
     int64_t defVal = (int64_t)it.getPIntProp("default", 0);
