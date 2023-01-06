@@ -20,7 +20,7 @@
 #include <sstream>
 #include "unisetstd.h"
 #include "Exceptions.h"
-#include "extensions/Extensions.h"
+#include "Extensions.h"
 #include "MBTCPMultiMaster.h"
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------

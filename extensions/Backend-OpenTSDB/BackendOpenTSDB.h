@@ -24,7 +24,7 @@
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
-#include "extensions/Extensions.h"
+#include "Extensions.h"
 #include "UTCPStream.h"
 // --------------------------------------------------------------------------
 namespace uniset

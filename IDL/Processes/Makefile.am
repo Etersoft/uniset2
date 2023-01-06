@@ -11,7 +11,7 @@ IDLFILES=IOController_i.idl
 
 include $(top_builddir)/IDL/idl.mk
 
-idl_include_HEADERS = *.idl
+idl_include_HEADERS = $(IDLFILES)
 idl_includedir = $(datadir)/idl/@PACKAGE@/Processes
 
 include $(top_builddir)/include.mk

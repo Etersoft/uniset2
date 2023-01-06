@@ -16,7 +16,7 @@ sqlite_test_LDADD = libUniSet2-sqlite.la $(top_builddir)/lib/libUniSet2.la
 sqlite_test_SOURCES = test.cc
 
 # install
-devel_include_HEADERS = *.h
+devel_include_HEADERS = $(wildcard $(srcdir)/*.h)
 devel_includedir = $(includedir)/@PACKAGE@/extensions/sqlite
 
 pkgconfigdir	= $(libdir)/pkgconfig

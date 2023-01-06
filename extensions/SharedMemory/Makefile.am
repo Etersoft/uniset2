@@ -1,27 +1,27 @@
-bin_PROGRAMS		= @PACKAGE@-smemory
+bin_PROGRAMS = @PACKAGE@-smemory
 
 # не забывайте править версию в2.pc-файле
 USM_VER=@LIBVER@
 
-lib_LTLIBRARIES 	= libUniSet2SharedMemory.la
-libUniSet2SharedMemory_la_LDFLAGS	= -version-info $(USM_VER)
-libUniSet2SharedMemory_la_LIBADD		= $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la \
+lib_LTLIBRARIES = libUniSet2SharedMemory.la
+libUniSet2SharedMemory_la_LDFLAGS = -version-info $(USM_VER)
+libUniSet2SharedMemory_la_LIBADD = $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la -lrt
-libUniSet2SharedMemory_la_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
-libUniSet2SharedMemory_la_SOURCES 	= SharedMemory.cc
+libUniSet2SharedMemory_la_CPPFLAGS = $(SIGC_CFLAGS) -I$(top_srcdir)/extensions/include
+libUniSet2SharedMemory_la_SOURCES = SharedMemory.cc
 
 
-@PACKAGE@_smemory_LDADD 	= libUniSet2SharedMemory.la $(top_builddir)/lib/libUniSet2.la \
+@PACKAGE@_smemory_LDADD = libUniSet2SharedMemory.la $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la
-@PACKAGE@_smemory_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
-@PACKAGE@_smemory_SOURCES 	= smemory.cc
+@PACKAGE@_smemory_CPPFLAGS = $(SIGC_CFLAGS) -I$(top_srcdir)/extensions/include
+@PACKAGE@_smemory_SOURCES = smemory.cc
 
 # install
-devel_include_HEADERS = *.h
+devel_include_HEADERS = $(wildcard $(srcdir)/*.h)
 devel_includedir = $(pkgincludedir)/extensions
 
-pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSet2SharedMemory.pc
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libUniSet2SharedMemory.pc
 
 #all-local:
 #	ln -sf ../SharedMemory/$(devel_include_HEADERS) ../include

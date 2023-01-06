@@ -7,9 +7,9 @@ tests_with_sm_SOURCES   = tests_with_sm.cc test_uwebsocketgate.cc $(top_builddir
 tests_with_sm_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(POCO_LIBS)
-tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
-	-I$(top_builddir)/extensions/UWebSocketGate \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
+tests_with_sm_CPPFLAGS  = -I$(top_srcdir)/include -I$(top_srcdir)/extensions/include \
+	-I$(top_srcdir)/extensions/UWebSocketGate \
+	-I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 
 include $(top_builddir)/testsuite/testsuite-common.mk

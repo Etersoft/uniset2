@@ -6,7 +6,7 @@ SWIG=swig
 pydir=$(pkgpythondir)/lib
 py_DATA = __init__.py UniSet.py UConnector.py UModbus.py UExceptions.py
 
-BUILD_SRCDIR=$(srcdir)/../../../core
+BUILD_SRCDIR=$(abs_top_srcdir)/wrappers/core
 BUILD_SRC=UModbus.cc UConnector.cc UProxyObject.cc
 
 UniSet.py: UInterface_wrap.cxx _UniSet.la
@@ -26,7 +26,7 @@ _UniSet_la_LDFLAGS 	= -module -avoid-version
 _UniSet_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 
 UInterface_wrap.cxx: UInterface.i UProxyObject.i PyUInterface.h $(BUILD_SRCDIR)/UProxyObject.h
-	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) UInterface.i
+	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) $(abs_srcdir)/UInterface.i
 
 #PyUObject_wrap.cxx: UObject.i PyUObject.h
 #	swig -python -c++ -classic UObject.i
@@ -37,7 +37,7 @@ _UConnector_la_LDFLAGS 	= -module -avoid-version
 _UConnector_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)
 
 UConnector_wrap.cxx: UConnector.i $(BUILD_SRCDIR)/UConnector.h
-	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) UConnector.i
+	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) $(abs_srcdir)/UConnector.i
 
 _UModbus_la_SOURCES 	= UModbus.cc UModbus_wrap.cxx
 _UModbus_la_CXXFLAGS	= -I$(BUILD_SRCDIR) $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(POCO_CFLAGS) $(PYTHON_CFLAGS)
@@ -45,7 +45,7 @@ _UModbus_la_LDFLAGS 	= -module -avoid-version
 _UModbus_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(POCO_LIBS) $(PYTHON_LIBS)
 
 UModbus_wrap.cxx: UInterface.i $(BUILD_SRCDIR)/UModbus.h
-	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) UModbus.i
+	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) $(abs_srcdir)/UModbus.i
 
 _UExceptions_la_SOURCES 	= UExceptions_wrap.cxx
 _UExceptions_la_CXXFLAGS	= -I$(BUILD_SRCDIR) $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(PYTHON_CFLAGS)
@@ -53,7 +53,7 @@ _UExceptions_la_LDFLAGS 	= -module -avoid-version
 _UExceptions_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 
 UExceptions_wrap.cxx: UExceptions.i $(BUILD_SRCDIR)/UExceptions.h
-	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) UExceptions.i
+	$(SWIG) -python -py3 -c++ -outcurrentdir -I$(BUILD_SRCDIR) $(abs_srcdir)/UExceptions.i
 
 # Специальное правило для удаления сгенерированного кода
 # для дальнейшей перегенерации

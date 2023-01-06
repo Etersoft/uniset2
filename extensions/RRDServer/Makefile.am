@@ -12,8 +12,8 @@ libUniSet2RRDServer_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 									$(SIGC_LIBS) $(RRD_LIBS)
-libUniSet2RRDServer_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
-									-I$(top_builddir)/extensions/SharedMemory \
+libUniSet2RRDServer_la_CXXFLAGS	= -I$(top_srcdir)/extensions/include \
+									-I$(top_srcdir)/extensions/SharedMemory \
 									$(SIGC_CFLAGS) $(RRD_CFLAGS)
 libUniSet2RRDServer_la_SOURCES 	= RRDServer.cc
 
@@ -22,12 +22,12 @@ libUniSet2RRDServer_la_SOURCES 	= RRDServer.cc
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 									$(SIGC_LIBS) $(RRD_LIBS)
-@PACKAGE@_rrdserver_CXXFLAGS	= -I$(top_builddir)/extensions/include \
-									-I$(top_builddir)/extensions/SharedMemory \
+@PACKAGE@_rrdserver_CXXFLAGS	= -I$(top_srcdir)/extensions/include \
+									-I$(top_srcdir)/extensions/SharedMemory \
 									$(SIGC_CFLAGS) $(RRD_CFLAGS)
 
 # install
-devel_include_HEADERS = *.h
+devel_include_HEADERS = $(wildcard $(srcdir)/*.h)
 devel_includedir = $(pkgincludedir)/extensions/rrd
 
 pkgconfigdir 	= $(libdir)/pkgconfig

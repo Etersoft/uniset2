@@ -9,7 +9,7 @@ libUniSet2MBSlave_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 								$(SIGC_LIBS) $(POCO_LIBS)
-libUniSet2MBSlave_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
+libUniSet2MBSlave_la_CXXFLAGS	= -I$(top_srcdir)/extensions/include -I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 libUniSet2MBSlave_la_SOURCES 	= MBSlave.cc
 
 @PACKAGE@_mbslave_SOURCES 	= mbslave.cc
@@ -17,10 +17,10 @@ libUniSet2MBSlave_la_SOURCES 	= MBSlave.cc
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 									$(SIGC_LIBS) $(POCO_LIBS)
-@PACKAGE@_mbslave_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
+@PACKAGE@_mbslave_CXXFLAGS	= -I$(top_srcdir)/extensions/include -I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 # install
-devel_include_HEADERS = *.h
+devel_include_HEADERS = $(wildcard $(srcdir)/*.h)
 devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig

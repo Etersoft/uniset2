@@ -348,19 +348,19 @@ AC_SUBST(DOXYGEN)
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN != x)
 
 if test "x$UNISET_CODEGEN" = x ; then
-	UNISET_CODEGEN="sh \$(top_builddir)/Utilities/codegen/uniset2-codegen --path \$(top_builddir)/Utilities/codegen/"
+	UNISET_CODEGEN="sh \$(abs_top_builddir)/Utilities/codegen/uniset2-codegen --path \$(abs_top_srcdir)/Utilities/codegen/"
 fi
 AC_SUBST(UNISET_CODEGEN)
 echo "UNISET_CODEGEN: $UNISET_CODEGEN"
 
-UNISET_CFLAGS="-I \$(top_builddir) -I \$(top_builddir)/include"
+UNISET_CFLAGS="-I \$(abs_top_srcdir) -I \$(abs_top_srcdir)/include -I \$(abs_top_builddir)/include"
 AC_SUBST(UNISET_CFLAGS)
-UNISET_LIBS="\$(top_builddir)/lib/libUniSet2.la"
+UNISET_LIBS="\$(abs_top_builddir)/lib/libUniSet2.la"
 AC_SUBST(UNISET_LIBS)
 
-UNISET_EXT_CFLAGS="-I \$(top_builddir)/extensions/include"
+UNISET_EXT_CFLAGS="-I \$(abs_top_srcdir)/extensions/include"
 AC_SUBST(UNISET_EXT_CFLAGS)
-UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
+UNISET_EXT_LIBS="\$(abs_top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
 
 #AC_LANG_PUSH([C++])
@@ -488,7 +488,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS ${CATCH_CFLAGS} -funsigned-char -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${COMPORT_485F_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(abs_top_srcdir)/include -I\$(abs_top_builddir)/include -I\$(abs_top_srcdir)/extensions/include -I\$(abs_top_builddir)/extensions/include $CXXFLAGS ${CATCH_CFLAGS} -funsigned-char -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${COMPORT_485F_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -528,7 +528,9 @@ AC_CHECK_FUNCS([atexit getcwd])
 
 AC_CONFIG_FILES([Makefile
 				 libUniSet2.pc
+				 include.mk
 				 lib/Makefile
+				 IDL/idl.mk
 				 IDL/Makefile
 				 IDL/UniSetTypes/Makefile
 				 IDL/UniSetTypes/UniSetBaseConstants.idl
@@ -556,6 +558,8 @@ AC_CONFIG_FILES([Makefile
 				 tests/PocoTest/Makefile
 				 tests/UHttpTest/Makefile
 				 tests/TCPSocketTest/Makefile
+				 testsuite/testcoverage-common.mk
+				 testsuite/testsuite-common.mk
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg

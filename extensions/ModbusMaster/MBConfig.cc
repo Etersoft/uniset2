@@ -19,7 +19,7 @@
 #include <sstream>
 #include <Exceptions.h>
 #include <UniSetTypes.h>
-#include <extensions/Extensions.h>
+#include <Extensions.h>
 #include <ORepHelpers.h>
 #include "MBConfig.h"
 #include "modbus/MBLogSugar.h"

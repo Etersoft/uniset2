@@ -5,7 +5,7 @@
 SUBDIRS=modbus
 
 # install
-devel_include_HEADERS = *.h *.hh *.tcc
+devel_include_HEADERS = $(wildcard $(srcdir)/*.h $(srcdir)/*.hh $(srcdir)/*.tcc)
 devel_includedir = $(pkgincludedir)
 
 all-local:

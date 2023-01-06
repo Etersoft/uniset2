@@ -11,7 +11,7 @@ IDLFILES=UniSetBaseConstants.idl UniSetTypes_i.idl UniSetObject_i.idl UniSetMana
 
 include $(top_builddir)/IDL/idl.mk
 
-idl_include_HEADERS = *.idl
+idl_include_HEADERS = $(IDLFILES)
 idl_includedir = $(datadir)/idl/@PACKAGE@/UniSetTypes
 
 include $(top_builddir)/include.mk

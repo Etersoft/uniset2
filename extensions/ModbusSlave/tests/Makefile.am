@@ -7,9 +7,9 @@ tests_with_sm_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensi
 	$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(POCO_LIBS)
-tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
-	-I$(top_builddir)/extensions/ModbusSlave \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
+tests_with_sm_CPPFLAGS  = -I$(top_srcdir)/include -I$(top_srcdir)/extensions/include \
+	-I$(top_srcdir)/extensions/ModbusSlave \
+	-I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 
 mbslave_perf_test_SOURCES   = mbslave_perf_test.cc
@@ -17,9 +17,9 @@ mbslave_perf_test_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/ext
 	$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(POCO_LIBS)
-mbslave_perf_test_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
-	-I$(top_builddir)/extensions/ModbusSlave \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
+mbslave_perf_test_CPPFLAGS  = -I$(top_srcdir)/include -I$(top_srcdir)/extensions/include \
+	-I$(top_srcdir)/extensions/ModbusSlave \
+	-I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 include $(top_builddir)/testsuite/testsuite-common.mk
 

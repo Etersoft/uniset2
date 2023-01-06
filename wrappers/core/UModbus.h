@@ -22,7 +22,7 @@
 #include "UInterface.h"
 #include "modbus/ModbusTCPMaster.h"
 #include "modbus/ModbusTypes.h"
-#include "extensions/VTypes.h"
+#include "VTypes.h"
 #include "Debug.h"
 #include "UTypes.h"
 #include "UExceptions.h"

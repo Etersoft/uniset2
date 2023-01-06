@@ -20,7 +20,7 @@
 #include <string>
 #include <unordered_map>
 #include "Configuration.h"
-#include "extensions/UObject_SK.h"
+#include "UObject_SK.h"
 #include "UniSetActivator.h"
 #include "UProxyObject.h"
 // --------------------------------------------------------------------------

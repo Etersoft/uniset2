@@ -25,7 +25,7 @@
 #include "modbus/ModbusRTUMaster.h"
 #include "modbus/ModbusTCPMaster.h"
 #include "modbus/ModbusHelpers.h"
-#include "extensions/MTR.h"
+#include "MTR.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;

@@ -8,9 +8,9 @@ run_test_iocontrol_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/ex
 	$(top_builddir)/extensions/IOControl/libUniSet2IOControl.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(POCO_LIBS)
-run_test_iocontrol_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
-	-I$(top_builddir)/extensions/IOControl \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
+run_test_iocontrol_CPPFLAGS  = -I$(top_srcdir)/include -I$(top_srcdir)/extensions/include \
+	-I$(top_srcdir)/extensions/IOControl \
+	-I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 include $(top_builddir)/testsuite/testsuite-common.mk
 

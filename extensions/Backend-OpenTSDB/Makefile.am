@@ -6,12 +6,12 @@ TSDB_VER=@LIBVER@
 lib_LTLIBRARIES = libUniSet2BackendOpenTSDB.la
 libUniSet2BackendOpenTSDB_la_LDFLAGS  = -version-info $(TSDB_VER)
 libUniSet2BackendOpenTSDB_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
-									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-									$(SIGC_LIBS)
-libUniSet2BackendOpenTSDB_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
-									-I$(top_builddir)/extensions/SharedMemory \
-									$(SIGC_CFLAGS)
+						$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+						$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+						$(SIGC_LIBS)
+libUniSet2BackendOpenTSDB_la_CXXFLAGS	= -I$(top_srcdir)/extensions/include \
+					-I$(top_srcdir)/extensions/SharedMemory \
+					$(SIGC_CFLAGS)
 libUniSet2BackendOpenTSDB_la_SOURCES 	= BackendOpenTSDB.cc
 
 @PACKAGE@_backend_opentsdb_SOURCES 	= main.cc
@@ -19,12 +19,10 @@ libUniSet2BackendOpenTSDB_la_SOURCES 	= BackendOpenTSDB.cc
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 									$(SIGC_LIBS)
-@PACKAGE@_backend_opentsdb_CXXFLAGS	= -I$(top_builddir)/extensions/include \
-									-I$(top_builddir)/extensions/SharedMemory \
-									$(SIGC_CFLAGS)
+@PACKAGE@_backend_opentsdb_CXXFLAGS	= -I$(top_srcdir)/extensions/include -I$(top_srcdir)/extensions/SharedMemory $(SIGC_CFLAGS)
 
 # install
-devel_include_HEADERS = *.h
+devel_include_HEADERS = $(wildcard $(srcdir)/*.h)
 devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig

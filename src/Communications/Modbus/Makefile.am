@@ -7,7 +7,7 @@ libModbus_la_SOURCES	= ModbusTypes.cc ModbusHelpers.cc ModbusTCPSession.cc \
 	ModbusRTUSlave.cc ModbusRTUSlaveSlot.cc ModbusRTUMaster.cc \
 	ModbusTCPCore.cc ModbusTCPServer.cc ModbusTCPServerSlot.cc ModbusTCPMaster.cc
 	
-libModbus_la_CXXFLAGS	= -I$(top_builddir)/include/Communications/modbus $(SIGC_CFLAGS) $(POCO_CFLAGS) $(EV_CFLAGS)
+libModbus_la_CXXFLAGS	= -I$(abs_top_srcdir)/include/Communications/modbus $(SIGC_CFLAGS) $(POCO_CFLAGS) $(EV_CFLAGS)
 #libModbus_la_LIBADD		= $(top_builddir)/src/Communications/TCP/libTCP.la $(SIGC_LIBS) $(POCO_LIBS)
 libModbus_la_LIBADD		= $(SIGC_LIBS) $(POCO_LIBS) $(EV_LIBS)
 

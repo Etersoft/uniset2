@@ -18,7 +18,7 @@
 #include <limits>
 #include <sstream>
 #include <Exceptions.h>
-#include <extensions/Extensions.h>
+#include <Extensions.h>
 #include "unisetstd.h"
 #include "MBTCPMaster.h"
 #include "modbus/MBLogSugar.h"

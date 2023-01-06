@@ -6,7 +6,7 @@
 # будут кем-либо изменены, они перегенерируются только
 # при изменении исходного IDL
 
-IDLFLAGS = -I$(top_builddir)/IDL
+IDLFLAGS = -I$(top_builddir)/IDL -I$(abs_top_builddir)/IDL -I$(abs_top_builddir)/IDL/UniSetTypes
 
 # Получения списков генерируемых файлов
 HHTARG=$(patsubst %.idl, ${HHDIR}/%.hh, ${IDLFILES})
