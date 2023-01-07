@@ -123,6 +123,9 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
         }
     }
 
+    if( ioNode == nullptr )
+        throw SystemError("not found localNode=" + std::to_string(localNode) + " in <nodes>");
+
     serverThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::serverLoop);
     serverThread->setFinalAction(this, &OPCUAGate::serverLoopTerminate);
     updateThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::updateLoop);
