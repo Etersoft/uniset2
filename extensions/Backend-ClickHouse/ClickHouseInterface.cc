@@ -64,10 +64,31 @@ bool ClickHouseInterface::ping() const
     //  return db && db->is_open();
 }
 // -----------------------------------------------------------------------------------------
+void ClickHouseInterface::setOptions( int _sendRetries, bool _pingBeforeQuery )
+{
+    sendRetries = _sendRetries;
+    pingBeforeQuery = _pingBeforeQuery;
+}
+// -----------------------------------------------------------------------------------------
 bool ClickHouseInterface::reconnect(const string& host, const string& user, const string& pswd, const string& dbname, unsigned int port )
 {
     if( db )
-        close();
+    {
+        try
+        {
+            if( !ping() )
+                db->ResetConnection();
+
+            return true;
+        }
+        catch( const std::exception& e )
+        {
+            cerr << " reset connection"
+                 << " ERROR: " << e.what() << std::endl;
+        }
+
+        return false;
+    }
 
     return nconnect(host, user, pswd, dbname, port);
 }
@@ -82,8 +103,8 @@ bool ClickHouseInterface::nconnect(const string& host, const string& user, const
     if( !user.empty() )
         opts.SetUser(user);
 
-    opts.SetSendRetries(2);
-    opts.SetPingBeforeQuery(true);
+    opts.SetSendRetries(sendRetries);
+    opts.SetPingBeforeQuery(pingBeforeQuery);
 
     try
     {
