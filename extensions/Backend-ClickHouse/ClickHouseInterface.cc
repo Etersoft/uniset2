@@ -159,13 +159,14 @@ bool ClickHouseInterface::insert( const std::string& tblname, const clickhouse::
 // -----------------------------------------------------------------------------------------
 #define CASE_TYPE(type, i) \
     case clickhouse::Type::type: \
-    { \
+    {                      \
         auto c = col->As<clickhouse::Column##type>(); \
-        if( c ) \
-        { \
+        if( c )            \
+        {                  \
             s << c->At(i); \
-        } \
-    }\
+        }                  \
+        break;             \
+    }                      \
 
 static std::string ColumnAsString( clickhouse::ColumnRef col, size_t idx )
 {
@@ -193,11 +194,13 @@ static std::string ColumnAsString( clickhouse::ColumnRef col, size_t idx )
         case clickhouse::Type::Enum8:
         {
             s << col->As<clickhouse::ColumnEnum8>()->NameAt(idx);
+            break;
         }
 
         case clickhouse::Type::Enum16:
         {
             s << col->As<clickhouse::ColumnEnum16>()->NameAt(idx);
+            break;
         }
 
             // as number
@@ -220,11 +223,12 @@ static std::string ColumnAsString( clickhouse::ColumnRef col, size_t idx )
         {
             auto v = col->As<clickhouse::ColumnUUID>()->At(idx);
             s << v.first << v.second;
+            break;
         }
 
         case clickhouse::Type::Void:
         {
-
+            break;
         }
     }
 
