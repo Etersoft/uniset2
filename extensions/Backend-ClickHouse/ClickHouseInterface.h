@@ -42,7 +42,6 @@ namespace uniset
             virtual bool isConnection() const override;
             virtual bool ping() const override;
 
-
             virtual const std::string lastQuery() override;
 
             // Unsupport types: Array,Nullable,Tuple, idx
@@ -60,6 +59,7 @@ namespace uniset
                            const std::string& pswd, const std::string& dbname,
                            unsigned int port = 9000);
 
+            void setOptions( int sendRetries, bool pingBeforeQuery );
 
             // unsupported
             virtual bool insert( const std::string& q ) override
@@ -80,6 +80,9 @@ namespace uniset
             std::unique_ptr<clickhouse::Client> db;
             std::string lastQ;
             std::string lastE;
+
+            int sendRetries = { 2 };
+            bool pingBeforeQuery = { true };
     };
     // ----------------------------------------------------------------------------------
 } // end of namespace uniset
