@@ -34,6 +34,9 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2BackendClickHouse.pc
 
+ddir =  $(datadir)/@PACKAGE@/clickhouse
+d_DATA = testsuite/docker-entrypoint-initdb.d/*.sql
+
 include $(top_builddir)/include.mk
 
 endif
