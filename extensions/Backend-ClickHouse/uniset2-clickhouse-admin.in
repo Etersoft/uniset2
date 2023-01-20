@@ -1,0 +1,72 @@
+#!/bin/sh
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+sysconfdir=@sysconfdir@
+
+top_builddir=@top_builddir@
+
+PROG="${0##*/}"
+
+print_usage()
+{
+    [ "$1" = 0 ] || exec >&2
+    cat <<EOF
+Usage: $PROG [command] config.xml
+
+$PROG - generate data for clickhouse server
+
+Valid command are:
+  -h, --help     - display help
+  -d, --dicts    - Generate dictionaries data (csv files) for Clickhouse
+  --outdir dir   - write files to directory
+EOF
+    [ -n "$1" ] && exit "$1" || exit
+}
+
+#parse command line options
+TEMP=`getopt -n $PROG -o h,d,l -l help,dicts,outdir,local -- "$@"` || exit 1
+eval set -- "$TEMP"
+
+gen_dict=
+outdir=.
+
+while :; do
+    case "$1" in
+	-h|--help) print_usage 0
+	    ;;
+	-d|--dicts)
+		gen_dict="1"
+		;;
+	-l|--local)
+		bindir=./
+		;;
+	-outdir)
+		shift
+		outdir=$1
+		[ -z "${outdir}" ] && outdir=.
+		;;
+	--) shift; break
+	;;
+	*) "unrecognized option: $1"
+	exit 1
+	;;
+    esac
+    shift
+done
+
+confile="$1"
+[ -n "$confile" ] || print_usage
+
+if [ -n "gen_dict" ]; then
+	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-objects ${outdir}/dict-objects.csv || rm -f ${outdir}/dict-objects.csv
+	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-sensors ${outdir}/dict-sensors.csv || rm -f ${outdir}/dict-sensors.csv
+	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-nodes ${outdir}/dict-nodes.csv || rm -f ${outdir}/dict-nodes.csv
+	exit 0
+fi
+
+echo "Unknown command.."
+exit 1

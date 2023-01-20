@@ -1,0 +1,101 @@
+<dictionaries>
+<dictionary>
+    <name>dict_sensors</name>
+    <source>
+      <file>
+        <path>/usr/share/uniset/data/dict-sensors.csv</path>
+        <format>CSV</format>
+      </file>
+    </source>
+    <lifetime>30</lifetime>
+    <layout>
+      <hashed />
+    </layout>
+    <structure>
+      <id>
+          <name>id</name>
+      </id>
+      <attribute>
+        <name>name</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+      <attribute>
+        <name>iotype</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+      <attribute>
+        <name>textname</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+      <attribute>
+        <name>default</name>
+        <type>int</type>
+        <null_value>0</null_value>
+      </attribute>
+    </structure>
+</dictionary>
+<dictionary>
+    <name>dict_objects</name>
+    <source>
+      <file>
+        <path>/usr/share/uniset/data/dict-objects.csv</path>
+        <format>CSV</format>
+      </file>
+    </source>
+    <lifetime>30</lifetime>
+    <layout>
+      <hashed />
+    </layout>
+    <structure>
+      <id>
+          <name>id</name>
+      </id>
+      <attribute>
+        <name>name</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+      <attribute>
+        <name>comment</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+    </structure>
+</dictionary>
+<dictionary>
+    <name>dict_nodes</name>
+    <source>
+      <file>
+        <path>/usr/share/uniset/data/dict-nodes.csv</path>
+        <format>CSV</format>
+      </file>
+    </source>
+    <lifetime>30</lifetime>
+    <layout>
+      <hashed />
+    </layout>
+    <structure>
+      <id>
+          <name>id</name>
+      </id>
+      <attribute>
+        <name>name</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+      <attribute>
+        <name>ip</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+      <attribute>
+        <name>textname</name>
+        <type>String</type>
+        <null_value></null_value>
+      </attribute>
+    </structure>
+</dictionary>
+</dictionaries>
