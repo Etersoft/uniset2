@@ -634,6 +634,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/Backend-OpenTSDB/Makefile
 				 extensions/Backend-OpenTSDB/libUniSet2BackendOpenTSDB.pc
 				 extensions/Backend-ClickHouse/Makefile
+				 extensions/Backend-ClickHouse/uniset2-clickhouse-admin
 				 extensions/Backend-ClickHouse/libUniSet2BackendClickHouse.pc
 				 extensions/Backend-ClickHouse/tests/Makefile
 				 extensions/tests/Makefile
