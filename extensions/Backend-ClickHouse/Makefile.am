@@ -9,7 +9,7 @@ libUniSet2BackendClickHouse_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 									$(SIGC_LIBS) $(CLICKHOUSE_LIBS)
-libUniSet2BackendClickHouse_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
+libUniSet2BackendClickHouse_la_CXXFLAGS	= -Wno-switch -I$(top_builddir)/extensions/include \
 									-I$(top_builddir)/extensions/SharedMemory \
 									$(SIGC_CFLAGS) $(CLICKHOUSE_CFLAGS)
 libUniSet2BackendClickHouse_la_SOURCES 	= BackendClickHouse.cc ClickHouseInterface.cc ClickHouseTagsConfig.cc
@@ -34,8 +34,8 @@ clickhouse_test_SOURCES = test.cc
 
 bin_SCRIPTS = @PACKAGE@-clickhouse-admin
 
-xsldir = $(datadir)/@PACKAGE@/xslt
-xsl_DATA = xslt/*.xsl
+#xsldir = $(datadir)/@PACKAGE@/xslt
+#xsl_DATA = xslt/*.xsl
 
 all-local:
 	chmod 'a+x' @PACKAGE@-clickhouse-admin

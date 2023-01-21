@@ -481,6 +481,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled clickhouse
 %files extension-clickhouse
 %_bindir/%oname-backend-clickhouse*
+%_bindir/%oname-clickhouse-admin
+%_bindir/%oname-clickhouse-helper
 %_libdir/libUniSet2BackendClickHouse.so.*
 %_datadir/%oname/clickhouse/
 
