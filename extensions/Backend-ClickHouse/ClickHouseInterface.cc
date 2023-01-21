@@ -230,6 +230,9 @@ static std::string ColumnAsString( clickhouse::ColumnRef col, size_t idx )
         {
             break;
         }
+
+        default:
+            break;
     }
 
     return s.str();
