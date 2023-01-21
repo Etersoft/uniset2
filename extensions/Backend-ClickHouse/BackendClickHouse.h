@@ -31,9 +31,11 @@ namespace uniset
 {
     // -----------------------------------------------------------------------------
     /*!
-     * \brief The BackendClickHouse class
-
     \page page_ClickHouse BackendClickHouse: Реализация работы с ClickHouse.
+     - \ref sec_ClickHouse_Conf
+     - \ref sec_ClickHouse_Queue
+     - \ref sec_ClickHouse_Tags
+     - \ref sec_ClickHouse_Admin
 
     \section sec_ClickHouse_Conf Настройка BackendClickHouse
 
@@ -85,8 +87,63 @@ namespace uniset
                 </clickhouse_tags>
             </BackendClickHouse>
     \endcode
-    см. также \ref pgClickHouseTagsConfig_clickhouse.
+    см. также \ref page_ClickHouseTags
+
+    \section sec_ClickHouse_Admin Впомогательная утилита uniset2-clickhouse-admin
+     В состав проекта так же входит утилита uniset2-clickhouse-admin облегчающая взаимодействие с ClickHouse.
+     В частности утилита позволяет сгенерировать csv-файлы словарей для подключения к проекту.
+
+     \code
+     Usage: uniset2-clickhouse-admin [command] config.xml
+
+     uniset2-clickhouse-admin - generate data for clickhouse server
+     Valid command are:
+        -h, --help     - display help
+        -d, --dicts    - Generate dictionaries data (csv files) for Clickhouse
+        --outdir dir   - write files to directory
+     \endcode
+     В проект входят пример файла для настройки и подключения csv-словарей к ClickHouse.
+     В результате в БД будут доступны словари `dict_sensors`, `dict_objects`, `dict_nodes` позволяющие использовать имена датчиков
+     и другие характеристики в запросах.
+     Пример простого запроса выводящего историю изменения датчиков за последний час
+     \code
+     SELECT
+        timestamp,
+        value,
+        dictGetString('dict_sensors', 'name', name_hash_id),
+        dictGetString('dict_nodes', 'ip', node_hash_id)
+     FROM main_history
+     WHERE timestamp > now() - toIntervalHour(1)
+     \endcode
+     Или по конкретному датчику
+     \code
+     SELECT
+         timestamp,
+         value,
+         dictGetString('dict_sensors', 'name', name_hash_id),
+         dictGetString('dict_nodes', 'ip', node_hash_id)
+     FROM main_history
+     WHERE timestamp > now() - toIntervalHour(30) and name_hash_id = cityHash64('Sensor1_AS')
+     \endcode
+
+     Пример запрос с использованием тегов
+     \code
+     SELECT
+        timestamp,
+        value,
+        tag,
+        tagvalue
+     FROM main_history
+     ARRAY JOIN
+        tags.name AS tag,
+        tags.value AS tagvalue
+     WHERE (tag = 'system') AND (tagvalue = 'temp')
+     \endcode
+
+     Описание доступных в словарях полей можно посмотреть в файле `clickhouse_uniset_dictionary.xml`
     */
+    //------------------------------------------------------------------------------------------
+    /*! Реализация DBServer для Clickhouse */
     class BackendClickHouse:
         public UObject_SK
     {
