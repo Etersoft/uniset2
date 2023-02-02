@@ -1,0 +1,7 @@
+AT_SETUP([OPCUAExchange tests (with SM)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAExchange/tests run_test_opcua_exchange.sh],[0],[ignore],[ignore])
+AT_CLEANUP
+
+AT_SETUP([OPCUAExchange tests (separately)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAExchange/tests run_test_opcua_exchange_separately.sh],[0],[ignore],[ignore])
+AT_CLEANUP

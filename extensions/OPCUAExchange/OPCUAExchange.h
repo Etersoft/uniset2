@@ -111,6 +111,8 @@ namespace uniset
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */
             int maxItem = { 0 };
+            uniset::uniset_rwmutex rmutex;
+            uniset::uniset_rwmutex wmutex;
 
             std::string addr;
             std::string user;

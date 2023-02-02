@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+	<settings>
+	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+	    <OPCUAExchange1 name="OPCUAExchange1" addr="opc.tcp://localhost:4840/"/>
+  	</settings>
+	<ObjectsMap idfromfile="1">
+		<nodes port="2809">
+			<item id="3000" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел"/>
+		</nodes>
+		<sensors name="Sensors">
+			<item id="10" iotype="DI" name="OPCUA1_Not_Respond_S" textname="Наличие связи с OPC UA Server1"/>
+
+			<item id="1000" opc="1" opc_attr="Attr1" iotype="AI" name="Attr1_AS" textname="Тестовый датчик N1"/>
+			<item id="1001" opc="1" opc_attr="Attr2" iotype="DI" name="Attr2_S" textname="Тестовый датчик N2"/>
+			<item id="1010" opc="1" opc_attr="Attr3" iotype="AO" name="Attr3_C" textname="Тестовый выход N3"/>
+			<item id="1011" opc="1" opc_attr="Attr4" iotype="DO" name="Attr4_C" textname="Тестовый выход N4"/>
+			<item id="1020" opc="1" opc_attr="Attr5" ioignore="1" iotype="AI" name="Attr5_AS" textname="Тестовый датчик (игнор)"/>
+			<item id="1021" opc="1" opc_attr="i=100" iotype="AI" name="I100_AS" textname="Тестовый датчик i100"/>
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<services name="Services">
+		</services>
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="OPCUAExchange1"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+</UNISETPLC>

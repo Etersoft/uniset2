@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
                 {
                     try
                     {
-                        auto ret = client->read(request);
+                        auto ret = client->read32(request);
 
                         if( ret == 0 )
                         {

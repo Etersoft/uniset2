@@ -670,6 +670,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/OPCUAGate/tests/Makefile
 				 extensions/OPCUAGate/libUniSet2OPCUAGate.pc
 				 extensions/OPCUAExchange/Makefile
+				 extensions/OPCUAExchange/tests/Makefile
+				 extensions/OPCUAExchange/libUniSet2OPCUAExchange.pc
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile
