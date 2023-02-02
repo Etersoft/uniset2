@@ -17,6 +17,7 @@
 #include <sstream>
 #include <open62541/client_highlevel.h>
 #include <open62541/client_subscriptions.h>
+#include <open62541/plugin/log_stdout.h>
 #include "OPCUAClient.h"
 // -----------------------------------------------------------------------------
 using namespace uniset;
@@ -25,7 +26,9 @@ using namespace std;
 OPCUAClient::OPCUAClient()
 {
     client = UA_Client_new();
-    UA_ClientConfig_setDefault(UA_Client_getConfig(client));
+    auto conf = UA_Client_getConfig(client);
+    conf->logger = UA_Log_Stdout_withLevel( UA_LOGLEVEL_ERROR );
+    UA_ClientConfig_setDefault(conf);
 
     val = UA_Variant_new();
 }
@@ -64,7 +67,7 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     return UA_Client_connectUsername(client, addr.c_str(), user.c_str(), pass.c_str()) == UA_STATUSCODE_GOOD;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode  OPCUAClient::read( Result32& res )
+OPCUAClient::ErrorCode  OPCUAClient::read32( Result32& res )
 {
     UA_Variant_clear(val);
     auto retval = UA_Client_readValueAttribute(client, UA_NODEID_STRING(res.nsIndex, const_cast<char*>(res.attr.c_str())), val);
@@ -74,11 +77,11 @@ OPCUAClient::ErrorCode  OPCUAClient::read( Result32& res )
         if( val->type == &UA_TYPES[UA_TYPES_INT32] )
             res.value = *(UA_Int32*)val->data;
         else if( val->type == &UA_TYPES[UA_TYPES_UINT32] )
-            res.value =  *(UA_UInt32*)val->data;
+            res.value = int32_t(*(UA_UInt32*)val->data);
         else if( val->type == &UA_TYPES[UA_TYPES_INT64] )
-            res.value = *(UA_Int64*)val->data;
+            res.value = int32_t(*(UA_Int64*)val->data);
         else if( val->type == &UA_TYPES[UA_TYPES_UINT64] )
-            res.value = *(UA_UInt64*)val->data;
+            res.value = int32_t(*(UA_UInt64*)val->data);
         else if( val->type == &UA_TYPES[UA_TYPES_BOOLEAN] )
             res.value = *(UA_Boolean*)val->data ? 1 : 0;
         else if( val->type == &UA_TYPES[UA_TYPES_UINT16] )
@@ -92,23 +95,18 @@ OPCUAClient::ErrorCode  OPCUAClient::read( Result32& res )
     return (OPCUAClient::ErrorCode)retval;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::read( std::vector<Result32*>& attrs )
+OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<Result32*>& attrs )
 {
     UA_ReadRequest request;
     UA_ReadRequest_init(&request);
     UA_ReadValueId ids[attrs.size()];
     int i = 0;
 
-    for( auto&& v : attrs )
+    for( const auto& v : attrs )
     {
         UA_ReadValueId_init(&ids[i]);
         ids[i].attributeId = UA_ATTRIBUTEID_VALUE;
-
-        if( v->attrNum > 0 )
-            ids[i].nodeId = UA_NODEID_NUMERIC(v->nsIndex, v->attrNum);
-        else
-            ids[i].nodeId = UA_NODEID_STRING(v->nsIndex, const_cast<char*>(v->attr.c_str()));
-
+        ids[i].nodeId = v->nodeId;
         i++;
     }
 
@@ -129,11 +127,11 @@ OPCUAClient::ErrorCode OPCUAClient::read( std::vector<Result32*>& attrs )
                 if( val->type == &UA_TYPES[UA_TYPES_INT32] )
                     attrs[i]->value = *(UA_Int32*)val->data;
                 else if( val->type == &UA_TYPES[UA_TYPES_UINT32] )
-                    attrs[i]->value =  *(UA_UInt32*)val->data;
+                    attrs[i]->value = int32_t(*(UA_UInt32*)val->data);
                 else if( val->type == &UA_TYPES[UA_TYPES_INT64] )
-                    attrs[i]->value = *(UA_Int64*)val->data;
+                    attrs[i]->value = int32_t(*(UA_Int64*)val->data);
                 else if( val->type == &UA_TYPES[UA_TYPES_UINT64] )
-                    attrs[i]->value = *(UA_UInt64*)val->data;
+                    attrs[i]->value = int32_t(*(UA_UInt64*)val->data);
                 else if( val->type == &UA_TYPES[UA_TYPES_BOOLEAN] )
                     attrs[i]->value = *(UA_Boolean*)val->data ? 1 : 0;
                 else if( val->type == &UA_TYPES[UA_TYPES_UINT16] )
@@ -150,24 +148,30 @@ OPCUAClient::ErrorCode OPCUAClient::read( std::vector<Result32*>& attrs )
     return (OPCUAClient::ErrorCode)retval;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::write32( std::vector<Result32*>& attrs )
+OPCUAClient::ErrorCode OPCUAClient::write32( const std::vector<Result32*>& attrs )
 {
     UA_WriteRequest request;
     UA_WriteRequest_init(&request);
     UA_WriteValue ids[attrs.size()];
     int i = 0;
 
-    for( auto&& v : attrs )
+    for( const auto& v : attrs )
     {
         UA_WriteValue_init(&ids[i]);
         ids[i].attributeId = UA_ATTRIBUTEID_VALUE;
+        ids[i].value.hasValue = true;
+        ids[i].nodeId = v->nodeId;
 
-        if( v->attrNum > 0 )
-            ids[i].nodeId = UA_NODEID_NUMERIC(v->nsIndex, v->attrNum);
+        if( v->type == UA_TYPES_BOOLEAN )
+        {
+            bool set = v->value != 0;
+            UA_Variant_setScalar(&ids[i].value.value, &set, &UA_TYPES[v->type]);
+        }
         else
-            ids[i].nodeId = UA_NODEID_STRING(v->nsIndex, const_cast<char*>(v->attr.c_str()));
+        {
+            UA_Variant_setScalar(&ids[i].value.value, &v->value, &UA_TYPES[v->type]);
+        }
 
-        UA_Variant_setScalarCopy(&ids[i].value.value, &v->value, &UA_TYPES[UA_TYPES_INT32]);
         i++;
     }
 

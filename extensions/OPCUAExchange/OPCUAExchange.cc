@@ -351,25 +351,33 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::iopoll( Tick tick )
     {
-        for( auto&& v : writeRequests )
         {
-            if( v.first == 0 || tick % v.first == 0 )
-            {
-                opclog4 << myname << "(iopool): write[" << (int)v.first << "] " << v.second.size() << " attrs" << endl;
+            uniset_rwmutex_rlock lock(wmutex);
 
-                if( client->write32(v.second) != UA_STATUSCODE_GOOD )
-                    opcwarn << myname << "(iothread): tick=" << tick << " write error" << endl;
+            for( auto&& v : writeRequests )
+            {
+                if( v.first == 0 || tick % v.first == 0 )
+                {
+                    opclog4 << myname << "(iopool): write[" << (int)v.first << "] " << v.second.size() << " attrs" << endl;
+
+                    if( client->write32(v.second) != UA_STATUSCODE_GOOD )
+                        opcwarn << myname << "(iothread): tick=" << (int)tick << " write error" << endl;
+                }
             }
         }
 
-        for( auto&& v : readRequests )
         {
-            if( v.first == 0 || tick % v.first == 0 )
-            {
-                opclog4 << myname << "(iopool): read[" << (int)v.first << "] " << v.second.size() << " attrs" << endl;
+            uniset_rwmutex_wrlock lock(rmutex);
 
-                if( client->read(v.second) != UA_STATUSCODE_GOOD )
-                    opcwarn << myname << "(iothread): tick=" << tick << " read error" << endl;
+            for( auto&& v : readRequests )
+            {
+                if( v.first == 0 || tick % v.first == 0 )
+                {
+                    opclog4 << myname << "(iopool): read[" << (int)v.first << "] " << v.second.size() << " attrs" << endl;
+
+                    if( client->read32(v.second) != UA_STATUSCODE_GOOD )
+                        opcwarn << myname << "(iothread): tick=" << (int)tick << " read error" << endl;
+                }
             }
         }
     }
@@ -378,6 +386,8 @@ namespace uniset
     {
         if( !force_out )
             return;
+
+        uniset_rwmutex_wrlock lock(wmutex);
 
         for( auto&& io : iolist )
         {
@@ -422,6 +432,8 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::updateToSM()
     {
+        uniset_rwmutex_rlock lock(rmutex);
+
         for( auto&& io : iolist )
         {
             if( io->ignore )
@@ -454,8 +466,7 @@ namespace uniset
                             << " val=" << io->request.value
                             << endl;
                     IOBase* ib = static_cast<IOBase*>(io.get());
-                    bool set = io->request.value == 0 ? true : false;
-                    IOBase::processingAsDI(ib, set, shm, force);
+                    IOBase::processingAsDI(ib, io->request.value != 0, shm, force);
                 }
             }
             catch( const std::exception& ex )
@@ -510,17 +521,27 @@ namespace uniset
 
         if( attr.empty() )
         {
-            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opc_attr='nnnn'"
+            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opc_attr='name'"
                     << " for " << it.getProp("name") << endl;
             return false;
         }
 
-        if( attr[0] == 'i' )
-            inf->request.attr = attr.substr(2); // remove prefix 'i='
-        else if( attr[0] == 's' )
-            inf->request.attr = attr.substr(2); // remove prefix 's='
+        if( attr.size() > 2 )
+        {
+            if( attr[0] == 'i' && attr[1] == '=' )
+            {
+                inf->request.attrNum = uni_atoi(attr.substr(2));
+                inf->request.attr = attr;
+            }
+            else if( attr[0] == 's' && attr[1] == '=' )
+                inf->request.attr = attr.substr(2); // remove prefix 's='
+            else
+                inf->request.attr = attr;
+        }
         else
+        {
             inf->request.attr = attr;
+        }
 
         inf->request.nsIndex = it.getPIntProp(prop_prefix + "opc_ns_index", 0);
 
@@ -533,6 +554,11 @@ namespace uniset
 
         if( !IOBase::initItem(inf.get(), it, shm, prop_prefix, false, opclog, myname, filtersize, filterT) )
             return false;
+
+        if( inf->stype == UniversalIO::DO || inf->stype == UniversalIO::DI )
+            inf->request.type = UA_TYPES_BOOLEAN;
+        else
+            inf->request.type = UA_TYPES_INT32;
 
         // если вектор уже заполнен
         // то увеличиваем его на 30 элементов (с запасом)
@@ -551,6 +577,8 @@ namespace uniset
             std::swap(iolist[maxItem++], inf);
             return true;
         }
+
+        inf->request.makeNodeId();
 
         opclog3 << myname << "(readItem): add: " << inf->stype << " " << inf << endl;
         std::swap(iolist[maxItem++], inf);
@@ -717,9 +745,9 @@ namespace uniset
             inf << "  [" << (int)it->first << "]: " << it->second.size() << " attrs" << endl;
 
         inf << endl;
-        inf << "read requests[" << writeRequests.size() << "]" << endl;
+        inf << "read requests[" << readRequests.size() << "]" << endl;
 
-        for( auto it = writeRequests.begin(); it != writeRequests.end(); it++ )
+        for( auto it = readRequests.begin(); it != readRequests.end(); it++ )
             inf << "  [" << (int)it->first << "]: " << it->second.size() << " attrs" << endl;
 
         inf << endl;
@@ -868,13 +896,17 @@ namespace uniset
 
                 if( it->stype == UniversalIO::AO )
                 {
-                    IOBase* ib = static_cast<IOBase*>(it.get());
-                    it->request.value = IOBase::processingAsAO(ib, shm, force);
+                    uniset_rwmutex_wrlock lock(wmutex);
+                    it->request.value = sm->value;
+                    // IOBase* ib = static_cast<IOBase*>(it.get());
+                    // it->request.value = IOBase::processingAsAO(ib, shm, force);
                 }
                 else if( it->stype == UniversalIO::DO )
                 {
-                    IOBase* ib = static_cast<IOBase*>(it.get());
-                    it->request.value = IOBase::processingAsDO(ib, shm, force) ? 1 : 0;
+                    uniset_rwmutex_wrlock lock(wmutex);
+                    it->request.value = sm->value ? 1 : 0;
+                    // IOBase* ib = static_cast<IOBase*>(it.get());
+                    // it->request.value = IOBase::processingAsDO(ib, shm, force) ? 1 : 0;
                 }
 
                 break;
