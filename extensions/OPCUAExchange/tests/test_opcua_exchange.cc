@@ -1,6 +1,5 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
-#include <time.h>
 #include <memory>
 #include <unordered_set>
 #include <limits>
@@ -32,6 +31,7 @@ const ObjectId sidAttr3 = 1010;
 const ObjectId sidAttr4 = 1011;
 const ObjectId sidAttr5 = 1020;
 const ObjectId sidAttrI100 = 1021;
+const timeout_t step_pause_msec = 300;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -72,13 +72,13 @@ TEST_CASE("OPCUAExchange: read", "[opcua][exchange][read]")
     REQUIRE(opcTestServer->getI32(rdAttr1) == 10 );
     REQUIRE(opcTestServer->getBool(rdAttr2) == true );
 
-    msleep(200);
+    msleep(step_pause_msec);
     REQUIRE(shm->getValue(sidAttr1) == 10);
     REQUIRE(shm->getValue(sidAttr2) == 1);
 
     opcTestServer->setI32(rdAttr1, 20);
     opcTestServer->setBool(rdAttr2, false);
-    msleep(200);
+    msleep(step_pause_msec);
 
     REQUIRE(opcTestServer->getI32(rdAttr1) == 20 );
     REQUIRE(opcTestServer->getBool(rdAttr2) == false );
@@ -96,13 +96,13 @@ TEST_CASE("OPCUAExchange: write", "[opcua][exchange][write]")
 
     REQUIRE_NOTHROW(shm->setValue(sidAttr3, 1000));
     REQUIRE_NOTHROW(shm->setValue(sidAttr4, 1));
-    msleep(200);
+    msleep(step_pause_msec);
     REQUIRE(opcTestServer->getI32(wrAttr3) == 1000);
     REQUIRE(opcTestServer->getBool(wrAttr4) == true);
 
     REQUIRE_NOTHROW(shm->setValue(sidAttr3, 20));
     REQUIRE_NOTHROW(shm->setValue(sidAttr4, 0));
-    msleep(200);
+    msleep(step_pause_msec);
     REQUIRE(opcTestServer->getI32(wrAttr3) == 20 );
     REQUIRE(opcTestServer->getBool(wrAttr4) == false);
 }
@@ -113,12 +113,12 @@ TEST_CASE("OPCUAExchange: ignore", "[opcua][exchange][ignore]")
     opcTestServer->setI32(ignAttr5, 100);
     REQUIRE(opcTestServer->getI32(ignAttr5) == 100 );
     REQUIRE( shm->getValue(sidAttr5) == 0 );
-    msleep(200);
+    msleep(step_pause_msec);
     REQUIRE( shm->getValue(sidAttr5) == 0 );
 
     opcTestServer->setI32(ignAttr5, 10);
     REQUIRE(opcTestServer->getI32(ignAttr5) == 10 );
-    msleep(200);
+    msleep(step_pause_msec);
     REQUIRE( shm->getValue(sidAttr5) == 0 );
 }
 // -----------------------------------------------------------------------------
@@ -128,11 +128,11 @@ TEST_CASE("OPCUAExchange: read numeric nodeId", "[opcua][exchange][readI]")
 
     opcTestServer->setI32(rdI100, 10);
     REQUIRE(opcTestServer->getI32(rdI100) == 10 );
-     msleep(200);
+    msleep(step_pause_msec);
     REQUIRE(shm->getValue(sidAttrI100) == 10);
 
     opcTestServer->setI32(rdI100, 20);
     REQUIRE(opcTestServer->getI32(rdI100) == 20 );
-    msleep(200);
+    msleep(step_pause_msec);
     REQUIRE(shm->getValue(sidAttrI100) == 20);
 }
