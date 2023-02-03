@@ -25,7 +25,7 @@
 	<dlog name="dlog"/>
 	<settings>
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
-	    <OPCUAExchange1 name="OPCUAExchange1" addr="opc.tcp://localhost:4840/"/>
+	    <OPCUAExchange1 name="OPCUAExchange1" addr1="opc.tcp://localhost:4840/"/>
   	</settings>
 	<ObjectsMap idfromfile="1">
 		<nodes port="2809">

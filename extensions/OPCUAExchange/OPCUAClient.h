@@ -49,12 +49,17 @@ namespace uniset
                     nodeId = UA_NODEID_NUMERIC(nsIndex, num);
                 }
 
-                void makeNodeId()
+                UA_NodeId getNodeId()
                 {
                     if( attrNum > 0 )
-                        nodeId = UA_NODEID_NUMERIC(nsIndex, attrNum);
-                    else
-                        nodeId = UA_NODEID_STRING_ALLOC(nsIndex, attr.c_str());
+                        return UA_NODEID_NUMERIC(nsIndex, attrNum);
+
+                    return UA_NODEID_STRING_ALLOC(nsIndex, attr.c_str());
+                }
+
+                void makeNodeId()
+                {
+                    nodeId = getNodeId();
                 }
 
                 int32_t value;

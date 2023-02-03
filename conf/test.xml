@@ -389,7 +389,7 @@
 			<!-- test OPC UA client  -->
 			<item id="212" iotype="AI" name="OPCUA_Sensor1_AS" textname="OPCUA: sensor1" opc="1" opc_attr="AI_AS"/>
 			<item id="213" iotype="DI" name="OPCUA_Sensor2_AS" textname="OPCUA: sensor2" opc="1" opc_attr="Input2_S"/>
-			<item id="214" iotype="AO" name="OPCUA_Output1_AS" textname="OPCUA: output1" opc="1" opc_attr="Out1_C"/>
+			<item id="214" iotype="AO" name="OPCUA_Output1_AS" textname="OPCUA: output1" opc="1" opc_attr="MB1_AS"/>
 			<item id="215" iotype="DO" name="OPCUA_Output2_AS" textname="OPCUA: output2" opc="1" opc_attr="Out2_C"/>
 
 			<!-- IO TEST -->

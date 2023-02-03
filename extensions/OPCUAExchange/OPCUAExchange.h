@@ -62,6 +62,8 @@ namespace uniset
 
             using Tick = uint8_t;
 
+            static const size_t channels = 2;
+
             /*! Информация о входе/выходе */
             struct OPCAttribute:
                 public IOBase
@@ -75,8 +77,10 @@ namespace uniset
 
                 OPCAttribute() {}
 
+                uniset::uniset_rwmutex vmut;
+                long val { 0 };
                 Tick tick = { 0 }; // на каждом ли тике работать с этим аттрибутом
-                OPCUAClient::Result32 request;
+                OPCUAClient::Result32 request[channels];
 
                 friend std::ostream& operator<<(std::ostream& os, const OPCAttribute& inf );
                 friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<OPCAttribute>& inf );
@@ -84,14 +88,24 @@ namespace uniset
 
         protected:
 
-            void iopoll( Tick tick );
-            void iothread();
-            void updateToSM();
+            enum Timers
+            {
+                tmUpdates
+            };
+
+            void channel1Exchange();
+            void channel2Exchange();
+            bool prepare();
+            void channelExchange( Tick tick, size_t chan );
+            void updateFromChannel( size_t chan );
+            void updateToChannel( size_t chan );
             void updateFromSM();
+            void writeToSM();
 
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
             virtual void askSensors( UniversalIO::UIOCommand cmd );
             virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+            virtual void timerInfo( const uniset::TimerMessage* sm ) override;
             virtual bool activateObject() override;
             virtual bool deactivateObject() override;
 
@@ -101,28 +115,29 @@ namespace uniset
             bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
             bool waitSM();
             void buildRequests();
-            bool tryConnect();
+            bool tryConnect(size_t chan);
             void initOutputs();
 
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
 
-            int polltime = { 150 };   /*!< периодичность обновления данных (опроса карт в/в), [мсек] */
+            timeout_t polltime = { 150 };   /*!< периодичность обновления данных, [мсек] */
+            timeout_t updatetime = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
 
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */
             int maxItem = { 0 };
-            uniset::uniset_rwmutex rmutex;
-            uniset::uniset_rwmutex wmutex;
 
-            std::string addr;
-            std::string user;
-            std::string pass;
-            std::shared_ptr<OPCUAClient> client;
+            std::string addr[channels];
+            std::string user[channels];
+            std::string pass[channels];
+            std::shared_ptr<OPCUAClient> client[channels];
+            std::atomic_uint32_t currentChannel = { 0 };
             typedef std::vector<OPCUAClient::Result32*> Request;
+
             uniset::timeout_t reconnectPause = { 10000 };
             // <priority, requests>
-            std::unordered_map<Tick, Request> writeRequests;
-            std::unordered_map<Tick, Request> readRequests;
+            std::unordered_map<Tick, Request> writeRequests[channels];
+            std::unordered_map<Tick, Request> readRequests[channels];
 
             int filtersize = { 0 };
             float filterT = { 0.0 };
@@ -156,7 +171,7 @@ namespace uniset
             std::string logserv_host = {""};
             int logserv_port = {0};
 
-            std::shared_ptr< ThreadCreator<OPCUAExchange> > ioThread;
+            std::shared_ptr< ThreadCreator<OPCUAExchange> > thrChannel[channels];
 
             VMonitor vmon;
 
