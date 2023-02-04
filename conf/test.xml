@@ -228,8 +228,9 @@
 
 		<MQTTPublisher1 name="MQTTPublisher" />
 		<OPCUAGate name="OPCUAGate1" port="4840" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
+		<OPCUAGate2 name="OPCUAGate2" port="4841" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 
-		<OPCUAClient name="OPCUAClient1"/>
+		<OPCUAClient name="OPCUAClient1" addr2="opc.tcp://localhost:4841"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -390,7 +391,7 @@
 			<item id="212" iotype="AI" name="OPCUA_Sensor1_AS" textname="OPCUA: sensor1" opc="1" opc_attr="AI_AS"/>
 			<item id="213" iotype="DI" name="OPCUA_Sensor2_AS" textname="OPCUA: sensor2" opc="1" opc_attr="Input2_S"/>
 			<item id="214" iotype="AO" name="OPCUA_Output1_AS" textname="OPCUA: output1" opc="1" opc_attr="MB1_AS"/>
-			<item id="215" iotype="DO" name="OPCUA_Output2_AS" textname="OPCUA: output2" opc="1" opc_attr="Out2_C"/>
+			<item id="215" iotype="DO" ioignore="1" name="OPCUA_Output2_C" textname="OPCUA: output2" opc="1" opc_attr="Out2_C"/>
 
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->
@@ -5570,6 +5571,7 @@
 			<item id="6093" name="BackendClickHouse"/>
 			<item id="6094" name="OPCUAGate1"/>
 			<item id="6095" name="OPCUAClient1"/>
+			<item id="6096" name="OPCUAGate2"/>
 			<item id="6101" name="MBTCP1"/>
 			<item id="6102" name="MBTCP2"/>
 			<item id="6103" name="MBTCP3"/>

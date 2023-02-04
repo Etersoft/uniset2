@@ -35,19 +35,20 @@ namespace uniset
             bool connect( const std::string& addr );
             bool connect( const std::string& addr, const std::string& user, const std::string& pass );
 
-            struct Result32
+            struct Variable32
             {
-                Result32() {}
-                Result32(const std::string& attrName, int nsIdx = 0 ):
+                Variable32() {}
+                Variable32(const std::string& attrName, int nsIdx = 0 ):
                     attr(attrName), nsIndex(nsIdx)
                 {
                     nodeId = UA_NODEID_STRING_ALLOC(nsIndex, attr.c_str());
                 }
-                Result32(int num, int nsIdx = 0 ):
+                Variable32(int num, int nsIdx = 0 ):
                     attrNum(num), nsIndex(nsIdx)
                 {
                     nodeId = UA_NODEID_NUMERIC(nsIndex, num);
                 }
+                Variable32& operator=(const Variable32& r);
 
                 UA_NodeId getNodeId()
                 {
@@ -68,13 +69,14 @@ namespace uniset
                 int attrNum = { 0 };
                 int nsIndex;
                 UA_NodeId nodeId;
+                UA_StatusCode status;
             };
 
             using ErrorCode = int;
 
-            ErrorCode read32( std::vector<Result32*>& attrs );
-            ErrorCode read32( Result32& res );
-            ErrorCode write32( const std::vector<Result32*>& attrs );
+            ErrorCode read32( std::vector<Variable32*>& attrs );
+            ErrorCode read32(Variable32& res );
+            ErrorCode write32( const std::vector<Variable32*>& attrs );
             ErrorCode write32( const std::string& attr, int32_t value, int nsIndex = 0 );
             ErrorCode write64( const std::string& attr, int64_t value, int nsIndex = 0 );
             ErrorCode set( const std::string& attr, bool set, int nsIndex = 0 );

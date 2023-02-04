@@ -17,7 +17,7 @@ OPCUATestServer::OPCUATestServer( const std::string& _addr, uint16_t port ):
     addr(_addr)
 {
     if( verbose )
-        cout << "(OPCUATestServer::init): addr=" << addr << endl;
+        cout << "(OPCUATestServer::init): addr=" << addr << ":" << port << endl;
 
     server = unisetstd::make_unique<opcua::Server>((uint16_t)port);
     server->setApplicationName("uniset2 OPC UA gate");

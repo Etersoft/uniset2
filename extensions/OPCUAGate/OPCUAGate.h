@@ -144,6 +144,9 @@ namespace uniset
                 return mylog;
             }
 
+            using DefaultValueType = int32_t;
+            const opcua::Type DefaultVariableType = {opcua::Type::Int32 };
+
         protected:
             OPCUAGate();
 

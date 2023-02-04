@@ -22,12 +22,6 @@ class OPCUATestServer
         void start();
         void stop();
         bool isRunning();
-
-        inline void disableExchange( bool set = true )
-        {
-            disabled = set;
-        }
-
         void setI32(int num, int32_t val );
         void setI32(const std::string& varname, int32_t val );
         void setBool(const std::string& varname, bool set );
