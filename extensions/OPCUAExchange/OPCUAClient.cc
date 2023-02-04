@@ -23,6 +23,19 @@
 using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
+OPCUAClient::Variable32& OPCUAClient::Variable32::operator=(const OPCUAClient::Variable32& r)
+{
+    if( this == &r )
+        return *this;
+
+    attr = r.attr;
+    attrNum = r.attrNum;
+    nsIndex = r.nsIndex;
+    type = r.type;
+    makeNodeId();
+    return *this;
+}
+// -----------------------------------------------------------------------------
 OPCUAClient::OPCUAClient()
 {
     client = UA_Client_new();
@@ -67,7 +80,7 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     return UA_Client_connectUsername(client, addr.c_str(), user.c_str(), pass.c_str()) == UA_STATUSCODE_GOOD;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode  OPCUAClient::read32( Result32& res )
+OPCUAClient::ErrorCode  OPCUAClient::read32(Variable32& res )
 {
     UA_Variant_clear(val);
     auto retval = UA_Client_readValueAttribute(client, UA_NODEID_STRING(res.nsIndex, const_cast<char*>(res.attr.c_str())), val);
@@ -95,12 +108,12 @@ OPCUAClient::ErrorCode  OPCUAClient::read32( Result32& res )
     return (OPCUAClient::ErrorCode)retval;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<Result32*>& attrs )
+OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<Variable32*>& attrs )
 {
     UA_ReadRequest request;
     UA_ReadRequest_init(&request);
     UA_ReadValueId ids[attrs.size()];
-    int i = 0;
+    size_t i = 0;
 
     for( const auto& v : attrs )
     {
@@ -120,6 +133,8 @@ OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<Result32*>& attrs )
     {
         for( i = 0; i < response.resultsSize; i++ )
         {
+            attrs[i]->status = response.results[i].status;
+
             if( response.results[i].status == UA_STATUSCODE_GOOD )
             {
                 UA_Variant* val = &response.results[i].value;
@@ -148,19 +163,19 @@ OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<Result32*>& attrs )
     return (OPCUAClient::ErrorCode)retval;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::write32( const std::vector<Result32*>& attrs )
+OPCUAClient::ErrorCode OPCUAClient::write32( const std::vector<Variable32*>& attrs )
 {
     UA_WriteRequest request;
     UA_WriteRequest_init(&request);
     UA_WriteValue ids[attrs.size()];
-    int i = 0;
+    size_t i = 0;
 
     for( const auto& v : attrs )
     {
         UA_WriteValue_init(&ids[i]);
         ids[i].attributeId = UA_ATTRIBUTEID_VALUE;
-        ids[i].value.hasValue = true;
         ids[i].nodeId = v->nodeId;
+        ids[i].value.hasValue = true;
 
         if( v->type == UA_TYPES_BOOLEAN )
         {
@@ -180,6 +195,15 @@ OPCUAClient::ErrorCode OPCUAClient::write32( const std::vector<Result32*>& attrs
 
     UA_WriteResponse response = UA_Client_Service_write(client, request);
     auto retval = response.responseHeader.serviceResult;
+
+    for( i = 0; i < response.resultsSize; i++ )
+    {
+        attrs[i]->status = response.results[i];
+
+        if( response.results[i] != UA_STATUSCODE_GOOD )
+            retval = response.results[i];
+    }
+
     UA_WriteResponse_clear(&response);
     return (OPCUAClient::ErrorCode)retval;
 }
@@ -195,7 +219,7 @@ OPCUAClient::ErrorCode OPCUAClient::write32(const std::string& attr, int32_t val
 {
     UA_Variant_clear(val);
     UA_Variant_setScalarCopy(val, &value, &UA_TYPES[UA_TYPES_INT32]);
-    return UA_Client_writeValueAttribute(client, UA_NODEID_STRING(nsIndex, const_cast<char*>(attr.c_str())), val);
+    return UA_Client_writeValueAttribute(client, UA_NODEID_STRING_ALLOC(nsIndex, const_cast<char*>(attr.c_str())), val);
 }
 // -----------------------------------------------------------------------------
 OPCUAClient::ErrorCode OPCUAClient::write64(const std::string& attr, int64_t value, int nsIndex)

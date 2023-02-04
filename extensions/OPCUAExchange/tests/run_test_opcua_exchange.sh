@@ -12,5 +12,5 @@ cd -
 --opcua-name OPCUAExchange1 \
 --smemory-id SharedMemory \
 --opcua-s-filter-field opc \
---opcua-s-filter-value 1 
-#--opcua-log-add-levels any
+--opcua-s-filter-value 1
+#--opcua-log-add-levels level6,level7

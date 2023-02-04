@@ -240,7 +240,7 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
             iotype = UniversalIO::AO; // read access
     }
 
-    opcua::Type opctype = opcua::Type::Int64;
+    opcua::Type opctype = DefaultVariableType;
 
     if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
         opctype = opcua::Type::Boolean;
@@ -254,7 +254,7 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
         vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
 
     // init default value
-    int64_t defVal = (int64_t)it.getPIntProp("default", 0);
+    DefaultValueType defVal = (DefaultValueType)it.getPIntProp("default", 0);
 
     if( iotype == UniversalIO::AI || iotype == UniversalIO::AO )
         vnode.write(defVal);
@@ -441,7 +441,7 @@ void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
         if( sm->sensor_type == UniversalIO::DI )
             it->second.node.write(sm->value ? true : false);
         else if( sm->sensor_type == UniversalIO::AI )
-            it->second.node.write(sm->value);
+            it->second.node.write((DefaultValueType)sm->value);
     }
     catch( std::exception& ex )
     {
@@ -483,9 +483,9 @@ void OPCUAGate::update()
             if( !this->shm->isLocalwork() )
             {
                 if( it->second.stype == UniversalIO::DO )
-                    it->second.node.write(this->shm->localGetValue(it->second.it, it->first) ? true : false);
+                    it->second.node.write(shm->localGetValue(it->second.it, it->first) ? true : false);
                 else if( it->second.stype == UniversalIO::AO )
-                    it->second.node.write(this->shm->localGetValue(it->second.it, it->first));
+                    it->second.node.write((DefaultValueType)shm->localGetValue(it->second.it, it->first));
             }
 
             if( it->second.stype == UniversalIO::DI )
@@ -496,7 +496,7 @@ void OPCUAGate::update()
             }
             else if( it->second.stype == UniversalIO::AI )
             {
-                auto value = it->second.node.read<long>();
+                auto value = it->second.node.read<DefaultValueType>();
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first << " value=" << value << endl;
                 this->shm->localSetValue(it->second.it, it->first, value, this->getId());
             }

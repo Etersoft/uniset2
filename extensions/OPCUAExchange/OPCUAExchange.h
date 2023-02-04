@@ -80,7 +80,7 @@ namespace uniset
                 uniset::uniset_rwmutex vmut;
                 long val { 0 };
                 Tick tick = { 0 }; // на каждом ли тике работать с этим аттрибутом
-                OPCUAClient::Result32 request[channels];
+                OPCUAClient::Variable32 request[channels];
 
                 friend std::ostream& operator<<(std::ostream& os, const OPCAttribute& inf );
                 friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<OPCAttribute>& inf );
@@ -121,7 +121,7 @@ namespace uniset
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
 
             timeout_t polltime = { 150 };   /*!< периодичность обновления данных, [мсек] */
-            timeout_t updatetime = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
+            timeout_t updatetime = { 150 };   /*!< периодичность обновления данных в SM, [мсек] */
 
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */
@@ -131,8 +131,16 @@ namespace uniset
             std::string user[channels];
             std::string pass[channels];
             std::shared_ptr<OPCUAClient> client[channels];
+            struct ClientInfo
+            {
+                uniset::Trigger trStatus;
+                uniset::PassiveTimer ptTimeout;
+                std::atomic_bool status = { true };
+            };
+            ClientInfo clientInfo[channels];
+            uniset::Trigger noConnections;
             std::atomic_uint32_t currentChannel = { 0 };
-            typedef std::vector<OPCUAClient::Result32*> Request;
+            typedef std::vector<OPCUAClient::Variable32*> Request;
 
             uniset::timeout_t reconnectPause = { 10000 };
             // <priority, requests>
@@ -156,7 +164,7 @@ namespace uniset
             IOController::IOStateList::iterator itHeartBeat;
 
             bool force = { false };            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
-            bool force_out = { false };        /*!< флаг, включающий принудительное чтения выходов */
+            bool force_out = { false };        /*!< флаг, включающий принудительное чтение/запись датчиков в SM */
             timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
 
             std::atomic_bool activated = { false };

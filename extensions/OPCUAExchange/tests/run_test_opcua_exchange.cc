@@ -16,7 +16,8 @@ using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 std::shared_ptr<SharedMemory> shm;
 std::shared_ptr<OPCUAExchange> opc;
-shared_ptr<OPCUATestServer> opcTestServer;
+shared_ptr<OPCUATestServer> opcTestServer1;
+shared_ptr<OPCUATestServer> opcTestServer2;
 // --------------------------------------------------------------------------
 int main(int argc, const char* argv[] )
 {
@@ -70,13 +71,15 @@ int main(int argc, const char* argv[] )
             shared_ptr<OPCUATestServer> server;
         };
 
-        opcTestServer = make_shared<OPCUATestServer>("127.0.0.1");
-        RAIITestServer r(opcTestServer);
+        opcTestServer1 = make_shared<OPCUATestServer>("127.0.0.1", 4840);
+        opcTestServer2 = make_shared<OPCUATestServer>("127.0.0.1", 4841);
+        RAIITestServer r1(opcTestServer1);
+        RAIITestServer r2(opcTestServer2);
 
         int tout = 6000;
         PassiveTimer pt(tout);
 
-        while( !pt.checkTime() || !act->exist() || !opc->exist() || !shm->exist() || !opcTestServer->isRunning() )
+        while( !pt.checkTime() || !act->exist() || !opc->exist() || !shm->exist() || !opcTestServer1->isRunning() || !opcTestServer2->isRunning() )
             msleep(300);
 
         if( !shm->exist() )
@@ -91,9 +94,15 @@ int main(int argc, const char* argv[] )
             return 1;
         }
 
-        if( !opcTestServer->isRunning() )
+        if( !opcTestServer1->isRunning() )
         {
-            cerr << "(tests_with_sm): opcTestServer not exist! (timeout=" << tout << ")" << endl;
+            cerr << "(tests_with_sm): opcTestServer1 not exist! (timeout=" << tout << ")" << endl;
+            return 1;
+        }
+
+        if( !opcTestServer2->isRunning() )
+        {
+            cerr << "(tests_with_sm): opcTestServer2 not exist! (timeout=" << tout << ")" << endl;
             return 1;
         }
 

@@ -51,14 +51,14 @@ static long opcuaRead( uint16_t nodeId, const std::string& attrName )
     if( client == nullptr )
         return 0;
 
-    UA_Int64 value = 0;
+    UA_Int32 value = 0;
     UA_Variant* val = UA_Variant_new();
     UA_StatusCode retval = UA_Client_readValueAttribute(client, UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()), val);
 
     if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(val) &&
-            val->type == &UA_TYPES[UA_TYPES_INT64])
+            val->type == &UA_TYPES[UA_TYPES_INT32])
     {
-        value = *(UA_Int64*)val->data;
+        value = *(UA_Int32*)val->data;
     }
 
     UA_Variant_delete(val);
@@ -71,7 +71,7 @@ static bool opcuaWrite( uint16_t nodeId, const std::string& attrName, long value
         return 0;
 
     UA_Variant* myVariant = UA_Variant_new();
-    UA_Variant_setScalarCopy(myVariant, &value, &UA_TYPES[UA_TYPES_INT64]);
+    UA_Variant_setScalarCopy(myVariant, &value, &UA_TYPES[UA_TYPES_INT32]);
     UA_StatusCode retval = UA_Client_writeValueAttribute(client, UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()), myVariant);
     UA_Variant_delete(myVariant);
     return retval == UA_STATUSCODE_GOOD;

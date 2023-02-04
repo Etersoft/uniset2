@@ -14,6 +14,7 @@ static struct option longopts[] =
     { "help", no_argument, 0, 'h' },
     { "host", required_argument, 0, 'x' },
     { "read", required_argument, 0, 'r' },
+    { "write", required_argument, 0, 'w' },
     { "timeout", required_argument, 0, 't' },
     { "verbode", no_argument, 0, 'v' },
     { "num-cycles", required_argument, 0, 'z' },
@@ -28,7 +29,8 @@ using namespace std::chrono;
 enum Command
 {
     cmdNOP,
-    cmdRead
+    cmdRead,
+    cmdWrite
 };
 // --------------------------------------------------------------------------
 char* checkArg( int i, int argc, char* argv[] )
@@ -50,12 +52,12 @@ int main(int argc, char* argv[])
     int msecpause = 200;
     timeout_t tout = UniSetTimer::WaitUpTime;
     size_t ncycles = 0;
-    std::vector<OPCUAClient::Result32> values;
-    std::vector<OPCUAClient::Result32*> request;
+    std::vector<OPCUAClient::Variable32> values;
+    std::vector<OPCUAClient::Variable32*> request;
 
     while(1)
     {
-        opt = getopt_long(argc, argv, "hx:r:t:vz:i:p:", longopts, &optindex);
+        opt = getopt_long(argc, argv, "hx:r:w:t:vz:i:p:", longopts, &optindex);
 
         if( opt == -1 )
             break;
@@ -66,6 +68,7 @@ int main(int argc, char* argv[])
                 cout << "-h|--help                - this message" << endl;
                 cout << "[-x|--host] host:port    - OPC UA server address. Default: localhost:4840" << endl;
                 cout << "[-r|--read] varname      - Read variable" << endl;
+                cout << "[-w|--write] varname=val - Write variable" << endl;
                 cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
                 cout << "[-v|--verbose]           - verbose mode." << endl;
                 cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
@@ -79,8 +82,26 @@ int main(int argc, char* argv[])
 
             case 'r':
                 cmd = cmdRead;
-                values.emplace_back( OPCUAClient::Result32(string(optarg)));
+                values.emplace_back( OPCUAClient::Variable32(string(optarg)));
                 break;
+
+            case 'w':
+            {
+                cmd = cmdWrite;
+                auto arg = string(optarg);
+                auto val = uniset::explode_str(arg, '=');
+
+                if (val.size() < 2)
+                {
+                    cerr << "write variable format msut be 'varname=value'" << endl;
+                    return 1;
+                }
+
+                OPCUAClient::Variable32 result(val[0]);
+                result.value = uni_atoi(val[1]);
+                values.emplace_back(result);
+            }
+            break;
 
             case 't':
                 tout = atoi(optarg);
@@ -186,6 +207,42 @@ int main(int argc, char* argv[])
                     msleep(msecpause);
                 }
             }
+            break;
+
+            case cmdWrite:
+            {
+                if( verb )
+                    cout << "write:";
+
+                for( auto&& v : values )
+                {
+                    request.emplace_back(&v);
+
+                    if( verb )
+                        cout << " " << v.attr << "=" << v.value;
+                }
+
+                if( verb )
+                    cout << endl;
+
+                try
+                {
+                    auto ret = client->write32(request);
+
+                    if( ret != 0 )
+                        cerr << "write error code " << ret << endl;
+
+                }
+                catch( std::exception& ex )
+                {
+                    cerr << "(write): " << ex.what() << endl;
+                }
+                catch( ... )
+                {
+                    cerr << "(write): catch ..." << endl;
+                }
+            }
+
             break;
 
             default:
