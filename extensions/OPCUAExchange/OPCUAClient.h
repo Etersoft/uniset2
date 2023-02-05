@@ -35,51 +35,22 @@ namespace uniset
             bool connect( const std::string& addr );
             bool connect( const std::string& addr, const std::string& user, const std::string& pass );
 
-            struct Variable32
+            struct Result32
             {
-                Variable32() {}
-                Variable32(const std::string& attrName, int nsIdx = 0 ):
-                    attr(attrName), nsIndex(nsIdx)
-                {
-                    nodeId = UA_NODEID_STRING_ALLOC(nsIndex, attr.c_str());
-                }
-                Variable32(int num, int nsIdx = 0 ):
-                    attrNum(num), nsIndex(nsIdx)
-                {
-                    nodeId = UA_NODEID_NUMERIC(nsIndex, num);
-                }
-                Variable32& operator=(const Variable32& r);
-
-                UA_NodeId getNodeId()
-                {
-                    if( attrNum > 0 )
-                        return UA_NODEID_NUMERIC(nsIndex, attrNum);
-
-                    return UA_NODEID_STRING_ALLOC(nsIndex, attr.c_str());
-                }
-
-                void makeNodeId()
-                {
-                    nodeId = getNodeId();
-                }
-
+                Result32() {}
                 int32_t value;
-                std::string attr;
-                int type = { UA_TYPES_INT32 };
-                int attrNum = { 0 };
-                int nsIndex;
-                UA_NodeId nodeId;
                 UA_StatusCode status;
             };
 
             using ErrorCode = int;
 
-            ErrorCode read32( std::vector<Variable32*>& attrs );
-            ErrorCode read32(Variable32& res );
-            ErrorCode write32( const std::vector<Variable32*>& attrs );
+            ErrorCode read32( std::vector<UA_ReadValueId>& attrs, std::vector<Result32>& result );
+            ErrorCode write32( std::vector<UA_WriteValue>& values );
             ErrorCode write32( const std::string& attr, int32_t value, int nsIndex = 0 );
-            ErrorCode write64( const std::string& attr, int64_t value, int nsIndex = 0 );
             ErrorCode set( const std::string& attr, bool set, int nsIndex = 0 );
+            ErrorCode write( const UA_WriteValue& val );
+            static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val, int nsIndex = 0 );
+            static UA_ReadValueId makeReadValue32( const std::string& name, int nsIndex = 0 );
 
         protected:
             UA_Client* client = { nullptr };

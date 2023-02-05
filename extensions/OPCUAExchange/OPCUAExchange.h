@@ -128,7 +128,15 @@ namespace uniset
             using Tick = uint8_t;
 
             static const size_t channels = 2;
-
+            struct ReadGroup
+            {
+                std::vector<OPCUAClient::Result32> results;
+                std::vector<UA_ReadValueId> ids;
+            };
+            struct WriteGroup
+            {
+                std::vector<UA_WriteValue> ids;
+            };
             /*! Информация о входе/выходе */
             struct OPCAttribute:
                 public IOBase
@@ -139,13 +147,32 @@ namespace uniset
                 OPCAttribute& operator=(const OPCAttribute& r) = delete;
                 OPCAttribute(OPCAttribute&& r ) = default;
                 OPCAttribute& operator=(OPCAttribute&& r) = default;
-
-                OPCAttribute() {}
+                OPCAttribute() = default;
 
                 uniset::uniset_rwmutex vmut;
                 long val { 0 };
                 Tick tick = { 0 }; // на каждом ли тике работать с этим аттрибутом
-                OPCUAClient::Variable32 request[channels];
+                std::string attrName = {""};
+                struct RdValue
+                {
+                    std::shared_ptr<ReadGroup> gr;
+                    size_t valIndex = { 0 };
+                    int32_t get();
+                    bool statusOk();
+                    UA_StatusCode status();
+                };
+                RdValue rval[channels];
+
+                struct WrValue
+                {
+                    std::shared_ptr<WriteGroup> gr;
+                    size_t valIndex = { 0 };
+                    bool set( int32_t val );
+                    bool statusOk();
+                    UA_StatusCode status();
+                    const UA_WriteValue& ref();
+                };
+                WrValue wval[channels];
 
                 friend std::ostream& operator<<(std::ostream& os, const OPCAttribute& inf );
                 friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<OPCAttribute>& inf );
@@ -158,8 +185,8 @@ namespace uniset
                 tmUpdates
             };
 
-            void channel1Exchange();
-            void channel2Exchange();
+            void channel1Thread();
+            void channel2Thread();
             bool prepare();
             void channelExchange( Tick tick, size_t chan );
             void updateFromChannel( size_t chan );
@@ -179,7 +206,6 @@ namespace uniset
             bool initIOItem( UniXML::iterator& it );
             bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
             bool waitSM();
-            void buildRequests();
             bool tryConnect(size_t chan);
             void initOutputs();
 
@@ -190,7 +216,7 @@ namespace uniset
 
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */
-            int maxItem = { 0 };
+            size_t maxItem = { 0 };
 
             std::string addr[channels];
             std::string user[channels];
@@ -205,13 +231,10 @@ namespace uniset
             ClientInfo clientInfo[channels];
             uniset::Trigger noConnections;
             std::atomic_uint32_t currentChannel = { 0 };
-            typedef std::vector<OPCUAClient::Variable32*> Request;
+            std::unordered_map<Tick, std::shared_ptr<ReadGroup>> readValues[channels];
+            std::unordered_map<Tick, std::shared_ptr<WriteGroup>> writeValues[channels];
 
             uniset::timeout_t reconnectPause = { 10000 };
-            // <priority, requests>
-            std::unordered_map<Tick, Request> writeRequests[channels];
-            std::unordered_map<Tick, Request> readRequests[channels];
-
             int filtersize = { 0 };
             float filterT = { 0.0 };
 
