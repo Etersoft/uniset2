@@ -52,8 +52,9 @@ int main(int argc, char* argv[])
     int msecpause = 200;
     timeout_t tout = UniSetTimer::WaitUpTime;
     size_t ncycles = 0;
-    std::vector<OPCUAClient::Variable32> values;
-    std::vector<OPCUAClient::Variable32*> request;
+    std::vector<UA_ReadValueId> rvalues;
+    std::vector<UA_WriteValue> wvalues;
+    std::vector<std::string> attrs;
 
     while(1)
     {
@@ -82,7 +83,8 @@ int main(int argc, char* argv[])
 
             case 'r':
                 cmd = cmdRead;
-                values.emplace_back( OPCUAClient::Variable32(string(optarg)));
+                rvalues.emplace_back(OPCUAClient::makeReadValue32(string(optarg)));
+                attrs.push_back(string(optarg));
                 break;
 
             case 'w':
@@ -97,9 +99,8 @@ int main(int argc, char* argv[])
                     return 1;
                 }
 
-                OPCUAClient::Variable32 result(val[0]);
-                result.value = uni_atoi(val[1]);
-                values.emplace_back(result);
+                wvalues.emplace_back(OPCUAClient::makeWriteValue32(val[0], uni_atoi(val[1])) );
+                attrs.push_back(val[0]);
             }
             break;
 
@@ -168,19 +169,21 @@ int main(int argc, char* argv[])
 
                 auto t_start = steady_clock::now();
 
-                for( auto&& v : values )
-                    request.push_back(&v);
+                std::vector<OPCUAClient::Result32> result;
+
+                for( auto&& v : rvalues )
+                    result.push_back(OPCUAClient::Result32{});
 
                 while( nc )
                 {
                     try
                     {
-                        auto ret = client->read32(request);
+                        auto ret = client->read32(rvalues, result);
 
                         if( ret == 0 )
                         {
-                            for( const auto& v : values )
-                                cout << v.attr << "=" << v.value << endl;
+                            for( size_t i = 0; i < result.size(); i++ )
+                                cout << attrs[i] << ": value=" << result[i].value << " status: " << UA_StatusCode_name(result[i].status) << endl;
                         }
                         else
                         {
@@ -214,23 +217,20 @@ int main(int argc, char* argv[])
                 if( verb )
                     cout << "write:";
 
-                for( auto&& v : values )
-                {
-                    request.emplace_back(&v);
-
-                    if( verb )
-                        cout << " " << v.attr << "=" << v.value;
-                }
-
                 if( verb )
                     cout << endl;
 
                 try
                 {
-                    auto ret = client->write32(request);
+                    auto ret = client->write32(wvalues);
 
                     if( ret != 0 )
+                    {
                         cerr << "write error code " << ret << endl;
+
+                        for(size_t i = 0; i < wvalues.size(); i++ )
+                            cerr << attrs[i] << ": status=" << UA_StatusCode_name(wvalues[i].value.status) << endl;
+                    }
 
                 }
                 catch( std::exception& ex )
