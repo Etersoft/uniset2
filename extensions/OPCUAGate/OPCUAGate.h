@@ -35,7 +35,7 @@ namespace uniset
 
       - \ref sec_OPCUAGate_Comm
       - \ref sec_OPCUAGate_Conf
-      - \ref sec_OPCUAGate_Sesnros_Conf
+      - \ref sec_OPCUAGate_Sensors_Conf
       - \ref sec_OPCUAGate_Folders
 
     \section sec_OPCUAGate_Comm Общее описание OPCUAGate
@@ -82,7 +82,7 @@ namespace uniset
 
     См. так же help \a uniset2-opcuagate -h
 
-    \section sec_OPCUAGate_Sesnros_Conf Конфигурирование списка доступных переменных (variables) для OPC UA
+    \section sec_OPCUAGate_Sensors_Conf Конфигурирование списка доступных переменных (variables) для OPC UA
     Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
     Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
      - \b --xxx-s-filter-field  - задаёт фильтрующее поле для датчиков
@@ -93,7 +93,7 @@ namespace uniset
     \code
     <sensors name="Sensors">
      ...
-     <item name="MySensor_S" textname="my sesnsor" iotype="DI" opc_ua="1" opcua_rwmode="w"/>
+     <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_rwmode="w"/>
      <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opc_ua="1" opcua_rwmode="w"/>
      ...
     </sensors>
