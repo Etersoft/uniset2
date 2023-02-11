@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS uniset.main_history
     producer_hash_id UInt64 Default cityHash64(producer),
     nodename LowCardinality(String),
     name LowCardinality(String),
-    textname LowCardinality(String),
     producer LowCardinality(String),
     tags Nested(
         name LowCardinality(String),

@@ -224,7 +224,6 @@ namespace uniset
             std::shared_ptr<clickhouse::ColumnFloat64> colValue;
             std::shared_ptr<clickhouse::ColumnString> colName;
             std::shared_ptr<clickhouse::ColumnString> colNodeName;
-            std::shared_ptr<clickhouse::ColumnString> colTextName;
             std::shared_ptr<clickhouse::ColumnString> colProducer;
             std::shared_ptr<clickhouse::ColumnArray> arrTagKeys;
             std::shared_ptr<clickhouse::ColumnArray> arrTagValues;
