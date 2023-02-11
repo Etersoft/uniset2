@@ -46,21 +46,11 @@ namespace uniset
         return os;
     }
     // -----------------------------------------------------------------------------
-
     OPCUAExchange::OPCUAExchange(uniset::ObjectId id, uniset::ObjectId icID,
                                  const std::shared_ptr<SharedMemory>& ic, const std::string& prefix_ ):
         UniSetObject(id),
-        polltime(150),
         iolist(50),
-        maxItem(0),
-        filterT(0),
-        myid(id),
-        prefix(prefix_),
-        sidHeartBeat(uniset::DefaultObjectId),
-        force(false),
-        force_out(false),
-        activated(false),
-        readconf_ok(false)
+        prefix(prefix_)
     {
         auto conf = uniset_conf();
 
@@ -95,19 +85,20 @@ namespace uniset
         if( ic )
             ic->logAgregator()->add(loga);
 
-
-        for( size_t i = 0; i < channels; i++ )
+        for( size_t i = 0; i < numChannels; i++ )
         {
+            channels[i].num = i + 1;
+            channels[i].idx = i;
+            channels[i].client = make_shared<OPCUAClient>();
             const std::string num = std::to_string(i + 1);
             const std::string defAddr = (i == 0 ? "opc.tcp://localhost:4840" : "");
-
-            addr[i] = conf->getArg2Param("--" + prefix + "-addr" + num, it.getProp("addr" + num), defAddr);
-            user[i] = conf->getArg2Param("--" + prefix + "-user" + num, it.getProp("user" + num), "");
-            pass[i] = conf->getArg2Param("--" + prefix + "-pass" + num, it.getProp("pass" + num), "");
-            client[i] = make_shared<OPCUAClient>();
+            channels[i].addr = conf->getArg2Param("--" + prefix + "-addr" + num, it.getProp("addr" + num), defAddr);
+            channels[i].user = conf->getArg2Param("--" + prefix + "-user" + num, it.getProp("user" + num), "");
+            channels[i].pass = conf->getArg2Param("--" + prefix + "-pass" + num, it.getProp("pass" + num), "");
+            channels[i].trStatus.change(true);
         }
 
-        if( addr[0].empty() )
+        if( channels[0].addr.empty() )
         {
             ostringstream err;
             err << myname << "(init): Unknown OPC server address for channel N1";
@@ -123,11 +114,8 @@ namespace uniset
 
         auto timeout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
 
-        for( size_t i = 0; i < channels; i++ )
-        {
-            clientInfo[i].ptTimeout.setTiming(timeout);
-            clientInfo[i].trStatus.change(true);
-        }
+        for( size_t i = 0; i < numChannels; i++ )
+            channels[i].ptTimeout.setTiming(timeout);
 
         reconnectPause = conf->getArgPInt("--" + prefix + "-reconnectPause", it.getProp("reconnectPause"), reconnectPause);
         vmonit(reconnectPause);
@@ -144,7 +132,7 @@ namespace uniset
         vmonit(filtersize);
         vmonit(filterT);
 
-        shm = make_shared<SMInterface>(icID, ui, myid, ic);
+        shm = make_shared<SMInterface>(icID, ui, getId(), ic);
 
         // определяем фильтр
         s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
@@ -228,41 +216,38 @@ namespace uniset
             &OPCUAExchange::channel2Thread
         };
 
-        static_assert(sizeof(funcs) / sizeof(&OPCUAExchange::channel2Thread) == channels, "num thread functions != num channels");
+        static_assert(sizeof(funcs) / sizeof(&OPCUAExchange::channel2Thread) == numChannels, "num thread functions != num channels");
 
-        if( sizeof(funcs) < channels )
+        if( sizeof(funcs) < numChannels )
         {
             ostringstream err;
-            err << myname << ": Runtime error: thread function[" << sizeof(funcs) << "] < channels[" << channels << "]";
+            err << myname << ": Runtime error: thread function[" << sizeof(funcs) << "] < channels[" << numChannels << "]";
             cerr << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
 
-        for( size_t i = 0; i < channels; i++ )
+        for( size_t i = 0; i < numChannels; i++ )
         {
             thrChannel[i] = make_shared<ThreadCreator<OPCUAExchange> >(this, funcs[i]);
         }
 
         vmonit(sidHeartBeat);
     }
-
     // --------------------------------------------------------------------------------
-
     OPCUAExchange::~OPCUAExchange()
     {
     }
-
     // --------------------------------------------------------------------------------
-    bool OPCUAExchange::tryConnect(size_t chan)
+    bool OPCUAExchange::tryConnect( Channel* ch )
     {
         /* if already connected, this will return GOOD and do nothing */
         /* if the connection is closed/errored, the connection will be reset and then reconnected */
         /* Alternatively you can also use UA_Client_getState to get the current state */
 
-        if( !user[chan].empty() )
-            return client[chan]->connect(addr[chan], user[chan], pass[chan]);
+        if( !ch->user.empty() )
+            return ch->client->connect(ch->addr, ch->user, ch->pass);
 
-        return client[chan]->connect(addr[chan]);
+        return ch->client->connect(ch->addr);
     }
     // --------------------------------------------------------------------------------
     bool OPCUAExchange::prepare()
@@ -294,7 +279,7 @@ namespace uniset
 
         bool skip_iout = uniset_conf()->getArgInt("--" + prefix + "-skip-init-output");
 
-        if( !skip_iout && tryConnect(0) )
+        if( !skip_iout && tryConnect(&channels[0]) )
             initOutputs();
 
         shm->initIterator(itHeartBeat);
@@ -308,65 +293,22 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::channel1Thread()
     {
-        opcinfo << myname << "(channel1Thread): run..." << endl;
-        Tick tick = 1;
-        const size_t chan = 0;
-
-        while( !cancelled )
-        {
-            try
-            {
-                if( !tryConnect(chan) )
-                {
-                    opccrit << myname << "(channel1Thread): no connection to " << addr[chan] << endl;
-                    clientInfo[chan].status = false;
-                    msleep(reconnectPause);
-                    continue;
-                }
-
-                clientInfo[chan].status = true;
-
-                if( tick >= std::numeric_limits<Tick>::max() )
-                    tick = 1;
-
-                updateToChannel(chan);
-                channelExchange(tick++, chan);
-
-                if( currentChannel == chan )
-                    updateFromChannel(chan);
-            }
-            catch( const CORBA::SystemException& ex )
-            {
-                opclog3 << myname << "(channel1Thread): CORBA::SystemException: "
-                        << ex.NP_minorString() << endl;
-            }
-            catch( const uniset::Exception& ex )
-            {
-                opclog3 << myname << "(channel1Thread): " << ex << endl;
-            }
-            catch(...)
-            {
-                opclog3 << myname << "(channel1Thread): catch ..." << endl;
-            }
-
-            if( cancelled )
-                break;
-
-            msleep( polltime );
-        }
-
-        opcinfo << myname << "(channel1Thread): terminated..." << endl;
+        channelThread(&channels[0]);
     }
     // --------------------------------------------------------------------------------
     void OPCUAExchange::channel2Thread()
     {
-        opcinfo << myname << "(channel2Thread): run..." << endl;
+        channelThread(&channels[1]);
+    }
+    // --------------------------------------------------------------------------------
+    void OPCUAExchange::channelThread( Channel* ch )
+    {
+        opcinfo << myname << "(channel" << ch->num << "Thread): run..." << endl;
         Tick tick = 1;
-        const size_t chan = 1;
 
-        if( addr[chan].empty() )
+        if( ch->addr.empty() )
         {
-            opcwarn << myname << "(channel2Thread): channel " << (chan + 1) << " DISABLED (unknown OPC server address)..." << endl;
+            opcwarn << myname << "(channel" << ch->num << "Thread): DISABLED (unknown OPC server address)..." << endl;
             return;
         }
 
@@ -374,37 +316,37 @@ namespace uniset
         {
             try
             {
-                if( !tryConnect(chan) )
+                if( !tryConnect(ch) )
                 {
-                    opccrit << myname << "(channel2Thread): no connection to " << addr[chan] << endl;
-                    clientInfo[chan].status = false;
+                    opccrit << myname << "(channel" << ch->num << "Thread): no connection to " << ch->addr << endl;
+                    ch->status = false;
                     msleep(reconnectPause);
                     continue;
                 }
 
-                clientInfo[chan].status = true;
+                ch->status = true;
 
                 if( tick >= std::numeric_limits<Tick>::max() )
                     tick = 1;
 
-                updateToChannel(chan);
-                channelExchange(tick++, chan);
+                updateToChannel(ch);
+                channelExchange(tick++, ch);
 
-                if( currentChannel == chan )
-                    updateFromChannel(chan);
+                if( currentChannel == ch->idx )
+                    updateFromChannel(ch);
             }
             catch( const CORBA::SystemException& ex )
             {
-                opclog3 << myname << "(channel2Thread): CORBA::SystemException: "
+                opclog3 << myname << "(channel" << ch->num << "Thread): CORBA::SystemException: "
                         << ex.NP_minorString() << endl;
             }
             catch( const uniset::Exception& ex )
             {
-                opclog3 << myname << "(channel2Thread): " << ex << endl;
+                opclog3 << myname << "(channel" << ch->num << "Thread): " << ex << endl;
             }
             catch(...)
             {
-                opclog3 << myname << "(channel2Thread): catch ..." << endl;
+                opclog3 << myname << "(channel" << ch->num << "Thread): catch ..." << endl;
             }
 
             if( cancelled )
@@ -413,32 +355,32 @@ namespace uniset
             msleep( polltime );
         }
 
-        opcinfo << myname << "(channel2Thread): terminated..." << endl;
+        opcinfo << myname << "(channel" << ch->num << "Thread): terminated..." << endl;
     }
     // --------------------------------------------------------------------------------
-    void OPCUAExchange::channelExchange( Tick tick, size_t chan )
+    void OPCUAExchange::channelExchange( Tick tick, Channel* ch )
     {
-        for( auto&& v : writeValues[chan] )
+        for( auto&& v : ch->writeValues )
         {
             if( v.first == 0 || tick % v.first == 0 )
             {
-                opclog4 << myname << "(channelExchange): channel" << chan + 1 << " tick " << (int)tick << " write " << v.second->ids.size() << " attrs" << endl;
-                auto ret = client[chan]->write32(v.second->ids);
+                opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int)tick << " write " << v.second->ids.size() << " attrs" << endl;
+                auto ret = ch->client->write32(v.second->ids);
 
                 if( ret != UA_STATUSCODE_GOOD )
-                    opcwarn << myname << "(channelExchange): channel" << chan + 1 << " tick=" << (int)tick << " write error: " << UA_StatusCode_name(ret) << endl;
+                    opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int)tick << " write error: " << UA_StatusCode_name(ret) << endl;
             }
         }
 
-        for( auto&& v : readValues[chan] )
+        for( auto&& v : ch->readValues )
         {
             if( v.first == 0 || tick % v.first == 0 )
             {
-                opclog4 << myname << "(channelExchange): channel" << chan + 1 << " tick " << (int)tick << " read " << v.second->ids.size() << " attrs" << endl;
-                auto ret = client[chan]->read32(v.second->ids, v.second->results);
+                opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int)tick << " read " << v.second->ids.size() << " attrs" << endl;
+                auto ret = ch->client->read32(v.second->ids, v.second->results);
 
                 if( ret != UA_STATUSCODE_GOOD )
-                    opcwarn << myname << "(channelExchange): channel" << chan + 1 << " tick=" << (int)tick << " read error: " << UA_StatusCode_name(ret) << endl;
+                    opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int)tick << " read error: " << UA_StatusCode_name(ret) << endl;
             }
         }
     }
@@ -493,7 +435,7 @@ namespace uniset
         }
     }
     // --------------------------------------------------------------------------------
-    void OPCUAExchange::updateToChannel( size_t chan )
+    void OPCUAExchange::updateToChannel( Channel* ch )
     {
         for( auto&& io : iolist )
         {
@@ -502,7 +444,7 @@ namespace uniset
 
             if( io->si.id == DefaultObjectId )
             {
-                opclog4 << myname << "(updateToChannel" << chan + 1 << "): sid=DefaultObjectId?!" << endl;
+                opclog4 << myname << "(updateToChannel" << ch->num << "): sid=DefaultObjectId?!" << endl;
                 continue;
             }
 
@@ -512,10 +454,9 @@ namespace uniset
                 {
                     {
                         uniset::uniset_rwmutex_rlock lock(io->vmut);
-                        io->wval[chan].set(io->val);
-
+                        io->wval[ch->idx].set(io->val);
                     }
-                    opclog4 << myname << "(updateToChannel" << chan + 1 << "): write AO"
+                    opclog4 << myname << "(updateToChannel" << ch->num << "): write AO"
                             << " sid=" << io->si.id
                             << " attr:" << io->attrName
                             << " val=" << io->val
@@ -525,9 +466,9 @@ namespace uniset
                 {
                     {
                         uniset::uniset_rwmutex_rlock lock(io->vmut);
-                        io->wval[chan].set(io->val);
+                        io->wval[ch->idx].set(io->val);
                     }
-                    opclog4 << myname << "(updateToChannel" << chan + 1 << "): write DO"
+                    opclog4 << myname << "(updateToChannel" << ch->num << "): write DO"
                             << " sid=" << io->si.id
                             << " attr:" << io->attrName
                             << " val=" << io->val
@@ -536,12 +477,12 @@ namespace uniset
             }
             catch( const std::exception& ex )
             {
-                opclog4 << myname << "(updateToChannel" << chan + 1 << "): " << ex.what() << endl;
+                opclog4 << myname << "(updateToChannel" << ch->num << "): " << ex.what() << endl;
             }
         }
     }
     // --------------------------------------------------------------------------------
-    void OPCUAExchange::updateFromChannel( size_t chan )
+    void OPCUAExchange::updateFromChannel( Channel* ch )
     {
         for( auto&& io : iolist )
         {
@@ -550,7 +491,7 @@ namespace uniset
 
             if( io->si.id == DefaultObjectId )
             {
-                opclog5 << myname << "(updateFromChannel" << chan + 1 << "): sid=DefaultObjectId?!" << endl;
+                opclog5 << myname << "(updateFromChannel" << ch->num << "): sid=DefaultObjectId?!" << endl;
                 continue;
             }
 
@@ -558,36 +499,36 @@ namespace uniset
             {
                 if( io->stype == UniversalIO::AI )
                 {
-                    opclog5 << myname << "(updateFromChannel" << chan + 1 << "): read AI"
+                    opclog5 << myname << "(updateFromChannel" << ch->num << "): read AI"
                             << " sid=" << io->si.id
                             << " attr:" << io->attrName
-                            << " rval=" << io->rval[chan].get()
+                            << " rval=" << io->rval[ch->idx].get()
                             << endl;
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
-                        if( io->rval[chan].statusOk() )
-                            io->val = io->rval[chan].get();
+                        if( io->rval[ch->idx].statusOk() )
+                            io->val = io->rval[ch->idx].get();
                     }
                 }
                 else if( io->stype == UniversalIO::DI )
                 {
-                    opclog5 << myname << "(updateFromChannel" << chan + 1 << "): read DI"
+                    opclog5 << myname << "(updateFromChannel" << ch->num << "): read DI"
                             << " sid=" << io->si.id
                             << " attr:" << io->attrName
-                            << " rval=" << io->rval[chan].get()
+                            << " rval=" << io->rval[ch->idx].get()
                             << endl;
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
-                        if( io->rval[chan].statusOk() )
-                            io->val = io->rval[chan].get() ? 1 : 0;
+                        if( io->rval[ch->idx].statusOk() )
+                            io->val = io->rval[ch->idx].get() ? 1 : 0;
                     }
                 }
             }
             catch( const std::exception& ex )
             {
-                opclog5 << myname << "(updateFromChannel" << chan + 1 << "): " << ex.what() << endl;
+                opclog5 << myname << "(updateFromChannel" << ch->num << "): " << ex.what() << endl;
             }
         }
     }
@@ -599,7 +540,7 @@ namespace uniset
             if( io->ignore )
                 continue;
 
-            if( io->si.id == DefaultObjectId)
+            if( io->si.id == DefaultObjectId )
             {
                 opclog6 << myname << "(writeToSM): sid=DefaultObjectId?!" << endl;
                 continue;
@@ -681,7 +622,7 @@ namespace uniset
         if( !gr )
             return 0;
 
-        return gr->results[valIndex].value;
+        return gr->results[grIndex].value;
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::OPCAttribute::RdValue::statusOk()
@@ -694,7 +635,7 @@ namespace uniset
         if( !gr )
             return UA_STATUSCODE_BAD;
 
-        return gr->results[valIndex].status;
+        return gr->results[grIndex].status;
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::OPCAttribute::WrValue::set( int32_t val )
@@ -702,7 +643,7 @@ namespace uniset
         if( !gr )
             return false;
 
-        auto& wv = gr->ids[valIndex];
+        auto& wv = gr->ids[grIndex];
 
         if( wv.value.value.type == &UA_TYPES[UA_TYPES_BOOLEAN] )
         {
@@ -727,7 +668,7 @@ namespace uniset
         if( !gr )
             return UA_STATUSCODE_BAD;
 
-        return gr->ids[valIndex].value.status;
+        return gr->ids[grIndex].value.status;
     }
     // ------------------------------------------------------------------------------------------
     static const UA_WriteValue nullWriteValue = UA_WriteValue{};
@@ -736,7 +677,7 @@ namespace uniset
         if( !gr )
             return nullWriteValue;
 
-        return gr->ids[valIndex];
+        return gr->ids[grIndex];
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::initIOItem( UniXML::iterator& it )
@@ -752,7 +693,12 @@ namespace uniset
             return false;
         }
 
-        int nsIndex = it.getPIntProp(prop_prefix + "opc_ns_index", 0);
+        //        * Examples:
+        //        *   UA_NODEID("i=13")
+        //        *   UA_NODEID("ns=10;i=1")
+        //        *   UA_NODEID("ns=10;s=Hello:World")
+        //        *   UA_NODEID("g=09087e75-8e5e-499b-954f-f2a9603db28a")
+        //        *   UA_NODEID("ns=1;b=b3BlbjYyNTQxIQ==") // base64
 
         // make string 's=NAME'
         if( attr.size() > 2 && attr[1] != '=' )
@@ -769,15 +715,6 @@ namespace uniset
             return false;
 
         inf->attrName = attr;
-
-        //        * Examples:
-        //        *   UA_NODEID("i=13")
-        //        *   UA_NODEID("ns=10;i=1")
-        //        *   UA_NODEID("ns=10;s=Hello:World")
-        //        *   UA_NODEID("g=09087e75-8e5e-499b-954f-f2a9603db28a")
-        //        *   UA_NODEID("ns=1;b=b3BlbjYyNTQxIQ==") // base64
-        if( nsIndex > 0 )
-            attr = "ns=" + to_string(nsIndex) + ";" + attr;
 
         // если вектор уже заполнен
         // то увеличиваем его на 30 элементов (с запасом)
@@ -800,7 +737,7 @@ namespace uniset
 
         opclog3 << myname << "(readItem): add: " << inf->stype << " " << inf << endl;
 
-        for( size_t chan = 0; chan < channels; chan++ )
+        for( size_t chan = 0; chan < numChannels; chan++ )
         {
             if( inf->ignore )
                 continue;
@@ -808,14 +745,14 @@ namespace uniset
             if( inf->stype == UniversalIO::AI || inf->stype == UniversalIO::DI )
             {
                 std::shared_ptr<ReadGroup> gr;
-                auto rIt = readValues[chan].find(inf->tick);
+                auto rIt = channels[chan].readValues.find(inf->tick);
 
-                if( rIt != readValues[chan].end() )
+                if( rIt != channels[chan].readValues.end() )
                     gr = rIt->second;
                 else
                 {
                     gr = std::make_shared<ReadGroup>();
-                    readValues[chan].emplace(inf->tick, gr);
+                    channels[chan].readValues.emplace(inf->tick, gr);
                 }
 
                 UA_ReadValueId* rv = &(gr->ids.emplace_back(UA_ReadValueId{}));
@@ -829,21 +766,21 @@ namespace uniset
                 gr->results.emplace_back(res);
                 OPCAttribute::RdValue rd;
                 rd.gr = gr;
-                rd.valIndex = gr->results.size() - 1;
+                rd.grIndex = gr->results.size() - 1;
                 inf->rval[chan] = rd;
             }
             else
             {
                 std::shared_ptr<WriteGroup> gr;
 
-                auto wIt = writeValues[chan].find(inf->tick);
+                auto wIt = channels[chan].writeValues.find(inf->tick);
 
-                if( wIt != writeValues[chan].end() )
+                if( wIt != channels[chan].writeValues.end() )
                     gr = wIt->second;
                 else
                 {
                     gr = std::make_shared<WriteGroup>();
-                    writeValues[chan].emplace(inf->tick, gr);
+                    channels[chan].writeValues.emplace(inf->tick, gr);
                 }
 
                 UA_WriteValue* wv = &(gr->ids.emplace_back(UA_WriteValue{}));
@@ -867,7 +804,7 @@ namespace uniset
 
                 OPCAttribute::WrValue wr;
                 wr.gr = gr;
-                wr.valIndex = gr->ids.size() - 1;
+                wr.grIndex = gr->ids.size() - 1;
                 inf->wval[chan] = wr;
             }
         }
@@ -895,7 +832,7 @@ namespace uniset
     {
         cancelled = true;
 
-        for( size_t i = 0; i < channels; i++ )
+        for( size_t i = 0; i < numChannels; i++ )
         {
             if( thrChannel[i] && thrChannel[i] ->isRunning() )
                 thrChannel[i]->join();
@@ -916,7 +853,7 @@ namespace uniset
                     uniset_rwmutex_wrlock lock(it->val_lock);
                     bool set = it->invert ? !((bool)it->safeval) : (bool)it->safeval;
 
-                    for( size_t i = 0; i < channels; i++)
+                    for( size_t i = 0; i < numChannels; i++)
                     {
                         if( !addr[i].empty() )
                             client[i]->set(it->request[i].attr, set, it->request[i].nsIndex);
@@ -926,7 +863,7 @@ namespace uniset
                 {
                     uniset_rwmutex_wrlock lock(it->val_lock);
 
-                    for( size_t i = 0; i < channels; i++)
+                    for( size_t i = 0; i < numChannels; i++)
                     {
                         if( !addr[i].empty() )
                             client[i]->write32(it->request[i].attr, it->safeval, it->request[i].nsIndex);
@@ -955,10 +892,10 @@ namespace uniset
             {
                 if( it->stype == UniversalIO::DO || it->stype == UniversalIO::AO )
                 {
-                    for( size_t i = 0; i < channels; i++ )
+                    for( size_t i = 0; i < numChannels; i++ )
                     {
-                        if( !addr[i].empty() )
-                            client[i]->write(it->wval[i].ref());
+                        if( !channels[i].addr.empty() )
+                            channels[i].client->write(it->wval[i].ref());
                     }
                 }
             }
@@ -1050,23 +987,23 @@ namespace uniset
 
         inf << endl;
 
-        for( size_t i = 0; i < channels; i++ )
+        for( size_t i = 0; i < numChannels; i++ )
         {
-            if( addr[i].empty() )
+            if( channels[i].addr.empty() )
                 inf << "channel" << i + 1 << ": [DISABLED]" << endl;
             else
-                inf << "channel" << i + 1 << ": " << (clientInfo[i].status ? "[OK]" : "[NO CONNECTION]")
-                    << " addr: " << addr[i] << endl;
+                inf << "channel" << i + 1 << ": " << (channels[i].status ? "[OK]" : "[NO CONNECTION]")
+                    << " addr: " << channels[i].addr << endl;
         }
 
         inf << endl;
         inf << "iolist: " << iolist.size() << endl;
 
-        for( auto v = writeValues[0].begin(); v != writeValues[0].end(); ++v )
-            inf << "write attributes[" << setw(2) << (int)v->first << "]: " << v->second->ids.size() << endl;
+        for (const auto& v : channels[0].writeValues)
+            inf << "write attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids.size() << endl;
 
-        for( auto v = readValues[0].begin(); v != readValues[0].end(); ++v )
-            inf << " read attributes[" << setw(2) << (int)v->first << "]: " << v->second->ids.size() << endl;
+        for (const auto& v : channels[0].readValues)
+            inf << " read attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids.size() << endl;
 
         inf << endl;
 
@@ -1108,7 +1045,7 @@ namespace uniset
                 if( !prepare() )
                     return;
 
-                for( size_t i = 0; i < channels; i++ )
+                for( size_t i = 0; i < numChannels; i++ )
                 {
                     if (thrChannel[i] && !thrChannel[i]->isRunning())
                         thrChannel[i]->start();
@@ -1195,7 +1132,7 @@ namespace uniset
             {
                 try
                 {
-                    shm->askSensor(it->si.id, cmd, myid);
+                    shm->askSensor(it->si.id, cmd, getId());
                 }
                 catch( const uniset::Exception& ex )
                 {
@@ -1213,33 +1150,33 @@ namespace uniset
             writeToSM();
 
             // check status for active channel
-            auto* ci = &clientInfo[currentChannel];
+            auto* ch = &channels[currentChannel];
 
-            if( ci->trStatus.change(ci->status) )
+            if( ch->trStatus.change(ch->status) )
             {
-                if( !ci->trStatus.get() )
+                if( !ch->trStatus.get() )
                 {
-                    opclog7 << myname << "(timerInfo): channel" << currentChannel + 1 << " lost connection.." << endl;
-                    ci->ptTimeout.reset();
+                    opclog7 << myname << "(timerInfo): channel" << ch->num << " lost connection.." << endl;
+                    ch->ptTimeout.reset();
                 }
                 else
-                    opcwarn << myname << "(timerInfo): channel" << currentChannel + 1 << " [ACTIVE]" << endl;
+                    opcwarn << myname << "(timerInfo): channel" << ch->num << " [ACTIVE]" << endl;
             }
 
-            if( !ci->status && ci->ptTimeout.checkTime() )
+            if(!ch->status && ch->ptTimeout.checkTime() )
             {
                 bool foundOk = false;
 
-                for( size_t i = 0; i < channels; i++ )
+                for( size_t i = 0; i < numChannels; i++ )
                 {
-                    opclog7 << myname << "(timerInfo): channel" << i + 1 << (clientInfo[i].status ? " [OK]" : " [NO CONNECTION]" ) << endl;
+                    opclog7 << myname << "(timerInfo): channel" << i + 1 << (channels[i].status ? " [OK]" : " [NO CONNECTION]" ) << endl;
 
-                    if( clientInfo[i].status )
+                    if( channels[i].status )
                     {
                         opcwarn << myname << "(timerInfo): change ACTIVE channel to channel" << i + 1 << endl;
                         currentChannel = i;
-                        clientInfo[i].ptTimeout.reset();
-                        clientInfo[i].trStatus.hi(true);
+                        channels[i].ptTimeout.reset();
+                        channels[i].trStatus.hi(true);
                         foundOk = true;
                         break;
                     }
@@ -1251,7 +1188,7 @@ namespace uniset
 
             if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
             {
-                shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, myid);
+                shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
                 ptHeartBeat.reset();
             }
         }

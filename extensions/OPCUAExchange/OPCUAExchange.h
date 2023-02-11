@@ -98,16 +98,25 @@ namespace uniset
     \code
     <sensors name="Sensors">
      ...
-     <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opc_attr="AttrName1" opc_ns_index="1"/>
-     <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opcua="1" opc_attr="AttrName2" opc_tick="2"/>
+     <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opc_attr="AttrName1"/>
+     <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opcua="1" opc_attr="ns=1;s=AttrName2" opc_tick="2"/>
      ...
     </sensors>
     \endcode
      - \b opc_attr - Название переменной на OPCUA сервере
-     - \b opc_ns_index - Namespace индекс. Не обязательный параметр, по умолчанию 0.
      - \b opc_tick - Как часто опрашивать датчик. Не обязательный параметр, по умолчанию - опрос на каждом цикле.
      Если задать "2" - то опрос будет производиться на каждом втором цикле и т.п. Циклы завязаны на polltime.
 
+     Пример поддерживаемого формата для opc_attr:
+     - "AttrName" (aka "s=AttrName")
+     - "i=13" (integer)
+     - "ns=10;i=1" (integer)
+     - "ns=10;s=AttrName2" (string)
+     - "g=09087e75-8e5e-499b-954f-f2a9603db28a" (uuid)
+     - "ns=1;b=b3BlbjYyNTQxIQ=="  (base64)
+
+     \bs "ns" - namespace index
+    */
     // ---------------------------------------------------------------------
     /*! Процесс опроса OPC UA сервера */
     class OPCUAExchange:
@@ -127,7 +136,7 @@ namespace uniset
 
             using Tick = uint8_t;
 
-            static const size_t channels = 2;
+            static const size_t numChannels = 2;
             struct ReadGroup
             {
                 std::vector<OPCUAClient::Result32> results;
@@ -156,23 +165,23 @@ namespace uniset
                 struct RdValue
                 {
                     std::shared_ptr<ReadGroup> gr;
-                    size_t valIndex = { 0 };
+                    size_t grIndex = {0};
                     int32_t get();
                     bool statusOk();
                     UA_StatusCode status();
                 };
-                RdValue rval[channels];
+                RdValue rval[numChannels];
 
                 struct WrValue
                 {
                     std::shared_ptr<WriteGroup> gr;
-                    size_t valIndex = { 0 };
+                    size_t grIndex = {0};
                     bool set( int32_t val );
                     bool statusOk();
                     UA_StatusCode status();
                     const UA_WriteValue& ref();
                 };
-                WrValue wval[channels];
+                WrValue wval[numChannels];
 
                 friend std::ostream& operator<<(std::ostream& os, const OPCAttribute& inf );
                 friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<OPCAttribute>& inf );
@@ -185,12 +194,14 @@ namespace uniset
                 tmUpdates
             };
 
+            struct Channel;
             void channel1Thread();
             void channel2Thread();
+            void channelThread( Channel* ch );
             bool prepare();
-            void channelExchange( Tick tick, size_t chan );
-            void updateFromChannel( size_t chan );
-            void updateToChannel( size_t chan );
+            void channelExchange( Tick tick, Channel* ch );
+            void updateFromChannel( Channel* ch );
+            void updateToChannel( Channel* ch );
             void updateFromSM();
             void writeToSM();
 
@@ -206,11 +217,10 @@ namespace uniset
             bool initIOItem( UniXML::iterator& it );
             bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
             bool waitSM();
-            bool tryConnect(size_t chan);
+            bool tryConnect(Channel* ch);
             void initOutputs();
 
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
-
             timeout_t polltime = { 150 };   /*!< периодичность обновления данных, [мсек] */
             timeout_t updatetime = { 150 };   /*!< периодичность обновления данных в SM, [мсек] */
 
@@ -218,21 +228,23 @@ namespace uniset
             IOList iolist;    /*!< список входов/выходов */
             size_t maxItem = { 0 };
 
-            std::string addr[channels];
-            std::string user[channels];
-            std::string pass[channels];
-            std::shared_ptr<OPCUAClient> client[channels];
-            struct ClientInfo
+            struct Channel
             {
+                size_t num;
+                size_t idx;
+                std::shared_ptr<OPCUAClient> client;
                 uniset::Trigger trStatus;
                 uniset::PassiveTimer ptTimeout;
                 std::atomic_bool status = { true };
+                std::string addr;
+                std::string user;
+                std::string pass;
+                std::unordered_map<Tick, std::shared_ptr<ReadGroup>> readValues;
+                std::unordered_map<Tick, std::shared_ptr<WriteGroup>> writeValues;
             };
-            ClientInfo clientInfo[channels];
+            Channel channels[numChannels];
             uniset::Trigger noConnections;
             std::atomic_uint32_t currentChannel = { 0 };
-            std::unordered_map<Tick, std::shared_ptr<ReadGroup>> readValues[channels];
-            std::unordered_map<Tick, std::shared_ptr<WriteGroup>> writeValues[channels];
 
             uniset::timeout_t reconnectPause = { 10000 };
             int filtersize = { 0 };
@@ -242,7 +254,6 @@ namespace uniset
             std::string s_fvalue;
 
             std::shared_ptr<SMInterface> shm;
-            uniset::ObjectId myid = { uniset::DefaultObjectId };
             std::string prefix;
             std::string prop_prefix;
 
@@ -257,7 +268,7 @@ namespace uniset
 
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };
-            bool readconf_ok = { false };
+            std::atomic_bool readconf_ok = { false };
             int activateTimeout;
             uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
 
@@ -267,7 +278,7 @@ namespace uniset
             std::string logserv_host = {""};
             int logserv_port = {0};
 
-            std::shared_ptr< ThreadCreator<OPCUAExchange> > thrChannel[channels];
+            std::shared_ptr< ThreadCreator<OPCUAExchange> > thrChannel[numChannels];
 
             VMonitor vmon;
 
