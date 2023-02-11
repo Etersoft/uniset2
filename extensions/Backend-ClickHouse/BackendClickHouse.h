@@ -94,13 +94,16 @@ namespace uniset
      В частности утилита позволяет сгенерировать csv-файлы словарей для подключения к проекту.
 
      \code
-     Usage: uniset2-clickhouse-admin [command] config.xml
+      Usage: uniset2-clickhouse-admin [command] config.xml
 
-     uniset2-clickhouse-admin - generate data for clickhouse server
-     Valid command are:
-        -h, --help     - display help
-        -d, --dicts    - Generate dictionaries data (csv files) for Clickhouse
-        --outdir dir   - write files to directory
+      uniset2-clickhouse-admin - generate data for clickhouse server
+
+      Valid command are:
+        -h, --help            - display help
+        -d, --dicts           - Generate dictionaries data (csv files) for Clickhouse
+        -c, --create [dbname] - Create database. Default dbname=uniset
+        -s, --size            - Show table sizes
+        --outdir dir          - write files to directory
      \endcode
      В проект входят пример файла для настройки и подключения csv-словарей к ClickHouse.
      В результате в БД будут доступны словари `dict_sensors`, `dict_objects`, `dict_nodes` позволяющие использовать имена датчиков

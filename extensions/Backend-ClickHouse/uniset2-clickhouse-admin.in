@@ -7,7 +7,8 @@ datarootdir=@datarootdir@
 datadir=@datadir@
 sysconfdir=@sysconfdir@
 
-top_builddir=@top_builddir@
+package=@PACKAGE@
+src_datadir="${datadir}/${package}/clickhouse"
 
 PROG="${0##*/}"
 
@@ -20,30 +21,43 @@ Usage: $PROG [command] config.xml
 $PROG - generate data for clickhouse server
 
 Valid command are:
-  -h, --help     - display help
-  -d, --dicts    - Generate dictionaries data (csv files) for Clickhouse
-  --outdir dir   - write files to directory
+  -h, --help            - display help
+  -d, --dicts           - Generate dictionaries data (csv files) for Clickhouse
+  -c, --create [dbname] - Create database. Default dbname=uniset
+  -s, --size            - Show table sizes
+  --outdir dir          - write files to directory
 EOF
     [ -n "$1" ] && exit "$1" || exit
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,d,l -l help,dicts,outdir,local -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,d,l,s,c: -l help,dicts,outdir,local,size,create: -- "$@"` || exit 1
 eval set -- "$TEMP"
 
-gen_dict=
 outdir=.
+cmd=
 
 while :; do
-    case "$1" in
+	case "$1" in
 	-h|--help) print_usage 0
-	    ;;
+	;;
 	-d|--dicts)
-		gen_dict="1"
-		;;
+		cmd="dict-gen"
+	 ;;
+	-c|--create)
+		cmd="create"
+		shift
+		dbname=$1
+		[ -z "$dbname" ] && dbname="uniset"
+	;;
+	-s|--size)
+		cmd="size"
+	;;
 	-l|--local)
-		bindir=./
-		;;
+		bindir=.
+		datadir=.
+		src_datadir=.
+	;;
 	-outdir)
 		shift
 		outdir=$1
@@ -54,14 +68,28 @@ while :; do
 	*) "unrecognized option: $1"
 	exit 1
 	;;
-    esac
-    shift
+	esac
+	shift
 done
+
+if [ "$cmd" == "size" ]; then
+  query="select concat(database, '.', table) as table, formatReadableSize(sum(bytes)) as size, sum(rows) as rows, max(modification_time) as latest_modification, sum(bytes) as bytes_size, any(engine) as engine, formatReadableSize(sum(primary_key_bytes_in_memory)) as primary_keys_size from system.parts where active group by database, table order by bytes_size desc FORMAT PrettyCompact"
+  clickhouse-client -m -n $* --query "${query}"
+  exit $?
+fi
+
+if [ "$cmd" == "create" ]; then
+  fname=$(mktemp)
+  sed "s/uniset/$dbname/" <"${src_datadir}/tables.sql" > ${fname} && clickhouse-client -m -n $* <${fname}
+  RET=$?
+  rm -f ${fname}
+  exit $RET
+fi
 
 confile="$1"
 [ -n "$confile" ] || print_usage
 
-if [ -n "gen_dict" ]; then
+if [ "$cmd" = "dict-gen" ]; then
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-objects ${outdir}/dict-objects.csv || rm -f ${outdir}/dict-objects.csv
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-sensors ${outdir}/dict-sensors.csv || rm -f ${outdir}/dict-sensors.csv
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-nodes ${outdir}/dict-nodes.csv || rm -f ${outdir}/dict-nodes.csv
