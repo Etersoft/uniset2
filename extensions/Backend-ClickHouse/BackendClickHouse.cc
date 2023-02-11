@@ -184,7 +184,6 @@ void BackendClickHouse::createColumns()
     colValue = std::make_shared<clickhouse::ColumnFloat64>();
     colName = std::make_shared<clickhouse::ColumnString>();
     colNodeName = std::make_shared<clickhouse::ColumnString>();
-    colTextName = std::make_shared<clickhouse::ColumnString>();
     colProducer = std::make_shared<clickhouse::ColumnString>();
     arrTagKeys = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
     arrTagValues = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
@@ -197,7 +196,6 @@ void BackendClickHouse::clearData()
     colValue->Clear();
     colName->Clear();
     colNodeName->Clear();
-    colTextName->Clear();
     colProducer->Clear();
     arrTagKeys->Clear();
     arrTagValues->Clear();
@@ -337,7 +335,6 @@ void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
         colTimeUsec->Append(sm->sm_tv.tv_nsec);
         colValue->Append(sm->value);
         colName->Append(oinf->name);
-        colTextName->Append(oinf->textName);
 
         if( nodeinf )
             colNodeName->Append(nodeinf->name);
@@ -464,13 +461,12 @@ bool BackendClickHouse::flushBuffer()
 
     myinfo << myname << "(flushBuffer): write insert buffer[" << colTimeStamp->Size() << "] to DB.." << endl;
 
-    clickhouse::Block blk(9, colTimeStamp->Size());
+    clickhouse::Block blk(8, colTimeStamp->Size());
     blk.AppendColumn("timestamp", colTimeStamp);
     blk.AppendColumn("time_usec", colTimeUsec);
     blk.AppendColumn("value", colValue);
     blk.AppendColumn("name", colName);
     blk.AppendColumn("nodename", colNodeName);
-    blk.AppendColumn("textname", colTextName);
     blk.AppendColumn("producer", colProducer);
     blk.AppendColumn("tags.name", arrTagKeys);
     blk.AppendColumn("tags.value", arrTagValues);
@@ -500,10 +496,10 @@ std::string BackendClickHouse::getMonitInfo() const
         << " reconnect=" << reconnectTime
         << " bufSyncTime=" << bufSyncTime
         << " bufSize=" << bufSize
-        << " tags: ";
+        << " tags:";
 
     for( const auto& t : globalTags )
-        inf << t.first << "=" << t.second << " ";
+        inf << " " << t.first << "=" << t.second;
 
     inf << " ]" << endl
         << "  connection: " << ( connect_ok ? "OK" : "FAILED") << endl
