@@ -167,23 +167,26 @@ int main(int argc, char* argv[])
                 if( ncycles > 0 )
                     nc = ncycles;
 
-                auto t_start = steady_clock::now();
-
                 std::vector<OPCUAClient::Result32> result;
 
-                for( auto&& v : rvalues )
-                    result.push_back(OPCUAClient::Result32{});
+                for( size_t i = 0; i < rvalues.size(); i++ )
+                    result.push_back(OPCUAClient::Result32());
 
                 while( nc )
                 {
                     try
                     {
+                        auto t_start = steady_clock::now();
                         auto ret = client->read32(rvalues, result);
+                        auto t_end = steady_clock::now();
 
                         if( ret == 0 )
                         {
                             for( size_t i = 0; i < result.size(); i++ )
-                                cout << attrs[i] << ": value=" << result[i].value << " status: " << UA_StatusCode_name(result[i].status) << endl;
+                                cout << attrs[i] << ": value=" << result[i].value
+                                     << " status: " << UA_StatusCode_name(result[i].status)
+                                     << " " << setw(10) << duration_cast<duration<float>>(t_end - t_start).count() << " sec"
+                                     << endl;
                         }
                         else
                         {
@@ -228,7 +231,7 @@ int main(int argc, char* argv[])
                     {
                         cerr << "write error code " << ret << endl;
 
-                        for(size_t i = 0; i < wvalues.size(); i++ )
+                        for( size_t i = 0; i < wvalues.size(); i++ )
                             cerr << attrs[i] << ": status=" << UA_StatusCode_name(wvalues[i].value.status) << endl;
                     }
 
