@@ -14,7 +14,7 @@ tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions
 
 include $(top_builddir)/testsuite/testsuite-common.mk
 
-check-local: atconfig package.m4 $(TESTSUITE) opcua-tests.at
+check-local: atconfig package.m4 $(TESTSUITE) opcuagate-tests.at
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
 
 clean-local:

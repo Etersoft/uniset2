@@ -1,4 +1,5 @@
 if HAVE_TESTS
+if ENABLE_OPCUA
 
 noinst_PROGRAMS = run_test_opcua_exchange
 
@@ -22,4 +23,5 @@ clean-local:
 
 include $(top_builddir)/include.mk
 
+endif
 endif
