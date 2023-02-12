@@ -488,6 +488,8 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
 	AC_CONFIG_TESTDIR(extensions/LogDB/tests)
 	AC_CONFIG_TESTDIR(extensions/Backend-ClickHouse/tests)
+	AC_CONFIG_TESTDIR(extensions/OPCUAGate/tests)
+	AC_CONFIG_TESTDIR(extensions/OPCUAExchange/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
@@ -496,8 +498,8 @@ if test ${buildtests} = true; then
 	AC_MSG_CHECKING([test coverage])
 	AC_ARG_ENABLE(coverage, AC_HELP_STRING([--enable-coverage], [enable gcov support]),
 	[ if test $enableval = yes; then buildgcov=true; else buildgcov=false; fi],[])
-    if test ${buildgcov} = true; then
-    	AC_MSG_RESULT([yes])
+	if test ${buildgcov} = true; then
+	AC_MSG_RESULT([yes])
 		COV_LIBS="-lgcov"
 		COV_CFLAGS="-fprofile-arcs -ftest-coverage -g -ggdb"
 		AC_PATH_PROG([LCOV], [lcov])
@@ -507,7 +509,7 @@ if test ${buildtests} = true; then
 		test "x$LCOV_GENHTML" = "x" && AC_MSG_ERROR([*** genhtml not found (install lcov or use --disable-coverage)])
 		AC_SUBST(LCOV_GENHTML)
 	else
-    	AC_MSG_RESULT([no])
+	AC_MSG_RESULT([no])
 	fi
 
 else

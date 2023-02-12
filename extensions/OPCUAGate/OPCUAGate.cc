@@ -240,6 +240,8 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
             iotype = UniversalIO::AO; // read access
     }
 
+    sname = it.getProp2("opcua_name", sname);
+
     opcua::Type opctype = DefaultVariableType;
 
     if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )

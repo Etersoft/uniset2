@@ -95,12 +95,14 @@ namespace uniset
      ...
      <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_rwmode="w"/>
      <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opc_ua="1" opcua_rwmode="w"/>
+     <item name="MySensor2_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_name="Attribute2"/>
      ...
     </sensors>
     \endcode
      - \b opcua_rwmode - Режим доступа к датчику.
        - \b w - датчик будет доступен на запись через OPC UA.
        - \b none - не предоставлять доступ к датчику (не будет виден через OPC UA)
+     - \b opcua_name - Имя OPC UA переменной, если не задано, то используется name
 
      По умолчанию все датчики доступны только на чтение.
 

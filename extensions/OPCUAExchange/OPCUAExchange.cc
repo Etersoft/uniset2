@@ -684,11 +684,11 @@ namespace uniset
     {
         auto inf = make_shared<OPCAttribute>();
 
-        string attr = it.getProp(prop_prefix + "opc_attr");
+        string attr = it.getProp(prop_prefix + "opcua_name");
 
         if( attr.empty() )
         {
-            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opc_attr='name'"
+            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_name='name'"
                     << " for " << it.getProp("name") << endl;
             return false;
         }
@@ -706,7 +706,7 @@ namespace uniset
 
         if( attr.empty() )
         {
-            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opc_attr='nnnn'"
+            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_name='name'"
                     << " for " << it.getProp("name") << endl;
             return false;
         }
@@ -723,7 +723,7 @@ namespace uniset
         if( maxItem >= iolist.size() )
             iolist.resize(maxItem + 30);
 
-        int tick = (uint8_t)IOBase::initIntProp(it, "opc_tick", prop_prefix, false);
+        int tick = (uint8_t)IOBase::initIntProp(it, "opcua_tick", prop_prefix, false);
         inf->tick = tick;
 
         // значит это пороговый датчик..
