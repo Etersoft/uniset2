@@ -30,10 +30,10 @@ bin_PROGRAMS = @PACKAGE@-opcua-exchange @PACKAGE@-opcua-tester
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(pkgincludedir)/extensions
+devel_includedir = $(pkgincludedir)/extensions/opcua
 
-#pkgconfigdir = $(libdir)/pkgconfig
-#pkgconfig_DATA = libUniSet2OPCUAClient.pc
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libUniSet2OPCUAExchange.pc
 
 include $(top_builddir)/include.mk
 endif
