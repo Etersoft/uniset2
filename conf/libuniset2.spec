@@ -614,11 +614,12 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled opcua
 %files extension-opcua
 %_bindir/%oname-opcua*
-%_libdir/libUniSet2OPCUAGate*.so.*
+%_libdir/libUniSet2OPCUA*.so.*
+
 
 %files extension-opcua-devel
-%_pkgconfigdir/libUniSet2OPCUAGate*.pc
-%_libdir/libUniSet2OPCUAGate*.so
+%_pkgconfigdir/libUniSet2OPCUA*.pc
+%_libdir/libUniSet2OPCUA*.so
 %_includedir/%oname/extensions/opcua/
 %endif
 
