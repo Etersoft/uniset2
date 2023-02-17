@@ -34,12 +34,12 @@
 		<sensors name="Sensors">
 			<item id="10" iotype="DI" name="OPCUA1_Not_Respond_S" textname="Наличие связи с OPC UA Server1"/>
 
-			<item id="1000" opc="1" opcua_name="Attr1" iotype="AI" name="Attr1_AS" textname="Тестовый датчик N1"/>
-			<item id="1001" opc="1" opcua_name="Attr2" iotype="DI" name="Attr2_S" textname="Тестовый датчик N2"/>
-			<item id="1010" opc="1" opcua_name="Attr3" iotype="AO" name="Attr3_C" textname="Тестовый выход N3"/>
-			<item id="1011" opc="1" opcua_name="Attr4" iotype="DO" name="Attr4_C" textname="Тестовый выход N4"/>
-			<item id="1020" opc="1" opcua_name="Attr5" ioignore="1" iotype="AI" name="Attr5_AS" textname="Тестовый датчик (игнор)"/>
-			<item id="1021" opc="1" opcua_name="i=100" iotype="AI" name="I100_AS" textname="Тестовый датчик i100"/>
+			<item id="1000" opc="1" opcua_nodeid="Attr1" iotype="AI" name="Attr1_AS" textname="Тестовый датчик N1"/>
+			<item id="1001" opc="1" opcua_nodeid="Attr2" iotype="DI" name="Attr2_S" textname="Тестовый датчик N2"/>
+			<item id="1010" opc="1" opcua_nodeid="Attr3" iotype="AO" name="Attr3_C" textname="Тестовый выход N3"/>
+			<item id="1011" opc="1" opcua_nodeid="Attr4" iotype="DO" name="Attr4_C" textname="Тестовый выход N4"/>
+			<item id="1020" opc="1" opcua_nodeid="Attr5" ioignore="1" iotype="AI" name="Attr5_AS" textname="Тестовый датчик (игнор)"/>
+			<item id="1021" opc="1" opcua_nodeid="i=100" iotype="AI" name="I100_AS" textname="Тестовый датчик i100"/>
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">

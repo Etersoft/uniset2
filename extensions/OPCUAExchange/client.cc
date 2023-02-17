@@ -68,12 +68,19 @@ int main(int argc, char* argv[])
             case 'h':
                 cout << "-h|--help                - this message" << endl;
                 cout << "[-x|--host] host:port    - OPC UA server address. Default: localhost:4840" << endl;
-                cout << "[-r|--read] varname      - Read variable" << endl;
-                cout << "[-w|--write] varname=val - Write variable" << endl;
+                cout << "[-r|--read] nodeid       - Read variable" << endl;
+                cout << "[-w|--write] nodeid=val - Write variable" << endl;
                 cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
                 cout << "[-v|--verbose]           - verbose mode." << endl;
                 cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
                 cout << "[-p|--read-pause] msec   - Pause between read" << endl;
+                cout << endl;
+                cout << "Atribute NodeId examples:" << endl;
+                cout << "* i=13" << endl;
+                cout << "* ns=10;i=1" << endl;
+                cout << "* ns=10;s=Hello:World" << endl;
+                cout << "* g=09087e75-8e5e-499b-954f-f2a9603db28a" << endl;
+                cout << "* ns=1;b=b3BlbjYyNTQxIQ==    // base64" << endl;
                 cout << endl;
                 return 0;
 
