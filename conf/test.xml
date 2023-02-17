@@ -282,7 +282,7 @@
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
 			<item dbignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
-			<item id="2" iotype="DI" opcua="1" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" opcua_name="Input2_S" priority="Medium" rs="4" textname="Команда 2"/>
+			<item id="2" iotype="DI" opcua="1" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" opcua_name="Input2_S" opcua_nodeid="s=Inp2" priority="Medium" rs="4" textname="Команда 2"/>
 			<item id="3" iotype="DI" opcua="1" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2" depend="Input4_S"/>
@@ -388,10 +388,10 @@
 			<item id="211" iotype="AI" name="DATA2_S" textname="UNET: data2" tsdb="1"/>
 			
 			<!-- test OPC UA client  -->
-			<item id="212" iotype="AI" name="OPCUA_Sensor1_AS" textname="OPCUA: sensor1" opc="1" opcua_name="AI_AS"/>
-			<item id="213" iotype="DI" name="OPCUA_Sensor2_AS" textname="OPCUA: sensor2" opc="1" opcua_name="Input2_S"/>
-			<item id="214" iotype="AO" name="OPCUA_Output1_AS" textname="OPCUA: output1" opc="1" opcua_name="MB1_AS"/>
-			<item id="215" iotype="DO" ioignore="1" name="OPCUA_Output2_C" textname="OPCUA: output2" opc="1" opcua_name="Out2_C"/>
+			<item id="212" iotype="AI" name="OPCUA_Sensor1_AS" textname="OPCUA: sensor1" opc="1" opcua_nodeid="AI_AS" />
+			<item id="213" iotype="DI" name="OPCUA_Sensor2_AS" textname="OPCUA: sensor2" opc="1" opcua_nodeid="Input2_S"/>
+			<item id="214" iotype="AO" name="OPCUA_Output1_AS" textname="OPCUA: output1" opc="1" opcua_nodeid="MB1_AS"/>
+			<item id="215" iotype="DO" ioignore="1" name="OPCUA_Output2_C" textname="OPCUA: output2" opc="1" opcua_nodeid="Out2_C"/>
 
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->

@@ -684,11 +684,11 @@ namespace uniset
     {
         auto inf = make_shared<OPCAttribute>();
 
-        string attr = it.getProp(prop_prefix + "opcua_name");
+        string attr = it.getProp(prop_prefix + "opcua_nodeid");
 
         if( attr.empty() )
         {
-            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_name='name'"
+            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_nodeid='name'"
                     << " for " << it.getProp("name") << endl;
             return false;
         }
@@ -702,10 +702,14 @@ namespace uniset
 
         if( attr.empty() )
         {
-            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_name='name'"
+            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_nodeid='name'"
                     << " for " << it.getProp("name") << endl;
             return false;
         }
+
+        // s=xxx or ns=xxx
+        if( attr[1] != '=' && attr[2] != '=' )
+            attr = "s=" + attr;
 
         if( !IOBase::initItem(inf.get(), it, shm, prop_prefix, false, opclog, myname, filtersize, filterT) )
             return false;
@@ -911,20 +915,20 @@ namespace uniset
 
         if( name.empty() )
         {
-            cerr << "(opcuaclient): Unknown name. Use --" << prefix << "-name " << endl;
-            return 0;
+            cerr << "(opcua-exchange): Unknown name. Use --" << prefix << "-name " << endl;
+            return nullptr;
         }
 
         ObjectId ID = conf->getObjectID(name);
 
         if( ID == uniset::DefaultObjectId )
         {
-            cerr << "(opcuaclient): Unknown ID for " << name
+            cerr << "(opcua-exchange): Unknown ID for " << name
                  << "' Not found in <objects>" << endl;
-            return 0;
+            return nullptr;
         }
 
-        dinfo << "(opcuaclient): name = " << name << "(" << ID << ")" << endl;
+        dinfo << "(opcua-exchange): name = " << name << "(" << ID << ")" << endl;
         return make_shared<OPCUAExchange>(ID, icID, ic, prefix);
     }
     // -----------------------------------------------------------------------------
@@ -995,10 +999,10 @@ namespace uniset
         inf << endl;
         inf << "iolist: " << iolist.size() << endl;
 
-        for (const auto& v : channels[0].writeValues)
+        for( const auto& v : channels[0].writeValues )
             inf << "write attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids.size() << endl;
 
-        for (const auto& v : channels[0].readValues)
+        for( const auto& v : channels[0].readValues )
             inf << " read attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids.size() << endl;
 
         inf << endl;

@@ -98,16 +98,16 @@ namespace uniset
     \code
     <sensors name="Sensors">
      ...
-     <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_name="AttrName1"/>
-     <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opcua="1" opcua_name="ns=1;s=AttrName2" opcua_tick="2"/>
+     <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_nodeid="AttrName1"/>
+     <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opcua="1" opcua_nodeid="ns=1;s=AttrName2" opcua_tick="2"/>
      ...
     </sensors>
     \endcode
-     - \b opcua_name - Название переменной на OPCUA сервере
+     - \b opcua_nodeid - Адрес переменной на OPCUA сервере
      - \b opcua_tick - Как часто опрашивать датчик. Не обязательный параметр, по умолчанию - опрос на каждом цикле.
      Если задать "2" - то опрос будет производиться на каждом втором цикле и т.п. Циклы завязаны на polltime.
 
-     Пример поддерживаемого формата для opcua_name:
+     Пример поддерживаемого формата для opcua_nodeid:
      - "AttrName" (aka "s=AttrName")
      - "i=13" (integer)
      - "ns=10;i=1" (integer)
