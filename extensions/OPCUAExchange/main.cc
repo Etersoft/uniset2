@@ -16,7 +16,7 @@ int main( int argc, const char** argv )
     if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
     {
         cout << endl;
-        cout << "Usage: uniset2-opcuaclient args1 args2" << endl;
+        cout << "Usage: uniset2-opcua-exchange args1 args2" << endl;
         cout << endl;
         cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
         cout << "--confile filename       - configuration file. Default: configure.xml" << endl;

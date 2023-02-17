@@ -93,9 +93,9 @@ int main(int argc, char* argv[])
                 auto arg = string(optarg);
                 auto val = uniset::explode_str(arg, '=');
 
-                if (val.size() < 2)
+                if( val.size() < 2 )
                 {
-                    cerr << "write variable format msut be 'varname=value'" << endl;
+                    cerr << "write variable format must be 'varname=value'" << endl;
                     return 1;
                 }
 
