@@ -1,0 +1,7 @@
+m4_include(package.m4)
+
+AT_COLOR_TESTS
+
+AT_INIT([OPCUAServer tests])
+
+m4_include(opcua-server-tests.at)

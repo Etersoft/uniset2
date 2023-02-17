@@ -488,7 +488,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
 	AC_CONFIG_TESTDIR(extensions/LogDB/tests)
 	AC_CONFIG_TESTDIR(extensions/Backend-ClickHouse/tests)
-	AC_CONFIG_TESTDIR(extensions/OPCUAGate/tests)
+	AC_CONFIG_TESTDIR(extensions/OPCUAServer/tests)
 	AC_CONFIG_TESTDIR(extensions/OPCUAExchange/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
@@ -668,9 +668,9 @@ AC_CONFIG_FILES([Makefile
 				 extensions/UWebSocketGate/Makefile
 				 extensions/UWebSocketGate/tests/Makefile
 				 extensions/UWebSocketGate/libUniSet2UWebSocketGate.pc
-				 extensions/OPCUAGate/Makefile
-				 extensions/OPCUAGate/tests/Makefile
-				 extensions/OPCUAGate/libUniSet2OPCUAGate.pc
+				 extensions/OPCUAServer/Makefile
+				 extensions/OPCUAServer/tests/Makefile
+				 extensions/OPCUAServer/libUniSet2OPCUAServer.pc
 				 extensions/OPCUAExchange/Makefile
 				 extensions/OPCUAExchange/tests/Makefile
 				 extensions/OPCUAExchange/libUniSet2OPCUAExchange.pc

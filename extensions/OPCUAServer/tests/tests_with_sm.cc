@@ -6,7 +6,7 @@
 #include "UniSetActivator.h"
 #include "PassiveTimer.h"
 #include "SharedMemory.h"
-#include "OPCUAGate.h"
+#include "OPCUAServer.h"
 #include "Extensions.h"
 // --------------------------------------------------------------------------
 using namespace std;
@@ -37,7 +37,7 @@ int main(int argc, const char* argv[] )
         if( !shm )
             return 1;
 
-        auto opc = OPCUAGate::init_opcuagate(argc, argv, shm->getId(), (apart ? nullptr : shm ), "opcua");
+        auto opc = OPCUAServer::init_opcua_server(argc, argv, shm->getId(), (apart ? nullptr : shm ), "opcua");
 
         if( !opc )
             return 1;
@@ -65,7 +65,7 @@ int main(int argc, const char* argv[] )
 
         if( !opc->exist() )
         {
-            cerr << "(tests_with_sm): OPCUAGate not exist! (timeout=" << tout << ")" << endl;
+            cerr << "(tests_with_sm): OPCUAServer not exist! (timeout=" << tout << ")" << endl;
             return 1;
         }
 

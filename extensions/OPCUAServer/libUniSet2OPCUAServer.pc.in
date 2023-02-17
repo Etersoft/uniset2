@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSet2OPCUAGate
-Description: Support library for UniSet2OPCUAGate
+Name: libUniSet2OPCUAServer
+Description: Support library for UniSet2OPCUAServer
 Requires: libUniSet2Extensions open62541pp
 Version: @VERSION@
-Libs: -L${libdir} -lUniSet2OPCUAGate
+Libs: -L${libdir} -lUniSet2OPCUAServer
 Cflags: -I${includedir}/@PACKAGE@/extensions/opcua

@@ -27,7 +27,7 @@
 	
 	<settings>
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
-	    <OPCUAGate name="OPCUAGate" port="44999"/>
+	    <OPCUAServer name="OPCUAServer" port="44999"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -58,7 +58,7 @@
 		<!-- ******************* Идентификаторы объектов ***************** -->
 		<objects name="UniObjects">
 			<item id="6000" name="TestProc"/>
-			<item id="6004" name="OPCUAGate"/>
+			<item id="6004" name="OPCUAServer"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages"/>
