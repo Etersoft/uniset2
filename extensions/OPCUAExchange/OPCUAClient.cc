@@ -174,38 +174,23 @@ OPCUAClient::ErrorCode OPCUAClient::write32(const std::string& attr, int32_t val
     return UA_Client_writeValueAttribute(client, UA_NODEID_STRING_ALLOC(nsIndex, const_cast<char*>(attr.c_str())), val);
 }
 // -----------------------------------------------------------------------------
-UA_WriteValue OPCUAClient::makeWriteValue32( const std::string& name, int32_t val, int nsIndex )
+UA_WriteValue OPCUAClient::makeWriteValue32( const std::string& name, int32_t val )
 {
     UA_WriteValue wv;
     UA_WriteValue_init(&wv);
     wv.attributeId = UA_ATTRIBUTEID_VALUE;
-    std::string attr = name;
-
-    if( name.size() > 2 && name[1] != '=')
-        attr = "s=" + name;
-
-    if( nsIndex > 0 )
-        attr = "ns=" + std::to_string(nsIndex) + ";" + attr;
-
-    wv.nodeId = UA_NODEID(attr.c_str());
+    wv.nodeId = UA_NODEID(name.c_str());
+    wv.value.hasValue = true;
     UA_Variant_setScalarCopy(&wv.value.value, &val, &UA_TYPES[UA_TYPES_INT32]);
     return wv;
 }
 // -----------------------------------------------------------------------------
-UA_ReadValueId OPCUAClient::makeReadValue32( const std::string& name, int nsIndex )
+UA_ReadValueId OPCUAClient::makeReadValue32( const std::string& name )
 {
     UA_ReadValueId rv;
     UA_ReadValueId_init(&rv);
     rv.attributeId = UA_ATTRIBUTEID_VALUE;
-    std::string attr = name;
-
-    if( name.size() > 2 && name[1] != '=' )
-        attr = "s=" + name;
-
-    if( nsIndex > 0 )
-        attr = "ns=" + std::to_string(nsIndex) + ";" + attr;
-
-    rv.nodeId = UA_NODEID(attr.c_str());
+    rv.nodeId = UA_NODEID(name.c_str());
     return rv;
 }
 // -----------------------------------------------------------------------------

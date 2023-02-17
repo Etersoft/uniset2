@@ -49,8 +49,8 @@ namespace uniset
             ErrorCode write32( const std::string& attr, int32_t value, int nsIndex = 0 );
             ErrorCode set( const std::string& attr, bool set, int nsIndex = 0 );
             ErrorCode write( const UA_WriteValue& val );
-            static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val, int nsIndex = 0 );
-            static UA_ReadValueId makeReadValue32( const std::string& name, int nsIndex = 0 );
+            static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val );
+            static UA_ReadValueId makeReadValue32( const std::string& name );
 
         protected:
             UA_Client* client = { nullptr };

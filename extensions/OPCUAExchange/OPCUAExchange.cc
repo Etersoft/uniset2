@@ -700,10 +700,6 @@ namespace uniset
         //        *   UA_NODEID("g=09087e75-8e5e-499b-954f-f2a9603db28a")
         //        *   UA_NODEID("ns=1;b=b3BlbjYyNTQxIQ==") // base64
 
-        // make string 's=NAME'
-        if( attr.size() > 2 && attr[1] != '=' )
-            attr = "s="  + attr;
-
         if( attr.empty() )
         {
             opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_name='name'"
@@ -934,39 +930,39 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::help_print( int argc, const char* const* argv )
     {
-        cout << "--prefix-confnode name     - Использовать для настройки указанный xml-узел" << endl;
-        cout << "--prefix-name name         - ID процесса. По умолчанию OPCUAExchangeler1." << endl;
-        cout << "--prefix-polltime msec     - Пауза между опросом карт. По умолчанию 150 мсек." << endl;
-        cout << "--prefix-updatetime msec   - Период обновления данных в/из SM. По умолчанию 150 мсек." << endl;
-        cout << "--prefix-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
-        cout << "--prefix-filterT val       - Постоянная времени фильтра." << endl;
-        cout << "--prefix-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--prefix-s-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
-        cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-        cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-        cout << "--prefix-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
-        cout << "--prefix-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
-        cout << "--prefix-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+        cout << "--opcua-confnode name     - Использовать для настройки указанный xml-узел" << endl;
+        cout << "--opcua-name name         - ID процесса. По умолчанию OPCUAExchange1." << endl;
+        cout << "--opcua-polltime msec     - Пауза между опросом карт. По умолчанию 150 мсек." << endl;
+        cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 150 мсек." << endl;
+        cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
+        cout << "--opcua-filterT val       - Постоянная времени фильтра." << endl;
+        cout << "--opcua-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-s-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
+        cout << "--opcua-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+        cout << "--opcua-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+        cout << "--opcua-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+        cout << "--opcua-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
+        cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
+        cout << "--opcua-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
         cout << endl;
         cout << " OPC UA: N=[1,2]" << endl;
-        cout << "--prefix-addrN addr        - OPC UA server N address (channelN). Default: opc.tcp://localhost:4840/" << endl;
-        cout << "--prefix-userN user        - OPC UA server N auth user (channelN). Default: ''(not used)" << endl;
-        cout << "--prefix-passM pass        - OPC UA server N auth pass (channelN). Default: ''(not used)" << endl;
-        cout << "--prefix-reconnectPause msec  - Pause between reconnect to server, milliseconds" << endl;
+        cout << "--opcua-addrN addr        - OPC UA server N address (channelN). Default: opc.tcp://localhost:4840/" << endl;
+        cout << "--opcua-userN user        - OPC UA server N auth user (channelN). Default: ''(not used)" << endl;
+        cout << "--opcua-passM pass        - OPC UA server N auth pass (channelN). Default: ''(not used)" << endl;
+        cout << "--opcua-reconnectPause msec  - Pause between reconnect to server, milliseconds" << endl;
         cout << " Logs: " << endl;
         cout << endl;
-        cout << "--prefix-log-...            - log control" << endl;
+        cout << "--opcua-log-...            - log control" << endl;
         cout << "             add-levels ..." << endl;
         cout << "             del-levels ..." << endl;
         cout << "             set-levels ..." << endl;
         cout << "             logfile filaname" << endl;
         cout << "             no-debug " << endl;
         cout << " LogServer: " << endl;
-        cout << "--prefix-run-logserver       - run logserver. Default: localhost:id" << endl;
-        cout << "--prefix-logserver-host ip   - listen ip. Default: localhost" << endl;
-        cout << "--prefix-logserver-port num  - listen port. Default: ID" << endl;
+        cout << "--opcua-run-logserver       - run logserver. Default: localhost:id" << endl;
+        cout << "--opcua-logserver-host ip   - listen ip. Default: localhost" << endl;
+        cout << "--opcua-logserver-port num  - listen port. Default: ID" << endl;
         cout << LogServer::help_print("prefix-logserver") << endl;
     }
     // -----------------------------------------------------------------------------
