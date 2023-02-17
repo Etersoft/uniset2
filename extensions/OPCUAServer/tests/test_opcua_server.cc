@@ -30,7 +30,7 @@ static void InitTest()
     REQUIRE( opcuaCreateClient(addr) );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[OPCUAGate]: read", "[opcuagate]")
+TEST_CASE("[OPCUAServer]: read", "[opcuaserver]")
 {
     InitTest();
 
@@ -53,7 +53,7 @@ TEST_CASE("[OPCUAGate]: read", "[opcuagate]")
 
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[OPCUAGate]: write", "[opcuagate]")
+TEST_CASE("[OPCUAServer]: write", "[opcuaserver]")
 {
     InitTest();
 

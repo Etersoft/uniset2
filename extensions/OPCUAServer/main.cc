@@ -1,6 +1,6 @@
 #include "Configuration.h"
 #include "Extensions.h"
-#include "OPCUAGate.h"
+#include "OPCUAServer.h"
 #include "Configuration.h"
 #include "UniSetActivator.h"
 // --------------------------------------------------------------------------
@@ -15,8 +15,8 @@ int main(int argc, char** argv)
     {
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
         {
-            cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-            OPCUAGate::help_print();
+            cout << "--confile filename - configuration file. Default: configure.xml" << endl;
+            OPCUAServer::help_print();
             return 0;
         }
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
             return 1;
         }
 
-        auto srv = OPCUAGate::init_opcuagate(argc, argv, shmID, nullptr, "opcua");
+        auto srv = OPCUAServer::init_opcua_server(argc, argv, shmID, nullptr, "opcua");
 
         if( !srv )
             return 1;
@@ -51,11 +51,11 @@ int main(int argc, char** argv)
     }
     catch( const std::exception& ex )
     {
-        cerr << "(OPCUAGate::main): " << ex.what() << endl;
+        cerr << "(OPCUAServer::main): " << ex.what() << endl;
     }
     catch(...)
     {
-        cerr << "(OPCUAGate::main): catch ..." << endl;
+        cerr << "(OPCUAServer::main): catch ..." << endl;
     }
 
     return 1;

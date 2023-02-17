@@ -21,7 +21,7 @@ extern "C" {
 #include <cmath>
 #include <sstream>
 #include "Exceptions.h"
-#include "OPCUAGate.h"
+#include "OPCUAServer.h"
 #include "unisetstd.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -40,7 +40,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
     return s3;
 }
 // -----------------------------------------------------------------------------
-OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
+OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                      const string& prefix ):
     UObject_SK(objId, cnode, string(prefix + "-")),
     prefix(prefix)
@@ -126,9 +126,9 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     if( ioNode == nullptr )
         throw SystemError("not found localNode=" + std::to_string(localNode) + " in <nodes>");
 
-    serverThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::serverLoop);
-    serverThread->setFinalAction(this, &OPCUAGate::serverLoopTerminate);
-    updateThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::updateLoop);
+    serverThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::serverLoop);
+    serverThread->setFinalAction(this, &OPCUAServer::serverLoopTerminate);
+    updateThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::updateLoop);
 
     // определяем фильтр
     s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
@@ -141,16 +141,16 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
            << "' s_fvalue='" << s_fvalue << "'" << endl;
 
     if( !shm->isLocalwork() )
-        ic->addReadItem(sigc::mem_fun(this, &OPCUAGate::readItem));
+        ic->addReadItem(sigc::mem_fun(this, &OPCUAServer::readItem));
     else
         readConfiguration();
 }
 // -----------------------------------------------------------------------------
-OPCUAGate::~OPCUAGate()
+OPCUAServer::~OPCUAServer()
 {
 }
 //------------------------------------------------------------------------------
-void OPCUAGate::readConfiguration()
+void OPCUAServer::readConfiguration()
 {
     xmlNode* root = uniset_conf()->getXMLSensorsSection();
 
@@ -178,7 +178,7 @@ void OPCUAGate::readConfiguration()
     myinfo << myname << "(readConfiguration): init " << variables.size() << " variables" << endl;
 }
 // -----------------------------------------------------------------------------
-bool OPCUAGate::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
+bool OPCUAServer::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     if( uniset::check_filter(it, s_field, s_fvalue) )
         initVariable(it);
@@ -186,7 +186,7 @@ bool OPCUAGate::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& 
     return true;
 }
 //------------------------------------------------------------------------------
-bool OPCUAGate::initVariable( UniXML::iterator& it )
+bool OPCUAServer::initVariable( UniXML::iterator& it )
 {
     string sname = it.getProp("name");
     ObjectId sid = DefaultObjectId;
@@ -272,11 +272,11 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
     return true;
 }
 //------------------------------------------------------------------------------
-void OPCUAGate::step()
+void OPCUAServer::step()
 {
 }
 //------------------------------------------------------------------------------
-CORBA::Boolean OPCUAGate::exist()
+CORBA::Boolean OPCUAServer::exist()
 {
     bool ret = UObject_SK::exist();
 
@@ -286,7 +286,7 @@ CORBA::Boolean OPCUAGate::exist()
     return active;
 }
 //------------------------------------------------------------------------------
-void OPCUAGate::sysCommand( const uniset::SystemMessage* sm )
+void OPCUAServer::sysCommand( const uniset::SystemMessage* sm )
 {
     UObject_SK::sysCommand(sm);
 
@@ -299,12 +299,12 @@ void OPCUAGate::sysCommand( const uniset::SystemMessage* sm )
     }
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::serverLoopTerminate()
+void OPCUAServer::serverLoopTerminate()
 {
     opcServer->stop();
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::serverLoop()
+void OPCUAServer::serverLoop()
 {
     if( opcServer == nullptr )
         return;
@@ -325,7 +325,7 @@ void OPCUAGate::serverLoop()
     myinfo << myname << "(serverLoop): terminated..." << endl;
 }
 // -----------------------------------------------------------------------------
-bool OPCUAGate::deactivateObject()
+bool OPCUAServer::deactivateObject()
 {
     activated = false;
 
@@ -347,10 +347,10 @@ bool OPCUAGate::deactivateObject()
     return UObject_SK::deactivateObject();
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::help_print()
+void OPCUAServer::help_print()
 {
     cout << "Default prefix='opcua'" << endl;
-    cout << "--prefix-name        - ID for rrdstorage. Default: OPCUAGate1. " << endl;
+    cout << "--prefix-name        - ID for rrdstorage. Default: OPCUAServer1. " << endl;
     cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
     cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
@@ -376,17 +376,17 @@ void OPCUAGate::help_print()
     cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<OPCUAGate> OPCUAGate::init_opcuagate(int argc, const char* const* argv,
+std::shared_ptr<OPCUAServer> OPCUAServer::init_opcua_server(int argc, const char* const* argv,
         uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
         const std::string& prefix )
 {
     auto conf = uniset_conf();
 
-    string name = conf->getArgParam("--" + prefix + "-name", "OPCUAGate");
+    string name = conf->getArgParam("--" + prefix + "-name", "OPCUAServer");
 
     if( name.empty() )
     {
-        cerr << "(OPCUAGate): Unknown name. Usage: --" <<  prefix << "-name" << endl;
+        cerr << "(OPCUAServer): Unknown name. Usage: --" <<  prefix << "-name" << endl;
         return nullptr;
     }
 
@@ -394,7 +394,7 @@ std::shared_ptr<OPCUAGate> OPCUAGate::init_opcuagate(int argc, const char* const
 
     if( ID == uniset::DefaultObjectId )
     {
-        cerr << "(OPCUAGate): Not found ID for '" << name
+        cerr << "(OPCUAServer): Not found ID for '" << name
              << " in '" << conf->getObjectsSection() << "' section" << endl;
         return nullptr;
     }
@@ -404,14 +404,14 @@ std::shared_ptr<OPCUAGate> OPCUAGate::init_opcuagate(int argc, const char* const
 
     if( !cnode )
     {
-        cerr << "(OPCUAGate): " << name << "(init): Not found <" + confname + ">" << endl;
+        cerr << "(OPCUAServer): " << name << "(init): Not found <" + confname + ">" << endl;
         return nullptr;
     }
 
-    return make_shared<OPCUAGate>(ID, cnode, icID, ic, prefix);
+    return make_shared<OPCUAServer>(ID, cnode, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::askSensors( UniversalIO::UIOCommand cmd )
+void OPCUAServer::askSensors( UniversalIO::UIOCommand cmd )
 {
     if( !shm->isLocalwork() )
         return;
@@ -430,7 +430,7 @@ void OPCUAGate::askSensors( UniversalIO::UIOCommand cmd )
     }
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
+void OPCUAServer::sensorInfo( const uniset::SensorMessage* sm )
 {
     mylog4 << myname << "(sensorInfo): sm->id=" << sm->id << " val=" << sm->value << endl;
     auto it = variables.find(sm->id);
@@ -451,7 +451,7 @@ void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
     }
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::updateLoop()
+void OPCUAServer::updateLoop()
 {
     myinfo << myname << "(updateLoop): started..." << endl;
     PassiveTimer ptAct(activateTimeout);
@@ -476,7 +476,7 @@ void OPCUAGate::updateLoop()
     myinfo << myname << "(updateLoop): terminated.." << endl;
 }
 // -----------------------------------------------------------------------------
-void OPCUAGate::update()
+void OPCUAServer::update()
 {
     for(auto it = this->variables.begin(); it != this->variables.end(); it++ )
     {

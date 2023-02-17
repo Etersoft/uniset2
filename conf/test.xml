@@ -227,8 +227,8 @@
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
 
 		<MQTTPublisher1 name="MQTTPublisher" />
-		<OPCUAGate name="OPCUAGate1" port="4840" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
-		<OPCUAGate2 name="OPCUAGate2" port="4841" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
+		<OPCUAServer name="OPCUAServer1" port="4840" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
+		<OPCUAServer2 name="OPCUAServer2" port="4841" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 
 		<OPCUAClient name="OPCUAClient1" addr2="opc.tcp://localhost:4841"/>
 	</settings>
@@ -5569,9 +5569,9 @@
 			<item id="6091" name="UWebSocketGate1"/>
 			<item id="6092" name="UWebSocketGate2"/>
 			<item id="6093" name="BackendClickHouse"/>
-			<item id="6094" name="OPCUAGate1"/>
+			<item id="6094" name="OPCUAServer1"/>
 			<item id="6095" name="OPCUAClient1"/>
-			<item id="6096" name="OPCUAGate2"/>
+			<item id="6096" name="OPCUAServer2"/>
 			<item id="6101" name="MBTCP1"/>
 			<item id="6102" name="MBTCP2"/>
 			<item id="6103" name="MBTCP3"/>

@@ -14,8 +14,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -----------------------------------------------------------------------------
-#ifndef _OPCUAGate_H_
-#define _OPCUAGate_H_
+#ifndef _OPCUAServer_H_
+#define _OPCUAServer_H_
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <atomic>
@@ -31,14 +31,14 @@ namespace uniset
 {
     // -----------------------------------------------------------------------------
     /*!
-    \page page_OPCUAGate Поддержка работы с OPC-UA
+    \page page_OPCUAServer Поддержка работы с OPC-UA
 
-      - \ref sec_OPCUAGate_Comm
-      - \ref sec_OPCUAGate_Conf
-      - \ref sec_OPCUAGate_Sensors_Conf
-      - \ref sec_OPCUAGate_Folders
+      - \ref sec_OPCUAServer_Comm
+      - \ref sec_OPCUAServer_Conf
+      - \ref sec_OPCUAServer_Sensors_Conf
+      - \ref sec_OPCUAServer_Folders
 
-    \section sec_OPCUAGate_Comm Общее описание OPCUAGate
+    \section sec_OPCUAServer_Comm Общее описание OPCUAServer
     Данная реализация построена на использовании проекта https://github.com/open62541/open62541
     и обёртки для с++ https://github.com/open62541pp/open62541pp
 
@@ -48,13 +48,13 @@ namespace uniset
     через функции OPC UA. Процесс может работать напрямую с SM через указатель или как отдельно запускаемый
     процесс работающий с SM через uniset RPC (remote call procedure).
 
-    \section sec_OPCUAGate_Conf Настройка OPCUAGate
+    \section sec_OPCUAServer_Conf Настройка OPCUAServer
     При старте, в конфигурационном файле ищется секция с названием объекта,
     в которой указываются настроечные параметры по умолчанию.
     Пример:
     \code
-     <OPCUAGate name="OPCUAGate" port="4840"
-         appName="uniset2 OPC UA gate"
+     <OPCUAServer name="OPCUAServer" port="4840"
+         appName="uniset2 OPC UA Server"
          maxSubscriptions="10"
          maxSessions="10"
          updatePause="200"
@@ -80,9 +80,9 @@ namespace uniset
     <br>По умолчанию адрес берётся из параметра \b ip.
     <br>В качестве \a browseName берётся \b name в качестве \a description - \b textname
 
-    См. так же help \a uniset2-opcuagate -h
+    См. так же help \a uniset2-opcua-server -h
 
-    \section sec_OPCUAGate_Sensors_Conf Конфигурирование списка доступных переменных (variables) для OPC UA
+    \section sec_OPCUAServer_Sensors_Conf Конфигурирование списка доступных переменных (variables) для OPC UA
     Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
     Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
      - \b --xxx-s-filter-field  - задаёт фильтрующее поле для датчиков
@@ -106,7 +106,7 @@ namespace uniset
 
      По умолчанию все датчики доступны только на чтение.
 
-    \section sec_OPCUAGate_Folders Структура OPC UA узла
+    \section sec_OPCUAServer_Folders Структура OPC UA узла
     При запуске в дереве объектов создаётся специальный корневой объект "uniset", внутри которого регистрируются
     остальные доступные для работы объекты. В частности каждый uniset-узел регистрирует свои датчики в разделе
     \b "uniset/имя_узла/io/xxx". На рисунке представлен пример иерархии объектов
@@ -114,21 +114,21 @@ namespace uniset
      \image html uniset-opcua-folders.png
     */
     // -----------------------------------------------------------------------------
-    /*! Реализация OPCUAGate */
-    class OPCUAGate:
+    /*! Реализация OPCUAServer */
+    class OPCUAServer:
         public UObject_SK
     {
         public:
-            OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID,
+            OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID,
                       const std::shared_ptr<SharedMemory>& ic = nullptr,
                       const std::string& prefix = "opcua");
 
-            virtual ~OPCUAGate();
+            virtual ~OPCUAServer();
 
             virtual CORBA::Boolean exist() override;
 
             /*! глобальная функция для инициализации объекта */
-            static std::shared_ptr<OPCUAGate> init_opcuagate(int argc, const char* const* argv,
+            static std::shared_ptr<OPCUAServer> init_opcua_server(int argc, const char* const* argv,
                     uniset::ObjectId shmID,
                     const std::shared_ptr<SharedMemory>& ic = nullptr,
                     const std::string& prefix = "opcua");
@@ -150,7 +150,7 @@ namespace uniset
             const opcua::Type DefaultVariableType = {opcua::Type::Int32 };
 
         protected:
-            OPCUAGate();
+            OPCUAServer();
 
             virtual void step() override;
             virtual void sysCommand(const uniset::SystemMessage* sm) override;
@@ -167,8 +167,8 @@ namespace uniset
             void readConfiguration();
 
             std::shared_ptr<SMInterface> shm;
-            std::unique_ptr<ThreadCreator<OPCUAGate>> serverThread;
-            std::unique_ptr<ThreadCreator<OPCUAGate>> updateThread;
+            std::unique_ptr<ThreadCreator<OPCUAServer>> serverThread;
+            std::unique_ptr<ThreadCreator<OPCUAServer>> updateThread;
 
             struct IOVariable
             {
@@ -198,5 +198,5 @@ namespace uniset
     // --------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------
-#endif // _OPCUAGate_H_
+#endif // _OPCUAServer_H_
 // -----------------------------------------------------------------------------
