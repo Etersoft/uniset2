@@ -18,7 +18,9 @@ static struct option longopts[] =
     { "timeout", required_argument, 0, 't' },
     { "verbode", no_argument, 0, 'v' },
     { "num-cycles", required_argument, 0, 'z' },
-    { "read-pause", required_argument, 0, 'p' },
+    { "read-pause", required_argument, 0, 's' },
+    { "user", required_argument, 0, 'u' },
+    { "pass", required_argument, 0, 'p' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -48,7 +50,8 @@ int main(int argc, char* argv[])
     Command cmd = cmdNOP;
     int verb = 0;
     std::string addr = "localhost:4840";
-    std::string varname = "";
+    std::string user = "";
+    std::string pass = "";
     int msecpause = 200;
     timeout_t tout = UniSetTimer::WaitUpTime;
     size_t ncycles = 0;
@@ -58,7 +61,7 @@ int main(int argc, char* argv[])
 
     while(1)
     {
-        opt = getopt_long(argc, argv, "hx:r:w:t:vz:i:p:", longopts, &optindex);
+        opt = getopt_long(argc, argv, "hx:r:w:t:vz:i:p:u:s:", longopts, &optindex);
 
         if( opt == -1 )
             break;
@@ -69,11 +72,13 @@ int main(int argc, char* argv[])
                 cout << "-h|--help                - this message" << endl;
                 cout << "[-x|--host] host:port    - OPC UA server address. Default: localhost:4840" << endl;
                 cout << "[-r|--read] nodeid       - Read variable" << endl;
-                cout << "[-w|--write] nodeid=val - Write variable" << endl;
+                cout << "[-w|--write] nodeid val  - Write variable" << endl;
                 cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
                 cout << "[-v|--verbose]           - verbose mode." << endl;
                 cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
-                cout << "[-p|--read-pause] msec   - Pause between read" << endl;
+                cout << "[-s|--read-pause] msec   - Pause between read" << endl;
+                cout << "[-u|--user] name         - Auth: user" << endl;
+                cout << "[-p|--pass] pass         - Auth: password" << endl;
                 cout << endl;
                 cout << "Atribute NodeId examples:" << endl;
                 cout << "* i=13" << endl;
@@ -82,10 +87,21 @@ int main(int argc, char* argv[])
                 cout << "* g=09087e75-8e5e-499b-954f-f2a9603db28a" << endl;
                 cout << "* ns=1;b=b3BlbjYyNTQxIQ==    // base64" << endl;
                 cout << endl;
+                cout << "Examples:" << endl;
+                cout << "uniset2-opcua-tester -x opc.tcp://localhost:53530/OPCUA/SimulationServer -r \"ns=3;i=1001\" -v" << endl;
+                cout << "uniset2-opcua-tester -x opc.tcp://localhost:53530/OPCUA/SimulationServer -w \"ns=3;i=1007\" 42 -v" << endl;
                 return 0;
 
             case 'x':
                 addr = string(optarg);
+                break;
+
+            case 'u':
+                user = string(optarg);
+                break;
+
+            case 'p':
+                pass = string(optarg);
                 break;
 
             case 'r':
@@ -97,17 +113,17 @@ int main(int argc, char* argv[])
             case 'w':
             {
                 cmd = cmdWrite;
-                auto arg = string(optarg);
-                auto val = uniset::explode_str(arg, '=');
 
-                if( val.size() < 2 )
+                if( !checkArg(optind, argc, argv) )
                 {
-                    cerr << "write variable format must be 'varname=value'" << endl;
+                    cerr << "write must have to parameters 'name value'" << endl;
                     return 1;
                 }
 
-                wvalues.emplace_back(OPCUAClient::makeWriteValue32(val[0], uni_atoi(val[1])) );
-                attrs.push_back(val[0]);
+                string name = string(optarg);
+                int value = uni_atoi(argv[optind]);
+                wvalues.emplace_back(OPCUAClient::makeWriteValue32(name, value));
+                attrs.push_back(name);
             }
             break;
 
@@ -115,7 +131,7 @@ int main(int argc, char* argv[])
                 tout = atoi(optarg);
                 break;
 
-            case 'p':
+            case 's':
                 msecpause = atoi(optarg);
                 break;
 
@@ -142,7 +158,10 @@ int main(int argc, char* argv[])
 
     try
     {
-        addr = "opc.tcp://" + addr;
+        const string prefix = "opc.tcp://";
+
+        if( !addr.compare(0, prefix.size() - 1, prefix) )
+            addr = "opc.tcp://" + addr;
 
         if( verb )
         {
@@ -159,10 +178,21 @@ int main(int argc, char* argv[])
 
         auto client = std::make_shared<OPCUAClient>();
 
-        if( !client->connect(addr))
+        if( user.empty() )
         {
-            cerr << "Can't connect to " << addr << endl;
-            return 1;
+            if (!client->connect(addr))
+            {
+                cerr << "Can't connect to " << addr << endl;
+                return 1;
+            }
+        }
+        else
+        {
+            if (!client->connect(addr, user, pass))
+            {
+                cerr << "Can't connect to " << addr  << " user: " << user << endl;
+                return 1;
+            }
         }
 
         switch( cmd )
@@ -225,7 +255,10 @@ int main(int argc, char* argv[])
             case cmdWrite:
             {
                 if( verb )
-                    cout << "write:";
+                    cout << "write:" << endl;
+
+                for( size_t i = 0; i < attrs.size(); i++ )
+                    cout << attrs[i]  << " = " << (*(int32_t*)wvalues[i].value.value.data) << endl;
 
                 if( verb )
                     cout << endl;
@@ -240,6 +273,10 @@ int main(int argc, char* argv[])
 
                         for( size_t i = 0; i < wvalues.size(); i++ )
                             cerr << attrs[i] << ": status=" << UA_StatusCode_name(wvalues[i].value.status) << endl;
+                    }
+                    else if( verb )
+                    {
+                        cout << "write ok" << endl;
                     }
 
                 }
