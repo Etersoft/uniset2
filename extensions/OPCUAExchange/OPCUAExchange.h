@@ -74,7 +74,7 @@ namespace uniset
     \endcode
     К основным параметрам относятся
     - \b addr1, addr2 - адреса OPC серверов. Если addr2 не будет задан, обмен будет происходить только по одному каналу.
-    - \b timeout - Таймаует на определение отсутствия связи и переключения на другой канал обмена (если задан)
+    - \b timeout - Таймаут на определение отсутствия связи и переключения на другой канал обмена (если задан)
 
     Если подключение к серверу защищено паролем, до задаются поля
      - \b user1, pass1 - Имя пользователя и пароль для канала N1
@@ -84,6 +84,7 @@ namespace uniset
      - \b polltime - msec, Период цикла обмена
      - \b updatetime - msec, Период цикла обновления данных в SM
      - \b reconnectPause - msec, Пауза между попытками переподключения к серверу, в случае отсутсвия связи
+     - \b writeToAllChannels [0,1] - Включение режиме записи по всем каналам. По умолчанию датчики пишутся только в активном канале обмена.
 
     См. так же help \a uniset2-opcua-exchange -h
 
@@ -199,7 +200,7 @@ namespace uniset
             void channel2Thread();
             void channelThread( Channel* ch );
             bool prepare();
-            void channelExchange( Tick tick, Channel* ch );
+            void channelExchange( Tick tick, Channel* ch, bool writeOn );
             void updateFromChannel( Channel* ch );
             void updateToChannel( Channel* ch );
             void updateFromSM();
@@ -264,6 +265,7 @@ namespace uniset
 
             bool force = { false };            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
             bool force_out = { false };        /*!< флаг, включающий принудительное чтение/запись датчиков в SM */
+            bool writeToAllChannels = { false }; /*!< флаг, включающий запись во все каналы, по умолчанию только в активный */
             timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
 
             std::atomic_bool activated = { false };

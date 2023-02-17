@@ -123,6 +123,11 @@ namespace uniset
         force         = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
         force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
 
+        if( findArgParam("--" + prefix + "-write-to-all-channels", conf->getArgc(), conf->getArgv()) != -1 )
+            writeToAllChannels = true;
+        else
+            writeToAllChannels = conf->getArgInt(it.getProp("writeToAllChannels"), "0");
+
         vmonit(force);
         vmonit(force_out);
 
@@ -330,7 +335,7 @@ namespace uniset
                     tick = 1;
 
                 updateToChannel(ch);
-                channelExchange(tick++, ch);
+                channelExchange(tick++, ch, writeToAllChannels || currentChannel == ch->idx);
 
                 if( currentChannel == ch->idx )
                     updateFromChannel(ch);
@@ -358,17 +363,22 @@ namespace uniset
         opcinfo << myname << "(channel" << ch->num << "Thread): terminated..." << endl;
     }
     // --------------------------------------------------------------------------------
-    void OPCUAExchange::channelExchange( Tick tick, Channel* ch )
+    void OPCUAExchange::channelExchange( Tick tick, Channel* ch, bool writeOn )
     {
-        for( auto&& v : ch->writeValues )
+        if( writeOn )
         {
-            if( v.first == 0 || tick % v.first == 0 )
+            for (auto&& v : ch->writeValues)
             {
-                opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int)tick << " write " << v.second->ids.size() << " attrs" << endl;
-                auto ret = ch->client->write32(v.second->ids);
+                if (v.first == 0 || tick % v.first == 0)
+                {
+                    opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " write "
+                            << v.second->ids.size() << " attrs" << endl;
+                    auto ret = ch->client->write32(v.second->ids);
 
-                if( ret != UA_STATUSCODE_GOOD )
-                    opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int)tick << " write error: " << UA_StatusCode_name(ret) << endl;
+                    if (ret != UA_STATUSCODE_GOOD)
+                        opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
+                                << " write error: " << UA_StatusCode_name(ret) << endl;
+                }
             }
         }
 
@@ -947,6 +957,8 @@ namespace uniset
         cout << "--opcua-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << "--opcua-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
         cout << "--opcua-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
+        cout << "--opcua-write-to-all-channels - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
+
         cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
         cout << "--opcua-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
         cout << endl;
