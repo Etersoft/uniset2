@@ -41,7 +41,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 }
 // -----------------------------------------------------------------------------
 OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
-                     const string& prefix ):
+                         const string& prefix ):
     UObject_SK(objId, cnode, string(prefix + "-")),
     prefix(prefix)
 {
@@ -58,8 +58,8 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
 
     opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
-    opcServer->setApplicationName(it.getProp2("appName", "uniset2 OPC UA gate"));
-    opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server.gate"));
+    opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
+    opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
     updatePause_msec = conf->getArgPInt("--" + argprefix + "-updatepause", it.getProp("updatePause"), (int)updatePause_msec);
     myinfo << myname << "(init): OPC UA server " << ip << ":" << port << endl;
@@ -248,12 +248,18 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         opctype = opcua::Type::Boolean;
 
     auto vnode = ioNode->node.addVariable(opcua::NodeId(sname), sname, opctype);
-    vnode.setDescription(it.getProp("textname"), "ru-RU");
-    vnode.setDisplayName(sname, "en");
     vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ);
 
     if( iotype == UniversalIO::AI || iotype == UniversalIO::DI )
         vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
+
+    auto desc = it.getProp2("opcua_description", it.getProp("textname"));
+    auto descLang = it.getProp2("opcua_description_lang", "ru");
+    vnode.setDescription(desc, descLang);
+
+    auto displayName = it.getProp2("opcua_displayname", sname);
+    auto displayNameLang = it.getProp2("opcua_displayname_lang", "en");
+    vnode.setDisplayName(displayName, displayNameLang);
 
     // init default value
     DefaultValueType defVal = (DefaultValueType)it.getPIntProp("default", 0);

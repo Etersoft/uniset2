@@ -95,7 +95,7 @@ namespace uniset
      ...
      <item name="MySensor_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_rwmode="w"/>
      <item name="OPCUA_Command_C" textname="opc ua command" iotype="DI" opc_ua="1" opcua_rwmode="w"/>
-     <item name="MySensor2_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_name="Attribute2"/>
+     <item name="MySensor2_S" textname="my sesnsor" iotype="DI" opcua="1" opcua_name="Attribute2" opcua_displayname="Attr2"/>
      ...
     </sensors>
     \endcode
@@ -103,6 +103,10 @@ namespace uniset
        - \b w - датчик будет доступен на запись через OPC UA.
        - \b none - не предоставлять доступ к датчику (не будет виден через OPC UA)
      - \b opcua_name - Имя OPC UA переменной, если не задано, то используется name
+     - \b opcua_displayname - Отображаемое имя. По умолчанию берётся name
+     - \b opcua_displayname_lang - Язык для отображаемого имени. По умолчанию "en".
+     - \b opcua_description - Описание. По умолчанию берётся textname
+     - \b opcua_description_lang - Язык описания. По умолчанию "ru"
 
      По умолчанию все датчики доступны только на чтение.
 
@@ -120,8 +124,8 @@ namespace uniset
     {
         public:
             OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID,
-                      const std::shared_ptr<SharedMemory>& ic = nullptr,
-                      const std::string& prefix = "opcua");
+                        const std::shared_ptr<SharedMemory>& ic = nullptr,
+                        const std::string& prefix = "opcua");
 
             virtual ~OPCUAServer();
 

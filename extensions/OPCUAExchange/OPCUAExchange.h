@@ -115,7 +115,7 @@ namespace uniset
      - "g=09087e75-8e5e-499b-954f-f2a9603db28a" (uuid)
      - "ns=1;b=b3BlbjYyNTQxIQ=="  (base64)
 
-     \bs "ns" - namespace index
+     \b "ns" - namespace index
     */
     // ---------------------------------------------------------------------
     /*! Процесс опроса OPC UA сервера */
