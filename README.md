@@ -5,9 +5,9 @@ UniSet is a library for distributed control systems development.
 There are set of base components to construct this kind of systems:
 * base interfaces for your implementation of control algorithms.
 * algorithms for a discrete and analog input/output based on [COMEDI](https://github.com/Linux-Comedi/comedi) interface.
-* IPC mechanism based on CORBA (omniORB).
+* IPC mechanism based on CORBA ([omniORB](https://omniorb.sourceforge.io)).
 * logging system based on MySQL, SQLite, PostgreSQL databases.
-* logging to TSDB (influxdb, opentsdb)
+* logging to TSDB ([influxdb](https://github.com/influxdata/influxdb), opentsdb)
 * logging to [RRD](http://oss.oetiker.ch/rrdtool)
 * supported MQTT ([libmosquittopp](http://mosquitto.org))
 * logging to [ClickHouse](https://github.com/ClickHouse/ClickHouse) (experimental)
