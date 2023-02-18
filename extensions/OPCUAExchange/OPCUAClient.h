@@ -46,8 +46,8 @@ namespace uniset
 
             ErrorCode read32( std::vector<UA_ReadValueId>& attrs, std::vector<Result32>& result );
             ErrorCode write32( std::vector<UA_WriteValue>& values );
-            ErrorCode write32( const std::string& attr, int32_t value, int nsIndex = 0 );
-            ErrorCode set( const std::string& attr, bool set, int nsIndex = 0 );
+            ErrorCode write32( const std::string& attr, int32_t value );
+            ErrorCode set( const std::string& attr, bool set );
             ErrorCode write( const UA_WriteValue& val );
             static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val );
             static UA_ReadValueId makeReadValue32( const std::string& name );
