@@ -160,18 +160,19 @@ OPCUAClient::ErrorCode OPCUAClient::write( const UA_WriteValue& val )
     return (OPCUAClient::ErrorCode)retval;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::set(const std::string& attr, bool set, int nsIndex)
+OPCUAClient::ErrorCode OPCUAClient::set( const std::string& attr, bool set )
 {
     UA_Variant_clear(val);
     UA_Variant_setScalarCopy(val, &set, &UA_TYPES[UA_TYPES_BOOLEAN]);
-    return UA_Client_writeValueAttribute(client, UA_NODEID_STRING(nsIndex, const_cast<char*>(attr.c_str())), val);
+
+    return UA_Client_writeValueAttribute(client, UA_NODEID(attr.c_str()), val);
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::write32(const std::string& attr, int32_t value, int nsIndex)
+OPCUAClient::ErrorCode OPCUAClient::write32( const std::string& attr, int32_t value )
 {
     UA_Variant_clear(val);
     UA_Variant_setScalarCopy(val, &value, &UA_TYPES[UA_TYPES_INT32]);
-    return UA_Client_writeValueAttribute(client, UA_NODEID_STRING_ALLOC(nsIndex, const_cast<char*>(attr.c_str())), val);
+    return UA_Client_writeValueAttribute(client, UA_NODEID(attr.c_str()), val);
 }
 // -----------------------------------------------------------------------------
 UA_WriteValue OPCUAClient::makeWriteValue32( const std::string& name, int32_t val )
