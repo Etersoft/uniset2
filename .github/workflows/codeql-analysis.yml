@@ -57,7 +57,7 @@ jobs:
          # due broken comedi
          export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
          autoreconf -fiv
-         ./configure --disable-python --disable-netdata --disable-pgsql --disable-clickhouse
+         ./configure --disable-python --disable-netdata --disable-pgsql --disable-clickhouse --disable-opcua
          make
 
       - name: Perform CodeQL Analysis
