@@ -204,27 +204,27 @@ void BackendClickHouse::clearData()
 void BackendClickHouse::help_print( int argc, const char* const* argv )
 {
     cout << " Default prefix='clickhouse'" << endl;
-    cout << "--prefix-name                - ID. Default: BackendClickHouse." << endl;
-    cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
+    cout << "--clickhouse-name                - ID. Default: BackendClickHouse." << endl;
+    cout << "--clickhouse-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << endl;
     cout << " ClickHouse: " << endl;
-    cout << "--prefix-host  ip                        - host. Default: localhost" << endl;
-    cout << "--prefix-port  num                       - port. Default: 9000" << endl;
-    cout << "--prefix-dbuser user                     - DB user" << endl;
-    cout << "--prefix-dbpass pass                     - DB pass" << endl;
-    cout << "--prefix-dbname name                     - DB name" << endl;
-    cout << "--prefix-tags 'TAG1=VAL1 TAG2=VAL2...'   - tags for data" << endl;
-    cout << "--prefix-reconnect-time msec             - Time for attempts to connect to DB. Default: 5 sec" << endl;
+    cout << "--clickhouse-host  ip                        - host. Default: localhost" << endl;
+    cout << "--clickhouse-port  num                       - port. Default: 9000" << endl;
+    cout << "--clickhouse-dbuser user                     - DB user" << endl;
+    cout << "--clickhouse-dbpass pass                     - DB pass" << endl;
+    cout << "--clickhouse-dbname name                     - DB name" << endl;
+    cout << "--clickhouse-tags 'TAG1=VAL1 TAG2=VAL2...'   - tags for data" << endl;
+    cout << "--clickhouse-reconnect-time msec             - Time for attempts to connect to DB. Default: 5 sec" << endl;
     cout << endl;
-    cout << "--prefix-buf-size  sz        - Buffer before save to DB. Default: 500" << endl;
-    cout << "--prefix-buf-maxsize  sz     - Maximum size for buffer (drop messages). Default: 5000" << endl;
-    cout << "--prefix-buf-sync-time msec  - Time period for forced data writing to DB. Default: 5 sec" << endl;
+    cout << "--clickhouse-buf-size  sz        - Buffer before save to DB. Default: 500" << endl;
+    cout << "--clickhouse-buf-maxsize  sz     - Maximum size for buffer (drop messages). Default: 5000" << endl;
+    cout << "--clickhouse-buf-sync-time msec  - Time period for forced data writing to DB. Default: 5 sec" << endl;
     cout << endl;
-    cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
-    cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
+    cout << "--clickhouse-heartbeat-id name   - ID for heartbeat sensor." << endl;
+    cout << "--clickhouse-heartbeat-max val   - max value for heartbeat sensor." << endl;
     cout << endl;
     cout << " Logs: " << endl;
-    cout << "--prefix-log-...            - log control" << endl;
+    cout << "--clickhouse-log-...            - log control" << endl;
     cout << "             add-levels ...  " << endl;
     cout << "             del-levels ...  " << endl;
     cout << "             set-levels ...  " << endl;
@@ -232,9 +232,9 @@ void BackendClickHouse::help_print( int argc, const char* const* argv )
     cout << "             no-debug " << endl;
     cout << endl;
     cout << " LogServer: " << endl;
-    cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
-    cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
-    cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+    cout << "--clickhouse-run-logserver      - run logserver. Default: localhost:id" << endl;
+    cout << "--clickhouse-logserver-host ip  - listen ip. Default: localhost" << endl;
+    cout << "--clickhouse-logserver-port num - listen port. Default: ID" << endl;
     cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------

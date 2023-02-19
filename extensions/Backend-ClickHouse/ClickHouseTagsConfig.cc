@@ -19,8 +19,8 @@ ClickHouseTagsConfig::~ClickHouseTagsConfig()
 }
 //--------------------------------------------------------------------------------------------
 void uniset::ClickHouseTagsConfig::load( const std::shared_ptr<uniset::Configuration> conf
-        , const std::string ff
-        , const std::string fv)
+        , const std::string& ff
+        , const std::string& fv)
 {
     auto xml = conf->getConfXML();
 
@@ -109,7 +109,7 @@ void ClickHouseTagsConfig::initFromItem( const std::shared_ptr<uniset::Configura
 //--------------------------------------------------------------------------------------------
 void ClickHouseTagsConfig::initFromTags( const std::shared_ptr<uniset::Configuration>& conf
         , UniXML::iterator it
-        , const std::string s_tags )
+        , const std::string& s_tags )
 {
     uniset::ObjectId myId = it.getIntProp("id");
     std::string s_id = it.getProp("clickhouse_dyn_sid");
@@ -143,7 +143,7 @@ void ClickHouseTagsConfig::initFromTags( const std::shared_ptr<uniset::Configura
 //--------------------------------------------------------------------------------------------
 void ClickHouseTagsConfig::initFromValues( const std::shared_ptr<uniset::Configuration>& conf
         , UniXML::iterator it
-        , const std::string s_values )
+        , const std::string& s_values )
 {
     uniset::ObjectId myId = it.getIntProp("id");
     std::string s_id = it.getProp("clickhouse_dyn_sid");

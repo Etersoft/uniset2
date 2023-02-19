@@ -92,8 +92,8 @@ namespace uniset
 
             // init all tags from configure
             void load( const std::shared_ptr<uniset::Configuration> conf
-                       , const std::string filter_field = ""
-                       , const std::string filter_value = "" );
+                       , const std::string& filter_field = ""
+                       , const std::string& filter_value = "" );
 
 
             // init tags map from section <cnodename>
@@ -182,8 +182,8 @@ namespace uniset
             std::unordered_map<uniset::ObjectId, TagList> tags;
 
             void initDynamicTags();
-            void initFromTags( const std::shared_ptr<uniset::Configuration>& conf, uniset::UniXML::iterator it, const std::string s_tags );
-            void initFromValues( const std::shared_ptr<uniset::Configuration>& conf, uniset::UniXML::iterator it, const std::string s_values );
+            void initFromTags( const std::shared_ptr<uniset::Configuration>& conf, uniset::UniXML::iterator it, const std::string& s_tags );
+            void initFromValues( const std::shared_ptr<uniset::Configuration>& conf, uniset::UniXML::iterator it, const std::string& s_values );
             void initFromTagsList( const std::shared_ptr<uniset::Configuration>& conf, uniset::UniXML::iterator it, uniset::UniXML::iterator itList );
     };
     //------------------------------------------------------------------------------------------
