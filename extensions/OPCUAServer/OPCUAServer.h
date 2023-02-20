@@ -178,7 +178,7 @@ namespace uniset
             {
                 opcua::Node node;
                 IOController::IOStateList::iterator it;
-                UniversalIO::IOType stype = {UniversalIO::AI};
+                UniversalIO::IOType stype = {UniversalIO::AO};
                 IOVariable(const opcua::Node& n) : node(n) {};
             };
 

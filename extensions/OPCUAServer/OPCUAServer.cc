@@ -355,30 +355,29 @@ bool OPCUAServer::deactivateObject()
 // -----------------------------------------------------------------------------
 void OPCUAServer::help_print()
 {
-    cout << "Default prefix='opcua'" << endl;
-    cout << "--prefix-name        - ID for rrdstorage. Default: OPCUAServer1. " << endl;
-    cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
-    cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
-    cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
+    cout << "--opcua-name        - ID for rrdstorage. Default: OPCUAServer1. " << endl;
+    cout << "--opcua-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
+    cout << "--opcua-heartbeat-id name   - ID for heartbeat sensor." << endl;
+    cout << "--opcua-heartbeat-max val   - max value for heartbeat sensor." << endl;
     cout << endl;
     cout << "OPC UA:" << endl;
-    cout << "--prefix-updatepause msec     - Пауза между обновлением информации в или из SM. По умолчанию 200" << endl;
-    cout << "--prefix-host ip              - IP на котором слушает OPC UA сервер" << endl;
-    cout << "--prefix-port port            - Порт на котором слушает OPC UA сервер" << endl;
-    cout << "--prefix-maxSubscriptions num - Максимальное количество подписок" << endl;
-    cout << "--prefix-maxSessions num      - Максимальное количество сессий" << endl;
+    cout << "--opcua-updatepause msec     - Пауза между обновлением информации в или из SM. По умолчанию 200" << endl;
+    cout << "--opcua-host ip              - IP на котором слушает OPC UA сервер" << endl;
+    cout << "--opcua-port port            - Порт на котором слушает OPC UA сервер" << endl;
+    cout << "--opcua-maxSubscriptions num - Максимальное количество подписок" << endl;
+    cout << "--opcua-maxSessions num      - Максимальное количество сессий" << endl;
     cout << endl;
     cout << "Logs:" << endl;
-    cout << "--prefix-log-...            - log control" << endl;
+    cout << "--opcua-log-...            - log control" << endl;
     cout << "             add-levels ...  " << endl;
     cout << "             del-levels ...  " << endl;
     cout << "             set-levels ...  " << endl;
     cout << "             logfile filanme " << endl;
     cout << "             no-debug " << endl;
     cout << "LogServer: " << endl;
-    cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
-    cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
-    cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+    cout << "--opcua-run-logserver      - run logserver. Default: localhost:id" << endl;
+    cout << "--opcua-logserver-host ip  - listen ip. Default: localhost" << endl;
+    cout << "--opcua-logserver-port num - listen port. Default: ID" << endl;
     cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
@@ -446,9 +445,9 @@ void OPCUAServer::sensorInfo( const uniset::SensorMessage* sm )
 
     try
     {
-        if( sm->sensor_type == UniversalIO::DI )
+        if( sm->sensor_type == UniversalIO::DO )
             it->second.node.write(sm->value ? true : false);
-        else if( sm->sensor_type == UniversalIO::AI )
+        else if( sm->sensor_type == UniversalIO::AO )
             it->second.node.write((DefaultValueType)sm->value);
     }
     catch( std::exception& ex )
@@ -484,7 +483,7 @@ void OPCUAServer::updateLoop()
 // -----------------------------------------------------------------------------
 void OPCUAServer::update()
 {
-    for(auto it = this->variables.begin(); it != this->variables.end(); it++ )
+    for( auto it = this->variables.begin(); it != this->variables.end(); it++ )
     {
         try
         {
