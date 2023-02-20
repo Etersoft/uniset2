@@ -221,6 +221,8 @@ long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, i
     {
         throw UException("(mbread): catch...");
     }
+
+    return 0;
 }
 //---------------------------------------------------------------------------
 long UModbus::data2value( uniset::VTypes::VType vtype, uniset::ModbusRTU::ModbusData* data )
