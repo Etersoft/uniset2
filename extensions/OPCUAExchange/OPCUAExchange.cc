@@ -648,6 +648,60 @@ namespace uniset
         return gr->results[grIndex].status;
     }
     // ------------------------------------------------------------------------------------------
+    void OPCUAExchange::OPCAttribute::WrValue::init( UA_WriteValue* wv, const std::string& nodeId, const std::string& stype, int32_t defvalue )
+    {
+        UA_WriteValue_init(wv);
+        wv->attributeId = UA_ATTRIBUTEID_VALUE;
+        wv->value.hasValue = true;
+        wv->nodeId = UA_NODEID(nodeId.c_str());
+        // wv->value.value.storageType = UA_VARIANT_DATA_NODELETE;
+
+        if( stype == "bool" )
+        {
+            bool val = defvalue != 0;
+            UA_Variant_setScalarCopy(&wv->value.value, &val, &UA_TYPES[UA_TYPES_BOOLEAN]);
+        }
+        else if( stype == "int16" )
+        {
+            int16_t def = (int16_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_INT16]);
+        }
+        else if( stype == "uint16" )
+        {
+            uint16_t def = (uint16_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT16]);
+        }
+        else  if( stype == "int32" )
+        {
+            int32_t def = (int32_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_INT32]);
+        }
+        else if( stype == "uint32" )
+        {
+            uint32_t def = (uint32_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT32]);
+        }
+        else if( stype == "byte" )
+        {
+            uint8_t def = (uint8_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_BYTE]);
+        }
+        else if( stype == "int64" )
+        {
+            int64_t def = (int64_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_INT64]);
+        }
+        else if( stype == "uint64" )
+        {
+            uint64_t def = (uint64_t)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT64]);
+        }
+        else
+        {
+            UA_Variant_setScalarCopy(&wv->value.value, &defvalue, &UA_TYPES[UA_TYPES_INT32]);
+        }
+    }
+    // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::OPCAttribute::WrValue::set( int32_t val )
     {
         if( !gr )
@@ -660,9 +714,37 @@ namespace uniset
             bool set = val != 0;
             *(bool*)(wv.value.value.data) = set;
         }
-        else
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT16] )
+        {
+            *(int16_t*)(wv.value.value.data) = (int16_t)val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_UINT16] )
+        {
+            *(uint16_t*)(wv.value.value.data) = (uint16_t)val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT32] )
         {
             *(int32_t*)(wv.value.value.data) = val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_UINT32] )
+        {
+            *(uint32_t*)(wv.value.value.data) = (uint32_t)val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_BYTE] )
+        {
+            *(uint8_t*)(wv.value.value.data) = (uint8_t)val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_UINT64] )
+        {
+            *(uint64_t*)(wv.value.value.data) = val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT64] )
+        {
+            *(int64_t*)(wv.value.value.data) = val;
+        }
+        else
+        {
+            return false;
         }
 
         return true;
@@ -793,24 +875,14 @@ namespace uniset
                     channels[chan].writeValues.emplace(inf->tick, gr);
                 }
 
-                UA_WriteValue* wv = &(gr->ids.emplace_back(UA_WriteValue{}));
-                UA_WriteValue_init(wv);
-                wv->attributeId = UA_ATTRIBUTEID_VALUE;
-                wv->value.hasValue = true;
-                wv->nodeId = UA_NODEID(attr.c_str());
-                // wv->value.value.storageType = UA_VARIANT_DATA_NODELETE;
+                string defVType = "int32";
 
                 if( inf->stype == UniversalIO::DO )
-                {
-                    bool set = inf->defval != 0;
-                    // make copy first time!
-                    UA_Variant_setScalarCopy(&wv->value.value, &set, &UA_TYPES[UA_TYPES_BOOLEAN]);
-                }
-                else
-                {
-                    // make copy in first time!
-                    UA_Variant_setScalarCopy(&wv->value.value, &inf->defval, &UA_TYPES[UA_TYPES_INT32]);
-                }
+                    defVType = "bool";
+
+                const string vtype = it.getProp2("opcua_type", defVType);
+                UA_WriteValue* wv = &(gr->ids.emplace_back(UA_WriteValue{}));
+                OPCAttribute::WrValue::init(wv, attr, vtype, inf->defval);
 
                 OPCAttribute::WrValue wr;
                 wr.gr = gr;
@@ -949,7 +1021,7 @@ namespace uniset
         cout << "--opcua-polltime msec     - Пауза между опросом карт. По умолчанию 150 мсек." << endl;
         cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 150 мсек." << endl;
         cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
-        cout << "--opcua-filterT val       - Постоянная времени фильтра." << endl;
+        cout << "--opcua-filterT val       - Постоянная:: времени фильтра." << endl;
         cout << "--opcua-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
         cout << "--opcua-s-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
         cout << "--opcua-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;

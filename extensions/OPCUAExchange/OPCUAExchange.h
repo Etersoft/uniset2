@@ -107,6 +107,8 @@ namespace uniset
      - \b opcua_nodeid - Адрес переменной на OPCUA сервере
      - \b opcua_tick - Как часто опрашивать датчик. Не обязательный параметр, по умолчанию - опрос на каждом цикле.
      Если задать "2" - то опрос будет производиться на каждом втором цикле и т.п. Циклы завязаны на polltime.
+     - \b opcua_type - типа переменной в ПЛК. Поддерживаются следующие типы: bool, byte, int16, uint16, int32, uint32, int64, uint64
+     При этом происходит преобразование значения int32_t к указанному типу (с игнорированием переполнения!).
 
      Пример поддерживаемого формата для opcua_nodeid:
      - "AttrName" (aka "s=AttrName")
@@ -181,6 +183,7 @@ namespace uniset
                     bool statusOk();
                     UA_StatusCode status();
                     const UA_WriteValue& ref();
+                    static void init( UA_WriteValue* wval, const std::string& nodeId, const std::string& type, int32_t defvalue );
                 };
                 WrValue wval[numChannels];
 
