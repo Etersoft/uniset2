@@ -39,7 +39,13 @@
 			<item id="1010" opc="1" opcua_nodeid="Attr3" iotype="AO" name="Attr3_C" textname="Тестовый выход N3"/>
 			<item id="1011" opc="1" opcua_nodeid="Attr4" iotype="DO" name="Attr4_C" textname="Тестовый выход N4"/>
 			<item id="1020" opc="1" opcua_nodeid="Attr5" ioignore="1" iotype="AI" name="Attr5_AS" textname="Тестовый датчик (игнор)"/>
-			<item id="1021" opc="1" opcua_nodeid="i=100" iotype="AI" name="I100_AS" textname="Тестовый датчик i100"/>
+			<item id="1021" opc="1" opcua_nodeid="i=101" iotype="AI" name="I101_AS" textname="Тестовый датчик i101"/>
+			<!-- types -->
+			<item id="1022" opc="1" opcua_nodeid="i=1002" opcua_type="int16" iotype="AO" name="I1002_AS" textname="Тестовый датчик i1002 (int16)"/>
+			<item id="1023" opc="1" opcua_nodeid="i=1003" opcua_type="uint16" iotype="AO" name="I1003_AS" textname="Тестовый датчик i1003 (uint16)"/>
+			<item id="1024" opc="1" opcua_nodeid="i=1004" opcua_type="int64" iotype="AO" name="I1004_AS" textname="Тестовый датчик i1004 (int64)"/>
+			<item id="1025" opc="1" opcua_nodeid="i=1005" opcua_type="uint64" iotype="AO" name="I1005_AS" textname="Тестовый датчик i1005 (uint64)"/>
+			<item id="1026" opc="1" opcua_nodeid="i=1006" opcua_type="byte" iotype="AO" name="I1006_AS" textname="Тестовый датчик i1006 (byte)"/>
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">
