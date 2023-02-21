@@ -96,6 +96,21 @@ namespace uniset
             channels[i].user = conf->getArg2Param("--" + prefix + "-user" + num, it.getProp("user" + num), "");
             channels[i].pass = conf->getArg2Param("--" + prefix + "-pass" + num, it.getProp("pass" + num), "");
             channels[i].trStatus.change(true);
+
+            string tmp = conf->getArg2Param("--" + prefix + "-respond" + num, it.getProp("respond" + num + "_s"), "");
+
+            if( !tmp.empty() )
+            {
+                channels[i].respond_s = conf->getSensorID(tmp);
+
+                if( channels[i].respond_s == DefaultObjectId )
+                {
+                    ostringstream err;
+                    err << myname << "(init): Not found respond sensor " << tmp;
+                    opccrit << myname << "(init): " << err.str() << endl;
+                    throw SystemError(err.str());
+                }
+            }
         }
 
         if( channels[0].addr.empty() )
@@ -104,6 +119,21 @@ namespace uniset
             err << myname << "(init): Unknown OPC server address for channel N1";
             opccrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
+        }
+
+        string tmp = conf->getArg2Param("--" + prefix + "-respond", it.getProp("respond_s"), "");
+
+        if( !tmp.empty() )
+        {
+            sidRespond = conf->getSensorID(tmp);
+
+            if(sidRespond == DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << "(init): Not found respond sensor " << sidRespond;
+                opccrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
         }
 
         polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), polltime);
@@ -278,6 +308,9 @@ namespace uniset
             shm->initIterator(it->t_ait);
         }
 
+        for( size_t c = 0; c < numChannels; c++ )
+            shm->initIterator(channels[c].respond_it);
+
         readconf_ok = true; // т.к. waitSM() уже был...
 
         opcinfo << myname << "(prepare): iolist size = " << iolist.size() << endl;
@@ -288,6 +321,7 @@ namespace uniset
             initOutputs();
 
         shm->initIterator(itHeartBeat);
+        shm->initIterator(itRespond);
         PassiveTimer ptAct(activateTimeout);
 
         if( !activated )
@@ -1247,7 +1281,7 @@ namespace uniset
                     opcwarn << myname << "(timerInfo): channel" << ch->num << " [ACTIVE]" << endl;
             }
 
-            if(!ch->status && ch->ptTimeout.checkTime() )
+            if( !ch->status && ch->ptTimeout.checkTime() )
             {
                 bool foundOk = false;
 
@@ -1268,6 +1302,35 @@ namespace uniset
 
                 if( noConnections.low(foundOk) )
                     opccrit << myname << "(timerInfo): did not find any working channel!" << endl;
+            }
+
+            bool respondOk = false;
+
+            for( size_t i = 0; i < numChannels; i++ )
+            {
+                Channel* ch = &channels[i];
+
+                if( ch->status || !ch->ptTimeout.checkTime() )
+                    respondOk = true;
+
+                if( ch->respond_s == DefaultObjectId )
+                    continue;
+
+                try
+                {
+                    opclog7 << myname << "(timerInfo): channel" << ch->num << " respond=" << (ch->status || !ch->ptTimeout.checkTime()) << endl;
+                    shm->localSetValue( ch->respond_it, ch->respond_s, !ch->status && ch->ptTimeout.checkTime() ? 0 : 1, getId());
+                }
+                catch( const std::exception& ex )
+                {
+                    opclog6 << myname << "(timerInfo): " << ex.what() << endl;
+                }
+            }
+
+            if( sidRespond != DefaultObjectId )
+            {
+                opclog7 << myname << "(timerInfo): respond=" << respondOk << endl;
+                shm->localSetValue(itRespond, sidRespond, respondOk, getId());
             }
 
             if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
