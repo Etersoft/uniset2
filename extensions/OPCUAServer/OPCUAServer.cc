@@ -445,9 +445,9 @@ void OPCUAServer::sensorInfo( const uniset::SensorMessage* sm )
 
     try
     {
-        if( sm->sensor_type == UniversalIO::DO )
+        if( sm->sensor_type == UniversalIO::DO || sm->sensor_type == UniversalIO::DI )
             it->second.node.write(sm->value ? true : false);
-        else if( sm->sensor_type == UniversalIO::AO )
+        else if( sm->sensor_type == UniversalIO::AO || sm->sensor_type == UniversalIO::AI )
             it->second.node.write((DefaultValueType)sm->value);
     }
     catch( std::exception& ex )

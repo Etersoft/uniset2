@@ -101,7 +101,6 @@ void OPCUATestServer::setX( int num, int32_t val, opcua::Type type )
             break;
 
         case opcua::Type::UInt64:
-
             it->second->node.write((uint64_t) val);
             break;
 
