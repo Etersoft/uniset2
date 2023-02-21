@@ -32,6 +32,9 @@ const ObjectId sidAttr3 = 1010;
 const ObjectId sidAttr4 = 1011;
 const ObjectId sidAttr5 = 1020;
 const ObjectId sidAttrI101 = 1021;
+const ObjectId sidRespond = 10;
+const ObjectId sidRespond1 = 11;
+const ObjectId sidRespond2 = 12;
 const timeout_t step_pause_msec = 350;
 const timeout_t timeout_msec = 6000;
 // -----------------------------------------------------------------------------
@@ -184,6 +187,10 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
     msleep(step_pause_msec);
     REQUIRE(shm->getValue(sidAttrI101) == 10);
 
+    REQUIRE(shm->getValue(sidRespond) == 1);
+    REQUIRE(shm->getValue(sidRespond1) == 1);
+    REQUIRE(shm->getValue(sidRespond2) == 1);
+
     opcTestServer1->setI32(rdI101, 20);
     opcTestServer2->setI32(rdI101, 50);
     REQUIRE(opcTestServer1->getI32(rdI101) == 20 );
@@ -192,10 +199,23 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
     opcTestServer1->stop();
     msleep(timeout_msec);
     REQUIRE(shm->getValue(sidAttrI101) == 50);
+    REQUIRE(shm->getValue(sidRespond) == 1);
+    REQUIRE(shm->getValue(sidRespond1) == 0);
+    REQUIRE(shm->getValue(sidRespond2) == 1);
 
     opcTestServer2->setI32(rdI101, 150);
     REQUIRE(opcTestServer2->getI32(rdI101) == 150 );
     msleep(step_pause_msec);
     REQUIRE(shm->getValue(sidAttrI101) == 150);
+
+    REQUIRE(shm->getValue(sidRespond) == 1);
+    REQUIRE(shm->getValue(sidRespond1) == 0);
+    REQUIRE(shm->getValue(sidRespond2) == 1);
+
+    opcTestServer2->stop();
+    msleep(timeout_msec);
+    REQUIRE(shm->getValue(sidRespond) == 0);
+    REQUIRE(shm->getValue(sidRespond1) == 0);
+    REQUIRE(shm->getValue(sidRespond2) == 0);
 }
 // -----------------------------------------------------------------------------

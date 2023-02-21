@@ -75,6 +75,7 @@ namespace uniset
     К основным параметрам относятся
     - \b addr1, addr2 - адреса OPC серверов. Если addr2 не будет задан, обмен будет происходить только по одному каналу.
     - \b timeout - Таймаут на определение отсутствия связи и переключения на другой канал обмена (если задан)
+    - \b sidRespond - датчик связи для данного канала
 
     Если подключение к серверу защищено паролем, до задаются поля
      - \b user1, pass1 - Имя пользователя и пароль для канала N1
@@ -88,7 +89,7 @@ namespace uniset
 
     См. так же help \a uniset2-opcua-exchange -h
 
-    \section sec_OPCUAExchange_Sensors_Conf Конфигурирование переменных участвающих в обмене с OPC UA
+    \section sec_OPCUAExchange_Sensors_Conf Конфигурирование переменных участвующих в обмене с OPC UA
     Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
     Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
      - \b --xxx-s-filter-field  - задаёт фильтрующее поле для датчиков
@@ -239,12 +240,14 @@ namespace uniset
                 std::shared_ptr<OPCUAClient> client;
                 uniset::Trigger trStatus;
                 uniset::PassiveTimer ptTimeout;
-                std::atomic_bool status = { true };
+                std::atomic_bool status = { false };
                 std::string addr;
                 std::string user;
                 std::string pass;
                 std::unordered_map<Tick, std::shared_ptr<ReadGroup>> readValues;
                 std::unordered_map<Tick, std::shared_ptr<WriteGroup>> writeValues;
+                uniset::ObjectId respond_s = { uniset::DefaultObjectId };
+                IOController::IOStateList::iterator respond_it;
             };
             Channel channels[numChannels];
             uniset::Trigger noConnections;
@@ -276,6 +279,8 @@ namespace uniset
             std::atomic_bool readconf_ok = { false };
             int activateTimeout;
             uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
+            uniset::ObjectId sidRespond = {uniset::DefaultObjectId };
+            IOController::IOStateList::iterator itRespond;
 
             std::shared_ptr<LogAgregator> loga;
             std::shared_ptr<DebugStream> opclog;
