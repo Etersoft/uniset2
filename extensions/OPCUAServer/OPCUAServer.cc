@@ -231,6 +231,8 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
             iotype = UniversalIO::DI; // write access
         else
             iotype = UniversalIO::AI; // write access
+
+        writeCount++;
     }
     else
     {
@@ -445,10 +447,12 @@ void OPCUAServer::sensorInfo( const uniset::SensorMessage* sm )
 
     try
     {
-        if( sm->sensor_type == UniversalIO::DO || sm->sensor_type == UniversalIO::DI )
-            it->second.node.write(sm->value ? true : false);
-        else if( sm->sensor_type == UniversalIO::AO || sm->sensor_type == UniversalIO::AI )
-            it->second.node.write((DefaultValueType)sm->value);
+        if( it->second.stype == UniversalIO::DO || it->second.stype == UniversalIO::AO )
+        {
+            uniset::uniset_rwmutex_wrlock lock(it->second.vmut);
+            it->second.state = sm->value ? true : false;
+            it->second.value = (DefaultValueType) sm->value;
+        }
     }
     catch( std::exception& ex )
     {
@@ -494,6 +498,19 @@ void OPCUAServer::update()
                 else if( it->second.stype == UniversalIO::AO )
                     it->second.node.write((DefaultValueType)shm->localGetValue(it->second.it, it->first));
             }
+            else
+            {
+                if( it->second.stype == UniversalIO::DO )
+                {
+                    uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                    it->second.node.write(it->second.state);
+                }
+                else if( it->second.stype == UniversalIO::AO )
+                {
+                    uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                    it->second.node.write(it->second.value);
+                }
+            }
 
             if( it->second.stype == UniversalIO::DI )
             {
@@ -515,5 +532,30 @@ void OPCUAServer::update()
                    << "] update error: " << ex.what() << endl;
         }
     }
+}
+// -----------------------------------------------------------------------------
+SimpleInfo* OPCUAServer::getInfo( const char* userparam )
+{
+    uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+
+    ostringstream inf;
+
+    inf << i->info << endl;
+
+    inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
+    if( logserv )
+        inf << logserv->getShortInfo() << endl;
+    else
+        inf << "No logserver running." << endl;
+
+    inf << "   iolist: " << variables.size() << endl;
+    inf << "write(in): " << writeCount << endl;
+    inf << "read(out): " << variables.size() - writeCount << endl;
+
+    inf << vmon.pretty_str() << endl;
+
+    i->info = inf.str().c_str();
+    return i._retn();
 }
 // -----------------------------------------------------------------------------

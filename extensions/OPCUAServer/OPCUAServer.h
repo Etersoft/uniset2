@@ -130,6 +130,7 @@ namespace uniset
             virtual ~OPCUAServer();
 
             virtual CORBA::Boolean exist() override;
+            virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
             /*! глобальная функция для инициализации объекта */
             static std::shared_ptr<OPCUAServer> init_opcua_server(int argc, const char* const* argv,
@@ -180,9 +181,14 @@ namespace uniset
                 IOController::IOStateList::iterator it;
                 UniversalIO::IOType stype = {UniversalIO::AO};
                 IOVariable(const opcua::Node& n) : node(n) {};
+
+                uniset::uniset_rwmutex vmut;
+                DefaultValueType value = { 0 };
+                bool state = { false };
             };
 
             std::unordered_map<ObjectId, IOVariable> variables;
+            size_t writeCount = { 0 };
 
             struct IONode
             {
