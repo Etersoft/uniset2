@@ -18,7 +18,9 @@ extern "C" {
 #include <open62541/server_config_default.h>
 #include <open62541/plugin/log_stdout.h>
 }
+#include <chrono>
 #include <cmath>
+#include <iomanip>
 #include <sstream>
 #include "Exceptions.h"
 #include "OPCUAServer.h"
@@ -293,7 +295,7 @@ CORBA::Boolean OPCUAServer::exist()
 
     return active;
 }
-//------------------------------------------------------------------------------
+//-----------------ПЛК-exch-sm-server-------------------------------------------------------------
 void OPCUAServer::sysCommand( const uniset::SystemMessage* sm )
 {
     UObject_SK::sysCommand(sm);
@@ -487,6 +489,8 @@ void OPCUAServer::updateLoop()
 // -----------------------------------------------------------------------------
 void OPCUAServer::update()
 {
+    auto t_start = std::chrono::steady_clock::now();
+
     for( auto it = this->variables.begin(); it != this->variables.end(); it++ )
     {
         try
@@ -532,6 +536,9 @@ void OPCUAServer::update()
                    << "] update error: " << ex.what() << endl;
         }
     }
+
+    auto t_end = std::chrono::steady_clock::now();
+    mylog4 << myname << "(update): " << setw(10) << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
 }
 // -----------------------------------------------------------------------------
 SimpleInfo* OPCUAServer::getInfo( const char* userparam )
