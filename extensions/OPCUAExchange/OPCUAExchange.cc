@@ -267,6 +267,15 @@ namespace uniset
         }
 
         vmonit(sidHeartBeat);
+
+        // делаем очередь большой по умолчанию
+        if( shm->isLocalwork() )
+        {
+            int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 10000);
+
+            if( sz > 0 )
+                setMaxSizeOfMessageQueue(sz);
+        }
     }
     // --------------------------------------------------------------------------------
     OPCUAExchange::~OPCUAExchange()
@@ -1165,7 +1174,7 @@ namespace uniset
 
                 for( size_t i = 0; i < numChannels; i++ )
                 {
-                    if (thrChannel[i] && !thrChannel[i]->isRunning())
+                    if( thrChannel[i] && !thrChannel[i]->isRunning() )
                         thrChannel[i]->start();
                 }
 
