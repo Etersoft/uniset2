@@ -130,7 +130,6 @@ namespace uniset
             virtual ~OPCUAServer();
 
             virtual CORBA::Boolean exist() override;
-            virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
             /*! глобальная функция для инициализации объекта */
             static std::shared_ptr<OPCUAServer> init_opcua_server(int argc, const char* const* argv,
@@ -141,27 +140,19 @@ namespace uniset
             /*! глобальная функция для вывода help-а */
             static void help_print();
 
-            inline std::shared_ptr<LogAgregator> getLogAggregator()
-            {
-                return loga;
-            }
-
-            inline std::shared_ptr<DebugStream> log()
-            {
-                return mylog;
-            }
-
             using DefaultValueType = int32_t;
             const opcua::Type DefaultVariableType = {opcua::Type::Int32 };
 
         protected:
             OPCUAServer();
 
+            virtual void callback() noexcept override;
             virtual void step() override;
             virtual void sysCommand(const uniset::SystemMessage* sm) override;
             virtual bool deactivateObject() override;
             virtual void askSensors(UniversalIO::UIOCommand cmd) override;
             virtual void sensorInfo(const uniset::SensorMessage* sm) override;
+            virtual std::string getMonitInfo() const override;
             void serverLoopTerminate();
             void serverLoop();
             void updateLoop();

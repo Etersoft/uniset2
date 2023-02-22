@@ -146,6 +146,15 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
         ic->addReadItem(sigc::mem_fun(this, &OPCUAServer::readItem));
     else
         readConfiguration();
+
+    // делаем очередь большой по умолчанию
+    if( shm->isLocalwork() )
+    {
+        int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 10000);
+
+        if( sz > 0 )
+            setMaxSizeOfMessageQueue(sz);
+    }
 }
 // -----------------------------------------------------------------------------
 OPCUAServer::~OPCUAServer()
@@ -282,6 +291,20 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     return true;
 }
 //------------------------------------------------------------------------------
+void OPCUAServer::callback() noexcept
+{
+    try
+    {
+        // вызываем базовую функцию callback вместо UObject_SK::callback!
+        // (оптимизация, чтобы не делать лишних проверок не нужных в этом процессе)
+        UniSetObject::callback();
+    }
+    catch( const std::exception& ex )
+    {
+        mycrit << myname << "(callback): catch " << ex.what()  <<   endl;
+    }
+}
+// -----------------------------------------------------------------------------
 void OPCUAServer::step()
 {
 }
@@ -538,31 +561,15 @@ void OPCUAServer::update()
     }
 
     auto t_end = std::chrono::steady_clock::now();
-    mylog4 << myname << "(update): " << setw(10) << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+    mylog8 << myname << "(update): " << setw(10) << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
 }
 // -----------------------------------------------------------------------------
-SimpleInfo* OPCUAServer::getInfo( const char* userparam )
+std::string OPCUAServer::getMonitInfo() const
 {
-    uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
-
     ostringstream inf;
-
-    inf << i->info << endl;
-
-    inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
-
-    if( logserv )
-        inf << logserv->getShortInfo() << endl;
-    else
-        inf << "No logserver running." << endl;
-
     inf << "   iolist: " << variables.size() << endl;
     inf << "write(in): " << writeCount << endl;
     inf << "read(out): " << variables.size() - writeCount << endl;
-
-    inf << vmon.pretty_str() << endl;
-
-    i->info = inf.str().c_str();
-    return i._retn();
+    return inf.str();
 }
 // -----------------------------------------------------------------------------
