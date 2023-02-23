@@ -20,7 +20,9 @@
 <xsl:variable name="ARGPREFIX">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'arg-prefix'"/></xsl:call-template>
 </xsl:variable>
-
+<xsl:variable name="SIMPLEPROC">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'simple-proc'"/></xsl:call-template>
+</xsl:variable>
 <!-- Генерирование заголовочного файла -->
 <xsl:template match="/">
 // --------------------------------------------------------------------------
@@ -71,7 +73,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		virtual ~<xsl:value-of select="$CLASSNAME"/>_SK();
 
 		<xsl:call-template name="COMMON-HEAD-PUBLIC"/>
-
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		// Используемые идентификаторы
 		<xsl:for-each select="//sensors/item">
 			<xsl:call-template name="setvar">
@@ -85,13 +87,13 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 				<xsl:with-param name="GENTYPE" select="'H'"/>
 			</xsl:call-template>
 		</xsl:for-each>
-
+</xsl:if>
 	protected:
 		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
 		
 	private:
 		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
-
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		// Используемые идентификаторы
 		<xsl:for-each select="//sensors/item">
 			<xsl:call-template name="setvar">
@@ -105,7 +107,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 				<xsl:with-param name="GENTYPE" select="'H-PRIVATE'"/>
 			</xsl:call-template>
 		</xsl:for-each>
-
+</xsl:if>
 };
 
 // -----------------------------------------------------------------------------

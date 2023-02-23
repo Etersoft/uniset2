@@ -118,7 +118,6 @@ namespace uniset
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 
             void initRRD( xmlNode* cnode, int tmID );
-            virtual void step() override;
 
             std::shared_ptr<SMInterface> shm;
 
