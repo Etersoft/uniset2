@@ -37,7 +37,10 @@ using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 // объект-функция для посылки сообщения менеджеру
-class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>&, bool>
+class MPush
+#if __cplusplus < 201103L
+    : public unary_function< const std::shared_ptr<uniset::UniSetManager>&, bool>
+#endif
 {
     public:
         explicit MPush(const uniset::TransportMessage& msg): msg(msg) {}
@@ -63,7 +66,10 @@ class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>
 };
 
 // объект-функция для посылки сообщения объекту
-class OPush: public unary_function< const std::shared_ptr<uniset::UniSetObject>&, bool>
+class OPush
+#if __cplusplus < 201103L
+   : public unary_function< const std::shared_ptr<uniset::UniSetObject>&, bool>
+#endif
 {
     public:
         explicit OPush(const uniset::TransportMessage& msg): msg(msg) {}
@@ -697,17 +703,19 @@ PortableServer::POAManager_ptr UniSetManager::getPOAManager()
     return  PortableServer::POAManager::_duplicate(pman);
 }
 // ------------------------------------------------------------------------------------------
-std::ostream& uniset::operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd )
+namespace uniset
 {
-    // { deactiv, activ, initial, term };
-    if( cmd == uniset::UniSetManager::deactiv )
-        return os << "deactivate";
+    std::ostream& operator<<(std::ostream &os, uniset::UniSetManager::OManagerCommand &cmd) {
+        // { deactiv, activ, initial, term };
+        if (cmd == uniset::UniSetManager::deactiv)
+            return os << "deactivate";
 
-    if( cmd == uniset::UniSetManager::activ )
-        return os << "activate";
+        if (cmd == uniset::UniSetManager::activ)
+            return os << "activate";
 
-    if( cmd == uniset::UniSetManager::initial )
-        return os << "init";
+        if (cmd == uniset::UniSetManager::initial)
+            return os << "init";
 
-    return os << "unkwnown";
+        return os << "unkwnown";
+    }
 }
