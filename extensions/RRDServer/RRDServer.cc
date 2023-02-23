@@ -72,10 +72,6 @@ RRDServer::~RRDServer()
 {
 }
 // -----------------------------------------------------------------------------
-void RRDServer::step()
-{
-}
-//--------------------------------------------------------------------------------
 void RRDServer::initRRD( xmlNode* cnode, int tmID )
 {
     UniXML::iterator it(cnode);

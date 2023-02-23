@@ -20,7 +20,9 @@
 <xsl:variable name="ARGPREFIX">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'arg-prefix'"/></xsl:call-template>
 </xsl:variable>
-
+<xsl:variable name="SIMPLEPROC">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'simple-proc'"/></xsl:call-template>
+</xsl:variable>
 <!-- Генерирование заголовочного файла -->
 <xsl:template match="/">
 // --------------------------------------------------------------------------
@@ -69,7 +71,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		virtual ~<xsl:value-of select="$CLASSNAME"/>_SK();
 
 		<xsl:call-template name="COMMON-HEAD-PUBLIC"/>
-
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		// Используемые идентификаторы
 		<xsl:for-each select="//smap/item">
 		const uniset::ObjectId <xsl:value-of select="@name"/>; 		/*!&lt; <xsl:value-of select="@comment"/> */
@@ -117,8 +119,9 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:if>
 		</xsl:for-each>
 		// --- end of public variables ---
-
+</xsl:if> <!-- end of if $SIMPLEPROC)='' -->
 	protected:
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		// --- protected variables ---
 		<xsl:text>
 		</xsl:text>
@@ -146,10 +149,11 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:if>
 		</xsl:for-each>
 		// ---- end of protected variables ----
-
+</xsl:if> <!-- end of if $SIMPLEPROC)='' -->
 		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
 
 	private:
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		<xsl:text>
 		</xsl:text>// --- private variables ---
 		<xsl:for-each select="//variables/item">
@@ -184,7 +188,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		// Используемые идентификаторы сообщений
 		<xsl:for-each select="//msgmap/item">bool prev_m_<xsl:value-of select="@name"/>; /*!&lt; предыдущее состояние /> */
 		</xsl:for-each>
-
+</xsl:if> <!-- end of if $SIMPLEPROC)='' -->
 		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
 
 		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)

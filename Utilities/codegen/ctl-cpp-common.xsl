@@ -171,11 +171,11 @@
 		long getValue( uniset::ObjectId sid );
 		void setValue( uniset::ObjectId sid, long value );
 		void askSensor( uniset::ObjectId sid, UniversalIO::UIOCommand, uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		void updateValues();
-
-		virtual uniset::SimpleInfo* getInfo( const char* userparam ) override;
-
 		virtual bool setMsg( uniset::ObjectId code, bool state = true ) noexcept;
+</xsl:if>
+		virtual uniset::SimpleInfo* getInfo( const char* userparam ) override;
 
 		inline std::shared_ptr&lt;DebugStream&gt; log() noexcept { return mylog; }
 		inline std::shared_ptr&lt;uniset::LogAgregator&gt; logAgregator() noexcept { return loga; }
@@ -225,7 +225,7 @@
         #ifndef vmonit
             #define vmonit( var ) vmon.add( #var, var )
         #endif
-        
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
         // Вспомогательные функции для удобства логирования
         // ------------------------------------------------------------
         /*! вывод в строку значение всех входов и выходов в формате
@@ -236,7 +236,6 @@
               ...
         */
         std::string dumpIO();
-        
         /*! Вывод в строку названия входа/выхода в формате: in_xxx(SensorName) 
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
@@ -255,7 +254,7 @@
         */
         std::string msgstr( uniset::ObjectId id, bool showLinkName=true ) const;
 
-        
+</xsl:if>    
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return vmon.pretty_str(); }
         // ------------------------------------------------------------
@@ -291,26 +290,29 @@
         virtual Poco::JSON::Object::Ptr request_params_get( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
 #endif
 </xsl:if>
-        // Выполнение очередного шага программы
-		virtual void step(){}
-
 		void preAskSensors( UniversalIO::UIOCommand cmd );
 		void preSysCommand( const uniset::SystemMessage* sm );
 		
-		virtual void testMode( bool state );
-		void updateOutputs( bool force );
 <xsl:if test="normalize-space($TESTMODE)!=''">
+		virtual void testMode( bool state );
 		bool checkTestMode() const noexcept;
 </xsl:if>
 		bool waitSM( int wait_msec, uniset::ObjectId testID = uniset::DefaultObjectId );
 		uniset::ObjectId getSMTestID() const;
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
+        // Выполнение очередного шага программы
+		virtual void step(){}
 
+		void updateOutputs( bool force );
 		void resetMsg();
 		uniset::Trigger trResetMsg;
 		uniset::PassiveTimer ptResetMsg;
 		int resetMsgTime;
 
 		int sleep_msec; /*!&lt; пауза между итерациями */
+		bool forceOut = { false }; /*!&lt; флаг принудительного обнуления "выходов" */
+</xsl:if>
+
 		bool active;
 <xsl:if test="normalize-space($TESTMODE)!=''">
 		bool isTestMode;
@@ -342,7 +344,6 @@
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
 		
 		IOController_i::SensorInfo si;
-		bool forceOut; /*!&lt; флаг принудительного обнуления "выходов" */
 		
 		std::shared_ptr&lt;uniset::LogAgregator&gt; loga;
 		std::shared_ptr&lt;DebugStream&gt; mylog;
@@ -375,11 +376,13 @@
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
 		// ------------ private функции ---------------
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 		void updatePreviousValues() noexcept;
+		void checkSensors();
+		void initFromSM();
+</xsl:if>
 		void preSensorInfo( const uniset::SensorMessage* sm );
 		void preTimerInfo( const uniset::TimerMessage* tm );
-		void initFromSM();
-		void checkSensors();
 		// --------------------------------------------
 		<xsl:if test="normalize-space($VARMAP)='1'">
 		class PtrMapHashFn
@@ -528,6 +531,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			}
 
 			ptStartUpTimeout.reset();
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы..
 			ostate = "StartUp: update values..";
@@ -536,6 +540,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
 			ostate = "StartUp: update outputs..";
 			updateOutputs(true); // а потом уже выходы (принудительное обновление)
+</xsl:if>
 			ostate = "StartUp: pre ask sensors..";
 			preAskSensors(UniversalIO::UIONotify);
 			ostate = "StartUp: ask sensors..";
@@ -626,9 +631,10 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 		inf &lt;&lt; "    (" &lt;&lt; s.first &lt;&lt; ")" &lt;&lt; setw(10)  &lt;&lt; getTypeOfMessage(s.first) &lt;&lt; ": " &lt;&lt; setw(5) &lt;&lt; s.second &lt;&lt; endl;
 	inf &lt;&lt; endl;
 	</xsl:if>
-	
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; endl;
+</xsl:if>
 	auto timers = getTimersList();
 	inf &lt;&lt; "Timers[" &lt;&lt; timers.size() &lt;&lt; "]:" &lt;&lt; endl;
 	for( const auto&amp; t: timers )
@@ -668,9 +674,9 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const P
 		jserv->set("state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" ));
 		jserv->set("info", logserv->httpGetShortInfo());
 	}
-		
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	jdata->set("io", httpDumpIO());
-	
+</xsl:if>
 	auto timers = getTimersList();
 	auto jtm = uniset::json::make_child(jdata,"Timers");
 
@@ -746,6 +752,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_s
 
     for( const auto&amp; p: params )
     {
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
         if( p.first == "sleep_msec" )
         {
             int val = uni_atoi(p.second);
@@ -756,7 +763,6 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_s
             }
             continue;
         }
-
         if( p.first == "resetMsgTime" )
         {
             int val = uni_atoi(p.second);
@@ -778,7 +784,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_s
             }
             continue;
         }
-
+</xsl:if>
         <xsl:for-each select="//variables/item">
         <xsl:if test="normalize-space(@const)=''">
         if( p.first == "<xsl:value-of select="@name"/>" )
@@ -806,9 +812,11 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_g
 
     if( params.empty() )
     {
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
        jret->set("sleep_msec",sleep_msec);
        jret->set("resetMsgTime",resetMsgTime);
        jret->set("forceOut",forceOut);
+</xsl:if>
         <xsl:for-each select="//variables/item">
         <xsl:if test="normalize-space(@const)=''">
         jret->set("<xsl:value-of select="@name"/>", <xsl:value-of select="@name"/>);
@@ -819,6 +827,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_g
 
     for( const auto&amp; p: params )
     {
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
         if( p.first == "sleep_msec" )
         {
             jret->set(p.first,sleep_msec);
@@ -836,7 +845,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_g
             jret->set(p.first,forceOut);
             continue;
         }
-
+</xsl:if>
         <xsl:for-each select="//variables/item">
         <xsl:if test="normalize-space(@const)=''">
         if( p.first == "<xsl:value-of select="@name"/>" )
@@ -1020,16 +1029,20 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() const noexcept
 	
 	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "sm-ready-timeout msec   - wait SM ready for ask sensors. Now: "  &lt;&lt; smReadyTimeout &lt;&lt; endl;
 	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "sm-test-id msec sensor  - sensor for test SM ready. Now: "  &lt;&lt; smTestID &lt;&lt; endl;
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "sleep-msec msec         - step period. Now: "  &lt;&lt; sleep_msec &lt;&lt; endl;
+    s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "force-out [0|1]         - 1 - save out-values in SM at each step. Now: " &lt;&lt; forceOut  &lt;&lt; endl;
+</xsl:if>
 	
 	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "activate-timeout msec   - activate process timeout. Now: "  &lt;&lt; activateTimeout &lt;&lt; endl;
 	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "startup-timeout msec    - wait startup timeout. Now: "  &lt;&lt; ptStartUpTimeout.getInterval() &lt;&lt; endl;
-    s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "force-out [0|1]         - 1 - save out-values in SM at each step. Now: " &lt;&lt; forceOut  &lt;&lt; endl;
     s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "heartbeat-max num       - max value for heartbeat counter. Now: " &lt;&lt;  maxHeartBeat &lt;&lt; endl;
     s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "heartbeat-time msec     - heartbeat periond. Now: " &lt;&lt; ptHeartBeat.getInterval() &lt;&lt; endl;
 	s &lt;&lt; endl;
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	s &lt;&lt; "--print-id-list - print ID list" &lt;&lt; endl;
 	s &lt;&lt; endl;
+</xsl:if>
 	s &lt;&lt; " ****************************************************************************************** " &lt;&lt; endl;
 	
 	
@@ -1039,6 +1052,7 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() const noexcept
 </xsl:template>
 
 <xsl:template name="COMMON-ID-LIST">
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	if( uniset::findArgParam("--print-id-list",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
 	{
 <xsl:for-each select="//smap/item">
@@ -1051,6 +1065,7 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() const noexcept
 </xsl:for-each>
 //		abort();
 	}
+</xsl:if>
 </xsl:template>
 
 <xsl:template name="default-init-variables">
@@ -1171,7 +1186,6 @@ confnode(0),
 smReadyTimeout(0),
 activated(false),
 askPause(2000),
-forceOut(false),
 // private variables
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
@@ -1252,7 +1266,9 @@ prev_m_<xsl:value-of select="normalize-space(@name)"/>(false),
 </xsl:if>
 </xsl:if>
 </xsl:for-each>
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
+</xsl:if>
 active(true),
 argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -1268,7 +1284,6 @@ confnode(cnode),
 smReadyTimeout(0),
 activated(false),
 askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000)),
-forceOut(false),
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
 <xsl:call-template name="init-variables"/>
@@ -1347,8 +1362,6 @@ end_private(false)
 		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
 	}
 	
-	forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
-
 	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
@@ -1400,7 +1413,8 @@ end_private(false)
 	
 	si.id = uniset::DefaultObjectId;
 	si.node = conf->getLocalNode();
-	
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
+	forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	string s_resetTime("<xsl:call-template name="settings"><xsl:with-param name="varname" select="'resetMsgTime'"/></xsl:call-template>");
@@ -1409,7 +1423,7 @@ end_private(false)
 
 	resetMsgTime = uni_atoi(init4_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),conf->getProp(globalnode,"resetMsgTime"), s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
-
+</xsl:if>
 	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( sm_tout == 0 )
 		smReadyTimeout = conf->getNCReadyTimeout();
@@ -1457,10 +1471,11 @@ end_private(false)
 	// ----------
 	</xsl:for-each>
 	// ===================== end of &lt;variables&gt; =====================
-
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	vmonit(sleep_msec);
 	vmonit(resetMsgTime);
 	vmonit(forceOut);
+</xsl:if>
 	vmonit(argprefix);
 	vmonit(idHeartBeat);
 	vmonit(maxHeartBeat);
@@ -1480,6 +1495,7 @@ end_private(false)
 {
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
 	// Опрашиваем все входы...
@@ -1583,6 +1599,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 	}
 </xsl:for-each>
 }
+</xsl:if> <!-- end of  if $SIMPLEPROC -->
 // -----------------------------------------------------------------------------
 uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID() const
 {
@@ -1597,6 +1614,7 @@ uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID() const
 	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($TESTMODE)!=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 {
 	if( !_state  )
@@ -1609,6 +1627,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 	</xsl:choose>
 	</xsl:for-each>
 }
+</xsl:if>
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
@@ -1653,7 +1672,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 // ----------------------------------------------------------------------------
 #endif
 </xsl:if>
-
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 {
 	ostringstream s;
@@ -1756,6 +1775,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id
 	return "";
 }
 // ----------------------------------------------------------------------------
+</xsl:if> <!-- end of if $SIMPLEPROC='' -->
 </xsl:template>
 
 
@@ -1818,6 +1838,7 @@ forceOut(false)
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; _argprefix, xmlNode* globalnode ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setvar">
@@ -1831,6 +1852,7 @@ forceOut(false)
 	</xsl:call-template>
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
+</xsl:if>
 active(true),
 argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -1912,7 +1934,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	si.id = uniset::DefaultObjectId;
 	si.node = conf->getLocalNode();
-
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	string s_resetTime("<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>");
@@ -1921,7 +1943,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	resetMsgTime = uni_atoi(init4_str(conf->getArgParam("--" + argprefix + "resetMsgTime"), conf->getProp(cnode,"resetMsgTime"), conf->getProp(globalnode,"resetMsgTime"), s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
-
+</xsl:if>
 	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( sm_tout == 0 )
 		smReadyTimeout = conf->getNCReadyTimeout();
@@ -1951,6 +1973,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 {
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -1965,6 +1988,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($TESTMODE)!=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 {
 	// отключаем все выходы
@@ -1973,6 +1997,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
+</xsl:if>
 void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 {
 	// Опрашиваем все входы...
@@ -2040,6 +2065,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( uniset::ObjectId _code, boo
     mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
+</xsl:if> <!-- end of space if $SIMPLEPROC ='' -->
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API

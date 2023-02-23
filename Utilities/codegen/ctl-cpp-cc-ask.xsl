@@ -23,6 +23,9 @@
 <xsl:variable name="LOGROTATE">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'logrotate'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="SIMPLEPROC">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'simple-proc'"/></xsl:call-template>
+</xsl:variable>
 
 <!-- Генерирование cc-файла -->
 <xsl:template match="/">
@@ -36,6 +39,15 @@
 // --------------------------------------------------------------------------
 <xsl:call-template name="COMMON-CC-FILE"/>
 // --------------------------------------------------------------------------
+<xsl:if test="normalize-space($SIMPLEPROC)!=''">
+void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexcept
+{
+	if( !active )
+		return;
+	UniSetObject::callback();
+}
+</xsl:if>
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexcept
 {
 	if( !active )
@@ -117,6 +129,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexcept
 	
 	msleep( sleep_msec );
 }
+</xsl:if>
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( uniset::ObjectId _sid, long _val )
 {
@@ -138,6 +151,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( uniset::ObjectId _sid, lo
 	ui->setValue(_sid,_val);
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 {
 	<xsl:for-each select="//smap/item">
@@ -165,6 +179,26 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 -->
 }
 // -----------------------------------------------------------------------------
+void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
+{
+	<xsl:for-each select="//smap/item">
+	<xsl:if test="normalize-space(@initFromSM)!=''">
+	if( <xsl:value-of select="@name"/> != uniset::DefaultObjectId )
+	{
+		try
+		{
+			<xsl:if test="normalize-space(@vartype)='in'">priv_</xsl:if><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
+		}
+		catch( std::exception&amp; ex )
+		{
+			mycrit &lt;&lt; myname &lt;&lt; "(initFromSM): " &lt;&lt; ex.what() &lt;&lt; endl;
+		}
+	}
+	</xsl:if>
+	</xsl:for-each>
+}
+</xsl:if> <!-- end of if $SIMPLEPROC='' -->
+// -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const uniset::SensorMessage* _sm )
 {
 	<xsl:for-each select="//smap/item">
@@ -184,25 +218,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const uniset::Sensor
 	</xsl:for-each>
 	
 	sensorInfo(_sm);
-}
-// -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
-{
-	<xsl:for-each select="//smap/item">
-	<xsl:if test="normalize-space(@initFromSM)!=''">
-	if( <xsl:value-of select="@name"/> != uniset::DefaultObjectId )
-	{
-		try
-		{
-			<xsl:if test="normalize-space(@vartype)='in'">priv_</xsl:if><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
-		}
-		catch( std::exception&amp; ex )
-		{
-			mycrit &lt;&lt; myname &lt;&lt; "(initFromSM): " &lt;&lt; ex.what() &lt;&lt; endl;
-		}
-	}
-	</xsl:if>
-	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( uniset::ObjectId _sid, UniversalIO::UIOCommand _cmd, uniset::ObjectId _node )

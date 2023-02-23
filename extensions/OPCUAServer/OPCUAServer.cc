@@ -305,10 +305,6 @@ void OPCUAServer::callback() noexcept
     }
 }
 // -----------------------------------------------------------------------------
-void OPCUAServer::step()
-{
-}
-//------------------------------------------------------------------------------
 CORBA::Boolean OPCUAServer::exist()
 {
     bool ret = UObject_SK::exist();

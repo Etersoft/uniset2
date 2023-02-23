@@ -147,7 +147,6 @@ namespace uniset
             OPCUAServer();
 
             virtual void callback() noexcept override;
-            virtual void step() override;
             virtual void sysCommand(const uniset::SystemMessage* sm) override;
             virtual bool deactivateObject() override;
             virtual void askSensors(UniversalIO::UIOCommand cmd) override;

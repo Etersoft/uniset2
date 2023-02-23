@@ -24,15 +24,27 @@
 <xsl:variable name="LOGROTATE">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'logrotate'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="SIMPLEPROC">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'simple-proc'"/></xsl:call-template>
+</xsl:variable>
 
 <xsl:template match="/">
 <!-- BEGIN CC-FILE -->
 // --------------------------------------------------------------------------
 <xsl:call-template name="COMMON-CC-HEAD"/>
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 <xsl:call-template name="COMMON-CC-ALONE-FUNCS"/>
 <xsl:call-template name="COMMON-CC-FILE"/>
 // --------------------------------------------------------------------------
+<xsl:if test="normalize-space($SIMPLEPROC)!=''">
+void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexcept
+{
+	if( !active )
+		return;
+	UniSetObject::callback();
+}
+</xsl:if>
+<xsl:if test="normalize-space($SIMPLEPROC)=''">
 void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 {
 	if( !active )
@@ -122,6 +134,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 	
 	msleep( sleep_msec );
 }
+</xsl:if>
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 {
