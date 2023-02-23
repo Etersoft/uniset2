@@ -174,7 +174,10 @@ namespace uniset
                 PassiveTimer tmr;
             };
 
-            class Timer_eq: public std::unary_function<TimerInfo, bool>
+            class Timer_eq
+#if __cplusplus < 201103L
+                    : public std::unary_function<TimerInfo, bool>
+#endif
             {
                 public:
                     Timer_eq(uniset::TimerId t): tid(t) {}
