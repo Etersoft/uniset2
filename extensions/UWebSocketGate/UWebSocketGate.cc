@@ -276,12 +276,12 @@ Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
     return json;
 }
 //--------------------------------------------------------------------------------------------
-Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const std::string& err )
+Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, std::string_view err )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
     json->set("type", "SensorInfo");
-    json->set("error", err);
+    json->set("error", std::string(err));
     json->set("id", sm->id);
     json->set("value", sm->value);
     json->set("name", uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(sm->id)));
@@ -304,12 +304,12 @@ Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const 
     return json;
 }
 //--------------------------------------------------------------------------------------------
-Poco::JSON::Object::Ptr UWebSocketGate::error_to_json( const std::string& err )
+Poco::JSON::Object::Ptr UWebSocketGate::error_to_json( std::string_view err )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
     json->set("type", "Error");
-    json->set("message", err);
+    json->set("message", std::string(err));
 
     return json;
 }
@@ -332,35 +332,34 @@ std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const cha
 // -----------------------------------------------------------------------------
 void UWebSocketGate::help_print()
 {
-    cout << "Default: prefix='ws'" << endl;
-    cout << "--prefix-name name                      - Имя. Для поиска настроечной секции в configure.xml" << endl;
+    cout << "--ws-name name                      - Имя. Для поиска настроечной секции в configure.xml" << endl;
     cout << "--uniset-object-size-message-queue num  - Размер uniset-очереди сообщений. По умолчанию: 10000" << endl;
-    cout << "--prefix-msg-check-time msec            - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
-    cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию: 100" << endl;
+    cout << "--ws-msg-check-time msec            - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
+    cout << "--ws-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию: 100" << endl;
 
     cout << "websockets: " << endl;
-    cout << "--prefix-max-conn num             - Максимальное количество одновременных подключений (клиентов). По усмолчанию: 50" << endl;
-    cout << "--prefix-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-    cout << "--prefix-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
-    cout << "--prefix-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
+    cout << "--ws-max-conn num             - Максимальное количество одновременных подключений (клиентов). По усмолчанию: 50" << endl;
+    cout << "--ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
+    cout << "--ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+    cout << "--ws-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
+    cout << "--ws-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
 
     cout << "http: " << endl;
-    cout << "--prefix-host ip                  - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--prefix-port num                 - Порт на котором принимать запросы. По умолчанию: 8081" << endl;
-    cout << "--prefix-max-queued num           - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-max-threads num          - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--prefix-cors-allow addr          - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << "--ws-host ip                  - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+    cout << "--ws-port num                 - Порт на котором принимать запросы. По умолчанию: 8081" << endl;
+    cout << "--ws-max-queued num           - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+    cout << "--ws-max-threads num          - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+    cout << "--ws-cors-allow addr          - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
 
     cout << "logs: " << endl;
-    cout << "--prefix-log-add-levels [crit,warn,info..]   - Уровень логов" << endl;
-    cout << "--prefix-log-verbosity N                     - Уровень подробностей [1...5]" << endl;
+    cout << "--ws-log-add-levels [crit,warn,info..]   - Уровень логов" << endl;
+    cout << "--ws-log-verbosity N                     - Уровень подробностей [1...5]" << endl;
     cout << "  Пример параметров для запуска с подробными логами: " << endl;
     cout << "  --ws-log-add-levels any --ws-log-verbosity 5" << endl;
     cout << " LogServer: " << endl;
-    cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
-    cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
-    cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+    cout << "--ws-run-logserver      - run logserver. Default: localhost:id" << endl;
+    cout << "--ws-logserver-host ip  - listen ip. Default: localhost" << endl;
+    cout << "--ws-logserver-port num - listen port. Default: ID" << endl;
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::run( bool async )
@@ -934,7 +933,6 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
             return;
         }
 
-
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
         {
             term();
@@ -946,10 +944,11 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
             ostringstream err;
             err << "Payload too big. Must be < " << sizeof(rbuf) << " bytes";
             sendError(err.str());
+            mycritV(4) << req->clientAddress().toString() << "(read): error: " << err.str() << endl;
             return;
         }
 
-        const std::string cmd(rbuf, n);
+        const std::string_view cmd(rbuf, n);
 
         onCommand(cmd);
 
@@ -1143,7 +1142,7 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
         ioping.stop();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::sendError( const std::string& msg )
+void UWebSocketGate::UWebSocket::sendError( std::string_view msg )
 {
     if( jbuf.size() > maxsize )
     {
@@ -1157,7 +1156,7 @@ void UWebSocketGate::UWebSocket::sendError( const std::string& msg )
         ioping.stop();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
+void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 {
     if( cmdtxt.size() < 5 )
     {
@@ -1168,8 +1167,8 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         return;
     }
 
-    const string cmd = cmdtxt.substr(0, 3);
-    const string params = cmdtxt.substr(4);
+    string_view cmd = cmdtxt.substr(0,3);
+    string_view params = cmdtxt.substr(4);
 
     myinfoV(3) << "(websocket)(command): " << req->clientAddress().toString()
                << "(" << cmd << "): " << params << endl;
@@ -1179,7 +1178,7 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(set): " << params << endl;
 
-        auto idlist = uniset::getSInfoList(params, uniset_conf());
+        auto idlist = uniset::getSInfoList_sv(params, uniset_conf());
 
         for( const auto& i : idlist )
             set(i.si.id, i.val);
@@ -1192,7 +1191,7 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(ask): " << params << endl;
 
-        auto idlist = uniset::explode(params);
+        auto idlist = uniset::split_by_id(params);
 
         for( const auto& id : idlist.getList() )
             ask(id);
@@ -1205,7 +1204,7 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(del): " << params << endl;
 
-        auto idlist = uniset::explode(params);
+        auto idlist = uniset::split_by_id(params);
 
         for( const auto& id : idlist.getList() )
             del(id);
@@ -1218,7 +1217,7 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(get): " << params << endl;
 
-        auto idlist = uniset::explode(params);
+        auto idlist = uniset::split_by_id(params);
 
         for( const auto& id : idlist.getList() )
             get(id);

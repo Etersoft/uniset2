@@ -22,6 +22,9 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#if __cplusplus >= 201703L
+#include <charconv>
+#endif
 #include <Poco/File.h>
 #include "UniSetTypes.h"
 #include "Configuration.h"
@@ -166,6 +169,26 @@ uniset::IDList::IDList( const std::vector<string>& svec ): // -V730
             add(id);
     }
 }
+#if __cplusplus >= 201703L
+uniset::IDList::IDList( const std::vector<string_view>& svec ): // -V730
+        uniset::IDList::IDList()
+{
+    auto conf = uniset_conf();
+
+    for( const auto& s : svec )
+    {
+        ObjectId id;
+
+        if( is_digit_sv(s) )
+            id = uni_atoi_sv(s);
+        else
+            id = conf->getSensorID(std::string(s));
+
+        if( id != DefaultObjectId )
+            add(id);
+    }
+}
+#endif
 // -------------------------------------------------------------------------
 uniset::IDList::IDList():
     node( (uniset::uniset_conf() ? uniset::uniset_conf()->getLocalNode() : DefaultObjectId) )
@@ -256,6 +279,55 @@ bool uniset::file_exist( const std::string& filename )
     return result;
 }
 // -------------------------------------------------------------------------
+#if __cplusplus >= 201703L
+uniset::IDList uniset::split_by_id( std::string_view str, char sep )
+{
+    return uniset::IDList( split_sv(str, sep) );
+}
+// -------------------------------------------------------------------------
+std::vector<std::string_view> uniset::split_sv( std::string_view str, char sep )
+{
+    std::vector<std::string_view> v;
+
+    string_view::size_type prev = 0;
+    string_view::size_type pos = 0;
+    string_view::size_type sz = str.size();
+
+    do
+    {
+        if( prev >= sz )
+            break;
+
+        pos = str.find(sep, prev);
+
+        if( pos == string_view::npos )        {
+            auto s = str.substr(prev, sz - prev);
+
+            if( !s.empty() )
+                v.emplace_back(s);
+            break;
+        }
+
+        if( pos == 0 )
+        {
+            prev = 1;
+            continue;
+        }
+
+        auto s = str.substr(prev, pos - prev);
+
+        if( !s.empty() )
+        {
+            v.emplace_back(s);
+            prev = pos + 1;
+        }
+    }
+    while( pos != string_view::npos );
+
+    return v;
+}
+#endif
+// -------------------------------------------------------------------------
 uniset::IDList uniset::explode( const std::string& str, char sep )
 {
     uniset::IDList l( explode_str(str, sep) );
@@ -321,7 +393,93 @@ bool uniset::is_digit( const std::string& s ) noexcept
     //return (std::count_if(s.begin(),s.end(),std::isdigit) == s.size()) ? true : false;
 }
 // --------------------------------------------------------------------------------------
-std::list<uniset::ParamSInfo> uniset::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
+#if __cplusplus >= 201703L
+bool uniset::is_digit_sv( std::string_view s ) noexcept
+{
+    if( s.empty() )
+        return false;
+
+    for( const auto& c : s )
+    {
+        if( !isdigit(c) )
+            return false;
+    }
+
+    return true;
+}
+// --------------------------------------------------------------------------------------
+std::list<uniset::ParamSInfo> uniset::getSInfoList_sv( std::string_view str, std::shared_ptr<uniset::Configuration> conf )
+{
+    std::list<uniset::ParamSInfo> res;
+
+    auto lst = uniset::split_sv(str, ',');
+
+    for( auto&& it : lst )
+    {
+        uniset::ParamSInfo item;
+
+        auto p = uniset::split_sv(it, '=');
+        std::string_view s = "";
+
+        if( p.size() == 1 )
+        {
+            s = *(p.begin());
+            item.val = 0;
+        }
+        else if( p.size() == 2 )
+        {
+            s = *(p.begin());
+            item.val = uni_atoi_sv(*(++p.begin()));
+        }
+        else
+        {
+            cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
+            continue;
+        }
+
+        item.fname = std::string(s);
+        auto t = uniset::split_sv(s, '@');
+
+        if( t.size() == 1 )
+        {
+            std::string_view s_id = *(t.begin());
+
+            if( is_digit_sv(s_id) || !conf )
+                item.si.id = uni_atoi_sv(s_id);
+            else
+                item.si.id = conf->getSensorID(std::string(s_id));
+
+            item.si.node = DefaultObjectId;
+        }
+        else if( t.size() == 2 )
+        {
+            std::string_view s_id = *(t.begin());
+            std::string_view s_node = *(++t.begin());
+
+            if( is_digit_sv(s_id) || !conf )
+                item.si.id = uni_atoi_sv(s_id);
+            else
+                item.si.id = conf->getSensorID(std::string(s_id));
+
+            if( is_digit_sv(s_node) || !conf )
+                item.si.node = uni_atoi_sv(s_node);
+            else
+                item.si.node = conf->getNodeID(std::string(s_node));
+        }
+        else
+        {
+            cerr << "WARNING: parse error for '" << s << "'. IGNORE..." << endl;
+            continue;
+        }
+
+        res.emplace_back( std::move(item) );
+    }
+
+    return res;
+}
+#endif
+// --------------------------------------------------------------------------------------
+std::list<uniset::ParamSInfo> uniset::getSInfoList( const std::string& str, std::shared_ptr<Configuration> conf )
 {
     std::list<uniset::ParamSInfo> res;
 
@@ -538,6 +696,64 @@ string uniset::dateToString(time_t tm, const std::string& brk ) noexcept
     return date.str();
 }
 
+//--------------------------------------------------------------------------------------------
+#if __cplusplus >= 201703L
+int uniset::uni_atoi_sv( std::string_view s ) noexcept
+{
+    if( s.empty() )
+        return 0;
+
+    if( s.size() > 1 && s[0] == '-' )
+    {
+        int n = 0;
+        if( s.size() > 2 && s[1] == '0' && s[2] == 'x' ) {
+            std::from_chars(s.data()+3, s.data() + s.size(), n, 16);
+            n *= -1;
+        } else {
+            std::from_chars(s.data(), s.data() + s.size(), n, 10);
+        }
+        return n;
+    }
+
+    unsigned int n = 0;
+    if( s.size() > 2 && s[0] == '0' && s[1] == 'x' ) {
+        std::from_chars(s.data()+2, s.data() + s.size(), n, 16);
+    } else {
+        std::from_chars(s.data(), s.data() + s.size(), n, 10);
+    }
+    return n;
+}
+#endif
+//--------------------------------------------------------------------------------------------
+int uniset::uni_atoi( const std::string& s ) noexcept
+{
+#if __cplusplus < 201703L
+    return uni_atoi(s.c_str());
+#else
+    if( s.empty() )
+        return 0;
+
+    if( s.size() > 1 && s[0] == '-' )
+    {
+        int n = 0;
+        if( s.size() > 2 && s[1] == '0' && s[2] == 'x' ) {
+            std::from_chars(s.data()+3, s.data() + s.size(), n, 16);
+            n *= -1;
+        } else {
+            std::from_chars(s.data(), s.data() + s.size(), n, 10);
+        }
+        return n;
+    }
+
+    unsigned int n = 0;
+    if( s.size() > 2 && s[0] == '0' && s[1] == 'x' ) {
+        std::from_chars(s.data()+2, s.data() + s.size(), n, 16);
+    } else {
+        std::from_chars(s.data(), s.data() + s.size(), n, 10);
+    }
+    return n;
+#endif
+}
 //--------------------------------------------------------------------------------------------
 int uniset::uni_atoi( const char* str ) noexcept
 {
