@@ -488,6 +488,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
 	AC_CONFIG_TESTDIR(extensions/LogDB/tests)
 	AC_CONFIG_TESTDIR(extensions/Backend-ClickHouse/tests)
+	AC_CONFIG_TESTDIR(extensions/UWebSocketGate/tests)
 	AC_CONFIG_TESTDIR(extensions/OPCUAServer/tests)
 	AC_CONFIG_TESTDIR(extensions/OPCUAExchange/tests)
 

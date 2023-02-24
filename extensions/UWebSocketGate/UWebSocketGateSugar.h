@@ -13,6 +13,9 @@
 #ifndef mycrit
 #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
 #endif
+#ifndef mycritV
+#define mycritV(N) if( mylog->debugging(Debug::CRIT) ) mylog->V(N)[Debug::CRIT]
+#endif
 #ifndef mylog1
 #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->level1()
 #endif
