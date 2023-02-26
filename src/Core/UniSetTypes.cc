@@ -228,6 +228,11 @@ std::list<uniset::ObjectId> uniset::IDList::getList() const noexcept
     return lst;
 }
 
+const std::list<uniset::ObjectId>& uniset::IDList::ref() const noexcept
+{
+    return lst;
+}
+
 uniset::ObjectId uniset::IDList::getFirst() const noexcept
 {
     if( lst.empty() )

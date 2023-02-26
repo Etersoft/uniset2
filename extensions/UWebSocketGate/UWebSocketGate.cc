@@ -727,7 +727,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
         ws->setMaxCmdCount(wsMaxCmd);
         ws->mylog = mylog;
 
-        for( const auto& i : idlist.getList() )
+        for( const auto& i : idlist.ref() )
         {
             myinfoV(3) << myname << ": ask sid=" << i << endl;
             ws->ask(i);
@@ -1065,7 +1065,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
 
         try
         {
-            if( s.cmd == "" )
+            if( s.cmd.empty() )
                 continue;
 
             myinfoV(3) << req->clientAddress().toString() << "(doCommand): "
@@ -1193,7 +1193,7 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 
         auto idlist = uniset::split_by_id(params);
 
-        for( const auto& id : idlist.getList() )
+        for( const auto& id : idlist.ref() )
             ask(id);
 
         // уведомление о новой команде
@@ -1206,7 +1206,7 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 
         auto idlist = uniset::split_by_id(params);
 
-        for( const auto& id : idlist.getList() )
+        for( const auto& id : idlist.ref() )
             del(id);
 
         // уведомление о новой команде
@@ -1219,7 +1219,7 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 
         auto idlist = uniset::split_by_id(params);
 
-        for( const auto& id : idlist.getList() )
+        for( const auto& id : idlist.ref() )
             get(id);
 
         // уведомление о новой команде
