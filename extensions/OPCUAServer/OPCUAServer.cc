@@ -43,9 +43,9 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 }
 // -----------------------------------------------------------------------------
 OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
-                         const string& prefix ):
-    UObject_SK(objId, cnode, string(prefix + "-")),
-    prefix(prefix)
+                         const string& _prefix ):
+    UObject_SK(objId, cnode, string(_prefix + "-")),
+    prefix(_prefix)
 {
     auto conf = uniset_conf();
 
@@ -63,8 +63,9 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
     opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
-    updatePause_msec = conf->getArgPInt("--" + argprefix + "-updatepause", it.getProp("updatePause"), (int)updatePause_msec);
-    myinfo << myname << "(init): OPC UA server " << ip << ":" << port << endl;
+    updateTime_msec = conf->getArgPInt("--" + argprefix + "updatetime", it.getProp("updateTime"), (int)updateTime_msec);
+    vmonit(updateTime_msec);
+    myinfo << myname << "(init): OPC UA server " << ip << ":" << port << " updatePause=" << updateTime_msec << endl;
 
     opcServer->setLogger([this](auto level, auto category, auto msg)
     {
@@ -133,8 +134,8 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     updateThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::updateLoop);
 
     // определяем фильтр
-    s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
-    s_fvalue = conf->getArgParam("--" + prefix + "-s-filter-value");
+    s_field = conf->getArgParam("--" + argprefix + "s-filter-field");
+    s_fvalue = conf->getArgParam("--" + argprefix + "s-filter-value");
 
     vmonit(s_field);
     vmonit(s_fvalue);
@@ -384,7 +385,7 @@ void OPCUAServer::help_print()
     cout << "--opcua-heartbeat-max val   - max value for heartbeat sensor." << endl;
     cout << endl;
     cout << "OPC UA:" << endl;
-    cout << "--opcua-updatepause msec     - Пауза между обновлением информации в или из SM. По умолчанию 200" << endl;
+    cout << "--opcua-updatetime msec      - Пауза между обновлением информации в/из SM. По умолчанию 200" << endl;
     cout << "--opcua-host ip              - IP на котором слушает OPC UA сервер" << endl;
     cout << "--opcua-port port            - Порт на котором слушает OPC UA сервер" << endl;
     cout << "--opcua-maxSubscriptions num - Максимальное количество подписок" << endl;
@@ -500,7 +501,7 @@ void OPCUAServer::updateLoop()
     while( activated )
     {
         update();
-        msleep(updatePause_msec);
+        msleep(updateTime_msec);
     }
 
     myinfo << myname << "(updateLoop): terminated.." << endl;
