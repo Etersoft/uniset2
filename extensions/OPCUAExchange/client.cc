@@ -221,8 +221,9 @@ int main(int argc, char* argv[])
                         {
                             for( size_t i = 0; i < result.size(); i++ )
                                 cout << attrs[i] << ": value=" << result[i].value
-                                     << " status: " << UA_StatusCode_name(result[i].status)
-                                     << " " << setw(10) << duration_cast<duration<float>>(t_end - t_start).count() << " sec"
+                                     << " status[" << UA_StatusCode_name(result[i].status) << "]"
+                                     << " update: " << setw(10) << setprecision(7)
+                                     << duration_cast<duration<float>>(t_end - t_start).count() << " sec"
                                      << endl;
                         }
                         else
