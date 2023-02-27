@@ -557,7 +557,8 @@ void OPCUAServer::update()
     }
 
     auto t_end = std::chrono::steady_clock::now();
-    mylog8 << myname << "(update): " << setw(10) << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+    mylog8 << myname << "(update): " << setw(10) << setprecision(7) << ios::fixed
+           << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
 }
 // -----------------------------------------------------------------------------
 std::string OPCUAServer::getMonitInfo() const

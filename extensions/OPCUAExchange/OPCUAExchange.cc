@@ -408,6 +408,8 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::channelExchange( Tick tick, Channel* ch, bool writeOn )
     {
+        auto t_start = std::chrono::steady_clock::now();
+
         if( writeOn )
         {
             for (auto&& v : ch->writeValues)
@@ -436,6 +438,10 @@ namespace uniset
                     opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int)tick << " read error: " << UA_StatusCode_name(ret) << endl;
             }
         }
+
+        auto t_end = std::chrono::steady_clock::now();
+        opclog8 << myname << "(update): " << setw(10) << setprecision(7) << ios::fixed
+                << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
     }
     // --------------------------------------------------------------------------------
     void OPCUAExchange::updateFromSM()
