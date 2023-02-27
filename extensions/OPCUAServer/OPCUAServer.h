@@ -192,7 +192,7 @@ namespace uniset
             std::string prefix;
             std::string s_field;
             std::string s_fvalue;
-            uniset::timeout_t updatePause_msec = { 200 };
+            uniset::timeout_t updateTime_msec = {200 };
             std::atomic_bool firstUpdate = false;
     };
     // --------------------------------------------------------------------------
