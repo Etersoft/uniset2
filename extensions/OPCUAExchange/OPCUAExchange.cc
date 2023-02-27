@@ -446,6 +446,9 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::updateFromSM()
     {
+        if( shm->isLocalwork() )
+            return;
+
         if( !force_out )
             return;
 
@@ -1067,7 +1070,7 @@ namespace uniset
     {
         cout << "--opcua-confnode name     - Использовать для настройки указанный xml-узел" << endl;
         cout << "--opcua-name name         - ID процесса. По умолчанию OPCUAExchange1." << endl;
-        cout << "--opcua-polltime msec     - Пауза между опросом карт. По умолчанию 150 мсек." << endl;
+        cout << "--opcua-polltime msec     - Пауза между циклами обмена. По умолчанию 150 мсек." << endl;
         cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 150 мсек." << endl;
         cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
         cout << "--opcua-filterT val       - Постоянная:: времени фильтра." << endl;
@@ -1230,6 +1233,9 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::askSensors( UniversalIO::UIOCommand cmd )
     {
+        if( !shm->isLocalwork() )
+            return;
+
         if( force_out )
             return;
 
@@ -1360,6 +1366,9 @@ namespace uniset
     {
         opclog6 << myname << "(sensorInfo): sm->id=" << sm->id
                 << " val=" << sm->value << endl;
+
+        if( !shm->isLocalwork() )
+            return;
 
         if( force_out )
             return;
