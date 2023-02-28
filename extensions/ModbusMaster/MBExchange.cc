@@ -88,7 +88,7 @@ namespace uniset
         // определяем фильтр
         mbconf->s_field = conf->getArgParam("--" + prefix + "-filter-field");
         mbconf->s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-        mbinfo << myname << "(init): read fileter-field='" << mbconf->s_field
+        mbinfo << myname << "(init): read filter-field='" << mbconf->s_field
                << "' filter-value='" << mbconf->s_fvalue << "'" << endl;
 
         mbconf->prefix = prefix;
