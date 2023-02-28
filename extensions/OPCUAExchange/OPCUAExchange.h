@@ -226,8 +226,8 @@ namespace uniset
             void initOutputs();
 
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
-            timeout_t polltime = { 150 };   /*!< периодичность обновления данных, [мсек] */
-            timeout_t updatetime = { 150 };   /*!< периодичность обновления данных в SM, [мсек] */
+            timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
+            timeout_t updatetime = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
 
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */

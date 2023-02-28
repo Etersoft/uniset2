@@ -1070,8 +1070,8 @@ namespace uniset
     {
         cout << "--opcua-confnode name     - Использовать для настройки указанный xml-узел" << endl;
         cout << "--opcua-name name         - ID процесса. По умолчанию OPCUAExchange1." << endl;
-        cout << "--opcua-polltime msec     - Пауза между циклами обмена. По умолчанию 150 мсек." << endl;
-        cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 150 мсек." << endl;
+        cout << "--opcua-polltime msec     - Пауза между циклами обмена. По умолчанию 100 мсек." << endl;
+        cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 100 мсек." << endl;
         cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
         cout << "--opcua-filterT val       - Постоянная:: времени фильтра." << endl;
         cout << "--opcua-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
