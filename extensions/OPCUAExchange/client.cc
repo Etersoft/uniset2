@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
                             for( size_t i = 0; i < result.size(); i++ )
                                 cout << attrs[i] << ": value=" << result[i].value
                                      << " status[" << UA_StatusCode_name(result[i].status) << "]"
-                                     << " update: " << setw(10) << setprecision(7)
+                                     << " update: " << setw(10) << setprecision(7) << std::fixed
                                      << duration_cast<duration<float>>(t_end - t_start).count() << " sec"
                                      << endl;
                         }
