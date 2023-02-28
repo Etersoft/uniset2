@@ -440,7 +440,7 @@ namespace uniset
         }
 
         auto t_end = std::chrono::steady_clock::now();
-        opclog8 << myname << "(update): " << setw(10) << setprecision(7) << ios::fixed
+        opclog8 << myname << "(update): " << setw(10) << setprecision(7) << std::fixed
                 << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
     }
     // --------------------------------------------------------------------------------
