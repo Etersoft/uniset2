@@ -134,8 +134,8 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     updateThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::updateLoop);
 
     // определяем фильтр
-    s_field = conf->getArgParam("--" + argprefix + "s-filter-field");
-    s_fvalue = conf->getArgParam("--" + argprefix + "s-filter-value");
+    s_field = conf->getArgParam("--" + argprefix + "filter-field");
+    s_fvalue = conf->getArgParam("--" + argprefix + "filter-value");
 
     vmonit(s_field);
     vmonit(s_fvalue);
@@ -381,8 +381,10 @@ void OPCUAServer::help_print()
 {
     cout << "--opcua-name        - ID for rrdstorage. Default: OPCUAServer1. " << endl;
     cout << "--opcua-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
-    cout << "--opcua-heartbeat-id name   - ID for heartbeat sensor." << endl;
-    cout << "--opcua-heartbeat-max val   - max value for heartbeat sensor." << endl;
+    cout << "--opcua-heartbeat-id name  - ID for heartbeat sensor." << endl;
+    cout << "--opcua-heartbeat-max val  - max value for heartbeat sensor." << endl;
+    cout << "--opcua-filter-field name  - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
+    cout << "--opcua -filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
     cout << endl;
     cout << "OPC UA:" << endl;
     cout << "--opcua-updatetime msec      - Пауза между обновлением информации в/из SM. По умолчанию 200" << endl;

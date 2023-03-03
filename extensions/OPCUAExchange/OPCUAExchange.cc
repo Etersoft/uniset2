@@ -170,8 +170,8 @@ namespace uniset
         shm = make_shared<SMInterface>(icID, ui, getId(), ic);
 
         // определяем фильтр
-        s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
-        s_fvalue = conf->getArgParam("--" + prefix + "-s-filter-value");
+        s_field = conf->getArgParam("--" + prefix + "-filter-field");
+        s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
 
         vmonit(s_field);
         vmonit(s_fvalue);
@@ -1074,8 +1074,8 @@ namespace uniset
         cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 100 мсек." << endl;
         cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
         cout << "--opcua-filterT val       - Постоянная:: времени фильтра." << endl;
-        cout << "--opcua-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--opcua-s-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
         cout << "--opcua-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--opcua-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
         cout << "--opcua-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
