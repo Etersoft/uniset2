@@ -35,9 +35,41 @@ SMonitor::SMonitor(ObjectId id):
 	UniSetObject(id),
 	script("")
 {
-	const string sid(uniset_conf()->getArgParam("--sid"));
+    auto conf = uniset_conf();
+	const string sid(conf->getArgParam("--sid"));
+    const string f_field = conf->getArg2Param("--filter-field", "");
+    const string f_value = conf->getArg2Param("--filter-value", "");
 
-	lst = uniset::getSInfoList(sid, uniset_conf());
+    if( !f_field.empty() )
+    {
+        cout << "init sensors with filter: " << f_field << "='" << f_value << "'" << endl;
+        UniXML_iterator it = conf->getXMLSensorsSection();
+
+        if( !it.goChildren() )
+        {
+            cerr << "not found sensors section in " << conf->getConfFileName() << endl;
+            throw SystemError("not found <sensors> section");
+        }
+
+        for( ; it; it++ )
+        {
+            if( uniset::check_filter(it, f_field, f_value) )
+            {
+                auto id = conf->getSensorID(it.getProp("name"));
+                if( id == DefaultObjectId )
+                    continue;
+
+                uniset::ParamSInfo i;
+                i.si.id = id;
+                i.si.node = conf->getLocalNode();
+                lst.push_back(i);
+            }
+        }
+
+        cout << "found " << lst.size() << " sensors..." << endl << endl;
+    }
+    else
+	    lst = uniset::getSInfoList(sid, conf);
 
 	if( lst.empty() )
 		throw SystemError("Не задан список датчиков (--sid)");
