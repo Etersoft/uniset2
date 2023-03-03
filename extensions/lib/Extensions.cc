@@ -56,7 +56,7 @@ namespace uniset
 
             auto conf = uniset_conf();
 
-            string sname = conf->getArgParam("--smemory-id", "SharedMemory1");
+            string sname = conf->getArgParam("--smemory-id", "SharedMemory");
             shmID = conf->getControllerID(sname);
 
             if( shmID == uniset::DefaultObjectId )
