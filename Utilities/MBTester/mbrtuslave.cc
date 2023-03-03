@@ -3,6 +3,7 @@
 #include <string>
 #include <getopt.h>
 #include "Debug.h"
+#include "UniSetTypes.h"
 #include "MBSlave.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
@@ -17,19 +18,21 @@ static struct option longopts[] =
     { "speed", required_argument, 0, 's' },
     { "use485F", no_argument, 0, 'y' },
     { "const-reply", required_argument, 0, 'c' },
+    { "random", optional_argument, 0, 'r' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
 static void print_help()
 {
-    printf("-h|--help               - this message\n");
-    printf("[-v|--verbose]        - Print all messages to stdout\n");
-    printf("[-d|--device] dev     - use device dev. Default: /dev/ttyS0\n");
-    printf("[-a|--myaddr] addr    - Modbus address for master. Default: 0x01.\n");
-    printf("[-s|--speed] speed    - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
-    printf("[-y|--use485F]        - use RS485 Fastwel.\n");
-    printf("[-v|--verbose]        - Print all messages to stdout\n");
+    printf("-h|--help              - this message\n");
+    printf("[-v|--verbose]         - Print all messages to stdout\n");
+    printf("[-d|--device] dev      - use device dev. Default: /dev/ttyS0\n");
+    printf("[-a|--myaddr] addr     - Modbus address for master. Default: 0x01.\n");
+    printf("[-s|--speed] speed     - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
+    printf("[-y|--use485F]         - use RS485 Fastwel.\n");
+    printf("[-v|--verbose]         - Print all messages to stdout\n");
     printf("[-c|--const-reply] val1 [val2 val3] - Reply val for all queries\n");
+    printf("[-r|--random] [min,max] - Reply random value for all queries. Default: [0,65535]\n");
 }
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -48,12 +51,15 @@ int main( int argc, char** argv )
     int replyVal = -1;
     int replyVal2 = -1;
     int replyVal3 = -1;
+    int min = 0;
+    int max = 65535;
+    bool random = false;
 
     try
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "hva:d:s:yc:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hva:d:s:yc:r", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -95,9 +101,28 @@ int main( int argc, char** argv )
 
                     break;
 
+                case 'r':
+                    random = true;
+
+                    if( checkArg(optind, argc, argv) )
+                    {
+                        auto tmp = uniset::explode_str(argv[optind], ',');
+
+                        if( tmp.size() < 2 )
+                        {
+                            cerr << "Unknown min, max for random. Use -r min,max" << endl;
+                            return 1;
+                        }
+
+                        min = uni_atoi(tmp[0]);
+                        max = uni_atoi(tmp[1]);
+                    }
+
+                    break;
+
                 case '?':
                 default:
-                    printf("? argumnet\n");
+                    printf("? argument\n");
                     return 0;
             }
         }
@@ -127,6 +152,9 @@ int main( int argc, char** argv )
 
         if( replyVal3 != -1 )
             mbs.setReply3(replyVal3);
+
+        if( random )
+            mbs.setRandomReply(min, max);
 
         mbs.execute();
     }

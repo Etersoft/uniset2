@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------
 #include <unordered_set>
 #include <string>
+#include <random>
 #include "modbus/ModbusTCPServerSlot.h"
 
 // -------------------------------------------------------------------------
@@ -22,6 +23,8 @@ class MBTCPServer
         {
             replyVal = val;
         }
+
+        void setRandomReply( long min, long max );
 
         inline uniset::timeout_t setAfterSendPause( uniset::timeout_t msec )
         {
@@ -98,6 +101,9 @@ class MBTCPServer
 
         bool verbose = { false };
         long replyVal = { -1 };
+        std::random_device rnd;
+        std::unique_ptr<std::mt19937> gen = { nullptr };
+        std::unique_ptr<std::uniform_int_distribution<>> rndgen = { nullptr };
 #if 0
         typedef std::unordered_map<uniset::ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */

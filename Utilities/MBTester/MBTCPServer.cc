@@ -53,7 +53,8 @@ MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const str
     //  sslot->setRecvTimeout(6000);
     //  sslot->setReplyTimeout(10000);
 
-    // build file list...
+    // init random generator
+    gen = std::make_unique<std::mt19937>(rnd());
 }
 
 // -------------------------------------------------------------------------
@@ -71,6 +72,11 @@ void MBTCPServer::setLog(std::shared_ptr<DebugStream>& dlog )
 void MBTCPServer::setMaxSessions( size_t max )
 {
     sslot->setMaxSessions(max);
+}
+// -------------------------------------------------------------------------
+void MBTCPServer::setRandomReply( long min, long max )
+{
+    rndgen = make_unique<std::uniform_int_distribution<>>(min, max);
 }
 // -------------------------------------------------------------------------
 void MBTCPServer::execute()
@@ -96,7 +102,9 @@ ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
 
     if( query.count <= 1 )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(d);
@@ -110,7 +118,9 @@ ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(d);
@@ -159,7 +169,12 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
         size_t bcnt = ModbusRTU::numBytes(query.count);
 
         for( size_t i = 0; i < bcnt; i++ )
-            reply.addData(replyVal);
+        {
+            if( rndgen )
+                reply.addData((*rndgen.get())(*gen.get()));
+            else
+                reply.addData(replyVal);
+        }
     }
 
     return ModbusRTU::erNoError;
@@ -173,7 +188,9 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 
     if( query.count <= 1 )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(query.start);
@@ -187,7 +204,9 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(reg);
@@ -215,7 +234,9 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
 
     if( query.count <= 1 )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(query.start);
@@ -229,7 +250,9 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(reg);
