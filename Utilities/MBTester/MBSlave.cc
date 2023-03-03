@@ -61,6 +61,9 @@ MBSlave::MBSlave(const std::unordered_set<ModbusAddr>& _vaddr, const std::string
     //    rscomm->setReplyTimeout(replyTimeout);
 
     // build file list...
+
+    // init random generator
+    gen = std::make_unique<std::mt19937>(rnd());
 }
 
 // -------------------------------------------------------------------------
@@ -73,6 +76,11 @@ void MBSlave::setLog( std::shared_ptr<DebugStream> dlog )
 {
     if( rscomm )
         rscomm->setLog(dlog);
+}
+// -------------------------------------------------------------------------
+void MBSlave::setRandomReply( long min, long max )
+{
+    rndgen = make_unique<std::uniform_int_distribution<>>(min, max);
 }
 // -------------------------------------------------------------------------
 void MBSlave::execute()
@@ -123,7 +131,9 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 
     for( size_t i = 0; i < bcnt; i++ )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(d);
@@ -143,7 +153,14 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
     d.b[3] = 1;
     d.b[7] = 1;
 
-    if( replyVal == -1 )
+    if( rndgen )
+    {
+        size_t bcnt = ModbusRTU::numBytes(query.count);
+
+        for( size_t i = 0; i < bcnt; i++ )
+            reply.addData((*rndgen.get())(*gen.get()));
+    }
+    else if( replyVal == -1 )
     {
         int bnum = 0;
         int i = 0;
@@ -164,7 +181,9 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 
         for( size_t i = 0; i < bcnt; i++ )
         {
-            if( i == 1 )
+            if( rndgen )
+                reply.addData((*rndgen.get())(*gen.get()));
+            else if( i == 1 )
                 reply.addData(replyVal2);
             else if( i == 2 )
                 reply.addData(replyVal3);
@@ -184,7 +203,9 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 
     if( query.count <= 1 )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(query.start);
@@ -198,7 +219,9 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
         {
             if( num == 1 && replyVal2 != -1  )
                 reply.addData(replyVal2);
@@ -230,7 +253,9 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 
     if( query.count <= 1 )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
             reply.addData(replyVal);
         else
             reply.addData(query.start);
@@ -244,7 +269,9 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( replyVal != -1 )
+        if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
         {
             if( num == 1 && replyVal2 != -1  )
                 reply.addData(replyVal2);

@@ -2,6 +2,7 @@
 #include <string>
 #include <getopt.h>
 #include "Debug.h"
+#include "UniSetTypes.h"
 #include "MBTCPServer.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
@@ -17,6 +18,7 @@ static struct option longopts[] =
     { "const-reply", required_argument, 0, 'c' },
     { "after-send-pause", required_argument, 0, 's' },
     { "max-sessions", required_argument, 0, 'm' },
+    { "random", optional_argument, 0, 'r' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -32,7 +34,10 @@ static void print_help()
     printf("[-c|--const-reply] val         - Reply 'val' for all queries\n");
     printf("[-s|--after-send-pause] msec   - Pause after send request. Default: 0\n");
     printf("[-m|--max-sessions] num        - Set the maximum number of sessions. Default: 10\n");
+    printf("[-r|--random] [min,max]        - Reply random value for all queries. Default: [0,65535]\n");
 }
+// --------------------------------------------------------------------------
+static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
@@ -47,12 +52,15 @@ int main( int argc, char** argv )
     int replyVal = -1;
     timeout_t afterpause = 0;
     size_t maxSessions = 10;
+    int min = 0;
+    int max = 65535;
+    bool random = false;
 
     try
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "hva:p:i:c:s:m:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hva:p:i:c:s:m:r", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -91,9 +99,28 @@ int main( int argc, char** argv )
                     maxSessions = uni_atoi(optarg);
                     break;
 
+                case 'r':
+                    random = true;
+
+                    if( checkArg(optind, argc, argv) )
+                    {
+                        auto tmp = uniset::explode_str(argv[optind], ',');
+
+                        if( tmp.size() < 2 )
+                        {
+                            cerr << "Unknown min, max for random. Use -r min,max" << endl;
+                            return 1;
+                        }
+
+                        min = uni_atoi(tmp[0]);
+                        max = uni_atoi(tmp[1]);
+                    }
+
+                    break;
+
                 case '?':
                 default:
-                    printf("? argumnet\n");
+                    printf("? argument\n");
                     return 0;
             }
         }
@@ -122,6 +149,9 @@ int main( int argc, char** argv )
         if( replyVal != -1 )
             mbs.setReply(replyVal);
 
+        if( random )
+            mbs.setRandomReply(min, max);
+
         mbs.execute();
     }
     catch( const ModbusRTU::mbException& ex )
@@ -136,6 +166,14 @@ int main( int argc, char** argv )
     {
         cerr << "(mbtcpserver): catch(...)" << endl;
     }
+
+    return 0;
+}
+// --------------------------------------------------------------------------
+char* checkArg( int i, int argc, char* argv[] )
+{
+    if( i < argc && (argv[i])[0] != '-' )
+        return argv[i];
 
     return 0;
 }

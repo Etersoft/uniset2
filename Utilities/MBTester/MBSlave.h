@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_set>
 #include <string>
+#include <random>
 #include "modbus/ModbusRTUSlaveSlot.h"
 
 // -------------------------------------------------------------------------
@@ -32,6 +33,8 @@ class MBSlave
         {
             replyVal3 = val;
         }
+
+        void setRandomReply( long min, long max );
 
         void execute();    /*!< основной цикл работы */
 
@@ -99,6 +102,9 @@ class MBSlave
         std::unordered_set<uniset::ModbusRTU::ModbusAddr> vaddr;  /*!< адреса на которые отвечаем */
 
         bool verbose;
+        std::random_device rnd;
+        std::unique_ptr<std::mt19937> gen = { nullptr };
+        std::unique_ptr<std::uniform_int_distribution<>> rndgen = { nullptr };
 #if 0
         typedef std::unordered_map<uniset::ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
