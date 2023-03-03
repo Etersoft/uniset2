@@ -154,18 +154,6 @@ namespace uniset
             maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max", it.getProp("heartbeat_max"), 10);
             test_id = sidHeartBeat;
         }
-        else
-        {
-            test_id = conf->getSensorID("TestMode_S");
-
-            if( test_id == DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-                mbcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
 
         mbinfo << myname << "(init): test_id=" << test_id << endl;
 
@@ -344,6 +332,9 @@ namespace uniset
                 cerr << ex.what() << endl;
                 std::abort();
             }
+
+            if( test_id == DefaultObjectId )
+                test_id = mbconf->conf->getSensorID(it.getProp("name"));
         }
 
         return true;
