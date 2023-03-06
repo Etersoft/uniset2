@@ -338,7 +338,7 @@
 
 		uniset::timeout_t smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
 		std::atomic_bool activated = { false };
-		std::atomic_bool cancelled = { false };
+		std::atomic_bool canceled = { false };
 		uniset::timeout_t activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		uniset::PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
@@ -525,7 +525,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			ostate = "StartUp: wait sm ready..";
 			if( !waitSM(smReadyTimeout) )
 			{
-				if( !cancelled )
+				if( !canceled )
 					uterminate();
 				return;
 			}
@@ -964,7 +964,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::deactivateObject()
 {
-	cancelled = true;
+	canceled = true;
 	<xsl:if test="normalize-space($BASECLASS)!=''">return <xsl:value-of select="normalize-space($BASECLASS)"/>::deactivateObject();</xsl:if>
 	<xsl:if test="normalize-space($BASECLASS)=''">return UniSetObject::deactivateObject();</xsl:if>
 }
@@ -992,7 +992,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 		
 	// waitReady можно использовать т.к. датчик это по сути IONotifyController
-	if( !ui-&gt;waitReadyWithCancellation(_testID,wait_msec,cancelled) )
+	if( !ui-&gt;waitReadyWithCancellation(_testID,wait_msec,canceled) )
 	{
 		ostringstream err;
 		err &lt;&lt; myname 

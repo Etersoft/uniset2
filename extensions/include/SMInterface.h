@@ -69,6 +69,7 @@ namespace uniset
             bool waitSMready( int msec, int pause = 5000 );
             bool waitSMworking( uniset::ObjectId, int msec, int pause = 3000 );
             bool waitSMreadyWithCancellation( int msec, std::atomic_bool& cancelFlag, int pause = 5000 );
+            bool waitSMworkingWithCancellation( uniset::ObjectId sid, int ready_timeout, std::atomic_bool& cancelFlag, int pmsec );
 
             inline bool isLocalwork() const noexcept
             {

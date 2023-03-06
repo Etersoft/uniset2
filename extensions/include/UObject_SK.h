@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2023-02-23+03:00
+// generate timestamp: 2023-03-07+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -149,7 +149,7 @@ class UObject_SK:
 
 		uniset::timeout_t smReadyTimeout; 	/*!< время ожидания готовности SM */
 		std::atomic_bool activated = { false };
-		std::atomic_bool cancelled = { false };
+		std::atomic_bool canceled = { false };
 		uniset::timeout_t activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
 		uniset::PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */
