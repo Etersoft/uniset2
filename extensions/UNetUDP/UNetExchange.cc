@@ -202,13 +202,13 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
         if( test_id == DefaultObjectId )
         {
             ostringstream err;
-            err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
+            err << myname << "(init): sidTestSMReady unknown. 'TestMode_S' not found...";
             unetcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
     }
 
-    unetinfo << myname << "(init): test_id=" << test_id << endl;
+    unetinfo << myname << "(init): sidTestSMReady=" << test_id << endl;
 
     activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 

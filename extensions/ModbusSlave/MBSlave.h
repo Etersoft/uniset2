@@ -542,7 +542,7 @@ namespace uniset
             uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
             long maxHeartBeat = { 10 };
             IOController::IOStateList::iterator itHeartBeat;
-            uniset::ObjectId test_id = { uniset::DefaultObjectId };
+            uniset::ObjectId sidTestSMReady = {uniset::DefaultObjectId };
 
             IOController::IOStateList::iterator itAskCount;
             uniset::ObjectId askcount_id = { uniset::DefaultObjectId };
@@ -556,7 +556,7 @@ namespace uniset
             long restartTCPServerCount = { 0 };
 
             std::atomic_bool activated = { false };
-            std::atomic_bool cancelled = { false };
+            std::atomic_bool canceled = {false };
             timeout_t activateTimeout = { 20000 }; // msec
             bool smPingOK = { false };
             timeout_t wait_msec = { 3000 };

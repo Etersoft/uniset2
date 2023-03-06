@@ -185,7 +185,7 @@ end_private(false)
 	else
 		smReadyTimeout = sm_tout;
 
-	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),conf->getProp(globalnode,"smTestID"),""));
+	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-sid"),conf->getProp(cnode,"smTestSID"),conf->getProp(globalnode,"smTestSID"),""));
 	
 
 	if( smTestID == DefaultObjectId ) // -V547
