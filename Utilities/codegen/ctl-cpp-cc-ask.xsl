@@ -262,7 +262,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		mycrit &lt;&lt; myname
 			&lt;&lt; "(preAskSensors): ************* don`t activated?! ************" &lt;&lt; endl;
 
-	while( !cancelled )
+	while( !canceled )
 	{
 		try
 		{

@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2023-02-23+03:00
+// generate timestamp: 2023-03-07+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -336,7 +336,7 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			ostate = "StartUp: wait sm ready..";
 			if( !waitSM(smReadyTimeout) )
 			{
-				if( !cancelled )
+				if( !canceled )
 					uterminate();
 				return;
 			}
@@ -582,7 +582,7 @@ bool UObject_SK::activateObject()
 // -----------------------------------------------------------------------------
 bool UObject_SK::deactivateObject()
 {
-	cancelled = true;
+	canceled = true;
 	return UniSetObject::deactivateObject();
 }
 // -----------------------------------------------------------------------------
@@ -606,7 +606,7 @@ bool UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 			<< " testID=" << _testID << endl;
 		
 	// waitReady можно использовать т.к. датчик это по сути IONotifyController
-	if( !ui->waitReadyWithCancellation(_testID,wait_msec,cancelled) )
+	if( !ui->waitReadyWithCancellation(_testID,wait_msec,canceled) )
 	{
 		ostringstream err;
 		err << myname 
@@ -721,7 +721,7 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 		mycrit << myname
 			<< "(preAskSensors): ************* don`t activated?! ************" << endl;
 
-	while( !cancelled )
+	while( !canceled )
 	{
 		try
 		{
