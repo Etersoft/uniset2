@@ -33,21 +33,21 @@ namespace uniset
     using namespace ModbusRTU;
     // -----------------------------------------------------------------------------
     MBSlave::MBSlave(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
-        UniSetObject(objId),
-        initPause(3000),
-        test_id(DefaultObjectId),
-        askcount_id(DefaultObjectId),
-        respond_id(DefaultObjectId),
-        respond_invert(false),
-        connCount(0),
-        activated(false),
-        cancelled(false),
-        activateTimeout(500),
-        smPingOK(true),
-        force(false),
-        mbregFromID(false),
-        prefix(prefix),
-        prop_prefix("")
+            UniSetObject(objId),
+            initPause(3000),
+            sidTestSMReady(DefaultObjectId),
+            askcount_id(DefaultObjectId),
+            respond_id(DefaultObjectId),
+            respond_invert(false),
+            connCount(0),
+            activated(false),
+            canceled(false),
+            activateTimeout(500),
+            smPingOK(true),
+            force(false),
+            mbregFromID(false),
+            prefix(prefix),
+            prop_prefix("")
     {
         if( objId == DefaultObjectId )
             throw uniset::SystemError("(MBSlave): objId=-1?!! Use --" + prefix + "-name" );
@@ -87,8 +87,8 @@ namespace uniset
             ic->logAgregator()->add(loga);
 
         // определяем фильтр
-        s_field = conf->getArgParam("--" + prefix + "-filter-field");
-        s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
+        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
+        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
         mbinfo << myname << "(init): read s_field='" << s_field
                << "' s_fvalue='" << s_fvalue << "'" << endl;
 
@@ -339,12 +339,15 @@ namespace uniset
                 ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
             maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max", it.getProp("heartbeat_max"), 10);
-            test_id = sidHeartBeat;
         }
+
+        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-test-sid", it.getProp2("smTestSID", "TestMode_S"));
+        sidTestSMReady = conf->getSensorID(sm_ready_sid);
+
+        mbinfo << myname << ": init sidTestSMReady=" << sidTestSMReady << endl;
 
         askcount_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-askcount-id", it.getProp("askcount_id")));
         mbinfo << myname << ": init askcount_id=" << askcount_id << endl;
-        mbinfo << myname << ": init test_id=" << test_id << endl;
 
         wait_msec = conf->getHeartBeatTime() - 100;
 
@@ -521,7 +524,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     MBSlave::~MBSlave()
     {
-        cancelled = true;
+        canceled = true;
 
         if( tcpserver && tcpserver->isActive() )
             tcpserver->terminate();
@@ -543,7 +546,7 @@ namespace uniset
     void MBSlave::finalThread()
     {
         activated = false;
-        cancelled = true;
+        canceled = true;
     }
     // -----------------------------------------------------------------------------
     bool MBSlave::waitSMReady()
@@ -557,12 +560,12 @@ namespace uniset
         else if( tout < 0 )
             ready_timeout = UniSetTimer::WaitUpTime;
 
-        if( !shm->waitSMreadyWithCancellation(ready_timeout, cancelled, 50) )
+        if( !shm->waitSMreadyWithCancellation(ready_timeout, canceled, 50) )
         {
-            if( !cancelled )
+            if( !canceled )
             {
                 ostringstream err;
-                err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+                err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec. ==> TERMINATE!";
                 mbcrit << err.str() << endl;
             }
 
@@ -582,10 +585,10 @@ namespace uniset
         {
             std::unique_lock<std::mutex> locker(mutexStartNotify);
 
-            while( !activated && !cancelled )
+            while( !activated && !canceled )
                 startNotifyEvent.wait(locker);
 
-            if( cancelled )
+            if( canceled )
                 return;
         }
 
@@ -602,7 +605,7 @@ namespace uniset
                << " myaddr=" << ModbusServer::vaddr2str(vaddr)
                << endl;
 
-        while( !cancelled )
+        while( !canceled )
         {
             try
             {
@@ -860,7 +863,7 @@ namespace uniset
 
             for( const auto& s : sess )
             {
-                if( !activated || cancelled )
+                if(!activated || canceled )
                     return;
 
                 auto i = cmap.find( s.iaddr );
@@ -880,7 +883,7 @@ namespace uniset
             // а теперь проходим по списку и выставляем датчики..
             for( const auto& it : cmap )
             {
-                if( !activated || cancelled )
+                if(!activated || canceled )
                     return;
 
                 auto c = it.second;
@@ -915,7 +918,7 @@ namespace uniset
                 }
             }
 
-            if( !activated || cancelled )
+            if(!activated || canceled )
                 return;
 
             updateStatistics();
@@ -972,7 +975,7 @@ namespace uniset
 
                 if( !waitSMReady() )
                 {
-                    if( !cancelled )
+                    if( !canceled )
                         uterminate();
 
                     return;
@@ -983,7 +986,7 @@ namespace uniset
                 msleep(initPause);
                 PassiveTimer ptAct(activateTimeout);
 
-                while( !cancelled && !activated && !ptAct.checkTime() )
+                while(!canceled && !activated && !ptAct.checkTime() )
                 {
                     cout << myname << "(sysCommand): wait activate..." << endl;
                     msleep(300);
@@ -992,7 +995,7 @@ namespace uniset
                         break;
                 }
 
-                if( cancelled )
+                if( canceled )
                     return;
 
                 if( !activated )
@@ -1053,7 +1056,7 @@ namespace uniset
     // ------------------------------------------------------------------------------------------
     void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
     {
-        if( !shm->waitSMworking(test_id, activateTimeout, 50) )
+        if( !shm->waitSMworking(sidTestSMReady, activateTimeout, 50) )
         {
             ostringstream err;
             err << myname
@@ -1179,11 +1182,11 @@ namespace uniset
     {
         mbinfo << myname << "(deactivateObject): ..." << endl;
 
-        if( cancelled )
+        if( canceled )
             return UniSetObject::deactivateObject();
 
         activated = false;
-        cancelled = true;
+        canceled = true;
 
         if( tcpserver )
         {
@@ -1272,9 +1275,9 @@ namespace uniset
             return false;
         }
 
-        // init test_id
-        if( test_id == DefaultObjectId )
-            test_id = p.si.id;
+        // init sidTestSMReady
+        if(sidTestSMReady == DefaultObjectId )
+            sidTestSMReady = p.si.id;
 
         ModbusAddr mbaddr = ModbusRTU::str2mbAddr(s_mbaddr);
 
@@ -1554,64 +1557,65 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void MBSlave::help_print( int argc, const char* const* argv )
     {
-        cout << "Default: prefix='mbs'" << endl;
-        cout << "--prefix-name  name        - ObjectID. По умолчанию: MBSlave1" << endl;
-        cout << "--prefix-confnode cnode    - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
+        cout << "--mbs-name  name        - ObjectID. По умолчанию: MBSlave1" << endl;
+        cout << "--mbs-confnode cnode    - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
         cout << endl;
-        cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
-        cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
-        cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-        cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
-        cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
-        cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
-        cout << "--prefix-respond-id - respond sensor id" << endl;
-        cout << "--prefix-respond-invert [0|1]    - invert respond logic" << endl;
-        cout << "--prefix-sm-ready-timeout        - время на ожидание старта SM" << endl;
-        cout << "--prefix-timeout msec            - timeout for check link" << endl;
-        cout << "--prefix-after-send-pause msec   - принудительная пауза после посылки ответа. По умолчанию: 0" << endl;
-        cout << "--prefix-reply-timeout msec      - Контрольное время для формирования ответа. " << endl
+        cout << "--mbs-reg-from-id 0,1         - Использовать в качестве регистра sensor ID" << endl;
+        cout << "--mbs-filter-field name       - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
+        cout << "--mbs-filter-value val        - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
+        cout << "--mbs-heartbeat-id            - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
+        cout << "--mbs-heartbeat-max           - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+        cout << "--mbs-sm-ready-timeout        - время на ожидание старта SM" << endl;
+        cout << "--mbs-sm-ready-test-sid name  - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
+        cout << "--mbs-initPause               - Задержка перед инициализацией (время на активизация процесса)" << endl;
+        cout << "--mbs-force 1                 - Читать данные из SM каждый раз, а не по изменению." << endl;
+        cout << "--mbs-respond-id              - respond sensor id" << endl;
+        cout << "--mbs-respond-invert [0|1]    - invert respond logic" << endl;
+        cout << "--mbs-sm-ready-timeout        - время на ожидание старта SM" << endl;
+        cout << "--mbs-timeout msec            - timeout for check link" << endl;
+        cout << "--mbs-after-send-pause msec   - принудительная пауза после посылки ответа. По умолчанию: 0" << endl;
+        cout << "--mbs-reply-timeout msec      - Контрольное время для формирования ответа. " << endl
              << "                                   Если обработка запроса превысит это время, ответ не будет послан (timeout)." << endl
              << "                                   По умолчанию: 3 сек" << endl;
 
-        cout << "--prefix-default-mbfunc [0..255] - Функция по умолчанию, если не указан параметр mbfunc в настройках регистра. Только если включён контроль функций. " << endl;
-        cout << "--prefix-check-mbfunc  [0|1]     - Включить контроль (обработку) свойства mbfunc. По умолчанию: отключён." << endl;
-        cout << "--prefix-no-mbfunc-optimization [0|1] - Отключить принудельное преобразование функций 0x06->0x10,0x05->0x0F" << endl;
-        cout << "--prefix-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
+        cout << "--mbs-default-mbfunc [0..255] - Функция по умолчанию, если не указан параметр mbfunc в настройках регистра. Только если включён контроль функций. " << endl;
+        cout << "--mbs-check-mbfunc  [0|1]     - Включить контроль (обработку) свойства mbfunc. По умолчанию: отключён." << endl;
+        cout << "--mbs-no-mbfunc-optimization [0|1] - Отключить принудельное преобразование функций 0x06->0x10,0x05->0x0F" << endl;
+        cout << "--mbs-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
 
-        cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
-        cout << "--prefix-my-addr           - адрес текущего узла" << endl;
-        cout << "--prefix-type [RTU|TCP]    - modbus server type." << endl;
+        cout << "--mbs-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
+        cout << "--mbs-my-addr           - адрес текущего узла" << endl;
+        cout << "--mbs-type [RTU|TCP]    - modbus server type." << endl;
 
         cout << " Настройки протокола RTU: " << endl;
-        cout << "--prefix-dev devname  - файл устройства" << endl;
-        cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-        cout << "--prefix-parity val   - Контроль чётности (odd,even,noparity,space,mark)." << endl;
-        cout << "--prefix-charsize val - Битность (cs5, cs6, cs7, cs8). По умолчанию: cs8" << endl;
-        cout << "--prefix-stopbits val - Стоп-биты" << endl;
+        cout << "--mbs-dev devname  - файл устройства" << endl;
+        cout << "--mbs-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+        cout << "--mbs-parity val   - Контроль чётности (odd,even,noparity,space,mark)." << endl;
+        cout << "--mbs-charsize val - Битность (cs5, cs6, cs7, cs8). По умолчанию: cs8" << endl;
+        cout << "--mbs-stopbits val - Стоп-биты" << endl;
         cout << "                    1 - OneBit" << endl;
         cout << "                    2 - OneAndHalfBits" << endl;
         cout << "                    3 - TwoBits" << endl;
         cout << " Настройки протокола TCP: " << endl;
-        cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
-        cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
-        cout << "--prefix-update-stat-time msec  - Период обновления статистики работы. По умолчанию: 4 сек." << endl;
-        cout << "--prefix-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
-        cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 5." << endl;
-        cout << "--prefix-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
-        cout << "--prefix-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
+        cout << "--mbs-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
+        cout << "--mbs-inet-port num - this modbus server port. Default: 502" << endl;
+        cout << "--mbs-update-stat-time msec  - Период обновления статистики работы. По умолчанию: 4 сек." << endl;
+        cout << "--mbs-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
+        cout << "--mbs-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 5." << endl;
+        cout << "--mbs-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
+        cout << "--mbs-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
         cout << endl;
         cout << " Logs: " << endl;
-        cout << "--prefix-log-...            - log control" << endl;
+        cout << "--mbs-log-...            - log control" << endl;
         cout << "             add-levels ...  " << endl;
         cout << "             del-levels ...  " << endl;
         cout << "             set-levels ...  " << endl;
         cout << "             logfile filanme " << endl;
         cout << "             no-debug " << endl;
         cout << " LogServer: " << endl;
-        cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
-        cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
-        cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+        cout << "--mbs-run-logserver      - run logserver. Default: localhost:id" << endl;
+        cout << "--mbs-logserver-host ip  - listen ip. Default: localhost" << endl;
+        cout << "--mbs-logserver-port num - listen port. Default: ID" << endl;
         cout << LogServer::help_print("prefix-logserver") << endl;
     }
     // -----------------------------------------------------------------------------

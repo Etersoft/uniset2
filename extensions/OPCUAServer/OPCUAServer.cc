@@ -134,8 +134,8 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     updateThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::updateLoop);
 
     // определяем фильтр
-    s_field = conf->getArgParam("--" + argprefix + "filter-field");
-    s_fvalue = conf->getArgParam("--" + argprefix + "filter-value");
+    s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"));
+    s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterField"));
 
     vmonit(s_field);
     vmonit(s_fvalue);
@@ -384,7 +384,10 @@ void OPCUAServer::help_print()
     cout << "--opcua-heartbeat-id name  - ID for heartbeat sensor." << endl;
     cout << "--opcua-heartbeat-max val  - max value for heartbeat sensor." << endl;
     cout << "--opcua-filter-field name  - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
-    cout << "--opcua -filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
+    cout << "--opcua-filter-value val   - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
+    cout << "--opcua-sm-ready-timeout   - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+    cout << "--opcua-sm-test-sid        - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+
     cout << endl;
     cout << "OPC UA:" << endl;
     cout << "--opcua-updatetime msec      - Пауза между обновлением информации в/из SM. По умолчанию 200" << endl;

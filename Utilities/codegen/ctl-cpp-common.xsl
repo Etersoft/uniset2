@@ -1432,7 +1432,7 @@ end_private(false)
 	else
 		smReadyTimeout = sm_tout;
 
-	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),conf->getProp(globalnode,"smTestID"),""));
+	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-sid"),conf->getProp(cnode,"smTestSID"),conf->getProp(globalnode,"smTestSID"),""));
 	<xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@smTestID)!=''">
 	if( smTestID == DefaultObjectId )
@@ -1952,7 +1952,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	else
 		smReadyTimeout = sm_tout;
 
-	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-id"), conf->getProp(cnode,"smTestID"), conf->getProp(globalnode,"smTestID"), ""));
+	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-sid"), conf->getProp(cnode,"smTestSID"), conf->getProp(globalnode,"smTestSID"), ""));
 
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();

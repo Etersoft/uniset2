@@ -148,7 +148,7 @@ namespace uniset
             uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
             long maxHeartBeat = { 10 };
             IOController::IOStateList::iterator itHeartBeat;
-            uniset::ObjectId test_id = { uniset::DefaultObjectId };
+            uniset::ObjectId sidTestSMReady = {uniset::DefaultObjectId };
 
             uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
             IOController::IOStateList::iterator itExchangeMode;

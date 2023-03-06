@@ -170,8 +170,8 @@ namespace uniset
         shm = make_shared<SMInterface>(icID, ui, getId(), ic);
 
         // определяем фильтр
-        s_field = conf->getArgParam("--" + prefix + "-filter-field");
-        s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
+        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
+        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterField"));
 
         vmonit(s_field);
         vmonit(s_fvalue);
@@ -190,18 +190,16 @@ namespace uniset
 
         vmonit(smReadyTimeout);
 
-        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-ready-test-sid", it.getProp("sm_ready_test_sid"));
+        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-test-sid", it.getProp2("smTestSID", "TestMode_S"));
         sidTestSMReady = conf->getSensorID(sm_ready_sid);
 
         if( sidTestSMReady == DefaultObjectId )
         {
-            sidTestSMReady = conf->getSensorID("TestMode_S");
             opcwarn << myname
-                    << "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
-                    << " Use 'TestMode_S' (if present)" << endl;
+                    << "(init): Unknown ID for sm-test-sid (--" << prefix << "-sm-test-id)..." << endl;
         }
         else
-            opcinfo << myname << "(init): sm-ready-test-sid: " << sm_ready_sid << endl;
+            opcinfo << myname << "(init): sm-test-sid: " << sm_ready_sid << endl;
 
         vmonit(sidTestSMReady);
 
@@ -1074,17 +1072,17 @@ namespace uniset
         cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 100 мсек." << endl;
         cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
         cout << "--opcua-filterT val       - Постоянная:: времени фильтра." << endl;
-        cout << "--opcua-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--opcua-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-filter-field      - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-filter-value      - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
         cout << "--opcua-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--opcua-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--opcua-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+        cout << "--opcua-sm-ready-timeout  - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+        cout << "--opcua-sm-test-sid       - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
         cout << "--opcua-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
         cout << "--opcua-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
         cout << "--opcua-write-to-all-channels - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
 
         cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
-        cout << "--opcua-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
         cout << endl;
         cout << " OPC UA: N=[1,2]" << endl;
         cout << "--opcua-addrN addr        - OPC UA server N address (channelN). Default: opc.tcp://localhost:4840/" << endl;
