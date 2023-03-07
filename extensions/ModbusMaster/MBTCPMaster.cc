@@ -38,7 +38,7 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
     auto conf = uniset_conf();
 
     // префикс для "свойств" - по умолчанию "tcp_";
-    mbconf->prop_prefix = initPropPrefix(mbconf->s_field, "tcp_");
+    mbconf->prop_prefix = initPropPrefix("tcp_");
     mbinfo << myname << "(init): prop_prefix=" << mbconf->prop_prefix << endl;
 
     UniXML::iterator it(cnode);
@@ -249,7 +249,7 @@ uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )
 // ----------------------------------------------------------------------------
 bool MBTCPMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& newConf )
 {
-    newConf->prop_prefix = initPropPrefix(newConf->s_field, "tcp_");
+    newConf->prop_prefix = initPropPrefix("tcp_");
 
     UniXML::iterator it(newConf->cnode);
 

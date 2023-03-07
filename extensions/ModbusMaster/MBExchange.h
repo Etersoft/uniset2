@@ -133,7 +133,7 @@ namespace uniset
             bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
             bool initItem( UniXML::iterator& it );
             void initOffsetList();
-            std::string initPropPrefix( const std::string& s_filed, const std::string& def_prop_prefix );
+            std::string initPropPrefix( const std::string& def_prop_prefix );
 
             xmlNode* cnode = { 0 };
             std::shared_ptr<SMInterface> shm;

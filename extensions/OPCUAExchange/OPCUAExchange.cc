@@ -171,7 +171,7 @@ namespace uniset
 
         // определяем фильтр
         s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
-        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterField"));
+        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
 
         vmonit(s_field);
         vmonit(s_fvalue);
