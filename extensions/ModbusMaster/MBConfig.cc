@@ -582,14 +582,10 @@ namespace uniset
         if( p.t_ai != DefaultObjectId ) // пороговые датчики в список обмена вносить не надо.
             return true;
 
-        string addr( IOBase::initProp(it, "mbaddr", prop_prefix, false) );
-
-        if( addr.empty() )
-            addr = defaultMBaddr;
-
+        string addr = IOBase::initProp(it, "mbaddr", prop_prefix, false, defaultMBaddr);
         if( addr.empty() )
         {
-            mbcrit << myname << "(initItem): Unknown mbaddr(" << IOBase::initProp(it, "mbaddr", prop_prefix, false) << ")='" << addr << "' for " << it.getProp("name") << endl;
+            mbcrit << myname << "(initItem): Unknown mbaddr='" << addr << "' for " << it.getProp("name") << endl;
             return false;
         }
 

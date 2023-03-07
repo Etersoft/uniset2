@@ -135,7 +135,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     // определяем фильтр
     s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"));
-    s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterField"));
+    s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"));
 
     vmonit(s_field);
     vmonit(s_fvalue);
