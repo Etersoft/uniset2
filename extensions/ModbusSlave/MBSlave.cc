@@ -124,9 +124,9 @@ namespace uniset
         default_mbaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
         default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
-        mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
-        checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
-        noMBFuncOptimize = conf->getArgInt("--" + prefix + "-no-mbfunc-optimization", it.getProp("no_mbfunc_optimization"));
+        mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("regFromId"));
+        checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("checkMBFunc"));
+        noMBFuncOptimize = conf->getArgInt("--" + prefix + "-no-mbfunc-optimization", it.getProp("noMBFuncOptimization"));
         mbinfo << myname << "(init): mbregFromID=" << mbregFromID
                << " checkMBFunc=" << checkMBFunc
                << " default_mbfunc=" << default_mbfunc

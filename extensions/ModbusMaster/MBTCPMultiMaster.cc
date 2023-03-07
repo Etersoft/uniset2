@@ -43,10 +43,10 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 
     UniXML::iterator it(cnode);
 
-    checktime = conf->getArgPInt("--" + prefix + "-checktime", it.getProp("checktime"), 5000);
+    checktime = conf->getArgPInt("--" + prefix + "-checktime", it.getProp("checkTime"), 5000);
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
 
-    defaultIgnoreTimeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignore_timeout"), ptReopen.getInterval());
+    defaultIgnoreTimeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignoreTimeout"), ptReopen.getInterval());
 
     // Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
     // неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
@@ -166,9 +166,9 @@ void MBTCPMultiMaster::initGateList(uniset::UniXML::iterator it, const std::shar
         sinf->priority = it1.getIntProp("priority");
         sinf->mbtcp = std::make_shared<ModbusTCPMaster>();
 
-        sinf->ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout", defaultIgnoreTimeout) );
+        sinf->ptIgnoreTimeout.setTiming( it1.getPIntProp("ignoreTimeout", defaultIgnoreTimeout) );
         sinf->recv_timeout = it1.getPIntProp("recv_timeout", mconf->recv_timeout);
-        sinf->aftersend_pause = it1.getPIntProp("aftersend_pause", mconf->aftersend_pause);
+        sinf->aftersend_pause = it1.getPIntProp("aftersendPause", mconf->aftersend_pause);
         sinf->sleepPause_usec = it1.getPIntProp("sleepPause_msec", mconf->sleepPause_msec);
         sinf->respond_invert = it1.getPIntProp("invert", 0);
         sinf->respond_force = it1.getPIntProp("force", 0);
@@ -691,7 +691,7 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 
     cout << endl;
     cout << " ВНИМАНИЕ! '--prefix-reopen-timeout' для MBTCPMultiMaster НЕ ДЕЙСТВУЕТ! " << endl;
-    cout << " Смена канала происходит по --prefix-timeout. " << endl;
+    cout << " Смена канала происходит по --prefix-timeout." << endl;
     cout << " При этом следует учитывать блокировку отключаемого канала на время: --prefix-ignore-timeout" << endl;
 }
 // -----------------------------------------------------------------------------
@@ -771,7 +771,7 @@ bool MBTCPMultiMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, 
     if( !it.getProp("persistent_connection").empty() )
         force_disconnect = ( it.getIntProp("persistent_connection") > 0 ) ? false : true;
 
-    int newIgnoreTimeout = it.getIntProp("ignore_timeout");
+    int newIgnoreTimeout = it.getIntProp("ignoreTimeout");
 
     if( newIgnoreTimeout > 0 )
         defaultIgnoreTimeout = newIgnoreTimeout;

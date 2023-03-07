@@ -14,7 +14,7 @@ cd -
 --mbtcp-filter-field mb \
 --mbtcp-filter-value 1 \
 --mbtcp-polltime 50 --mbtcp-recv-timeout 500 --mbtcp-checktime 1000 --mbtcp-timeout 2500 --mbtcp-ignore-timeout 2500 \
---mbtcp-initPause 1000 \
+--mbtcp-init-pause 1000 \
 --dlog-add-levels warn,crit
 # --mbtcp-log-add-levels any
 # --dlog-add-levels any

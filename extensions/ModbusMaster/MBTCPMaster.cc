@@ -59,7 +59,7 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
     mbinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
 
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
-    mbinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
+    mbinfo << myname << "(init): persistent-connection=" << (!force_disconnect) << endl;
 
     if( shm->isLocalwork() )
         mbconf->loadConfig(conf->getConfXML(), conf->getXMLSensorsSection());

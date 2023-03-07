@@ -109,13 +109,13 @@ namespace uniset
         int reinit_tout = conf->getArgPInt("--" + prefix + "-reinit-timeout", it.getProp("reinit_timeout"), mbconf->default_timeout);
         ptInitChannel.setTiming(reinit_tout);
 
-        mbconf->aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause", it.getProp("aftersend_pause"), 0);
-        mbconf->noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization", it.getProp("no_query_optimization"));
-        mbconf->mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
+        mbconf->aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause", it.getProp("aftersendPause"), 0);
+        mbconf->noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization", it.getProp("noQueryOptimization"));
+        mbconf->mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("regFromId"));
         mbinfo << myname << "(init): mbregFromID=" << mbconf->mbregFromID << endl;
 
         mbconf->polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), 100);
-        initPause = conf->getArgPInt("--" + prefix + "-initPause", it.getProp("initPause"), 3000);
+        initPause = conf->getArgPInt("--" + prefix + "-init-pause", it.getProp("initPause"), 3000);
 
         mbconf->sleepPause_msec = conf->getArgPInt("--" + prefix + "-sleepPause-msec", it.getProp("sleepPause"), 10);
 
