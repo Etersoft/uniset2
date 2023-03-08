@@ -182,7 +182,7 @@ void MQTTPublisher::help_print( int argc, const char* const* argv )
     cout << "             add-levels ...  " << endl;
     cout << "             del-levels ...  " << endl;
     cout << "             set-levels ...  " << endl;
-    cout << "             logfile filanme " << endl;
+    cout << "             logfile filename" << endl;
     cout << "             no-debug " << endl;
     cout << " LogServer: " << endl;
     cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;

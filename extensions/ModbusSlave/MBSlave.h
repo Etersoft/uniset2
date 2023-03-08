@@ -183,17 +183,20 @@ namespace uniset
       \code
       <sensors name="Sensors">
         ...
-        <item name="MySensor_S" textname="my sesnsor" iotype="DI" mbs="1" mbs_mbaddr="0x02" mbs_mbreg="1"/>
-        <item name="MySensor2_S" textname="my sesnsor 2" iotype="DI" mbs="1" mbs_mbaddr="0x01" mbs_mbreg="1"/>
+        <item name="MySensor_S" textname="my sesnsor" iotype="DI" mbs="1" mbaddr="0x02" mbreg="1"/>
+        <item name="MySensor2_S" textname="my sesnsor 2" iotype="DI" mbs="1" mbaddr="0x01" mbreg="1"/>
         ...
       </sensors>
     \endcode
 
-       \warning По умолчанию для свойств используется заданный в конструктроре префикс "mbs_".
+    \warning При помощи --xxx-set-prop-prefix val можно принудительно задать префикс.
+     Если просто указать ключ --xxx-set-prop-prefix - будет использован "пустой" префикс (свойства без префикса).
+     Префикс должен задаваться "полным", т.е. включая _(подчёркивание), если оно используется в свойствах
+     (например для "mbs_mbreg" должен быть задан --xxx-set-prop-prefix mbs_ ).
 
       К основным параметрам настройки датчиков относятся следующие (префикс \b mbs_ - для примера):
        - \b mbs_mbaddr- адрес к которому относиться данный регистр. Если не используется параметр \b default_mbaddr.
-       - \b mbs_mbreg - запрашиваемый/записываемый регистр. Если не используется параметр \b reg_from_id.
+       - \b mbs_mbreg - запрашиваемый/записываемый регистр. Если не используется параметр \b regFromId.
 
        Помимо этого можно задавать следующие параметры:
        - \b mbs_vtype - тип переменной. см VTypes::VType.
@@ -201,7 +204,7 @@ namespace uniset
        - \b mbs_iotype- [DI,DO,AI,AO] - переназначить тип датчика. По умолчанию используется поле iotype.
        - \b mbs_nbyte - [1|2] номер байта. Используется если mbs_vtype="byte".
 
-       - \b accessmode- режим доступа к регистру.
+       - \b mbs_accessmode - режим доступа к регистру.
          - "ro" - read only
          - "wo" - write only
          - "rw" - read/write. Режим по умолчанию.
@@ -232,7 +235,7 @@ namespace uniset
     \section sec_MBSlave_MEIRDI Поддержка "MODBUS Encapsulated Interface" (0x2B)[0x0E]
     \code
     <MEI>
-    <!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
+    <!-- ВНИМАНИЕ: должен заполняться в соответствии со стандартом. ObjectID и DeviceID не случайны.. -->
     <device id="0x01">
       <object id="0" comm="VendorName">
         <string value="etersoft"/>

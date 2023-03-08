@@ -33,21 +33,21 @@ namespace uniset
     using namespace ModbusRTU;
     // -----------------------------------------------------------------------------
     MBSlave::MBSlave(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
-            UniSetObject(objId),
-            initPause(3000),
-            sidTestSMReady(DefaultObjectId),
-            askcount_id(DefaultObjectId),
-            respond_id(DefaultObjectId),
-            respond_invert(false),
-            connCount(0),
-            activated(false),
-            canceled(false),
-            activateTimeout(500),
-            smPingOK(true),
-            force(false),
-            mbregFromID(false),
-            prefix(prefix),
-            prop_prefix("")
+        UniSetObject(objId),
+        initPause(3000),
+        sidTestSMReady(DefaultObjectId),
+        askcount_id(DefaultObjectId),
+        respond_id(DefaultObjectId),
+        respond_invert(false),
+        connCount(0),
+        activated(false),
+        canceled(false),
+        activateTimeout(500),
+        smPingOK(true),
+        force(false),
+        mbregFromID(false),
+        prefix(prefix),
+        prop_prefix("")
     {
         if( objId == DefaultObjectId )
             throw uniset::SystemError("(MBSlave): objId=-1?!! Use --" + prefix + "-name" );
@@ -1575,7 +1575,7 @@ namespace uniset
 
         cout << "--mbs-default-mbfunc [0..255] - Функция по умолчанию, если не указан параметр mbfunc в настройках регистра. Только если включён контроль функций. " << endl;
         cout << "--mbs-check-mbfunc  [0|1]     - Включить контроль (обработку) свойства mbfunc. По умолчанию: отключён." << endl;
-        cout << "--mbs-no-mbfunc-optimization [0|1] - Отключить принудельное преобразование функций 0x06->0x10,0x05->0x0F" << endl;
+        cout << "--mbs-no-mbfunc-optimization [0|1] - Отключить принудительное преобразование функций 0x06->0x10,0x05->0x0F" << endl;
         cout << "--mbs-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
 
         cout << "--mbs-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
@@ -1596,7 +1596,7 @@ namespace uniset
         cout << "--mbs-inet-port num - this modbus server port. Default: 502" << endl;
         cout << "--mbs-update-stat-time msec  - Период обновления статистики работы. По умолчанию: 4 сек." << endl;
         cout << "--mbs-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
-        cout << "--mbs-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 5." << endl;
+        cout << "--mbs-session-maxnum num     - Максимальное количество соединений. По умолчанию: 5." << endl;
         cout << "--mbs-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
         cout << "--mbs-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
         cout << endl;
@@ -1605,7 +1605,7 @@ namespace uniset
         cout << "             add-levels ...  " << endl;
         cout << "             del-levels ...  " << endl;
         cout << "             set-levels ...  " << endl;
-        cout << "             logfile filanme " << endl;
+        cout << "             logfile filename" << endl;
         cout << "             no-debug " << endl;
         cout << " LogServer: " << endl;
         cout << "--mbs-run-logserver      - run logserver. Default: localhost:id" << endl;

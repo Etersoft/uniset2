@@ -130,7 +130,7 @@ std::string DBServer::help_print()
 	h << "             add-levels ..." << endl;
 	h << "             del-levels ..." << endl;
 	h << "             set-levels ..." << endl;
-	h << "             logfile filaname" << endl;
+	h << "             logfile filename" << endl;
 	h << "             no-debug " << endl;
 	h << " LogServer: " << endl;
 	h << "--prefix-run-logserver       - run logserver. Default: localhost:id" << endl;

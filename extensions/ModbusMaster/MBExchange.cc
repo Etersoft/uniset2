@@ -206,7 +206,7 @@ namespace uniset
         cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
         cout << "--prefix-timeout msec           - Таймаут для определения отсутствия соединения" << endl;
         cout << "--prefix-aftersend-pause msec   - Пауза после посылки запроса (каждого). По умолчанию: 0." << endl;
-        cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутствия соединения msec милисекунд. По умолчанию 10 сек." << endl;
+        cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутствия соединения msec миллисекунд. По умолчанию 10 сек." << endl;
         cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
         cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
@@ -232,7 +232,7 @@ namespace uniset
         cout << "             add-levels ...  " << endl;
         cout << "             del-levels ...  " << endl;
         cout << "             set-levels ...  " << endl;
-        cout << "             logfile filanme " << endl;
+        cout << "             logfile filename" << endl;
         cout << "             no-debug " << endl;
         cout << " LogServer: " << endl;
         cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;

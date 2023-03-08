@@ -274,7 +274,7 @@ void RRDServer::help_print( int argc, const char* const* argv )
     cout << "             add-levels ...  " << endl;
     cout << "             del-levels ...  " << endl;
     cout << "             set-levels ...  " << endl;
-    cout << "             logfile filanme " << endl;
+    cout << "             logfile filename" << endl;
     cout << "             no-debug " << endl;
     cout << " Base oprtions: " << endl;
     //  cout << UObject_SK::help() << endl;
