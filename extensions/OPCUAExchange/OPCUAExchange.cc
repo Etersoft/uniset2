@@ -139,7 +139,7 @@ namespace uniset
         polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), polltime);
         vmonit(polltime);
 
-        updatetime = conf->getArgPInt("--" + prefix + "-updatetime", it.getProp("updatetime"), updatetime);
+        updatetime = conf->getArgPInt("--" + prefix + "-updatetime", it.getProp("updateTime"), updatetime);
         vmonit(updatetime);
 
         auto timeout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
@@ -151,7 +151,7 @@ namespace uniset
         vmonit(reconnectPause);
 
         force         = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
-        force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
+        force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("forceOut"));
 
         if( findArgParam("--" + prefix + "-write-to-all-channels", conf->getArgc(), conf->getArgv()) != -1 )
             writeToAllChannels = true;
@@ -161,7 +161,7 @@ namespace uniset
         vmonit(force);
         vmonit(force_out);
 
-        filtersize = conf->getArgPInt("--" + prefix + "-filtersize", it.getProp("filtersize"), 1);
+        filtersize = conf->getArgPInt("--" + prefix + "-filtersize", it.getProp("filterSize"), 1);
         filterT = atof(conf->getArgParam("--" + prefix + "-filterT", it.getProp("filterT")).c_str());
 
         vmonit(filtersize);

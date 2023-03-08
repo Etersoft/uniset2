@@ -209,7 +209,6 @@ namespace uniset
         cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутствия соединения msec миллисекунд. По умолчанию 10 сек." << endl;
         cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << "--prefix-force 0,1              - Сохранять значения в SM на каждом шаге, независимо от, того менялось ли значение" << endl;
         cout << "--prefix-force-out 0,1          - Считывать значения 'выходов' из SM на каждом шаге (а не по изменению)" << endl;
         cout << "--prefix-initPause msec         - Задержка перед инициализацией (время на активизация процесса)" << endl;
@@ -218,7 +217,7 @@ namespace uniset
         cout << "--prefix-filter-field name      - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
         cout << "--prefix-filter-value val       - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
         cout << "--prefix-statistic-sec sec      - Выводить статистику опроса каждые sec секунд" << endl;
-        cout << "--prefix-sm-ready-timeout       - время на ожидание старта SM" << endl;
+        cout << "--prefix-sm-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << "--prefix-sm-ready-test-sid name - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
         cout << "--prefix-exchange-mode-id       - Идентификатор (AI) датчика, позволяющего управлять работой процесса" << endl;
         cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс." << endl;
