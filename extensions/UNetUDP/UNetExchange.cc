@@ -627,7 +627,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
     cout << "             add-levels ..." << endl;
     cout << "             del-levels ..." << endl;
     cout << "             set-levels ..." << endl;
-    cout << "             logfile filaname" << endl;
+    cout << "             logfile filename" << endl;
     cout << "             no-debug " << endl;
     cout << " LogServer: " << endl;
     cout << "--prefix-run-logserver       - run logserver. Default: localhost:id" << endl;
