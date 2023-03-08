@@ -181,12 +181,12 @@ namespace uniset
         vmonit(polltime);
 
         force         = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
-        force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
+        force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("forceOut"));
 
         vmonit(force);
         vmonit(force_out);
 
-        filtersize = conf->getArgPInt("--" + prefix + "-filtersize", it.getProp("filtersize"), 1);
+        filtersize = conf->getArgPInt("--" + prefix + "-filtersize", it.getProp("filterSize"), 1);
 
         filterT = atof(conf->getArgParam("--" + prefix + "-filterT", it.getProp("filterT")).c_str());
 
@@ -234,8 +234,8 @@ namespace uniset
         shm = make_shared<SMInterface>(icID, ui, myid, ic);
 
         // определяем фильтр
-        s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
-        s_fvalue = conf->getArgParam("--" + prefix + "-s-filter-value");
+        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
+        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
 
         vmonit(s_field);
         vmonit(s_fvalue);
@@ -243,16 +243,16 @@ namespace uniset
         ioinfo << myname << "(init): read s_field='" << s_field
                << "' s_fvalue='" << s_fvalue << "'" << endl;
 
-        int blink_msec = conf->getArgPInt("--" + prefix + "-blink-time", it.getProp("blink-time"), 300);
+        int blink_msec = conf->getArgPInt("--" + prefix + "-blink-time", it.getProp("blinkTime"), 300);
         ptBlink.setTiming(blink_msec);
 
-        int blink2_msec = conf->getArgPInt("--" + prefix + "-blink2-time", it.getProp("blink2-time"), 150);
+        int blink2_msec = conf->getArgPInt("--" + prefix + "-blink2-time", it.getProp("blink2Time"), 150);
         ptBlink2.setTiming(blink2_msec);
 
-        int blink3_msec = conf->getArgPInt("--" + prefix + "-blink3-time", it.getProp("blink3-time"), 100);
+        int blink3_msec = conf->getArgPInt("--" + prefix + "-blink3-time", it.getProp("blink3Time"), 100);
         ptBlink3.setTiming(blink3_msec);
 
-        int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
+        int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("sm_ready_timeout"));
 
         if( sm_tout == 0 )
             smReadyTimeout = conf->getNCReadyTimeout();
@@ -1273,11 +1273,11 @@ namespace uniset
         cout << "--prefix-blink3-time msec  - Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
         cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
         cout << "--prefix-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
         cout << "--prefix-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
         cout << "--prefix-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+        cout << "--prefix-sm-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--prefix-log-...            - log control" << endl;
