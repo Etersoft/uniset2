@@ -268,19 +268,6 @@ namespace uniset
         }
     }
     // -----------------------------------------------------------------------------
-    //std::ostream& operator<<( std::ostream& os, MBConfig::PList& lst )
-    std::ostream& MBConfig::print_plist( std::ostream& os, const MBConfig::PList& lst )
-    {
-        os << "[ ";
-
-        for( const auto& p : lst )
-            os << "(" << p.si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(p.si.id)) << " ";
-
-        os << "]";
-
-        return os;
-    }
-    // -----------------------------------------------------------------------------
     std::shared_ptr<MBConfig::RTUDevice> MBConfig::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML::iterator& xmlit )
     {
         auto it = mp.find(a);
@@ -301,7 +288,7 @@ namespace uniset
                        << ". Already used devtype=" <<  it->second->dtype
                        << " for mbaddr=" << ModbusRTU::addr2str(it->second->mbaddr)
                        << endl;
-                return 0;
+                return nullptr;
             }
 
             mbinfo << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
@@ -315,7 +302,7 @@ namespace uniset
         if( !initRTUDevice(d, xmlit) )
         {
             d.reset();
-            return 0;
+            return nullptr;
         }
 
         mp.insert( std::make_pair(a, d) );
@@ -333,14 +320,14 @@ namespace uniset
             {
                 mbcrit << myname << "(addReg): for " << xmlit.getProp("name")
                        << " dev=0!!!! " << endl;
-                return 0;
+                return nullptr;
             }
 
             if( it->second->dev->dtype != dev->dtype )
             {
                 mbcrit << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for " << xmlit.getProp("name")
                        << ". Already used devtype=" <<  it->second->dev->dtype << " for " << it->second->dev << endl;
-                return 0;
+                return nullptr;
             }
 
             mbinfo << myname << "(addReg): reg=" << ModbusRTU::dat2str(r)
@@ -355,7 +342,7 @@ namespace uniset
         auto ri = make_shared<MBConfig::RegInfo>();
 
         if( !initRegInfo(ri, xmlit, dev) )
-            return 0;
+            return nullptr;
 
         ri->mbreg = r;
         ri->regID = regID;
@@ -444,7 +431,7 @@ namespace uniset
 
             if( v == VTypes::vtUnknown )
             {
-                mbcrit << myname << "(initRSProperty): Unknown tcp_vtype='" << vt << "' for "
+                mbcrit << myname << "(initRSProperty): Unknown vtype='" << vt << "' for "
                        << it.getProp("name")
                        << endl;
 
@@ -544,7 +531,7 @@ namespace uniset
 
         if( d->dtype == dtUnknown )
         {
-            mbcrit << myname << "(initRTUDevice): Unknown tcp_mbtype='" << mbtype << "'"
+            mbcrit << myname << "(initRTUDevice): Unknown mbtype='" << mbtype << "'"
                    << ". Use: rtu "
                    << " for " << it.getProp("name") << endl;
             return false;
@@ -583,6 +570,7 @@ namespace uniset
             return true;
 
         string addr = IOBase::initProp(it, "mbaddr", prop_prefix, false, defaultMBaddr);
+
         if( addr.empty() )
         {
             mbcrit << myname << "(initItem): Unknown mbaddr='" << addr << "' for " << it.getProp("name") << endl;
@@ -709,7 +697,7 @@ namespace uniset
 
                 ostringstream err;
                 err << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
-                    << " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ")"
+                    << " mbreg=" << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ")"
                     << " conflict with sensors " << sl.str();
 
                 mbcrit  << err.str() << endl;
@@ -777,7 +765,7 @@ namespace uniset
                         ostringstream err;
                         err << myname << "(initItem): Bad write function ='" << ModbusRTU::fnWriteOutputSingleRegister
                             << "' for vtype='" << p1->vType << "'"
-                            << " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
+                            << " mbreg=" << ModbusRTU::dat2str(ri->mbreg)
                             << " for " << it.getProp("name");
 
                         mbcrit << err.str() << endl;
@@ -812,7 +800,7 @@ namespace uniset
 
                 if( ii.mbfunc == ModbusRTU::fnUnknown )
                 {
-                    mbcrit << myname << "(initItem): Unknown tcp_init_mbfunc ='" << s_mbfunc
+                    mbcrit << myname << "(initItem): Unknown init_mbfunc ='" << s_mbfunc
                            << "' for " << it.getProp("name") << endl;
                     return false;
                 }
@@ -1204,3 +1192,21 @@ namespace uniset
     }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset
+// -----------------------------------------------------------------------------
+namespace std
+{
+    std::string to_string(const uniset::MBConfig::PList& lst)
+    {
+        ostringstream s;
+        s << "[ ";
+
+        auto conf = uniset::uniset_conf();
+
+        for( const auto& p : lst )
+            s << "(" << p.si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(p.si.id)) << " ";
+
+        s << "]";
+
+        return s.str();
+    }
+}

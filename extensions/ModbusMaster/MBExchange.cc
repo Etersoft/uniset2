@@ -2331,8 +2331,8 @@ namespace uniset
             if( !mb )
                 return false;
 
-            for( auto it1 = mbconf->devices.begin(); it1 != mbconf->devices.end(); ++it1 )
-                it1->second->resp_ptInit.reset();
+            for( auto&& it1 : mbconf->devices )
+                it1.second->resp_ptInit.reset();
         }
 
         if( !allInitOK )
@@ -2344,9 +2344,9 @@ namespace uniset
         ncycle++;
         bool allNotRespond = true;
 
-        for( auto it1 = mbconf->devices.begin(); it1 != mbconf->devices.end(); ++it1 )
+        for( auto&& it1 : mbconf->devices )
         {
-            auto d(it1->second);
+            auto  d = it1.second;
 
             if( d->mode_id != DefaultObjectId && d->mode == MBConfig::emSkipExchange )
                 continue;
@@ -2384,11 +2384,13 @@ namespace uniset
                     }
                     catch( ModbusRTU::mbException& ex )
                     {
-                        mblog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
-                               << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-                               << " for sensors: ";
-                        mbconf->print_plist( (*mblog)(Debug::LEVEL3), it->second->slst)
-                                << endl << " err: " << ex << endl;
+                        if( mblog->debugging(Debug::LEVEL3) )
+                        {
+                            mblog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+                                   << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
+                                   << " for sensors: " << to_string(it->second->slst)
+                                   << endl << " err: " << ex << endl;
+                        }
 
                         if( ex.err == ModbusRTU::erTimeOut && !d->ask_every_reg )
                             break;
@@ -2423,12 +2425,12 @@ namespace uniset
         updateSM();
 
         // check thresholds
-        for( auto t = mbconf->thrlist.begin(); t != mbconf->thrlist.end(); ++t )
+        for( auto&& t : mbconf->thrlist )
         {
             if( !isProcActive() )
                 return false;
 
-            IOBase::processingThreshold(&(*t), shm, force);
+            IOBase::processingThreshold(&t, shm, force);
         }
 
         if( trReopen.hi(allNotRespond && exchangeMode != MBConfig::emSkipExchange) )

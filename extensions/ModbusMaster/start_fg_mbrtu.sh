@@ -7,7 +7,7 @@ uniset2-start.sh -f ./uniset2-rtuexchange --confile test.xml \
 	--rs-speed 115200 \
 	--rs-filter-field rs \
 	--rs-filter-value 4 \
-	--dlog-add-levels info,crit,warn,level4,level3 \
+	--rs-log-add-levels info,crit,warn,level4,level3 \
 	--rs-force 0 \
 	--rs-force-out 0 \
 	--rs-polltime 500 \
