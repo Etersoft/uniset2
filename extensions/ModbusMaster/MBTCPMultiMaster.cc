@@ -329,7 +329,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
         mb = nullptr;
     }
 
-    return 0;
+    return mb;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::final_thread()

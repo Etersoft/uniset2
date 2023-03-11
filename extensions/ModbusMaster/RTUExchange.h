@@ -44,15 +44,15 @@ namespace uniset
             static void help_print( int argc, const char* const* argv );
 
         protected:
-            std::shared_ptr<ModbusRTUMaster> mbrtu;
+            std::shared_ptr<ModbusRTUMaster> mbrtu = nullptr;
             std::mutex mbMutex;
             std::string devname;
-            ComPort::Speed defSpeed;
+            ComPort::Speed defSpeed = { ComPort::ComSpeed38400 };
             ComPort::Parity parity;
             ComPort::CharacterSize csize;
             ComPort::StopBits stopBits;
-            bool use485F;
-            bool transmitCtl;
+            bool use485F = { false };
+            bool transmitCtl = { false };
 
             virtual void step() override;
             virtual bool poll() override;
@@ -61,7 +61,7 @@ namespace uniset
         private:
             RTUExchange();
 
-            bool rs_pre_clean;
+            bool rs_pre_clean = { false };
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset
