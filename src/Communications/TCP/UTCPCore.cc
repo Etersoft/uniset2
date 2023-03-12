@@ -44,11 +44,48 @@ namespace uniset
         pos = 0;
         len = s.length();
 
-        if( len <= 0 ) // ??!!
+        if( len == 0 ) // ??!!
             return;
 
         data = new unsigned char[len];
         std::memcpy(data, s.data(), len);
+    }
+    // -------------------------------------------------------------------------
+    void UTCPCore::Buffer::reset( const std::string& s )
+    {
+        pos = 0;
+        if( s.length() == 0 ) // ??!!
+        {
+            len = 0;
+            return;
+        }
+
+        if( s.length() > len )
+        {
+            delete [] data;
+            data = new unsigned char[s.length()];
+        }
+
+        len = s.length();
+        std::memcpy(data, s.data(), s.length());
+    }
+    // -------------------------------------------------------------------------
+    void UTCPCore::Buffer::reset( const unsigned char* bytes, size_t nbytes )
+    {
+        pos = 0;
+        if( nbytes == 0 ) // ??!!
+        {
+            len = 0;
+            return;
+        }
+
+        if( nbytes > len )
+        {
+            delete [] data;
+            data = new unsigned char[nbytes];
+        }
+        len = nbytes;
+        std::memcpy(data, bytes, nbytes);
     }
     // -------------------------------------------------------------------------
     UTCPCore::Buffer::~Buffer()
