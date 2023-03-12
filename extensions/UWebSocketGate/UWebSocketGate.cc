@@ -75,6 +75,9 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
     int maxCacheSize = conf->getArgPInt("--" + prefix + "max-ui-cache-size", it.getProp("msgUICacheSize"), 5000);
     ui->setCacheMaxSize(maxCacheSize);
 
+    jpoolCapacity = conf->getArgPInt("--" + prefix + "pool-capacity", it.getProp("poolCapacity"), jpoolCapacity);
+    jpoolPeakCapacity = conf->getArgPInt("--" + prefix + "pool-peak-capacity", it.getProp("poolPeakCapacity"), jpoolPeakCapacity);
+
     shm = make_shared<SMInterface>(shmID, ui, getId(), ic);
 
     maxwsocks = conf->getArgPInt("--" + prefix + "max-conn", it.getProp("wsMaxConnection"), maxwsocks);
@@ -266,6 +269,14 @@ uniset::SimpleInfo* UWebSocketGate::getInfo( const char* userparam )
     return i._retn();
 }
 //--------------------------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::fill_short_json( Poco::JSON::Object* json, sinfo* si )
+{
+    json->set("type", "ShortSensorInfo");
+    json->set("error", si->err);
+    json->set("id", si->id);
+    json->set("value", si->value);
+}
+//--------------------------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -274,6 +285,47 @@ Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
     json->set("id", si->id);
     json->set("value", si->value);
     return json;
+}
+//--------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UWebSocketGate::make_child_raw_ptr( Poco::JSON::Object* root, const std::string& key )
+{
+    Poco::JSON::Object::Ptr child = new Poco::JSON::Object();
+    root->set(key, child);
+    return child;
+}
+//--------------------------------------------------------------------------------------------
+void UWebSocketGate::fill_json(Poco::JSON::Object* json, const uniset::SensorMessage* sm, std::string_view err )
+{
+    json->set("type", "SensorInfo");
+    json->set("error", std::string(err));
+    json->set("id", sm->id);
+    json->set("value", sm->value);
+    json->set("name", uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(sm->id)));
+    json->set("sm_tv_sec", sm->sm_tv.tv_sec);
+    json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
+    json->set("iotype", uniset::iotype2str(sm->sensor_type));
+    json->set("undefined", sm->undefined );
+    json->set("supplier", sm->supplier );
+    json->set("tv_sec", sm->tm.tv_sec);
+    json->set("tv_nsec", sm->tm.tv_nsec);
+    json->set("node", sm->node);
+
+    auto calibr = json->getObject("calibration");
+
+    if( !calibr )
+        calibr = make_child_raw_ptr(json, "calibration");
+
+    calibr->set("cmin", sm->ci.minCal);
+    calibr->set("cmax", sm->ci.maxCal);
+    calibr->set("rmin", sm->ci.minRaw);
+    calibr->set("rmax", sm->ci.maxRaw);
+    calibr->set("precision", sm->ci.precision);
+}
+//--------------------------------------------------------------------------------------------
+void UWebSocketGate::fill_error_json( Poco::JSON::Object* json, std::string_view err )
+{
+    json->set("type", "Error");
+    json->set("message", std::string(err));
 }
 //--------------------------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, std::string_view err )
@@ -720,7 +772,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
     auto idlist = uniset::explode(slist);
 
     {
-        ws = make_shared<UWebSocket>(req, resp);
+        ws = make_shared<UWebSocket>(req, resp, jpoolCapacity, jpoolPeakCapacity);
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
         ws->setMaxSendCount(wsMaxSend);
@@ -760,7 +812,9 @@ void UWebSocketGate::delWebSocket( std::shared_ptr<UWebSocket>& ws )
 // -----------------------------------------------------------------------------
 
 UWebSocketGate::UWebSocket::UWebSocket( Poco::Net::HTTPServerRequest* _req,
-                                        Poco::Net::HTTPServerResponse* _resp):
+                                        Poco::Net::HTTPServerResponse* _resp,
+                                        int jpoolCapacity,
+                                        int jpoolPeakCapacity ):
     Poco::Net::WebSocket(*_req, *_resp),
     req(_req),
     resp(_resp)
@@ -781,6 +835,10 @@ UWebSocketGate::UWebSocket::UWebSocket( Poco::Net::HTTPServerRequest* _req,
 
     setReceiveTimeout(uniset::PassiveTimer::millisecToPoco(recvTimeout));
     setMaxPayloadSize(sizeof(rbuf));
+
+    jpoolSM = make_unique<Poco::ObjectPool< Poco::JSON::Object >>(jpoolCapacity, jpoolPeakCapacity);
+    jpoolErr = make_unique<Poco::ObjectPool< Poco::JSON::Object >>(jpoolCapacity, jpoolPeakCapacity);
+    jpoolShortSM = make_unique<Poco::ObjectPool< Poco::JSON::Object >>(jpoolCapacity, jpoolPeakCapacity);
 }
 // -----------------------------------------------------------------------------
 UWebSocketGate::UWebSocket::~UWebSocket()
@@ -855,6 +913,15 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
                 continue;
 
             json->stringify(out);
+
+            auto stype = json->get("type").toString();
+
+            if( stype == "Error" )
+                jpoolErr->returnObject(json);
+            else if( stype == "SensorInfo" )
+                jpoolSM->returnObject(json);
+            else if( stype == "ShortSensorInfo" )
+                jpoolShortSM->returnObject(json);
         }
 
         out << "]}";
@@ -1010,7 +1077,7 @@ void UWebSocketGate::UWebSocket::del( uniset::ObjectId id )
 {
     sinfo s;
     s.id = id;
-    s.cmd = "del";
+    s.cmd = "del";;
     qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
@@ -1047,7 +1114,9 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
         return;
     }
 
-    jbuf.emplace(UWebSocketGate::to_json(sm, s->second.err));
+    auto j = jpoolSM->borrowObject();
+    fill_json(j, sm, s->second.err);
+    jbuf.emplace(j);
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1069,8 +1138,8 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
                 continue;
 
             myinfoV(3) << req->clientAddress().toString() << "(doCommand): "
-                       << s.cmd << " sid=" << s.id
-                       << " value=" << s.value
+                       << s.cmd
+                       << " sid=" << s.id << " value=" << s.value
                        << endl;
 
             if( s.cmd == "ask" )
@@ -1120,7 +1189,9 @@ void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
         return;
     }
 
-    jbuf.emplace(to_short_json(&si));
+    auto j = jpoolShortSM->borrowObject();
+    fill_short_json(j, &si);
+    jbuf.emplace(j);
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1128,15 +1199,16 @@ void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
 {
-    uniset::SensorMessage sm(si.id, si.value);
-
     if( jbuf.size() > maxsize )
     {
         mywarn << req->clientAddress().toString() << "(sendResponse): lost messages (maxsize=" << maxsize << ")"  << endl;
         return;
     }
 
-    jbuf.emplace(UWebSocketGate::to_json(&sm, si.err));
+    uniset::SensorMessage sm(si.id, si.value);
+    auto j = jpoolSM->borrowObject();
+    fill_json(j, &sm, si.err);
+    jbuf.emplace(j);
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1150,7 +1222,9 @@ void UWebSocketGate::UWebSocket::sendError( std::string_view msg )
         return;
     }
 
-    jbuf.emplace(UWebSocketGate::error_to_json(msg));
+    auto j = jpoolErr->borrowObject();
+    fill_error_json(j, msg);
+    jbuf.emplace(j);
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1167,7 +1241,7 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
         return;
     }
 
-    string_view cmd = cmdtxt.substr(0,3);
+    string_view cmd = cmdtxt.substr(0, 3);
     string_view params = cmdtxt.substr(4);
 
     myinfoV(3) << "(websocket)(command): " << req->clientAddress().toString()
