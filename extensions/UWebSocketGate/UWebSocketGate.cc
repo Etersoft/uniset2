@@ -242,6 +242,19 @@ void UWebSocketGate::sensorInfo( const SensorMessage* sm )
 
     for( auto&& s : wsocks )
         s->sensorInfo(sm);
+
+    // если нет действующих сокетов, датчик уже не нужный и надо отказаться
+    if( wsocks.empty() )
+    {
+        try
+        {
+            ui->askSensor(sm->id, UniversalIO::UIODontNotify);
+        }
+        catch( std::exception& ex )
+        {
+            mycrit << "(sensorInfo): " << ex.what() << endl;
+        }
+    }
 }
 //--------------------------------------------------------------------------------------------
 uniset::SimpleInfo* UWebSocketGate::getInfo( const char* userparam )
@@ -309,7 +322,6 @@ void UWebSocketGate::UWebSocket::fill_json( Poco::JSON::Object* json, const unis
     json->set("tv_sec", sm->tm.tv_sec);
     json->set("tv_nsec", sm->tm.tv_nsec);
     json->set("node", sm->node);
-
     auto calibr = json->getObject("calibration");
 
     if( !calibr )
@@ -847,11 +859,33 @@ UWebSocketGate::UWebSocket::~UWebSocket()
         term();
 
     // удаляем всё что осталось
-    while(!wbuf.empty())
+    while( !wbuf.empty() )
     {
         delete wbuf.front();
         wbuf.pop();
     }
+
+    while( !jbuf.empty() )
+    {
+        auto json = jbuf.front();
+        jbuf.pop();
+        returnObjectToPool(json);
+    }
+
+    while( !qcmd.empty() )
+        qcmd.pop();
+}
+// -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::returnObjectToPool( Poco::JSON::Object* json )
+{
+    auto stype = json->get("type").toString();
+
+    if( stype == "Error" )
+        jpoolErr->returnObject(json);
+    else if( stype == "SensorInfo" )
+        jpoolSM->returnObject(json);
+    else if( stype == "ShortSensorInfo" )
+        jpoolShortSM->returnObject(json);
 }
 // -----------------------------------------------------------------------------
 std::string UWebSocketGate::UWebSocket::getInfo() const noexcept
@@ -910,18 +944,13 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
             jbuf.pop();
 
             if( !json )
+            {
+                returnObjectToPool(json);
                 continue;
+            }
 
             json->stringify(out);
-
-            auto stype = json->get("type").toString();
-
-            if( stype == "Error" )
-                jpoolErr->returnObject(json);
-            else if( stype == "SensorInfo" )
-                jpoolSM->returnObject(json);
-            else if( stype == "ShortSensorInfo" )
-                jpoolShortSM->returnObject(json);
+            returnObjectToPool(json);
         }
 
         out << "]}";
@@ -992,7 +1021,7 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
         {
             sendFrame(rbuf, n, WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PONG);
             return;
-        }   
+        }
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
         {
@@ -1067,35 +1096,24 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::ask( uniset::ObjectId id )
 {
-    sinfo s;
-    s.id = id;
-    s.cmd = "ask";
-    qcmd.push(s);
+    qcmd.push(std::make_shared<sinfo>("ask", id));
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::del( uniset::ObjectId id )
 {
-    sinfo s;
-    s.id = id;
-    s.cmd = "del";;
-    qcmd.push(s);
+    qcmd.push(std::make_shared<sinfo>("del", id));
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::set( uniset::ObjectId id, long value )
 {
-    sinfo s;
-    s.id = id;
-    s.value = value;
-    s.cmd = "set";
+    auto s = std::make_shared<sinfo>("set", id);
+    s->value = value;
     qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::get( uniset::ObjectId id )
 {
-    sinfo s;
-    s.id = id;
-    s.cmd = "get";
-    qcmd.push(s);
+    qcmd.push(std::make_shared<sinfo>("get", id));
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
@@ -1115,7 +1133,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
     }
 
     auto j = jpoolSM->borrowObject();
-    fill_json(j, sm, &s->second);
+    fill_json(j, sm, s->second.get());
     jbuf.emplace(j);
 
     if( ioping.is_active() )
@@ -1134,56 +1152,56 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
 
         try
         {
-            if( s.cmd.empty() )
+            if( s->cmd.empty() )
                 continue;
 
             myinfoV(3) << req->clientAddress().toString() << "(doCommand): "
-                       << s.cmd
-                       << " sid=" << s.id << " value=" << s.value
+                       << s->cmd
+                       << " sid=" << s->id << " value=" << s->value
                        << endl;
 
-            if( s.cmd == "ask" )
+            if( s->cmd == "ask" )
             {
-                if( s.name.empty() )
-                    s.name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s.id));
+                if( s->name.empty() )
+                    s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
 
-                ui->askSensor(s.id, UniversalIO::UIONotify);
-                smap[s.id] = s;
+                ui->askSensor(s->id, UniversalIO::UIONotify);
+                smap[s->id] = s;
             }
-            else if( s.cmd == "del" )
+            else if( s->cmd == "del" )
             {
-                ui->askSensor(s.id, UniversalIO::UIODontNotify);
-                auto it = smap.find(s.id);
+                ui->askSensor(s->id, UniversalIO::UIODontNotify);
+                auto it = smap.find(s->id);
 
                 if( it != smap.end() )
                     smap.erase(it);
             }
-            else if( s.cmd == "set" )
+            else if( s->cmd == "set" )
             {
-                ui->setValue(s.id, s.value);
+                ui->setValue(s->id, s->value);
             }
-            else if( s.cmd == "get" )
+            else if( s->cmd == "get" )
             {
-                if( s.name.empty() )
-                    s.name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s.id));
+                if( s->name.empty() )
+                    s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
 
-                s.value = ui->getValue(s.id);
-                s.err = "";
-                sendShortResponse(s);
+                s->value = ui->getValue(s->id);
+                s->err = "";
+                sendShortResponse(s.get());
             }
 
-            s.err = "";
-            s.cmd = "";
+            s->err = "";
+            s->cmd = "";
         }
         catch( std::exception& ex )
         {
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
 
-            if( s.name.empty() )
-                s.name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s.id));
+            if( s->name.empty() )
+                s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
 
-            s.err = ex.what();
-            sendResponse(s);
+            s->err = ex.what();
+            sendResponse(s.get());
         }
     }
 
@@ -1191,7 +1209,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
         cmdsignal->send();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
+void UWebSocketGate::UWebSocket::sendShortResponse( sinfo* si )
 {
     if( jbuf.size() > maxsize )
     {
@@ -1200,14 +1218,14 @@ void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
     }
 
     auto j = jpoolShortSM->borrowObject();
-    fill_short_json(j, &si);
+    fill_short_json(j, si);
     jbuf.emplace(j);
 
     if( ioping.is_active() )
         ioping.stop();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
+void UWebSocketGate::UWebSocket::sendResponse( sinfo* si )
 {
     if( jbuf.size() > maxsize )
     {
@@ -1215,9 +1233,9 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
         return;
     }
 
-    uniset::SensorMessage sm(si.id, si.value);
+    uniset::SensorMessage sm(si->id, si->value);
     auto j = jpoolSM->borrowObject();
-    fill_json(j, &sm, &si);
+    fill_json(j, &sm, si);
     jbuf.emplace(j);
 
     if( ioping.is_active() )
@@ -1313,7 +1331,7 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::write()
 {
-    UTCPCore::Buffer* msg = 0;
+    UTCPCore::Buffer* msg = nullptr;
 
     if( wbuf.empty() )
     {
