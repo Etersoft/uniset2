@@ -294,13 +294,13 @@ Poco::JSON::Object::Ptr UWebSocketGate::make_child_raw_ptr( Poco::JSON::Object* 
     return child;
 }
 //--------------------------------------------------------------------------------------------
-void UWebSocketGate::fill_json(Poco::JSON::Object* json, const uniset::SensorMessage* sm, std::string_view err )
+void UWebSocketGate::UWebSocket::fill_json( Poco::JSON::Object* json, const uniset::SensorMessage* sm, sinfo* si )
 {
     json->set("type", "SensorInfo");
-    json->set("error", std::string(err));
+    json->set("error", std::string(si->err));
     json->set("id", sm->id);
     json->set("value", sm->value);
-    json->set("name", uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(sm->id)));
+    json->set("name", si->name);
     json->set("sm_tv_sec", sm->sm_tv.tv_sec);
     json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
     json->set("iotype", uniset::iotype2str(sm->sensor_type));
@@ -328,15 +328,15 @@ void UWebSocketGate::fill_error_json( Poco::JSON::Object* json, std::string_view
     json->set("message", std::string(err));
 }
 //--------------------------------------------------------------------------------------------
-Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, std::string_view err )
+Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_json( const SensorMessage* sm, sinfo* si )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
     json->set("type", "SensorInfo");
-    json->set("error", std::string(err));
+    json->set("error", si->err);
     json->set("id", sm->id);
     json->set("value", sm->value);
-    json->set("name", uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(sm->id)));
+    json->set("name", si->name);
     json->set("sm_tv_sec", sm->sm_tv.tv_sec);
     json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
     json->set("iotype", uniset::iotype2str(sm->sensor_type));
@@ -992,7 +992,7 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
         {
             sendFrame(rbuf, n, WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PONG);
             return;
-        }
+        }   
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
         {
@@ -1115,7 +1115,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
     }
 
     auto j = jpoolSM->borrowObject();
-    fill_json(j, sm, s->second.err);
+    fill_json(j, sm, &s->second);
     jbuf.emplace(j);
 
     if( ioping.is_active() )
@@ -1144,6 +1144,9 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
 
             if( s.cmd == "ask" )
             {
+                if( s.name.empty() )
+                    s.name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s.id));
+
                 ui->askSensor(s.id, UniversalIO::UIONotify);
                 smap[s.id] = s;
             }
@@ -1161,6 +1164,9 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             }
             else if( s.cmd == "get" )
             {
+                if( s.name.empty() )
+                    s.name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s.id));
+
                 s.value = ui->getValue(s.id);
                 s.err = "";
                 sendShortResponse(s);
@@ -1172,6 +1178,10 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
         catch( std::exception& ex )
         {
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
+
+            if( s.name.empty() )
+                s.name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s.id));
+
             s.err = ex.what();
             sendResponse(s);
         }
@@ -1207,7 +1217,7 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
 
     uniset::SensorMessage sm(si.id, si.value);
     auto j = jpoolSM->borrowObject();
-    fill_json(j, &sm, si.err);
+    fill_json(j, &sm, &si);
     jbuf.emplace(j);
 
     if( ioping.is_active() )
@@ -1345,7 +1355,6 @@ void UWebSocketGate::UWebSocket::write()
                 myinfoV(3) << "(websocket): "
                            << req->clientAddress().toString()
                            << " write error.. terminate session.." << endl;
-
                 term();
             }
 
