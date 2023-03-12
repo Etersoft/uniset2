@@ -223,8 +223,7 @@ namespace uniset
 #endif
 
             static Poco::JSON::Object::Ptr error_to_json( std::string_view err );
-            static void fill_error_json(Poco::JSON::Object* p, std::string_view err );
-            static Poco::JSON::Object::Ptr make_child_raw_ptr(Poco::JSON::Object* root, const std::string& key );
+            static void fill_error_json( Poco::JSON::Object::Ptr& p, std::string_view err );
 
         protected:
 
@@ -331,10 +330,10 @@ namespace uniset
                     void set( uniset::ObjectId id, long value );
                     void sensorInfo( const uniset::SensorMessage* sm );
                     void doCommand( const std::shared_ptr<SMInterface>& ui );
-                    static Poco::JSON::Object::Ptr to_short_json( sinfo* si );
-                    static Poco::JSON::Object::Ptr to_json( const uniset::SensorMessage* sm, sinfo* si );
-                    static void fill_short_json( Poco::JSON::Object* p, sinfo* si );
-                    static void fill_json( Poco::JSON::Object* p, const uniset::SensorMessage* sm, sinfo* si );
+                    static Poco::JSON::Object::Ptr to_short_json( const std::shared_ptr<sinfo>& si );
+                    static Poco::JSON::Object::Ptr to_json( const uniset::SensorMessage* sm, const std::shared_ptr<sinfo>& si );
+                    static void fill_short_json( Poco::JSON::Object::Ptr& p, const std::shared_ptr<sinfo>& si );
+                    static void fill_json( Poco::JSON::Object::Ptr& p, const uniset::SensorMessage* sm, const std::shared_ptr<sinfo>& si );
 
                     void term();
                     void waitCompletion();
@@ -350,11 +349,11 @@ namespace uniset
                 protected:
 
                     void write();
-                    void sendResponse( sinfo* si );
-                    void sendShortResponse( sinfo* si );
+                    void sendResponse( const std::shared_ptr<sinfo>& si );
+                    void sendShortResponse( const std::shared_ptr<sinfo>& si );
                     void onCommand( std::string_view cmd );
                     void sendError( std::string_view message );
-                    void returnObjectToPool( Poco::JSON::Object* json );
+                    void returnObjectToPool( Poco::JSON::Object::Ptr& json );
 
                     ev::timer iosend;
                     double send_sec = { 0.5 };
@@ -383,12 +382,13 @@ namespace uniset
                     Poco::Net::HTTPServerResponse* resp;
 
                     // очередь json-на отправку
-                    std::queue<Poco::JSON::Object*> jbuf;
-                    std::unique_ptr<Poco::ObjectPool< Poco::JSON::Object >> jpoolSM;
-                    std::unique_ptr<Poco::ObjectPool< Poco::JSON::Object >> jpoolErr;
-                    std::unique_ptr<Poco::ObjectPool< Poco::JSON::Object >> jpoolShortSM;
+                    std::queue<Poco::JSON::Object::Ptr> jbuf;
+                    std::unique_ptr<Poco::ObjectPool< Poco::JSON::Object, Poco::JSON::Object::Ptr >> jpoolSM;
+                    std::unique_ptr<Poco::ObjectPool< Poco::JSON::Object, Poco::JSON::Object::Ptr >> jpoolErr;
+                    std::unique_ptr<Poco::ObjectPool< Poco::JSON::Object, Poco::JSON::Object::Ptr >> jpoolShortSM;
 
                     // очередь данных на посылку..
+                    std::unique_ptr<Poco::ObjectPool< uniset::UTCPCore::Buffer >> wbufpool;
                     std::queue<uniset::UTCPCore::Buffer*> wbuf;
                     size_t maxsize; // рассчитывается сходя из max_send (см. конструктор)
             };

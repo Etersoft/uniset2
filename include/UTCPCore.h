@@ -20,17 +20,21 @@ namespace uniset
         // Buffer class - allow for output buffering such that it can be written out into async pieces
         struct Buffer
         {
+            Buffer(){}
             Buffer( const unsigned char* bytes, size_t nbytes );
             Buffer( const std::string& s );
             virtual ~Buffer();
+
+            void reset( const std::string& s );
+            void reset( const unsigned char* bytes, size_t nbytes );
 
             unsigned char* dpos() const noexcept;
 
             size_t nbytes() const noexcept;
 
-            unsigned char* data = { 0 };
-            size_t len;
-            size_t pos;
+            unsigned char* data = { nullptr };
+            size_t len = { 0 };
+            size_t pos = { 0 };
         };
     }
     // -------------------------------------------------------------------------
