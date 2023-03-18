@@ -316,7 +316,7 @@
 			<item a2="1" id="25" iotype="DI" name="DumpSensor7_S" priority="Medium" textname="alarm dumpm sensor 7"/>
 			<item a2="1" id="26" iotype="DI" name="DumpSensor8_S" priority="Medium" textname="alarm dumpm sensor 8"/>
 			<item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input" opcua="1" opcua_rwmode="w"/>
-			<item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
+			<item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input" opcua="1" opcua_rwmode="w"/>
 			<item default="65536045" id="29" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
 			<item id="30" iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
 			<item id="31" iotype="AI" mb_vtype="I2" mbreg="43" name="imitator_performance1" precision="6" rs="mbslave" textname="Производительность танка 1"/>
@@ -400,6 +400,9 @@
 			<item id="217" iotype="DI" name="OPCUA_Respond1_S" textname="OPCUA: наличие связи (канал N1)"/>
 			<item id="218" iotype="DI" name="OPCUA_Respond2_S" textname="OPCUA: наличие связи (канал N2)"/>
 			<item id="219" iotype="AI" name="OPCUA_Mode_AS" textname="OPCUA: Режим работы"/>
+			<item id="220" iotype="AI" name="OPCUA_SensorMask3_AS" textname="OPCUA: sensor1 mask3" opc="1" opcua_mask="3" opcua_nodeid="AI_AS" />
+			<item id="221" iotype="AI" name="OPCUA_SensorMask12_AS" textname="OPCUA: sensor1 mask12" opc="1" opcua_mask="12" opcua_nodeid="AI_AS" />
+			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1"  opcua_mask="3" opcua_nodeid="MB2_AS"/>
 
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->

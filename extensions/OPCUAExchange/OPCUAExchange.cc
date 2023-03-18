@@ -499,11 +499,12 @@ namespace uniset
                     IOBase* ib = static_cast<IOBase*>(io.get());
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
-                        io->val = IOBase::processingAsAO(ib, shm, true);
+                        io->val = forceSetBits(io->val, IOBase::processingAsAO(ib, shm, true), io->mask, io->offset);
                     }
                     opclog6 << myname << "(updateFromSM): write AO"
                             << " sid=" << io->si.id
                             << " value=" << io->val
+                            << " mask=" << io->mask
                             << endl;
                 }
                 else if( io->stype == UniversalIO::DO )
@@ -511,11 +512,12 @@ namespace uniset
                     IOBase* ib = static_cast<IOBase*>(io.get());
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
-                        io->val = IOBase::processingAsDO(ib, shm, true) ? 1 : 0;
+                        io->val = forceSetBits(io->val, IOBase::processingAsDO(ib, shm, true) ? 1 : 0, io->mask, io->offset);
                     }
                     opclog6 << myname << "(updateFromSM): write DO"
                             << " sid=" << io->si.id
                             << " value=" << io->val
+                            << " mask=" << io->mask
                             << endl;
                 }
             }
@@ -600,12 +602,13 @@ namespace uniset
                             << " sid=" << io->si.id
                             << " attr:" << io->attrName
                             << " rval=" << io->rval[ch->idx].get()
+                            << " mask=" << io->mask
                             << endl;
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
                         if( io->rval[ch->idx].statusOk() )
-                            io->val = io->rval[ch->idx].get();
+                            io->val = getBits(io->rval[ch->idx].get(), io->mask, io->offset);
                     }
                 }
                 else if( io->stype == UniversalIO::DI )
@@ -614,12 +617,13 @@ namespace uniset
                             << " sid=" << io->si.id
                             << " attr:" << io->attrName
                             << " rval=" << io->rval[ch->idx].get()
+                            << " mask=" << io->mask
                             << endl;
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
                         if( io->rval[ch->idx].statusOk() )
-                            io->val = io->rval[ch->idx].get() ? 1 : 0;
+                            io->val = getBits(io->rval[ch->idx].get() ? 1 : 0, io->mask, io->offset);
                     }
                 }
             }
@@ -772,6 +776,46 @@ namespace uniset
             return UA_STATUSCODE_BAD;
 
         return gr->results[grIndex].status;
+    }
+    // ------------------------------------------------------------------------------------------
+    uint8_t OPCUAExchange::firstBit( uint32_t mask )
+    {
+        uint8_t n = 0;
+
+        while( mask != 0 )
+        {
+            if( mask & 1 )
+                break;
+
+            mask = (mask >> 1);
+            n++;
+        }
+
+        return n;
+    }
+    // ------------------------------------------------------------------------------------------
+    uint32_t OPCUAExchange::forceSetBits( uint32_t value, uint32_t set, uint32_t mask, uint8_t offset )
+    {
+        if( mask == 0 )
+            return set;
+
+        return OPCUAExchange::setBits(value, set, mask, offset);
+    }
+    // ------------------------------------------------------------------------------------------
+    uint32_t OPCUAExchange::setBits( uint32_t value, uint32_t set, uint32_t mask, uint8_t offset )
+    {
+        if( mask == 0 )
+            return value;
+
+        return (value & (~mask)) | ((set << offset) & mask);
+    }
+    // ------------------------------------------------------------------------------------------
+    uint32_t OPCUAExchange::getBits( uint32_t value, uint32_t mask, uint8_t offset )
+    {
+        if( mask == 0 )
+            return value;
+
+        return (value & mask) >> offset;
     }
     // ------------------------------------------------------------------------------------------
     void OPCUAExchange::OPCAttribute::WrValue::init( UA_WriteValue* wv, const std::string& nodeId, const std::string& stype, int32_t defvalue )
@@ -944,6 +988,14 @@ namespace uniset
         int tick = (uint8_t)IOBase::initIntProp(it, "opcua_tick", prop_prefix, false);
         inf->tick = tick;
 
+        std::string smask = IOBase::initProp(it, "opcua_mask", prop_prefix, false);
+
+        if( !smask.empty() )
+        {
+            inf->mask = uni_atoi(smask);
+            inf->offset = firstBit(inf->mask);
+        }
+
         // значит это пороговый датчик..
         if( inf->t_ai != DefaultObjectId )
         {
@@ -980,7 +1032,7 @@ namespace uniset
 
                 OPCUAClient::Result32 res;
                 res.status = UA_STATUSCODE_GOOD;
-                res.value = inf->defval;
+                res.value = forceSetBits(0, inf->defval, inf->mask, inf->offset);
                 gr->results.emplace_back(res);
                 OPCAttribute::RdValue rd;
                 rd.gr = gr;
@@ -1008,7 +1060,7 @@ namespace uniset
 
                 const string vtype = it.getProp2("opcua_type", defVType);
                 UA_WriteValue* wv = &(gr->ids.emplace_back(UA_WriteValue{}));
-                OPCAttribute::WrValue::init(wv, attr, vtype, inf->defval);
+                OPCAttribute::WrValue::init(wv, attr, vtype, forceSetBits(0, inf->defval, inf->mask, inf->offset));
 
                 OPCAttribute::WrValue wr;
                 wr.gr = gr;
@@ -1477,7 +1529,7 @@ namespace uniset
                     ib->value = sm->value;
                     {
                         uniset::uniset_rwmutex_wrlock lock(it->vmut);
-                        it->val = IOBase::processingAsAO(ib, shm, force);
+                        it->val = forceSetBits(it->val, IOBase::processingAsAO(ib, shm, force), it->mask, it->offset);
                     }
                     opclog6 << myname << "(sensorInfo): sid=" << sm->id
                             << " update val=" << it->val
@@ -1489,7 +1541,7 @@ namespace uniset
                     ib->value = sm->value;
                     {
                         uniset::uniset_rwmutex_wrlock lock(it->vmut);
-                        it->val = IOBase::processingAsDO(ib, shm, force) ? 1 : 0;
+                        it->val = forceSetBits(it->val, IOBase::processingAsDO(ib, shm, force) ? 1 : 0, it->mask, it->offset);
                     }
                     opclog6 << myname << "(sensorInfo): sid=" << sm->id
                             << " update val=" << it->val

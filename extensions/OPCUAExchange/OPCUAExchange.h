@@ -109,6 +109,8 @@ namespace uniset
      - \b opcua_nodeid - Адрес переменной на OPCUA сервере
      - \b opcua_tick - Как часто опрашивать датчик. Не обязательный параметр, по умолчанию - опрос на каждом цикле.
      Если задать "2" - то опрос будет производиться на каждом втором цикле и т.п. Циклы завязаны на polltime.
+     - \b opcua_mask - "битовая маска"(uint32_t). Позволяет задать маску для значения. Действует как на значения читаемые,
+     так и записываемые. При этом разрешается привязывать разные датчики к одной и той же переменной указывая разные маски.
      - \b opcua_type - типа переменной в ПЛК. Поддерживаются следующие типы: bool, byte, int16, uint16, int32, uint32, int64, uint64
      При этом происходит преобразование значения int32_t к указанному типу (с игнорированием переполнения!).
 
@@ -153,6 +155,15 @@ namespace uniset
 
             virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
+            static uint8_t firstBit( uint32_t mask );
+
+            // offset = firstBit(mask)
+            static uint32_t getBits( uint32_t value, uint32_t mask, uint8_t offset );
+            // if mask = 0 return value
+            static uint32_t setBits( uint32_t value, uint32_t set, uint32_t mask, uint8_t offset );
+            // if mask=0 return set
+            static uint32_t forceSetBits( uint32_t value, uint32_t set, uint32_t mask, uint8_t offset );
+
             using Tick = uint8_t;
 
             static const size_t numChannels = 2;
@@ -178,8 +189,11 @@ namespace uniset
                 OPCAttribute() = default;
 
                 uniset::uniset_rwmutex vmut;
-                long val { 0 };
+                int32_t val { 0 };
                 Tick tick = { 0 }; // на каждом ли тике работать с этим аттрибутом
+                uint32_t mask = { 0 };
+                uint8_t offset = { 0 };
+
                 std::string attrName = {""};
                 struct RdValue
                 {
