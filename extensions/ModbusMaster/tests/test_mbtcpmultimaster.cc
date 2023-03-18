@@ -117,6 +117,16 @@ static void InitTest()
 
 }
 // -----------------------------------------------------------------------------
+static bool exchangeIsOk()
+{
+    PassiveTimer pt(5000);
+
+    while( !pt.checkTime() && ui->getValue(slaveNotRespond) )
+        msleep(300);
+
+    return !pt.checkTime();
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimaster]")
 {
     // Т.к. respond/notrespond проверяется по возможности создать соединение
@@ -228,9 +238,10 @@ TEST_CASE("MBTCPMultiMaster: safe mode (resetIfNotRespond)", "[modbus][safemode]
     mbs2->setReply(0);
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMultiMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmultimaster]")
+TEST_CASE("MBTCPMultiMaster: undefined value", "[modbus][undefined][mbmaster][mbtcpmultimaster]")
 {
     InitTest();
+    REQUIRE(exchangeIsOk());
 
     mbs1->setReply(120);
     mbs2->setReply(120);

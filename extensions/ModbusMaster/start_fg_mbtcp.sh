@@ -6,7 +6,7 @@
 --smemory-id SharedMemory \
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
---mbtcp-filter-value 5 \
+--mbtcp-filter-value 6 \
 --mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 2048 \
 --mbtcp-recv-timeout 900 \
@@ -16,7 +16,7 @@
 --mbtcp-persistent-connection 1 \
 --ulog-add-levels system \
 --mbtcp-run-logserver \
---mbtcp-log-add-levels info,warn,crit \
+--mbtcp-log-add-levels level3,level4,info,warn,crit \
 $*
 
 #--mbtcp-log-add-levels level4,level3 \

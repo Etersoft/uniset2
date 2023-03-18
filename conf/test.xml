@@ -340,6 +340,10 @@
 			<item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="1" mbtype="rtu" name="Input52_S" pollfactor="2" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" nbit="2" mbtype="rtu" name="Input53_S" pollfactor="2" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="67" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbtype="rtu" name="Input67_S" priority="Medium" rs="5" textname="Bad reg test"/>
+			<item id="68" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" mbmask="3" mbtype="rtu" name="AI68_S" priority="Medium" rs="6" textname="AI68"/>
+			<item id="69" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" mbmask="12" mbtype="rtu" name="AI69_S" priority="Medium" rs="6" textname="AI69"/>
+			<item id="70" iotype="AI" mbaddr="0x01" mbfunc="0x06" mbreg="0x01" mbmask="3" mbtype="rtu" name="AI70_S" priority="Medium" rs="7" textname="AI70"/>
+
 			<item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
 			<item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
 			<item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
