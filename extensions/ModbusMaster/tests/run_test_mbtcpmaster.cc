@@ -63,7 +63,7 @@ int main( int argc, const char* argv[] )
         int tout = conf->getArgPInt("--timeout", 8000);
         PassiveTimer pt(tout);
 
-        while( !pt.checkTime() && !act->exist() )
+        while( !pt.checkTime() && !act->exist() && !mbm->exist() )
             msleep(100);
 
         if( !act->exist() )

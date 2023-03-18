@@ -26,7 +26,6 @@ MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, 
     verbose(verb),
     replyVal(std::numeric_limits<uint32_t>::max()),
     forceSingleCoilCmd(false),
-    lastWriteOutputSingleRegister(0),
     lastForceCoilsQ(0, 0),
     lastWriteOutputQ(0, 0),
     disabled(false)
@@ -318,6 +317,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutp
     reply.set(query.start, query.quant);
     lastWriteOutputQ = query;
 
+    for( size_t i = 0; i < query.quant; i++ )
+        lastWriteRegister[query.start + i] = query.data[i];
+
     if( query.start == 41 )
     {
         VTypes::F2 f2(query.data, VTypes::F2::wsize());
@@ -338,7 +340,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( ModbusRTU::Writ
         cout << "(writeOutputSingleRegisters): " << query << endl;
 
     ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
-    lastWriteOutputSingleRegister = (signed short)query.data;
+    lastWriteRegister[query.start] = query.data;
     reply.set(query.start, query.data);
     return ret;
 }
@@ -352,6 +354,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( ModbusRTU::ForceSingleCoi
     if( verbose )
         cout << "(forceSingleCoil): " << query << endl;
 
+    lastWriteRegister[query.start] = query.cmd() ? 1 : 0;
     ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
     forceSingleCoilCmd = query.cmd();
     reply.set(query.start, query.cmd());

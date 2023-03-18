@@ -89,6 +89,16 @@ static void InitTest()
     REQUIRE( mbm != nullptr );
 }
 // -----------------------------------------------------------------------------
+static bool exchangeIsOk()
+{
+    PassiveTimer pt(5000);
+
+    while( !pt.checkTime() && ui->getValue(slaveNotRespond) )
+        msleep(300);
+
+    return !pt.checkTime();
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: reconnect", "[modbus][mbmaster][mbtcpmaster]")
 {
     InitTest();
@@ -178,9 +188,10 @@ TEST_CASE("MBTCPMaster: 0x01 (read coil status)", "[modbus][0x01][mbmaster][mbtc
 {
     InitTest();
 
+    REQUIRE(exchangeIsOk());
     CHECK( ui->isExist(mbID) );
     mbs->setReply(65535);
-    msleep(polltime + 200);
+    msleep(polltime + 5000);
     REQUIRE( ui->getValue(1000) == 1 );
     REQUIRE( ui->getValue(1001) == 1 );
     REQUIRE( ui->getValue(1002) == 1 );
@@ -195,7 +206,7 @@ TEST_CASE("MBTCPMaster: 0x01 (read coil status)", "[modbus][0x01][mbmaster][mbtc
 TEST_CASE("MBTCPMaster: 0x02 (read input status)", "[modbus][0x02][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     CHECK( ui->isExist(mbID) );
     mbs->setReply(65535);
     msleep(polltime + 200);
@@ -213,7 +224,7 @@ TEST_CASE("MBTCPMaster: 0x02 (read input status)", "[modbus][0x02][mbmaster][mbt
 TEST_CASE("MBTCPMaster: 0x03 (read register outputs or memories or read word outputs or memories)", "[modbus][0x03][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     CHECK( ui->isExist(mbID) );
     mbs->setReply(10);
     msleep(polltime + 200);
@@ -262,7 +273,7 @@ TEST_CASE("MBTCPMaster: 0x03 (read register outputs or memories or read word out
 TEST_CASE("MBTCPMaster: 0x04 (read input registers or memories or read word outputs or memories)", "[modbus][0x04][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     CHECK( ui->isExist(mbID) );
     mbs->setReply(10);
     msleep(polltime + 200);
@@ -311,7 +322,7 @@ TEST_CASE("MBTCPMaster: 0x04 (read input registers or memories or read word outp
 TEST_CASE("MBTCPMaster: 0x05 (forces a single coil to either ON or OFF)", "[modbus][0x05][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     CHECK( ui->isExist(mbID) );
     ui->setValue(1017, 0);
     REQUIRE( ui->getValue(1017) == 0 );
@@ -332,33 +343,33 @@ TEST_CASE("MBTCPMaster: 0x05 (forces a single coil to either ON or OFF)", "[modb
 TEST_CASE("MBTCPMaster: 0x06 (write register outputs or memories)", "[modbus][0x06][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     CHECK( ui->isExist(mbID) );
     ui->setValue(1018, 0);
     REQUIRE( ui->getValue(1018) == 0 );
     msleep(polltime + 200);
-    REQUIRE( mbs->getLastWriteOutputSingleRegister() == 0 );
+    REQUIRE( mbs->getLastWriteRegister(30) == 0 );
 
     ui->setValue(1018, 100);
     REQUIRE( ui->getValue(1018) == 100 );
     msleep(polltime + 200);
-    REQUIRE( mbs->getLastWriteOutputSingleRegister() == 100 );
+    REQUIRE( mbs->getLastWriteRegister(30) == 100 );
 
     ui->setValue(1018, -100);
     REQUIRE( ui->getValue(1018) == -100 );
     msleep(polltime + 200);
-    REQUIRE( mbs->getLastWriteOutputSingleRegister() == -100 );
+    REQUIRE( mbs->getLastWriteRegister(30) == -100 );
 
     ui->setValue(1018, 0);
     REQUIRE( ui->getValue(1018) == 0 );
     msleep(polltime + 200);
-    REQUIRE( mbs->getLastWriteOutputSingleRegister() == 0 );
+    REQUIRE( mbs->getLastWriteRegister(30) == 0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: 0x0F (force multiple coils)", "[modbus][0x0F][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     // три бита..
     {
         ui->setValue(1024, 0);
@@ -416,7 +427,7 @@ TEST_CASE("MBTCPMaster: 0x0F (force multiple coils)", "[modbus][0x0F][mbmaster][
 TEST_CASE("MBTCPMaster: 0x10 (write register outputs or memories)", "[modbus][0x10][mbmaster][mbtcpmaster]")
 {
     InitTest();
-
+    REQUIRE(exchangeIsOk());
     {
         ui->setValue(1019, 0);
         ui->setValue(1020, 0);
@@ -490,9 +501,88 @@ TEST_CASE("MBTCPMaster: 0x10 (write register outputs or memories)", "[modbus][0x
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: read/write mask", "[modbus][mbmask][mbmaster][mbtcpmaster]")
+{
+    InitTest();
+    REQUIRE(exchangeIsOk());
+
+    // mbmask = 3
+
+    CHECK( ui->isExist(mbID) );
+    mbs->setReply(1);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1090) == 1 );
+    REQUIRE( ui->getValue(1091) == 0 );
+    REQUIRE( ui->getValue(1092) == 1 );
+
+    mbs->setReply(12);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1090) == 0 );
+    REQUIRE( ui->getValue(1091) == 3 );
+    REQUIRE( ui->getValue(1092) == 0 );
+
+    mbs->setReply(3);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1090) == 3 );
+    REQUIRE( ui->getValue(1091) == 0 );
+    REQUIRE( ui->getValue(1092) == 1 );
+
+    mbs->setReply(9);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1090) == 1 );
+    REQUIRE( ui->getValue(1091) == 2 );
+    REQUIRE( ui->getValue(1092) == 1 );
+
+    ui->setValue(1093, 0);
+    ui->setValue(1094, 0);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 0 );
+
+    ui->setValue(1093, 1);
+    ui->setValue(1094, 0);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 1 );
+
+    ui->setValue(1093, 3);
+    ui->setValue(1094, 0);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 3 );
+
+    ui->setValue(1093, 5);
+    ui->setValue(1094, 0);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 1 );
+
+    ui->setValue(1093, 3);
+    ui->setValue(1094, 1);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 7 );
+
+    ui->setValue(1093, 3);
+    ui->setValue(1094, 3);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 15 );
+
+    ui->setValue(1093, 3);
+    ui->setValue(1094, 5);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 7 );
+
+    ui->setValue(1093, 0);
+    ui->setValue(1094, 0);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 0 );
+
+    ui->setValue(1093, 2);
+    ui->setValue(1094, 2);
+    msleep(polltime + 200);
+    REQUIRE( mbs->getLastWriteRegister(262) == 10 );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpmaster]")
 {
     InitTest();
+    REQUIRE(exchangeIsOk());
 
     SECTION("None")
     {
@@ -507,7 +597,7 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
             ui->setValue(1018, 10);
             REQUIRE( ui->getValue(1018) == 10 );
             msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 10 );
+            REQUIRE( mbs->getLastWriteRegister(30) == 10 );
         }
     }
 
@@ -532,11 +622,11 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
             ui->setValue(1018, 150);
             REQUIRE( ui->getValue(1018) == 150 );
             msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 150 );
+            REQUIRE( mbs->getLastWriteRegister(30) == 150 );
             ui->setValue(1018, 155);
             REQUIRE( ui->getValue(1018) == 155 );
             msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 155 );
+            REQUIRE( mbs->getLastWriteRegister(30) == 155 );
         }
     }
 
@@ -560,12 +650,12 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
             ui->setValue(1018, 50);
             REQUIRE( ui->getValue(1018) == 50 );
             msleep(2 * polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
+            REQUIRE( mbs->getLastWriteRegister(30) != 50 );
             ui->setValue(1018, 55);
             REQUIRE( ui->getValue(1018) == 55 );
             msleep(2 * polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 55 );
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
+            REQUIRE( mbs->getLastWriteRegister(30) != 55 );
+            REQUIRE( mbs->getLastWriteRegister(30) != 50 );
         }
     }
 
@@ -587,11 +677,11 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
             ui->setValue(1018, 60);
             REQUIRE( ui->getValue(1018) == 60 );
             msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 60 );
+            REQUIRE( mbs->getLastWriteRegister(30) == 60 );
             ui->setValue(1018, 65);
             REQUIRE( ui->getValue(1018) == 65 );
             msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 65 );
+            REQUIRE( mbs->getLastWriteRegister(30) == 65 );
         }
     }
 
@@ -612,7 +702,7 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
             ui->setValue(1018, 70);
             REQUIRE( ui->getValue(1018) == 70 );
             msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 70 );
+            REQUIRE( mbs->getLastWriteRegister(30) != 70 );
         }
 
         SECTION("check connection")
@@ -630,6 +720,7 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
 TEST_CASE("MBTCPMaster: check respond resnsor", "[modbus][respond][mbmaster][mbtcpmaster]")
 {
     InitTest();
+    REQUIRE(exchangeIsOk());
     mbs->disableExchange(false);
     msleep(3500);
     CHECK( ui->getValue(slaveNotRespond) == 0 );
@@ -690,6 +781,7 @@ TEST_CASE("MBTCPMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmaster]")
 {
     InitTest();
     ui->setValue(1050, 0); // отключаем safeMode
+    REQUIRE(exchangeIsOk());
 
     mbs->setReply(53);
     msleep(polltime + 200);
@@ -720,6 +812,7 @@ TEST_CASE("MBTCPMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmaster]")
 TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbmaster][mbtcpmaster]")
 {
     InitTest();
+    REQUIRE(exchangeIsOk());
 
     mbs->setReply(53);
     msleep(polltime + 200);
@@ -747,9 +840,10 @@ TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbma
     REQUIRE( ui->getValue(1054) == 1 );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: undefined value", "[modbus][undefined][mbmaster][mbtcpmaster]")
 {
     InitTest();
+    REQUIRE(exchangeIsOk());
 
     mbs->setReply(120);
     msleep(polltime + 200);
@@ -830,7 +924,6 @@ TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaste
     REQUIRE( info.find("OK") == std::string::npos );
 }
 // -----------------------------------------------------------------------------
-
 #if 0
 // -----------------------------------------------------------------------------
 static bool init_iobase( IOBase* ib, const std::string& sensor )

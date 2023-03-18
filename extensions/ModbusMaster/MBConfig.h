@@ -87,17 +87,14 @@ namespace uniset
             struct RSProperty:
                 public IOBase
             {
-                // only for RTU
-                int8_t nbit;         /*!< bit number (-1 - not used) */
-                VTypes::VType vType; /*!< type of value */
-                uint16_t rnum;   /*!< count of registers */
-                uint8_t nbyte;   /*!< byte number (1-2) */
+                int8_t nbit = { -1 };   /*!< bit number (-1 - not used) */
+                VTypes::VType vType = { VTypes::vtUnknown }; /*!< type of value */
+                uint16_t rnum = { 1 };  /*!< count of registers */
+                uint8_t nbyte = { 0 };  /*!< byte number (1-2) */
+                uint16_t mask = { 0 };  /*!< bitmask */
+                uint8_t offset = { 0 }; /*!< bitmask offset */
 
-                RSProperty():
-                    nbit(-1), vType(VTypes::vtUnknown),
-                    rnum(VTypes::wsize(VTypes::vtUnknown)),
-                    nbyte(0)
-                {}
+                RSProperty() {}
 
                 // т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
                 // приходится здесь тоже объявлять разрешенными только операции "перемещения"

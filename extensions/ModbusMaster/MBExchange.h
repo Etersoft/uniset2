@@ -85,6 +85,15 @@ namespace uniset
 
             bool reload( const std::string& confile );
 
+            static uint8_t firstBit( uint16_t mask );
+
+            // offset = firstBit(mask)
+            static uint16_t getBits( uint16_t value, uint16_t mask, uint8_t offset );
+            // if mask = 0 return value
+            static uint16_t setBits( uint16_t value, uint16_t set, uint16_t mask, uint8_t offset );
+            // if mask=0 return set
+            static uint16_t forceSetBits( uint16_t value, uint16_t set, uint16_t mask, uint8_t offset );
+
         protected:
             virtual void step();
             virtual void sysCommand( const uniset::SystemMessage* msg ) override;

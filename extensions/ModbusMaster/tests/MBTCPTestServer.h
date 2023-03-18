@@ -41,9 +41,9 @@ class MBTCPTestServer
         {
             return forceSingleCoilCmd;
         }
-        inline int16_t getLastWriteOutputSingleRegister()
+        inline int16_t getLastWriteRegister( uint16_t reg )
         {
-            return lastWriteOutputSingleRegister;
+            return lastWriteRegister[reg];
         }
         inline uniset::ModbusRTU::ForceCoilsMessage getLastForceCoilsQ()
         {
@@ -127,7 +127,7 @@ class MBTCPTestServer
         bool verbose;
         uint32_t replyVal;
         bool forceSingleCoilCmd;
-        int16_t lastWriteOutputSingleRegister;
+        std::unordered_map<int16_t, int16_t> lastWriteRegister;
         uniset::ModbusRTU::ForceCoilsMessage lastForceCoilsQ;
         uniset::ModbusRTU::WriteOutputMessage lastWriteOutputQ;
         float f2_test_value = {0.0};
