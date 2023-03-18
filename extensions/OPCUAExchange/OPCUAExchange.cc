@@ -204,6 +204,22 @@ namespace uniset
         vmonit(sidTestSMReady);
 
         // -----------------------
+        string emode = conf->getArgParam("--" + prefix + "-exchange-mode-id", it.getProp("exchangeModeID"));
+
+        if( !emode.empty() )
+        {
+            sidExchangeMode = conf->getSensorID(emode);
+
+            if( sidExchangeMode == DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": ID not found ('exchangeModeID') for " << emode;
+                opccrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        // -----------------------
         string heart = conf->getArgParam("--" + prefix + "-heartbeat-id", it.getProp("heartbeat_id"));
 
         if( !heart.empty() )
@@ -329,6 +345,7 @@ namespace uniset
 
         shm->initIterator(itHeartBeat);
         shm->initIterator(itRespond);
+        shm->initIterator(itExchangeMode);
         PassiveTimer ptAct(activateTimeout);
 
         if( !activated )
@@ -406,11 +423,14 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::channelExchange( Tick tick, Channel* ch, bool writeOn )
     {
+        if( exchangeMode == emSkipExchange )
+            return;
+
         auto t_start = std::chrono::steady_clock::now();
 
-        if( writeOn )
+        if( writeOn && exchangeMode != emReadOnly )
         {
-            for (auto&& v : ch->writeValues)
+            for( auto&& v : ch->writeValues )
             {
                 if (v.first == 0 || tick % v.first == 0)
                 {
@@ -425,15 +445,20 @@ namespace uniset
             }
         }
 
-        for( auto&& v : ch->readValues )
+        if( exchangeMode != emWriteOnly )
         {
-            if( v.first == 0 || tick % v.first == 0 )
+            for( auto&& v : ch->readValues )
             {
-                opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int)tick << " read " << v.second->ids.size() << " attrs" << endl;
-                auto ret = ch->client->read32(v.second->ids, v.second->results);
+                if (v.first == 0 || tick % v.first == 0)
+                {
+                    opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
+                            << v.second->ids.size() << " attrs" << endl;
+                    auto ret = ch->client->read32(v.second->ids, v.second->results);
 
-                if( ret != UA_STATUSCODE_GOOD )
-                    opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int)tick << " read error: " << UA_StatusCode_name(ret) << endl;
+                    if (ret != UA_STATUSCODE_GOOD)
+                        opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
+                                << " read error: " << UA_StatusCode_name(ret) << endl;
+                }
             }
         }
 
@@ -448,6 +473,12 @@ namespace uniset
             return;
 
         if( !force_out )
+            return;
+
+        if( sidExchangeMode != DefaultObjectId )
+            exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
+
+        if( !isUpdateSM(true) )
             return;
 
         for( auto&& io : iolist )
@@ -497,6 +528,9 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::updateToChannel( Channel* ch )
     {
+        if( exchangeMode == emSkipExchange || exchangeMode == emReadOnly )
+            return;
+
         for( auto&& io : iolist )
         {
             if( io->ignore )
@@ -544,6 +578,9 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::updateFromChannel( Channel* ch )
     {
+        if( exchangeMode == emSkipExchange || exchangeMode == emWriteOnly )
+            return;
+
         for( auto&& io : iolist )
         {
             if( io->ignore )
@@ -595,6 +632,9 @@ namespace uniset
     // --------------------------------------------------------------------------------
     void OPCUAExchange::writeToSM()
     {
+        if( !isUpdateSM(false) )
+            return;
+
         for( auto&& io : iolist )
         {
             if( io->ignore )
@@ -640,6 +680,42 @@ namespace uniset
         }
     }
     // --------------------------------------------------------------------------------
+    bool OPCUAExchange::isUpdateSM( bool wrFunc ) const noexcept
+    {
+        if( exchangeMode == emSkipExchange )
+        {
+            if( wrFunc )
+                return true; // данные для посылки, должны обновляться всегда (чтобы быть актуальными, когда режим переключиться обратно..)
+
+            opclog3 << "(isUpdateSM):"
+                    << " skip... mode='emSkipExchange' " << endl;
+            return false;
+        }
+
+        if( wrFunc && (exchangeMode == emReadOnly) )
+        {
+            opclog3 << "(isUpdateSM):"
+                    << " skip... mode='emReadOnly' " << endl;
+            return false;
+        }
+
+        if( !wrFunc && (exchangeMode == emWriteOnly) )
+        {
+            opclog3 << "(isUpdateSM):"
+                    << " skip... mode='emWriteOnly' " << endl;
+            return false;
+        }
+
+        if( !wrFunc && (exchangeMode == emSkipSaveToSM) )
+        {
+            opclog3 << "(isUpdateSM):"
+                    << " skip... mode='emSkipSaveToSM' " << endl;
+            return false;
+        }
+
+        return true;
+    }
+    // -----------------------------------------------------------------------------
     void OPCUAExchange::readConfiguration()
     {
         readconf_ok = false;
@@ -1277,6 +1353,20 @@ namespace uniset
                 }
             }
         }
+
+        try
+        {
+            if( sidExchangeMode != DefaultObjectId )
+                shm->askSensor(sidExchangeMode, cmd);
+        }
+        catch( uniset::Exception& ex )
+        {
+            opccrit << myname << "(askSensors): " << ex << std::endl;
+        }
+        catch(...)
+        {
+            opccrit << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
+        }
     }
     // -----------------------------------------------------------------------------
     void OPCUAExchange::timerInfo( const uniset::TimerMessage* tm )
@@ -1370,6 +1460,12 @@ namespace uniset
 
         if( force_out )
             return;
+
+        if( sm->id == sidExchangeMode )
+        {
+            exchangeMode = sm->value;
+            opclog3 << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
+        }
 
         for( auto&& it : iolist )
         {

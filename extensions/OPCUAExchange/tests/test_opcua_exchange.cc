@@ -35,6 +35,7 @@ const ObjectId sidAttrI101 = 1021;
 const ObjectId sidRespond = 10;
 const ObjectId sidRespond1 = 11;
 const ObjectId sidRespond2 = 12;
+const ObjectId exchangeMode = 13;
 const timeout_t step_pause_msec = 350;
 const timeout_t timeout_msec = 6000;
 // -----------------------------------------------------------------------------
@@ -68,6 +69,7 @@ static void InitTest()
     CHECK(opcTestServer2->isRunning() );
 
     REQUIRE( opc != nullptr );
+    REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emNone) );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: read", "[opcua][exchange][read]")
@@ -176,6 +178,165 @@ TEST_CASE("OPCUAExchange: read types", "[opcua][exchange][types]")
     REQUIRE(opcTestServer1->getX(1006, opcua::Type::Byte) == 106 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
+{
+    InitTest();
+    opcTestServer1->setI32(wrAttr3, 0);
+    opcTestServer1->setI32(rdAttr1, 0);
+
+    SECTION("None")
+    {
+        REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emNone ) );
+        REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emNone );
+        msleep(step_pause_msec);
+
+        SECTION("read")
+        {
+            opcTestServer1->setI32(rdAttr1, 10);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == 10 );
+            msleep(step_pause_msec);
+            REQUIRE(shm->getValue(sidAttr1) == 10);
+        }
+        SECTION("write")
+        {
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 10));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) == 10);
+        }
+    }
+
+    SECTION("WriteOnly")
+    {
+        REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emWriteOnly ) );
+        REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emWriteOnly );
+        msleep(step_pause_msec);
+
+        SECTION("read")
+        {
+            opcTestServer1->setI32(rdAttr1, 150);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == 150 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) != 150 );
+
+            opcTestServer1->setI32(rdAttr1, -10);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == -10 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) != -10 );
+            REQUIRE( ui->getValue(sidAttr1) != 150 );
+        }
+        SECTION("write")
+        {
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) == 150);
+
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 155));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) == 155);
+        }
+    }
+
+    SECTION("ReadOnly")
+    {
+        REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emReadOnly ) );
+        REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emReadOnly );
+        msleep(step_pause_msec);
+
+        SECTION("read")
+        {
+            opcTestServer1->setI32(rdAttr1, 150);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == 150 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) == 150 );
+
+            opcTestServer1->setI32(rdAttr1, -10);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == -10 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) == -10 );
+        }
+        SECTION("write")
+        {
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 150);
+
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 250));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 250);
+
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 150);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 250);
+        }
+    }
+
+    SECTION("SkipSaveToSM")
+    {
+        REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emSkipSaveToSM ) );
+        REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emSkipSaveToSM );
+        msleep(step_pause_msec);
+        SECTION("read")
+        {
+            opcTestServer1->setI32(rdAttr1, 150);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == 150 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) != 150 );
+
+            opcTestServer1->setI32(rdAttr1, -10);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == -10 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) != -10 );
+            REQUIRE( ui->getValue(sidAttr1) != 150 );
+        }
+        SECTION("write")
+        {
+            // в этом режиме "write" работает
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) == 150);
+
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 350));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) == 350);
+        }
+    }
+
+    SECTION("SkipExchange")
+    {
+        REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emSkipExchange ) );
+        REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emSkipExchange );
+        msleep(step_pause_msec);
+
+        SECTION("read")
+        {
+            opcTestServer1->setI32(rdAttr1, 150);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == 150 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) != 150 );
+
+            opcTestServer1->setI32(rdAttr1, -10);
+            REQUIRE(opcTestServer1->getI32(rdAttr1) == -10 );
+            msleep(step_pause_msec);
+            REQUIRE( ui->getValue(sidAttr1) != -10 );
+            REQUIRE( ui->getValue(sidAttr1) != 150 );
+        }
+        SECTION("write")
+        {
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 150);
+
+            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 250));
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 250);
+
+            msleep(step_pause_msec);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 150);
+            REQUIRE(opcTestServer1->getI32(wrAttr3) != 250);
+        }
+    }
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
 {
     InitTest();
@@ -218,4 +379,3 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
     REQUIRE(shm->getValue(sidRespond1) == 0);
     REQUIRE(shm->getValue(sidRespond2) == 0);
 }
-// -----------------------------------------------------------------------------

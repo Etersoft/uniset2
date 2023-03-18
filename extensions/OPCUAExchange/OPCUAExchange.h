@@ -50,6 +50,7 @@ namespace uniset
     - \ref sec_OPCUAExchange_Comm
     - \ref sec_OPCUAExchange_Conf
     - \ref sec_OPCUAExchange_Sensors_Conf
+    - \ref sec_OPCUAExchange_ExchangeMode
 
     \section sec_OPCUAExchange_Comm Общее описание OPCUAExchange
     Данная реализация построена на использовании проекта https://github.com/open62541/open62541
@@ -120,6 +121,20 @@ namespace uniset
      - "ns=1;b=b3BlbjYyNTQxIQ=="  (base64)
 
      \b "ns" - namespace index
+
+     \section sec_OPCUAExchange_ExchangeMode Управление режимом работы OPCUAExchange
+     В OPCUAExchange заложена возможность управлять режимом работы процесса. Поддерживаются
+     следующие режимы:
+     - \b emNone - нормальная работа (по умолчанию)
+     - \b emWriteOnly - "только посылка данных" (работают только write-функции)
+     - \b emReadOnly - "только чтение" (работают только read-функции)
+     - \b emSkipSaveToSM - "не записывать данные в SM", это особый режим, похожий на \b emWriteOnly,
+     но отличие в том, что при этом режиме ведётся полноценый обмен (и read и write),
+     только реально данные не записываются в SharedMemory(SM).
+     - \b emSkipExchnage - отключить обмен (при этом данные "из SM" обновляются).
+
+     Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
+     - \b --prefix-exchange-mode-id либо в конф. файле параметром \b exchangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
     */
     // ---------------------------------------------------------------------
     /*! Процесс опроса OPC UA сервера */
@@ -192,6 +207,16 @@ namespace uniset
                 friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<OPCAttribute>& inf );
             };
 
+            /*! Режимы работы процесса обмена */
+            enum ExchangeMode
+            {
+                emNone = 0,         /*!< нормальная работа (по умолчанию) */
+                emWriteOnly = 1,    /*!< "только посылка данных" (работают только write-функции) */
+                emReadOnly = 2,     /*!< "только чтение" (работают только read-функции) */
+                emSkipSaveToSM = 3, /*!< не писать данные в SM (при этом работают и read и write функции) */
+                emSkipExchange = 4  /*!< отключить обмен */
+            };
+
         protected:
 
             enum Timers
@@ -209,6 +234,7 @@ namespace uniset
             void updateToChannel( Channel* ch );
             void updateFromSM();
             void writeToSM();
+            bool isUpdateSM( bool wrFunc ) const noexcept;
 
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
             virtual void askSensors( UniversalIO::UIOCommand cmd );
@@ -289,6 +315,10 @@ namespace uniset
             int logserv_port = {0};
 
             std::shared_ptr< ThreadCreator<OPCUAExchange> > thrChannel[numChannels];
+
+            uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
+            IOController::IOStateList::iterator itExchangeMode;
+            long exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
 
             VMonitor vmon;
 
