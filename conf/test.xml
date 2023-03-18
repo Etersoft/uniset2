@@ -230,7 +230,7 @@
 		<OPCUAServer name="OPCUAServer1" port="4840" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 		<OPCUAServer2 name="OPCUAServer2" port="4841" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 
-		<OPCUAClient name="OPCUAClient1" addr2="opc.tcp://localhost:4841" respond1_s="OPCUA_Respond1_S" respond_s="OPCUA_Respond_S"/>
+		<OPCUAClient name="OPCUAClient1" addr2="opc.tcp://localhost:4841" exchangeModeID="OPCUA_Mode_AS" respond1_s="OPCUA_Respond1_S" respond_s="OPCUA_Respond_S"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -399,6 +399,7 @@
 			<item id="216" iotype="DI" name="OPCUA_Respond_S" textname="OPCUA: наличие связи"/>
 			<item id="217" iotype="DI" name="OPCUA_Respond1_S" textname="OPCUA: наличие связи (канал N1)"/>
 			<item id="218" iotype="DI" name="OPCUA_Respond2_S" textname="OPCUA: наличие связи (канал N2)"/>
+			<item id="219" iotype="AI" name="OPCUA_Mode_AS" textname="OPCUA: Режим работы"/>
 
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->

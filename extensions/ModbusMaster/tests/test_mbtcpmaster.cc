@@ -717,7 +717,7 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: check respond resnsor", "[modbus][respond][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: check respond sensor", "[modbus][respond][mbmaster][mbtcpmaster]")
 {
     InitTest();
     REQUIRE(exchangeIsOk());

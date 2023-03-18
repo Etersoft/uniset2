@@ -26,7 +26,7 @@
 	<settings>
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
 	    <OPCUAExchange1 name="OPCUAExchange1" addr1="opc.tcp://localhost:4840" addr2="opc.tcp://localhost:4841" timeout="1000"
-			respond1_s="OPCUA1_Respond1_S" respond2_s="OPCUA1_Respond2_S" respond_s="OPCUA1_Respond_S"
+			respond1_s="OPCUA1_Respond1_S" respond2_s="OPCUA1_Respond2_S" respond_s="OPCUA1_Respond_S" exchangeModeID="OPCUA1_Mode_AS"
 		/>
   	</settings>
 	<ObjectsMap idfromfile="1">
@@ -37,6 +37,7 @@
 			<item id="10" iotype="DI" name="OPCUA1_Respond_S" textname="Наличие связи с OPC UA Server1"/>
 			<item id="11" iotype="DI" name="OPCUA1_Respond1_S" textname="Наличие связи с OPC UA канал N1"/>
 			<item id="12" iotype="DI" name="OPCUA1_Respond2_S" textname="Наличие связи с OPC UA Канал N2"/>
+			<item id="13" iotype="AI" name="OPCUA1_Mode_AS" textname="Режим работы OPCUAExchange"/>
 
 			<item id="1000" opc="1" opcua_nodeid="Attr1" iotype="AI" name="Attr1_AS" textname="Тестовый датчик N1"/>
 			<item id="1001" opc="1" opcua_nodeid="Attr2" iotype="DI" name="Attr2_S" textname="Тестовый датчик N2"/>
