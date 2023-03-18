@@ -25,12 +25,16 @@ const std::string rdAttr2 = "Attr2";
 const std::string wrAttr3 = "Attr3";
 const std::string wrAttr4 = "Attr4";
 const std::string ignAttr5 = "Attr5";
+const std::string rdAttr6 = "Attr6";
+const std::string wrAttr7 = "Attr7";
 const int rdI101 = 101;
 const ObjectId sidAttr1 = 1000;
 const ObjectId sidAttr2 = 1001;
 const ObjectId sidAttr3 = 1010;
 const ObjectId sidAttr4 = 1011;
 const ObjectId sidAttr5 = 1020;
+const ObjectId sidAttr6 = 1027;
+const ObjectId sidAttr7 = 1028;
 const ObjectId sidAttrI101 = 1021;
 const ObjectId sidRespond = 10;
 const ObjectId sidRespond1 = 11;
@@ -176,6 +180,108 @@ TEST_CASE("OPCUAExchange: read types", "[opcua][exchange][types]")
     REQUIRE(opcTestServer1->getX(1004, opcua::Type::Int64) == 104 );
     REQUIRE(opcTestServer1->getX(1005, opcua::Type::UInt64) == 105 );
     REQUIRE(opcTestServer1->getX(1006, opcua::Type::Byte) == 106 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: first bit", "[opcua][firstbit]")
+{
+    REQUIRE( OPCUAExchange::firstBit(4) == 2 );
+    REQUIRE( OPCUAExchange::firstBit(1) == 0 );
+    REQUIRE( OPCUAExchange::firstBit(64) == 6 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: get bits", "[opcua][getbits]")
+{
+    REQUIRE( OPCUAExchange::getBits(1, 1, 0) == 1 );
+    REQUIRE( OPCUAExchange::getBits(12, 12, 2) == 3 );
+    REQUIRE( OPCUAExchange::getBits(9, 12, 2) == 2 );
+    REQUIRE( OPCUAExchange::getBits(9, 3, 0) == 1 );
+    REQUIRE( OPCUAExchange::getBits(15, 12, 2) == 3 );
+    REQUIRE( OPCUAExchange::getBits(15, 3, 0) == 3 );
+    REQUIRE( OPCUAExchange::getBits(15, 0, 0) == 15 );
+    REQUIRE( OPCUAExchange::getBits(15, 0, 3) == 15 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: set bits", "[opcua][setbits]")
+{
+    REQUIRE( OPCUAExchange::setBits(1, 1, 1, 0) == 1 );
+    REQUIRE( OPCUAExchange::setBits(0, 3, 12, 2) == 12 );
+    REQUIRE( OPCUAExchange::setBits(3, 3, 12, 2) == 15 );
+    REQUIRE( OPCUAExchange::setBits(16, 3, 12, 2) == 28 );
+    REQUIRE( OPCUAExchange::setBits(28, 1, 3, 0) == 29 );
+    REQUIRE( OPCUAExchange::setBits(28, 10, 0, 0) == 28 );
+    REQUIRE( OPCUAExchange::setBits(28, 10, 0, 4) == 28 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: force set bits", "[opcua][forcesetbits]")
+{
+    REQUIRE( OPCUAExchange::forceSetBits(1, 1, 1, 0) == 1 );
+    REQUIRE( OPCUAExchange::forceSetBits(0, 3, 12, 2) == 12 );
+    REQUIRE( OPCUAExchange::forceSetBits(28, 10, 0, 0) == 10 );
+    REQUIRE( OPCUAExchange::forceSetBits(28, 10, 0, 4) == 10 );
+
+    REQUIRE( OPCUAExchange::forceSetBits(0, 2, 3, 0) == 2 );
+    REQUIRE( OPCUAExchange::forceSetBits(2, 2, 12, 2) == 10 );
+
+    REQUIRE( OPCUAExchange::forceSetBits(2, 0, 3, 0) == 0 );
+    REQUIRE( OPCUAExchange::forceSetBits(12, 0, 12, 2) == 0 );
+
+    REQUIRE( OPCUAExchange::forceSetBits(3, 5, 3, 0) == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: read/write mask", "[opcua][exchange][mask]")
+{
+    InitTest();
+    opcTestServer1->setI32(wrAttr7, 0);
+    opcTestServer1->setI32(rdAttr6, 0);
+
+    // read
+    opcTestServer1->setI32(rdAttr6, 11);
+    REQUIRE(opcTestServer1->getI32(rdAttr6) == 11 );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidAttr6) == 3 );
+
+    opcTestServer1->setI32(rdAttr6, 5);
+    REQUIRE(opcTestServer1->getI32(rdAttr6) == 5 );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidAttr6) == 1 );
+
+    opcTestServer1->setI32(rdAttr6, 2);
+    REQUIRE(opcTestServer1->getI32(rdAttr6) == 2 );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidAttr6) == 2 );
+
+    opcTestServer1->setI32(rdAttr6, 0);
+    REQUIRE(opcTestServer1->getI32(rdAttr6) == 0 );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidAttr6) == 0 );
+
+    opcTestServer1->setI32(rdAttr6, 8);
+    REQUIRE(opcTestServer1->getI32(rdAttr6) == 8 );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidAttr6) == 0 );
+
+    // write
+    opcTestServer1->setI32(wrAttr7, 100);
+    REQUIRE(opcTestServer1->getI32(wrAttr7) == 100 );
+    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 1));
+    msleep(step_pause_msec);
+    REQUIRE(opcTestServer1->getI32(wrAttr7) == 1 );
+
+    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 3));
+    msleep(step_pause_msec);
+    REQUIRE(opcTestServer1->getI32(wrAttr7) == 3 );
+
+    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 5));
+    msleep(step_pause_msec);
+    REQUIRE(opcTestServer1->getI32(wrAttr7) == 1 );
+
+    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 8));
+    msleep(step_pause_msec);
+    REQUIRE(opcTestServer1->getI32(wrAttr7) == 0 );
+
+    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 2));
+    msleep(step_pause_msec);
+    REQUIRE(opcTestServer1->getI32(wrAttr7) == 2 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
