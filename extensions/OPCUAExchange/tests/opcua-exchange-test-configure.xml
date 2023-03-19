@@ -54,7 +54,9 @@
 			<!-- mask -->
 			<item id="1027" opc="1" opcua_nodeid="Attr6" opcua_mask="3" iotype="AI" name="Attr6_AS" textname="Тестовый датчик N6"/>
 			<item id="1028" opc="1" opcua_nodeid="Attr7" opcua_mask="3" iotype="AO" name="Attr7_C" textname="Тестовый выход N7"/>
-
+			<!-- float -->
+			<item id="1029" opc="1" opcua_nodeid="Float1" opcua_type="float" precision="2" iotype="AI" name="Float1_AS" textname="Тестовый датчик float N1"/>
+			<item id="1030" opc="1" opcua_nodeid="FloatOut1" opcua_type="float" precision="2" iotype="AO" name="Float1_C" textname="Тестовый выход float N1"/>
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">

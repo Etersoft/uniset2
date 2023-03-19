@@ -46,6 +46,17 @@ namespace uniset
         return os;
     }
     // -----------------------------------------------------------------------------
+    float OPCUAExchange::OPCAttribute::as_float()
+    {
+        return ( (float)val / pow(10.0, cal.precision) );
+    }
+    // -----------------------------------------------------------------------------
+    int32_t OPCUAExchange::OPCAttribute::set( float fval )
+    {
+        val = lroundf( fval * pow(10.0, cal.precision) );
+        return val;
+    }
+    // -----------------------------------------------------------------------------
     OPCUAExchange::OPCUAExchange(uniset::ObjectId id, uniset::ObjectId icID,
                                  const std::shared_ptr<SharedMemory>& ic, const std::string& prefix_ ):
         UniSetObject(id),
@@ -453,7 +464,7 @@ namespace uniset
                 {
                     opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
                             << v.second->ids.size() << " attrs" << endl;
-                    auto ret = ch->client->read32(v.second->ids, v.second->results);
+                    auto ret = ch->client->read(v.second->ids, v.second->results);
 
                     if (ret != UA_STATUSCODE_GOOD)
                         opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
@@ -550,7 +561,11 @@ namespace uniset
                 {
                     {
                         uniset::uniset_rwmutex_rlock lock(io->vmut);
-                        io->wval[ch->idx].set(io->val);
+
+                        if( io->vtype == OPCUAClient::VarType::Float )
+                            io->wval[ch->idx].setF(io->as_float());
+                        else
+                            io->wval[ch->idx].set(io->val);
                     }
                     opclog4 << myname << "(updateToChannel" << ch->num << "): write AO"
                             << " sid=" << io->si.id
@@ -608,7 +623,12 @@ namespace uniset
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
                         if( io->rval[ch->idx].statusOk() )
-                            io->val = getBits(io->rval[ch->idx].get(), io->mask, io->offset);
+                        {
+                            if( io->vtype == OPCUAClient::VarType::Float )
+                                io->set( io->rval[ch->idx].getF() );
+                            else
+                                io->val = getBits(io->rval[ch->idx].get(), io->mask, io->offset);
+                        }
                     }
                 }
                 else if( io->stype == UniversalIO::DI )
@@ -762,7 +782,18 @@ namespace uniset
         if( !gr )
             return 0;
 
-        return gr->results[grIndex].value;
+        return gr->results[grIndex].get();
+    }
+    // ------------------------------------------------------------------------------------------
+    float OPCUAExchange::OPCAttribute::RdValue::getF()
+    {
+        if( !gr )
+            return 0;
+
+        if( gr->results[grIndex].type == OPCUAClient::VarType::Float )
+            return gr->results[grIndex].as<float>();
+
+        return gr->results[grIndex].get();
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::OPCAttribute::RdValue::statusOk()
@@ -866,10 +897,41 @@ namespace uniset
             uint64_t def = (uint64_t)defvalue;
             UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT64]);
         }
+        else if( stype == "float" )
+        {
+            float def = (float)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_FLOAT]);
+        }
+        else if( stype == "double" )
+        {
+            double def = (double)defvalue;
+            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_DOUBLE]);
+        }
         else
         {
             UA_Variant_setScalarCopy(&wv->value.value, &defvalue, &UA_TYPES[UA_TYPES_INT32]);
         }
+    }
+    // ------------------------------------------------------------------------------------------
+    bool OPCUAExchange::OPCAttribute::WrValue::setF( float val )
+    {
+        if( !gr )
+            return false;
+
+        auto& wv = gr->ids[grIndex];
+
+        if( wv.value.value.type == &UA_TYPES[UA_TYPES_FLOAT] )
+        {
+            *(float*)(wv.value.value.data) = val;
+            return true;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_DOUBLE] )
+        {
+            *(double*)(wv.value.value.data) = val;
+            return true;
+        }
+
+        return set(val);
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::OPCAttribute::WrValue::set( int32_t val )
@@ -911,6 +973,14 @@ namespace uniset
         else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT64] )
         {
             *(int64_t*)(wv.value.value.data) = val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_FLOAT] )
+        {
+            *(float*)(wv.value.value.data) = val;
+        }
+        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_DOUBLE] )
+        {
+            *(double*)(wv.value.value.data) = val;
         }
         else
         {
@@ -1005,7 +1075,19 @@ namespace uniset
             return true;
         }
 
-        opclog3 << myname << "(readItem): add: " << inf->stype << " " << inf << endl;
+        auto vtype = IOBase::initProp(it, "opcua_type", prop_prefix, false, "");
+
+        if( vtype.empty() )
+        {
+            vtype = "int32";
+
+            if( inf->stype == UniversalIO::DO || inf->stype == UniversalIO::DI )
+                vtype = "bool";
+        }
+
+        inf->vtype = OPCUAClient::str2vtype(vtype);
+
+        opclog3 << myname << "(readItem): add: " << inf->stype << " " << inf << " vtype=" << vtype << endl;
 
         for( size_t chan = 0; chan < numChannels; chan++ )
         {
@@ -1030,9 +1112,23 @@ namespace uniset
                 rv->attributeId = UA_ATTRIBUTEID_VALUE;
                 rv->nodeId = UA_NODEID(attr.c_str());
 
-                OPCUAClient::Result32 res;
+                OPCUAClient::ResultVar res;
                 res.status = UA_STATUSCODE_GOOD;
-                res.value = forceSetBits(0, inf->defval, inf->mask, inf->offset);
+                res.type = inf->vtype;
+
+                if( inf->vtype == OPCUAClient::VarType::Float )
+                {
+                    // отключаем обработку "precision" на уровне IOBase
+                    // т.к. учитываем precision сами
+                    inf->noprecision = true;
+                    inf->val = inf->defval;
+                    res.value = inf->as_float();
+                }
+                else
+                {
+                    res.value = (int32_t)forceSetBits(0, inf->defval, inf->mask, inf->offset);
+                }
+
                 gr->results.emplace_back(res);
                 OPCAttribute::RdValue rd;
                 rd.gr = gr;
@@ -1053,18 +1149,22 @@ namespace uniset
                     channels[chan].writeValues.emplace(inf->tick, gr);
                 }
 
-                string defVType = "int32";
-
-                if( inf->stype == UniversalIO::DO )
-                    defVType = "bool";
-
-                const string vtype = it.getProp2("opcua_type", defVType);
                 UA_WriteValue* wv = &(gr->ids.emplace_back(UA_WriteValue{}));
                 OPCAttribute::WrValue::init(wv, attr, vtype, forceSetBits(0, inf->defval, inf->mask, inf->offset));
 
                 OPCAttribute::WrValue wr;
                 wr.gr = gr;
                 wr.grIndex = gr->ids.size() - 1;
+
+                if( inf->vtype == OPCUAClient::VarType::Float )
+                {
+                    // отключаем обработку "precision" на уровне IOBase
+                    // т.к. учитываем precision сами
+                    inf->noprecision = true;
+                    inf->val = inf->defval;
+                    wr.setF(inf->as_float());
+                }
+
                 inf->wval[chan] = wr;
             }
         }

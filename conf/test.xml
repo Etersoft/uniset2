@@ -403,6 +403,7 @@
 			<item id="220" iotype="AI" name="OPCUA_SensorMask3_AS" textname="OPCUA: sensor1 mask3" opc="1" opcua="1" opcua_mask="3" opcua_nodeid="AI_AS" />
 			<item id="221" iotype="AI" name="OPCUA_SensorMask12_AS" textname="OPCUA: sensor1 mask12" opc="1" opcua_mask="12" opcua_nodeid="AI_AS" />
 			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1" opcua="1" opcua_rwmode="w" opcua_mask="3" opcua_nodeid="MB2_AS"/>
+			<item id="234" iotype="AI" name="OPCUA_Float1_AS" textname="OPCUA: sensor1" opc="1" opcua_nodeid="Float1" opcua_type="float" precision="2" />
 
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->

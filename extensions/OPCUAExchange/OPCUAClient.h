@@ -19,6 +19,7 @@
 // -----------------------------------------------------------------------------
 #include <string>
 #include <vector>
+#include <variant>
 #include <open62541/client_config_default.h>
 #include "Exceptions.h"
 //--------------------------------------------------------------------------
@@ -35,16 +36,40 @@ namespace uniset
             bool connect( const std::string& addr );
             bool connect( const std::string& addr, const std::string& user, const std::string& pass );
 
-            struct Result32
+            // supported types (other types are converted to these if possible)
+            enum class VarType
             {
-                Result32() {}
-                int32_t value;
+                Int32 = 0,
+                Float = 1
+            };
+            static VarType str2vtype( std::string_view s );
+
+            struct ResultVar
+            {
+                ResultVar() {}
+                std::variant<int32_t, float> value = { 0 };
                 UA_StatusCode status;
+                VarType type = { VarType::Int32 }; // by default
+
+                // get as int32_t (cast to int32_t if possible)
+                int32_t get();
+
+                template<class VType>
+                VType as()
+                {
+                    try
+                    {
+                        return std::get<VType>(value);
+                    }
+                    catch(const std::bad_variant_access&) {}
+
+                    return {};
+                }
             };
 
             using ErrorCode = int;
 
-            ErrorCode read32( std::vector<UA_ReadValueId>& attrs, std::vector<Result32>& result );
+            ErrorCode read( std::vector<UA_ReadValueId>& attrs, std::vector<ResultVar>& result );
             ErrorCode write32( std::vector<UA_WriteValue>& values );
             ErrorCode write32( const std::string& attr, int32_t value );
             ErrorCode set( const std::string& attr, bool set );

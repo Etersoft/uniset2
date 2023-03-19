@@ -68,7 +68,42 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     return UA_Client_connectUsername(client, addr.c_str(), user.c_str(), pass.c_str()) == UA_STATUSCODE_GOOD;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<UA_ReadValueId>& attrs, std::vector<Result32>& result )
+OPCUAClient::VarType OPCUAClient::str2vtype( std::string_view s )
+{
+    if( s == "float" || s == "double" )
+        return VarType::Float;
+
+    return VarType::Int32;
+}
+// -----------------------------------------------------------------------------
+int32_t OPCUAClient::ResultVar::get()
+{
+    if( type == VarType::Int32 )
+    {
+        try
+        {
+            return std::get<int32_t>(value);
+        }
+        catch(const std::bad_variant_access&) {}
+
+        return 0;
+    }
+
+    if( type == VarType::Float )
+    {
+        try
+        {
+            return (int32_t) std::get<float>(value);
+        }
+        catch (const std::bad_variant_access&) {}
+
+        return 0;
+    }
+
+    return 0;
+}
+// -----------------------------------------------------------------------------
+OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std::vector<ResultVar>& result )
 {
     UA_ReadRequest request;
     UA_ReadRequest_init(&request);
@@ -90,6 +125,7 @@ OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<UA_ReadValueId>& attrs, 
 
                 if (response.results[i].status == UA_STATUSCODE_GOOD)
                 {
+                    result[i].type = VarType::Int32; // by default
                     UA_Variant* val = &response.results[i].value;
 
                     if (val->type == &UA_TYPES[UA_TYPES_INT32])
@@ -108,6 +144,16 @@ OPCUAClient::ErrorCode OPCUAClient::read32( std::vector<UA_ReadValueId>& attrs, 
                         result[i].value = *(UA_Int16*) val->data;
                     else if (val->type == &UA_TYPES[UA_TYPES_BYTE])
                         result[i].value = *(UA_Byte*) val->data;
+                    else if (val->type == &UA_TYPES[UA_TYPES_FLOAT])
+                    {
+                        result[i].type  = VarType::Float;
+                        result[i].value = (float)(*(UA_Float*) val->data);
+                    }
+                    else if (val->type == &UA_TYPES[UA_TYPES_DOUBLE])
+                    {
+                        result[i].type  = VarType::Float;
+                        result[i].value = (float)(*(UA_Double*)val->data);
+                    }
                 }
             }
         }

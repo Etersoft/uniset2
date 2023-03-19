@@ -25,12 +25,14 @@ class OPCUATestServer
         void setI32( const std::string& varname, int32_t val );
         void setBool( const std::string& varname, bool set );
         void setI32( int num, int32_t val );
+        void setF32( const std::string& varname, float val );
 
         void setX( int num, int32_t val, opcua::Type type );
         int32_t getX( int num, opcua::Type type );
 
         int32_t getI32( int num );
         int32_t getI32( const std::string& name );
+        float getF32( const std::string& name );
         bool getBool( const std::string& name );
 
     protected:
