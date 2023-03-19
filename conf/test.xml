@@ -400,9 +400,9 @@
 			<item id="217" iotype="DI" name="OPCUA_Respond1_S" textname="OPCUA: наличие связи (канал N1)"/>
 			<item id="218" iotype="DI" name="OPCUA_Respond2_S" textname="OPCUA: наличие связи (канал N2)"/>
 			<item id="219" iotype="AI" name="OPCUA_Mode_AS" textname="OPCUA: Режим работы"/>
-			<item id="220" iotype="AI" name="OPCUA_SensorMask3_AS" textname="OPCUA: sensor1 mask3" opc="1" opcua_mask="3" opcua_nodeid="AI_AS" />
+			<item id="220" iotype="AI" name="OPCUA_SensorMask3_AS" textname="OPCUA: sensor1 mask3" opc="1" opcua="1" opcua_mask="3" opcua_nodeid="AI_AS" />
 			<item id="221" iotype="AI" name="OPCUA_SensorMask12_AS" textname="OPCUA: sensor1 mask12" opc="1" opcua_mask="12" opcua_nodeid="AI_AS" />
-			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1"  opcua_mask="3" opcua_nodeid="MB2_AS"/>
+			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1" opcua="1" opcua_rwmode="w" opcua_mask="3" opcua_nodeid="MB2_AS"/>
 
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->

@@ -107,6 +107,8 @@ namespace uniset
      - \b opcua_displayname_lang - Язык для отображаемого имени. По умолчанию "en".
      - \b opcua_description - Описание. По умолчанию берётся textname
      - \b opcua_description_lang - Язык описания. По умолчанию "ru"
+     - \b opcua_mask - "битовая маска"(uint32_t). Позволяет задать маску для значения.
+        Действует как на читаемые так и на записываемые переменные.
 
      По умолчанию все датчики доступны только на чтение.
 
@@ -141,7 +143,16 @@ namespace uniset
             static void help_print();
 
             using DefaultValueType = int32_t;
+            using DefaultValueUType = uint32_t;
             const opcua::Type DefaultVariableType = {opcua::Type::Int32 };
+
+            static uint8_t firstBit( DefaultValueUType mask );
+            // offset = firstBit(mask)
+            static DefaultValueUType getBits( DefaultValueUType value, DefaultValueUType mask, uint8_t offset );
+            // if mask = 0 return value
+            static DefaultValueUType setBits( DefaultValueUType value, DefaultValueUType set, DefaultValueUType mask, uint8_t offset );
+            // if mask=0 return set
+            static DefaultValueUType forceSetBits( DefaultValueUType value, DefaultValueUType set, DefaultValueUType mask, uint8_t offset );
 
         protected:
             OPCUAServer();
@@ -167,14 +178,16 @@ namespace uniset
 
             struct IOVariable
             {
+                IOVariable(const opcua::Node& n) : node(n) {};
                 opcua::Node node;
                 IOController::IOStateList::iterator it;
                 UniversalIO::IOType stype = {UniversalIO::AO};
-                IOVariable(const opcua::Node& n) : node(n) {};
 
                 uniset::uniset_rwmutex vmut;
                 DefaultValueType value = { 0 };
                 bool state = { false };
+                DefaultValueUType mask = { 0 };
+                uint8_t offset = { 0 };
             };
 
             std::unordered_map<ObjectId, IOVariable> variables;

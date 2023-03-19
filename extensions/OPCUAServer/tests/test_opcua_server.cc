@@ -5,6 +5,7 @@
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "client.h"
+#include "OPCUAServer.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -69,5 +70,96 @@ TEST_CASE("[OPCUAServer]: write", "[opcuaserver]")
     REQUIRE( opcuaWriteBool(nodeId, "DO1_S", false) );
     msleep(pause_msec);
     REQUIRE( ui->getValue(4) == 0 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: first bit", "[opcuaserver][firstbit]")
+{
+    REQUIRE( OPCUAServer::firstBit(4) == 2 );
+    REQUIRE( OPCUAServer::firstBit(1) == 0 );
+    REQUIRE( OPCUAServer::firstBit(64) == 6 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: get bits", "[opcuaserver][getbits]")
+{
+    REQUIRE( OPCUAServer::getBits(1, 1, 0) == 1 );
+    REQUIRE( OPCUAServer::getBits(12, 12, 2) == 3 );
+    REQUIRE( OPCUAServer::getBits(9, 12, 2) == 2 );
+    REQUIRE( OPCUAServer::getBits(9, 3, 0) == 1 );
+    REQUIRE( OPCUAServer::getBits(15, 12, 2) == 3 );
+    REQUIRE( OPCUAServer::getBits(15, 3, 0) == 3 );
+    REQUIRE( OPCUAServer::getBits(15, 0, 0) == 15 );
+    REQUIRE( OPCUAServer::getBits(15, 0, 3) == 15 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: set bits", "[opcuaserver][setbits]")
+{
+    REQUIRE( OPCUAServer::setBits(1, 1, 1, 0) == 1 );
+    REQUIRE( OPCUAServer::setBits(0, 3, 12, 2) == 12 );
+    REQUIRE( OPCUAServer::setBits(3, 3, 12, 2) == 15 );
+    REQUIRE( OPCUAServer::setBits(16, 3, 12, 2) == 28 );
+    REQUIRE( OPCUAServer::setBits(28, 1, 3, 0) == 29 );
+    REQUIRE( OPCUAServer::setBits(28, 10, 0, 0) == 28 );
+    REQUIRE( OPCUAServer::setBits(28, 10, 0, 4) == 28 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: force set bits", "[opcuaserver][forcesetbits]")
+{
+    REQUIRE( OPCUAServer::forceSetBits(1, 1, 1, 0) == 1 );
+    REQUIRE( OPCUAServer::forceSetBits(0, 3, 12, 2) == 12 );
+    REQUIRE( OPCUAServer::forceSetBits(28, 10, 0, 0) == 10 );
+    REQUIRE( OPCUAServer::forceSetBits(28, 10, 0, 4) == 10 );
+
+    REQUIRE( OPCUAServer::forceSetBits(0, 2, 3, 0) == 2 );
+    REQUIRE( OPCUAServer::forceSetBits(2, 2, 12, 2) == 10 );
+
+    REQUIRE( OPCUAServer::forceSetBits(2, 0, 3, 0) == 0 );
+    REQUIRE( OPCUAServer::forceSetBits(12, 0, 12, 2) == 0 );
+
+    REQUIRE( OPCUAServer::forceSetBits(3, 5, 3, 0) == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[OPCUAServer]: mask read/write", "[opcuaserver][mask]")
+{
+    InitTest();
+
+    // read
+    ui->setValue(5, 1);
+    ui->setValue(6, 5);
+    msleep(pause_msec);
+    REQUIRE( opcuaRead(nodeId, "AI5_S") == 1 );
+    REQUIRE( opcuaRead(nodeId, "AI6_S") == 1 );
+
+    ui->setValue(5, 3);
+    ui->setValue(6, 15);
+    msleep(pause_msec);
+    REQUIRE( opcuaRead(nodeId, "AI5_S") == 3 );
+    REQUIRE( opcuaRead(nodeId, "AI6_S") == 3 );
+
+    ui->setValue(5, 16);
+    ui->setValue(6, 16);
+    msleep(pause_msec);
+    REQUIRE( opcuaRead(nodeId, "AI5_S") == 0 );
+    REQUIRE( opcuaRead(nodeId, "AI6_S") == 0 );
+
+    // write
+    REQUIRE( opcuaWrite(nodeId, "AO7_S", 1) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(7) == 1 );
+
+    REQUIRE( opcuaWrite(nodeId, "AO7_S", 3) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(7) == 3 );
+
+    REQUIRE( opcuaWrite(nodeId, "AO7_S", 5) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(7) == 1 );
+
+    REQUIRE( opcuaWrite(nodeId, "AO7_S", 15) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(7) == 3 );
+
+    REQUIRE( opcuaWrite(nodeId, "AO7_S", 0) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(7) == 0 );
 }
 // -----------------------------------------------------------------------------
