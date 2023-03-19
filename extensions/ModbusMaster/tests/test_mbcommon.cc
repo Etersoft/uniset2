@@ -10,6 +10,8 @@ TEST_CASE("MBTCPMaster: first bit", "[modbus][firstbit]")
     REQUIRE( MBExchange::firstBit(4) == 2 );
     REQUIRE( MBExchange::firstBit(1) == 0 );
     REQUIRE( MBExchange::firstBit(64) == 6 );
+    REQUIRE( MBExchange::firstBit(12) == 2 );
+    REQUIRE( MBExchange::firstBit(192) == 6 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: get bits", "[modbus][getbits]")

@@ -811,6 +811,9 @@ namespace uniset
     // ------------------------------------------------------------------------------------------
     uint8_t OPCUAExchange::firstBit( uint32_t mask )
     {
+#if defined(__GNUC__) || defined(__clang__)
+        return __builtin_ctz(mask);
+#else
         uint8_t n = 0;
 
         while( mask != 0 )
@@ -823,6 +826,7 @@ namespace uniset
         }
 
         return n;
+#endif
     }
     // ------------------------------------------------------------------------------------------
     uint32_t OPCUAExchange::forceSetBits( uint32_t value, uint32_t set, uint32_t mask, uint8_t offset )

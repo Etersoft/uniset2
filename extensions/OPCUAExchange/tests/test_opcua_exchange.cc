@@ -217,6 +217,8 @@ TEST_CASE("OPCUAExchange: first bit", "[opcua][firstbit]")
     REQUIRE( OPCUAExchange::firstBit(4) == 2 );
     REQUIRE( OPCUAExchange::firstBit(1) == 0 );
     REQUIRE( OPCUAExchange::firstBit(64) == 6 );
+    REQUIRE( OPCUAExchange::firstBit(12) == 2 );
+    REQUIRE( OPCUAExchange::firstBit(192) == 6 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: get bits", "[opcua][getbits]")
