@@ -47,6 +47,9 @@
 			<item id="2" iotype="AI" name="AI1_S" textname="AI sensor 1"/>
 			<item id="3" iotype="AI" name="AO1_S" textname="AO output 1" opcua_rwmode="w"/>
 			<item id="4" iotype="DI" name="DO1_S" textname="DO output 1" opcua_rwmode="w"/>
+			<item id="5" iotype="AI" name="AI5_S" textname="AI sensor mask3" opcua_mask="3"/>
+			<item id="6" iotype="AI" name="AI6_S" textname="AI sensor mask12" opcua_mask="12"/>
+			<item id="7" iotype="AI" name="AO7_S" textname="AO output mask3" opcua_rwmode="w" opcua_mask="3"/>
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">

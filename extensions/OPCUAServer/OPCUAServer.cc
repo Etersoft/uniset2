@@ -254,6 +254,17 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
             iotype = UniversalIO::AO; // read access
     }
 
+    DefaultValueUType mask = 0;
+    uint8_t offset =  0;
+
+    auto smask = it.getProp("opcua_mask");
+
+    if( !smask.empty() )
+    {
+        mask = uni_atoi(smask);
+        offset = firstBit(mask);
+    }
+
     sname = it.getProp2("opcua_name", sname);
 
     opcua::Type opctype = DefaultVariableType;
@@ -288,6 +299,8 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
 
     auto i = variables.emplace(sid, vnode);
     i.first->second.stype = iotype;
+    i.first->second.mask = mask;
+    i.first->second.offset = offset;
     shm->initIterator(i.first->second.it);
     return true;
 }
@@ -315,7 +328,7 @@ CORBA::Boolean OPCUAServer::exist()
 
     return active;
 }
-//-----------------ПЛК-exch-sm-server-------------------------------------------------------------
+//------------------------------------------------------------------------------
 void OPCUAServer::sysCommand( const uniset::SystemMessage* sm )
 {
     UObject_SK::sysCommand(sm);
@@ -478,7 +491,7 @@ void OPCUAServer::sensorInfo( const uniset::SensorMessage* sm )
         {
             uniset::uniset_rwmutex_wrlock lock(it->second.vmut);
             it->second.state = sm->value ? true : false;
-            it->second.value = (DefaultValueType) sm->value;
+            it->second.value = getBits(sm->value, it->second.mask, it->second.offset);
         }
     }
     catch( std::exception& ex )
@@ -511,7 +524,58 @@ void OPCUAServer::updateLoop()
 
     myinfo << myname << "(updateLoop): terminated.." << endl;
 }
-// -----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+uint8_t OPCUAServer::firstBit( OPCUAServer::DefaultValueUType mask )
+{
+    uint8_t n = 0;
+
+    while( mask != 0 )
+    {
+        if( mask & 1 )
+            break;
+
+        mask = (mask >> 1);
+        n++;
+    }
+
+    return n;
+}
+// ------------------------------------------------------------------------------------------
+OPCUAServer::DefaultValueUType OPCUAServer::forceSetBits(
+    OPCUAServer::DefaultValueUType value,
+    OPCUAServer::DefaultValueUType set,
+    OPCUAServer::DefaultValueUType mask,
+    uint8_t offset )
+{
+    if( mask == 0 )
+        return set;
+
+    return OPCUAServer::setBits(value, set, mask, offset);
+}
+// ------------------------------------------------------------------------------------------
+OPCUAServer::DefaultValueUType OPCUAServer::setBits(
+    OPCUAServer::DefaultValueUType value,
+    OPCUAServer::DefaultValueUType set,
+    OPCUAServer::DefaultValueUType mask,
+    uint8_t offset )
+{
+    if( mask == 0 )
+        return value;
+
+    return (value & (~mask)) | ((set << offset) & mask);
+}
+// ------------------------------------------------------------------------------------------
+OPCUAServer::DefaultValueUType OPCUAServer::getBits(
+    OPCUAServer::DefaultValueUType value,
+    OPCUAServer::DefaultValueUType mask,
+    uint8_t offset )
+{
+    if( mask == 0 )
+        return value;
+
+    return (value & mask) >> offset;
+}
+// ------------------------------------------------------------------------------------------
 void OPCUAServer::update()
 {
     auto t_start = std::chrono::steady_clock::now();
@@ -523,35 +587,46 @@ void OPCUAServer::update()
             if( !this->shm->isLocalwork() )
             {
                 if( it->second.stype == UniversalIO::DO )
-                    it->second.node.write(shm->localGetValue(it->second.it, it->first) ? true : false);
+                {
+                    it->second.state = shm->localGetValue(it->second.it, it->first) ? true : false;
+                    it->second.value = getBits(it->second.state ? 1 : 0, it->second.mask, it->second.offset);
+                }
                 else if( it->second.stype == UniversalIO::AO )
-                    it->second.node.write((DefaultValueType)shm->localGetValue(it->second.it, it->first));
+                {
+                    it->second.value = getBits(shm->localGetValue(it->second.it, it->first), it->second.mask, it->second.offset);
+                    it->second.state = it->second.value ? true : false;
+                }
             }
-            else
+
+            if( it->second.stype == UniversalIO::DO )
             {
-                if( it->second.stype == UniversalIO::DO )
-                {
-                    uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                    it->second.node.write(it->second.state);
-                }
-                else if( it->second.stype == UniversalIO::AO )
-                {
-                    uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                    it->second.node.write(it->second.value);
-                }
+                uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                it->second.node.write(it->second.state);
+            }
+            else if( it->second.stype == UniversalIO::AO )
+            {
+                uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                it->second.node.write(it->second.value);
             }
 
             if( it->second.stype == UniversalIO::DI )
             {
                 auto set = it->second.node.read<bool>();
-                mylog6 << this->myname << "(updateLoop): sid=" << it->first << " set=" << set << endl;
-                this->shm->localSetValue(it->second.it, it->first, set ? 1 : 0, this->getId());
+                auto val = getBits(set ? 1 : 0, it->second.mask, it->second.offset);
+                mylog6 << this->myname << "(updateLoop): sid=" << it->first
+                       << " set=" << set
+                       << " mask=" << it->second.mask
+                       << endl;
+                this->shm->localSetValue(it->second.it, it->first, val, this->getId());
             }
             else if( it->second.stype == UniversalIO::AI )
             {
-                auto value = it->second.node.read<DefaultValueType>();
-                mylog6 << this->myname << "(updateLoop): sid=" << it->first << " value=" << value << endl;
-                this->shm->localSetValue(it->second.it, it->first, value, this->getId());
+                auto val = getBits(it->second.node.read<DefaultValueType>(), it->second.mask, it->second.offset);
+                mylog6 << this->myname << "(updateLoop): sid=" << it->first
+                       << " value=" << val
+                       << " mask=" << it->second.mask
+                       << endl;
+                this->shm->localSetValue(it->second.it, it->first, val, this->getId());
             }
         }
         catch( const std::exception& ex )
