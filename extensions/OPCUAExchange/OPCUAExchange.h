@@ -111,8 +111,10 @@ namespace uniset
      Если задать "2" - то опрос будет производиться на каждом втором цикле и т.п. Циклы завязаны на polltime.
      - \b opcua_mask - "битовая маска"(uint32_t). Позволяет задать маску для значения. Действует как на значения читаемые,
      так и записываемые. При этом разрешается привязывать разные датчики к одной и той же переменной указывая разные маски.
-     - \b opcua_type - типа переменной в ПЛК. Поддерживаются следующие типы: bool, byte, int16, uint16, int32, uint32, int64, uint64
+     - \b opcua_type - типа переменной в ПЛК.
+     Поддерживаются следующие типы: bool, byte, int16, uint16, int32, uint32, int64, uint64, float, double(as float)
      При этом происходит преобразование значения int32_t к указанному типу (с игнорированием переполнения!).
+     Для float,double при преобразовании учитывается поле precision.
 
      Пример поддерживаемого формата для opcua_nodeid:
      - "AttrName" (aka "s=AttrName")
@@ -169,7 +171,7 @@ namespace uniset
             static const size_t numChannels = 2;
             struct ReadGroup
             {
-                std::vector<OPCUAClient::Result32> results;
+                std::vector<OPCUAClient::ResultVar> results;
                 std::vector<UA_ReadValueId> ids;
             };
             struct WriteGroup
@@ -193,6 +195,13 @@ namespace uniset
                 Tick tick = { 0 }; // на каждом ли тике работать с этим аттрибутом
                 uint32_t mask = { 0 };
                 uint8_t offset = { 0 };
+                OPCUAClient::VarType vtype = { OPCUAClient::VarType::Int32 };
+
+                // with precision
+                float as_float();
+
+                // with precision/noprecision
+                int32_t set( float val );
 
                 std::string attrName = {""};
                 struct RdValue
@@ -200,6 +209,7 @@ namespace uniset
                     std::shared_ptr<ReadGroup> gr;
                     size_t grIndex = {0};
                     int32_t get();
+                    float getF();
                     bool statusOk();
                     UA_StatusCode status();
                 };
@@ -210,6 +220,7 @@ namespace uniset
                     std::shared_ptr<WriteGroup> gr;
                     size_t grIndex = {0};
                     bool set( int32_t val );
+                    bool setF( float val );
                     bool statusOk();
                     UA_StatusCode status();
                     const UA_WriteValue& ref();

@@ -27,6 +27,8 @@ const std::string wrAttr4 = "Attr4";
 const std::string ignAttr5 = "Attr5";
 const std::string rdAttr6 = "Attr6";
 const std::string wrAttr7 = "Attr7";
+const std::string wrFloatOut = "FloatOut1";
+const std::string rdFloat = "Float1";
 const int rdI101 = 101;
 const ObjectId sidAttr1 = 1000;
 const ObjectId sidAttr2 = 1001;
@@ -36,6 +38,8 @@ const ObjectId sidAttr5 = 1020;
 const ObjectId sidAttr6 = 1027;
 const ObjectId sidAttr7 = 1028;
 const ObjectId sidAttrI101 = 1021;
+const ObjectId sidFloat1 = 1029;
+const ObjectId sidFloatOut1 = 1030;
 const ObjectId sidRespond = 10;
 const ObjectId sidRespond1 = 11;
 const ObjectId sidRespond2 = 12;
@@ -96,6 +100,22 @@ TEST_CASE("OPCUAExchange: read", "[opcua][exchange][read]")
 
     REQUIRE(opcTestServer1->getI32(rdAttr1) == 20 );
     REQUIRE(opcTestServer1->getBool(rdAttr2) == false );
+
+    // float
+    opcTestServer1->setF32(rdFloat, 10.01);
+    REQUIRE(opcTestServer1->getF32(rdFloat) == 10.01f );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidFloat1) == 1001);
+
+    // float: round up
+    opcTestServer1->setF32(rdFloat, 5.056);
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidFloat1) == 506);
+
+    // float: round down
+    opcTestServer1->setF32(rdFloat, 5.053);
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidFloat1) == 505);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: write", "[opcua][exchange][write]")
@@ -119,6 +139,16 @@ TEST_CASE("OPCUAExchange: write", "[opcua][exchange][write]")
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr3) == 20 );
     REQUIRE(opcTestServer1->getBool(wrAttr4) == false);
+
+    // float
+    opcTestServer1->setF32(wrFloatOut, 0.0);
+    REQUIRE_NOTHROW(shm->setValue(sidFloatOut1, 2000));
+    msleep(step_pause_msec);
+    REQUIRE( opcTestServer1->getF32(wrFloatOut) == 20.0f );
+
+    REQUIRE_NOTHROW(shm->setValue(sidFloatOut1, 2226));
+    msleep(step_pause_msec);
+    REQUIRE( opcTestServer1->getF32(wrFloatOut) == 22.26f );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: ignore", "[opcua][exchange][ignore]")

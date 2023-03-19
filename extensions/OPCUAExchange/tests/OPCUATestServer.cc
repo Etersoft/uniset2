@@ -65,6 +65,23 @@ void OPCUATestServer::setI32( int num, int32_t val )
     //    setX(num, val, opcua::Type::Int32);
 }
 // -------------------------------------------------------------------------
+void OPCUATestServer::setF32( const std::string& varname, float val )
+{
+    auto it = smap.find(varname);
+
+    if( it != smap.end() )
+    {
+        it->second->node.write(val);
+        return;
+    }
+
+    auto vnode = ioNode->node.addVariable(opcua::NodeId(varname), varname, opcua::Type::Float);
+    vnode.write(val);
+    vnode.setDisplayName(varname, "en");
+    vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
+    smap.emplace(varname, unisetstd::make_unique<IONode>(vnode));
+}
+// -------------------------------------------------------------------------
 void OPCUATestServer::setX( int num, int32_t val, opcua::Type type )
 {
     auto it = imap.find(num);
@@ -196,6 +213,16 @@ int32_t OPCUATestServer::getI32( int num )
 
     if( it != imap.end() )
         return it->second->node.read<int32_t>();
+
+    return 0;
+}
+// -------------------------------------------------------------------------
+float OPCUATestServer::getF32( const std::string& name )
+{
+    auto it = smap.find(name);
+
+    if( it != smap.end() )
+        return it->second->node.read<float>();
 
     return 0;
 }

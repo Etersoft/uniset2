@@ -204,23 +204,23 @@ int main(int argc, char* argv[])
                 if( ncycles > 0 )
                     nc = ncycles;
 
-                std::vector<OPCUAClient::Result32> result;
+                std::vector<OPCUAClient::ResultVar> result;
 
                 for( size_t i = 0; i < rvalues.size(); i++ )
-                    result.push_back(OPCUAClient::Result32());
+                    result.push_back(OPCUAClient::ResultVar());
 
                 while( nc )
                 {
                     try
                     {
                         auto t_start = steady_clock::now();
-                        auto ret = client->read32(rvalues, result);
+                        auto ret = client->read(rvalues, result);
                         auto t_end = steady_clock::now();
 
                         if( ret == 0 )
                         {
                             for( size_t i = 0; i < result.size(); i++ )
-                                cout << attrs[i] << ": value=" << result[i].value
+                                cout << attrs[i] << ": value=" << result[i].get()
                                      << " status[" << UA_StatusCode_name(result[i].status) << "]"
                                      << " update: " << setw(10) << setprecision(7) << std::fixed
                                      << duration_cast<duration<float>>(t_end - t_start).count() << " sec"
