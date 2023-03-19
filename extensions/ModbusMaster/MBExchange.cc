@@ -1087,6 +1087,9 @@ namespace uniset
     // ------------------------------------------------------------------------------------------
     uint8_t MBExchange::firstBit( uint16_t mask )
     {
+#if defined(__GNUC__) || defined(__clang__)
+        return __builtin_ctz(mask);
+#else
         uint8_t n = 0;
 
         while( mask != 0 )
@@ -1099,6 +1102,7 @@ namespace uniset
         }
 
         return n;
+#endif
     }
     // ------------------------------------------------------------------------------------------
     uint16_t MBExchange::forceSetBits( uint16_t value, uint16_t set, uint16_t mask, uint8_t offset )

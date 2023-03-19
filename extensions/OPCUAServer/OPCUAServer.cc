@@ -542,6 +542,9 @@ void OPCUAServer::updateLoop()
 // ------------------------------------------------------------------------------------------
 uint8_t OPCUAServer::firstBit( OPCUAServer::DefaultValueUType mask )
 {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_ctz(mask);
+#else
     uint8_t n = 0;
 
     while( mask != 0 )
@@ -554,6 +557,7 @@ uint8_t OPCUAServer::firstBit( OPCUAServer::DefaultValueUType mask )
     }
 
     return n;
+#endif
 }
 // ------------------------------------------------------------------------------------------
 OPCUAServer::DefaultValueUType OPCUAServer::forceSetBits(
