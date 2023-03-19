@@ -106,3 +106,35 @@ static bool opcuaReadBool( uint16_t nodeId, const std::string& attrName )
     UA_Variant_delete(val);
     return value;
 }
+
+
+static float opcuaReadFloat( uint16_t nodeId, const std::string& attrName )
+{
+    if( client == nullptr )
+        return 0;
+
+    UA_Float value = 0;
+    UA_Variant* val = UA_Variant_new();
+    UA_StatusCode retval = UA_Client_readValueAttribute(client, UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()), val);
+
+    if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(val) &&
+            val->type == &UA_TYPES[UA_TYPES_FLOAT])
+    {
+        value = *(UA_Float*)val->data;
+    }
+
+    UA_Variant_delete(val);
+    return value;
+}
+
+static bool opcuaWriteFloat( uint16_t nodeId, const std::string& attrName, float value )
+{
+    if( client == nullptr )
+        return 0;
+
+    UA_Variant* myVariant = UA_Variant_new();
+    UA_Variant_setScalarCopy(myVariant, &value, &UA_TYPES[UA_TYPES_FLOAT]);
+    UA_StatusCode retval = UA_Client_writeValueAttribute(client, UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()), myVariant);
+    UA_Variant_delete(myVariant);
+    return retval == UA_STATUSCODE_GOOD;
+}

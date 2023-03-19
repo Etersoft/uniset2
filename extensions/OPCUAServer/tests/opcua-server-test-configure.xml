@@ -50,6 +50,8 @@
 			<item id="5" iotype="AI" name="AI5_S" textname="AI sensor mask3" opcua_mask="3"/>
 			<item id="6" iotype="AI" name="AI6_S" textname="AI sensor mask12" opcua_mask="12"/>
 			<item id="7" iotype="AI" name="AO7_S" textname="AO output mask3" opcua_rwmode="w" opcua_mask="3"/>
+			<item id="8" iotype="AI" name="AI_Float_S" textname="AI float" opcua_type="float" precision="2" />
+			<item id="9" iotype="AO" name="AO_Float_S" textname="AI float" opcua_rwmode="w" opcua_type="float" precision="2"/>
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">

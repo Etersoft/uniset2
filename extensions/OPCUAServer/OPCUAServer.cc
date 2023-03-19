@@ -254,6 +254,18 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
             iotype = UniversalIO::AO; // read access
     }
 
+    auto vtype = it.getProp("opcua_type");
+    opcua::Type opctype = DefaultVariableType;
+
+    if( vtype == "bool" )
+        opctype = opcua::Type::Boolean;
+    else if( vtype == "float" )
+        opctype = opcua::Type::Float;
+    else if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
+        opctype = opcua::Type::Boolean;
+
+    uint8_t precision = (uint8_t)it.getIntProp("precision");
+
     DefaultValueUType mask = 0;
     uint8_t offset =  0;
 
@@ -266,11 +278,6 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     }
 
     sname = it.getProp2("opcua_name", sname);
-
-    opcua::Type opctype = DefaultVariableType;
-
-    if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
-        opctype = opcua::Type::Boolean;
 
     auto vnode = ioNode->node.addVariable(opcua::NodeId(sname), sname, opctype);
     vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ);
@@ -289,18 +296,26 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     // init default value
     DefaultValueType defVal = (DefaultValueType)it.getPIntProp("default", 0);
 
-    if( iotype == UniversalIO::AI || iotype == UniversalIO::AO )
-        vnode.write(defVal);
-    else
+    if( opctype == opcua::Type::Boolean )
     {
         bool set = defVal ? true : false;
         vnode.write(set);
     }
+    else if( opctype == opcua::Type::Float )
+    {
+        float v = defVal;
+        vnode.write(v);
+    }
+    else
+        vnode.write(defVal);
 
     auto i = variables.emplace(sid, vnode);
     i.first->second.stype = iotype;
     i.first->second.mask = mask;
     i.first->second.offset = offset;
+    i.first->second.vtype = opctype;
+    i.first->second.precision = precision;
+
     shm->initIterator(i.first->second.it);
     return true;
 }
@@ -605,12 +620,21 @@ void OPCUAServer::update()
             }
             else if( it->second.stype == UniversalIO::AO )
             {
-                uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                it->second.node.write(it->second.value);
+                if( it->second.vtype == opcua::Type::Float )
+                {
+                    uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                    float fval = (float)it->second.value / pow(10.0, it->second.precision);
+                    it->second.node.write( fval );
+                }
+                else
+                {
+                    uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                    it->second.node.write(it->second.value);
+                }
             }
-
-            if( it->second.stype == UniversalIO::DI )
+            else if( it->second.stype == UniversalIO::DI )
             {
+                uniset::uniset_rwmutex_rlock lock(it->second.vmut);
                 auto set = it->second.node.read<bool>();
                 auto val = getBits(set ? 1 : 0, it->second.mask, it->second.offset);
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
@@ -621,11 +645,20 @@ void OPCUAServer::update()
             }
             else if( it->second.stype == UniversalIO::AI )
             {
-                auto val = getBits(it->second.node.read<DefaultValueType>(), it->second.mask, it->second.offset);
+                uniset::uniset_rwmutex_rlock lock(it->second.vmut);
+                DefaultValueType val = 0;
+
+                if( it->second.vtype == opcua::Type::Float )
+                    val = lroundf( it->second.node.read<float>() * pow(10.0, it->second.precision) );
+                else
+                    val = getBits(it->second.node.read<DefaultValueType>(), it->second.mask, it->second.offset);
+
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " value=" << val
                        << " mask=" << it->second.mask
+                       << " precision=" << it->second.precision
                        << endl;
+
                 this->shm->localSetValue(it->second.it, it->first, val, this->getId());
             }
         }
@@ -633,6 +666,7 @@ void OPCUAServer::update()
         {
             mycrit << this->myname << "(updateLoop): sid=" << it->first
                    << "[" << it->second.stype
+                   << "][" << (int)it->second.vtype
                    << "] update error: " << ex.what() << endl;
         }
     }

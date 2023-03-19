@@ -52,6 +52,14 @@ TEST_CASE("[OPCUAServer]: read", "[opcuaserver]")
     msleep(pause_msec);
     REQUIRE_FALSE( opcuaReadBool(nodeId, "DI1_S") );
 
+    // float
+    ui->setValue(8, 2022);
+    msleep(pause_msec);
+    REQUIRE( opcuaReadFloat(nodeId, "AI_Float_S") == 20.22f );
+
+    ui->setValue(8, 2025);
+    msleep(pause_msec);
+    REQUIRE( opcuaReadFloat(nodeId, "AI_Float_S") == 20.25f );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[OPCUAServer]: write", "[opcuaserver]")
@@ -70,6 +78,22 @@ TEST_CASE("[OPCUAServer]: write", "[opcuaserver]")
     REQUIRE( opcuaWriteBool(nodeId, "DO1_S", false) );
     msleep(pause_msec);
     REQUIRE( ui->getValue(4) == 0 );
+
+    // float
+    REQUIRE( opcuaWriteFloat(nodeId, "AO_Float_S", 20.22f) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(9) == 2022 );
+
+    // float: round up
+    REQUIRE( opcuaWriteFloat(nodeId, "AO_Float_S", 20.225f) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(9) == 2023 );
+
+    // float: round down
+    REQUIRE( opcuaWriteFloat(nodeId, "AO_Float_S", 20.223f) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(9) == 2022 );
+
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: first bit", "[opcuaserver][firstbit]")

@@ -107,8 +107,12 @@ namespace uniset
      - \b opcua_displayname_lang - Язык для отображаемого имени. По умолчанию "en".
      - \b opcua_description - Описание. По умолчанию берётся textname
      - \b opcua_description_lang - Язык описания. По умолчанию "ru"
+     - \b opcua_type - Тип переменной. Поддерживаются: bool, int32, float. Если не задан, тип определяется по типу датчика.
+        DI,DO - bool, AI,AO - int32
      - \b opcua_mask - "битовая маска"(uint32_t). Позволяет задать маску для значения.
         Действует как на читаемые так и на записываемые переменные.
+     - \b precision - точность, для преобразования числа в целое. Используется только для типа float. Задаёт степень 10.
+       precision="2" означает 10^2 = 100.  precision="3" означает 10^3 = 1000. При преобразовании AI датчиков используется округление.
 
      По умолчанию все датчики доступны только на чтение.
 
@@ -144,7 +148,7 @@ namespace uniset
 
             using DefaultValueType = int32_t;
             using DefaultValueUType = uint32_t;
-            const opcua::Type DefaultVariableType = {opcua::Type::Int32 };
+            static const opcua::Type DefaultVariableType = { opcua::Type::Int32 };
 
             static uint8_t firstBit( DefaultValueUType mask );
             // offset = firstBit(mask)
@@ -181,13 +185,15 @@ namespace uniset
                 IOVariable(const opcua::Node& n) : node(n) {};
                 opcua::Node node;
                 IOController::IOStateList::iterator it;
-                UniversalIO::IOType stype = {UniversalIO::AO};
+                UniversalIO::IOType stype = { UniversalIO::AO };
 
                 uniset::uniset_rwmutex vmut;
                 DefaultValueType value = { 0 };
                 bool state = { false };
                 DefaultValueUType mask = { 0 };
                 uint8_t offset = { 0 };
+                opcua::Type vtype = { DefaultVariableType };
+                uint8_t precision = { 0 }; // only for float
             };
 
             std::unordered_map<ObjectId, IOVariable> variables;
