@@ -108,7 +108,14 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     {
         for( ; nIt; nIt++ )
         {
-            if( nIt.getIntProp("id") == localNode )
+            auto nodeID = DefaultObjectId;
+
+            if( nIt.getProp("id").empty() )
+                nodeID = conf->getNodeID(nIt.getProp("name"));
+            else
+                nodeID = nIt.getPIntProp("id", DefaultObjectId);
+
+            if( nodeID == localNode )
             {
                 const auto uname = nIt.getProp("name");
                 auto unode = uroot.addFolder(opcua::NodeId(uname), uname);
