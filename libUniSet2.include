@@ -27,7 +27,7 @@ export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions
 
 cflags()
 {
-	pkg-config --cflags $1 | sed -e "s|-I$prefix/include/uniset|-I$EXPORTPATH/include|g"
+	pkg-config --cflags $1 | sed -e "s|-I$prefix/include/uniset2|-I$EXPORTPATH/include|g"
 }
 
 libs()
