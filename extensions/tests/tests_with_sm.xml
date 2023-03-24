@@ -276,6 +276,9 @@
 			<!-- REST API test -->
 			<item id="122" iotype="AI" name="API_Sensor_AS" textname="SensorAI" precision="1" default="10" cmin="10" cmax="20" rmin="100" rmax="200"/>
 
+			<!-- on/off delay -->
+			<item ondelay="200" offdelay="100" id="200" iotype="DI" name="Input8_S" textname="Датчик 8"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor name="AI_AS">

@@ -214,6 +214,152 @@ TEST_CASE("[IOBase]: delay function", "[iobase][delay][extensions]")
         msleep(40);
         CHECK_FALSE( ib.check_off_delay(false) );
     }
+    SECTION("Together on and off delay..")
+    {
+        IOBase ib;
+        ib.ptOnDelay.setTiming(100);
+        ib.ptOffDelay.setTiming(100);
+        // Последовательная обработка 
+        // срабатывание на включение..
+        // set - сигнал датчика на входе.
+        // 0->1
+        bool set = true;
+        set = ib.check_on_delay(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+        msleep(110);
+        set = true;
+        set = ib.check_on_delay(set);
+        set = ib.check_off_delay(set);
+        CHECK(set);
+
+        // срабатывание на отключение..
+        // 1->0
+        set = false;
+        set = ib.check_on_delay(set);
+        set = ib.check_off_delay(set);
+        CHECK(set);
+        msleep(110);
+        set = false;
+        set = ib.check_on_delay(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+
+        // переключение датчика обратно раньше таймера
+        // 0->1
+        set = true;
+        set = ib.check_on_delay(set); //set timer
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+        msleep(50);
+        CHECK_FALSE(set);
+        // еще не переключились в 1, обратно 1->0
+        set = false;
+        set = ib.check_on_delay(set);
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+        msleep(60);
+        set = false;
+        set = ib.check_on_delay(set);
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+        msleep(50);
+        set = false;
+        set = ib.check_on_delay(set);
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+
+        // переключение в 1
+        set = true;
+        set = ib.check_on_delay(set); //set timer
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);
+        msleep(110);
+        set = true;
+        set = ib.check_on_delay(set); //set timer
+        set = ib.check_off_delay(set);
+        CHECK(set);
+
+        // Ошибка в работе таймеров из-за последовательности
+        // вызова проверок! Проявляется только при переходе 1->0!
+        // переключение датчика обратно раньше таймера
+        // 1->0
+        set = false;
+        set = ib.check_on_delay(set);
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set); //set timer1
+        CHECK(set);
+        msleep(50); //half time
+        set = false;
+        set = ib.check_on_delay(set);
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set);
+        CHECK(set);
+        // еще не переключились в 0, обратно 0->1
+        set = true;
+        set = ib.check_on_delay(set); // set timer2
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set); // timer1 is still going
+        CHECK(set);
+        msleep(60); // timer1 off
+        set = true;
+        set = ib.check_on_delay(set); // timer2 is still going
+        CHECK_FALSE(set);
+        set = ib.check_off_delay(set);
+        CHECK_FALSE(set);// beacause of timer1 off and timer2 on!
+        //Здесь датчик выставлен в 0
+        msleep(60);//timer2 off
+        set = true;
+        set = ib.check_on_delay(set);
+        CHECK(set);
+        set = ib.check_off_delay(set);
+        CHECK(set);
+        //Здесь датчик выставлен в 1, т.е. ложное срабатывание
+
+        //Использование другой последовательности проверки в зависимости
+        //что на входе: false=>off,on; true=>on,off
+        //
+        //Тест точно такой же! начальное условие 1.
+
+        // переключение датчика обратно раньше таймера
+        // 1->0
+        set = false;
+        set = ib.check_off_delay(set); //set timer1
+        CHECK(set);
+        set = ib.check_on_delay(set);
+        CHECK(set);
+        msleep(50); //half time
+        set = false;
+        set = ib.check_off_delay(set);
+        CHECK(set);
+        set = ib.check_on_delay(set);
+        CHECK(set);
+        // еще не переключились в 0, обратно 0->1
+        set = true;
+        set = ib.check_on_delay(set);
+        CHECK(set);
+        set = ib.check_off_delay(set); // timer1 is still going
+        CHECK(set);
+        msleep(60); // timer1 off
+        set = true;
+        set = ib.check_on_delay(set);
+        CHECK(set);
+        set = ib.check_off_delay(set);
+        CHECK(set);
+        //Здесь датчик все еще выставлен в 1
+        msleep(60);
+        set = true;
+        set = ib.check_on_delay(set);
+        CHECK(set);
+        set = ib.check_off_delay(set);
+        CHECK(set);
+        //Здесь датчик выставлен в 1
+        //т.е. ложное срабатывание НЕ ПРОИСХОДИТ
+    }
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[IOBase]: front function", "[iobase][front][extensions]")

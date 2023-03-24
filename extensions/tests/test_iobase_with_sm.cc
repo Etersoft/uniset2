@@ -551,3 +551,69 @@ TEST_CASE("[IOBase]: FasAO --> FasAI", "[iobase][float]")
     CHECK(shm->getValue(119) == 232 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[IOBase]: processingAsDI with on/offdelay", "[iobase][delay]")
+{
+    CHECK( uniset_conf() != nullptr );
+    auto conf = uniset_conf();
+
+    init_test();
+
+    ObjectId di = conf->getSensorID("Input8_S");
+    CHECK( di != DefaultObjectId );
+
+    IOBase ib;
+    CHECK( init_iobase(&ib, "Input8_S") );
+
+    //delay: on 200ms, off 100ms
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    
+    //0->1, 200ms on
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    msleep(100);
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    msleep(210);
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+    
+    //1->0, 100ms off
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+    msleep(50);
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+    //back ->1, less then 100ms
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+    msleep(60);//off time >100
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+    msleep(150);//on time >200
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+
+    //1->0,100ms off
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 1 );
+    msleep(100);
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    
+    //0->1, 200ms on
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    msleep(150);
+    IOBase::processingAsDI(&ib, true, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    //back ->0, less then 200ms
+    IOBase::processingAsDI(&ib, false, shm, true);
+    msleep(60);//on time >200
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+    msleep(50);//off time >100
+    IOBase::processingAsDI(&ib, false, shm, true);
+    REQUIRE( shm->getValue(di) == 0 );
+}
+// -----------------------------------------------------------------------------
