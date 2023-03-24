@@ -410,8 +410,16 @@ namespace uniset
 
         // Проверяем именно в такой последовательности!
         set = it->check_debounce(set);       // фильтр дребезга
-        set = it->check_on_delay(set);  // фильтр на срабатывание
-        set = it->check_off_delay(set); // фильтр на отпускание
+        if(set)
+        {
+            set = it->check_on_delay(set);  // фильтр на срабатывание
+            set = it->check_off_delay(set); // фильтр на отпускание
+        }
+        else
+        {
+            set = it->check_off_delay(set); // фильтр на отпускание
+            set = it->check_on_delay(set);  // фильтр на срабатывание
+        }
         set = it->check_front(set);     // работа по фронту (проверять после debounce_xxx!)
 
         {
