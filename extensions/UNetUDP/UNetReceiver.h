@@ -91,9 +91,9 @@ namespace uniset
      * ======================================
      * Попытка создать сокет производиться сразу в конструкторе, если это не получается,
      * то создаётся таймер (evCheckConnection), который периодически (checkConnectionTime) пытается вновь
-     * открыть сокет.. и так бесконечно, пока не получиться. Это важно для систем, где в момент загрузки программы
+     * открыть сокет.. и так бесконечно, пока не получится. Это важно для систем, где в момент загрузки программы
      * (в момент создания объекта UNetReceiver) ещё может быть не поднята сеть или какой-то сбой с сетью и требуется
-     * ожидание (без вылета программы) пока "внешняя система мониторинга" не поднимет сеть).
+     * ожидание (без вылета программы) пока "внешняя система мониторинга" не поднимет сеть.
      * Если такая логика не требуется, то можно задать в конструкторе
      * последним аргументом флаг nocheckconnection=true, тогда при создании объекта UNetReceiver, в конструкторе будет
      * выкинуто исключение при неудачной попытке создания соединения.
@@ -141,6 +141,7 @@ namespace uniset
 
             void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
             void setLostPacketsID( uniset::ObjectId id ) noexcept;
+            void setModeID( uniset::ObjectId id ) noexcept;
 
             void forceUpdate() noexcept; // пересохранить очередной пакет в SM даже если данные не менялись
 
@@ -154,6 +155,12 @@ namespace uniset
             {
                 evOK,        /*!< связь есть */
                 evTimeout    /*!< потеря связи */
+            };
+
+            enum class Mode : int
+            {
+                mEnabled = 0, /*!< обычный режим */
+                mDisabled = 1 /*!< обмен отключён */
             };
 
             typedef sigc::slot<void, const std::shared_ptr<UNetReceiver>&, Event> EventSlot;
@@ -259,6 +266,11 @@ namespace uniset
             uniset::ObjectId sidLostPackets = { uniset::DefaultObjectId };
             IOController::IOStateList::iterator itLostPackets;
 
+            // режим работы
+            uniset::ObjectId sidMode = { uniset::DefaultObjectId };
+            IOController::IOStateList::iterator itMode;
+            Mode mode = { Mode::mEnabled };
+
             std::atomic_bool activated = { false };
 
             size_t cbufSize = { 100 }; /*!< размер буфера для сообщений по умолчанию */
@@ -308,6 +320,11 @@ namespace uniset
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset
+// -----------------------------------------------------------------------------
+namespace std
+{
+    std::string to_string( const uniset::UNetReceiver::Mode& p );
+}
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_
 // -----------------------------------------------------------------------------

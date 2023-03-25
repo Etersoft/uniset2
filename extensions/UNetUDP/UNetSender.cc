@@ -132,6 +132,15 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void UNetSender::updateFromSM()
     {
+        try
+        {
+            mode = (Mode) shm->localGetValue(itMode, sidMode);
+        }
+        catch( std::exception& ex )
+        {
+            unetwarn << myname << "(updateFromSM): mode update error: " << ex.what() << endl;
+        }
+
         for( auto&& it : items )
         {
             UItem& i = it.second;
@@ -156,11 +165,15 @@ namespace uniset
             }
         }
     }
+
     // -----------------------------------------------------------------------------
     void UNetSender::updateSensor( uniset::ObjectId id, long value )
     {
         if( !shm->isLocalwork() )
             return;
+
+        if( id == sidMode )
+            mode = (Mode)value;
 
         auto it = items.find(id);
 
@@ -179,6 +192,11 @@ namespace uniset
             mypack.msg.setDData(it.pack_ind, value);
         else if( it.iotype == UniversalIO::AI || it.iotype == UniversalIO::AO )
             mypack.msg.setAData(it.pack_ind, value);
+    }
+    // -----------------------------------------------------------------------------
+    void UNetSender::setModeID( uniset::ObjectId id ) noexcept
+    {
+        sidMode = id;
     }
     // -----------------------------------------------------------------------------
     void UNetSender::setCheckConnectionPause( int msec ) noexcept
@@ -212,6 +230,27 @@ namespace uniset
                     msleep(sendpause);
                     continue;
                 }
+            }
+
+            if( !shm->isLocalwork() )
+            {
+                try
+                {
+                    mode = (Mode) shm->localGetValue(itMode, sidMode);
+                }
+                catch (std::exception& ex)
+                {
+                    unetwarn << myname << "(updateFromSM): mode update error: " << ex.what() << endl;
+                }
+            }
+
+            if( mode == Mode::mDisabled )
+            {
+                if( !activated )
+                    break;
+
+                msleep(sendpause);
+                continue;
             }
 
             try
@@ -513,12 +552,16 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void UNetSender::initIterators() noexcept
     {
+        shm->initIterator(itMode);
+
         for( auto&& it : items )
             shm->initIterator(it.second.ioit);
     }
     // -----------------------------------------------------------------------------
     void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
     {
+        shm->askSensor(sidMode, cmd);
+
         for( const auto& it : items  )
             shm->askSensor(it.second.id, cmd);
     }
@@ -536,6 +579,7 @@ namespace uniset
         ostringstream s;
 
         s << setw(15) << std::right << transport->toString()
+          << "[ " << setw(7) << to_string(mode) << " ]"
           << " lastpacknum=" << packetnum
           << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
           << " packsendpause[factor=" << packsendpauseFactor << "]=" << packsendpause
@@ -565,3 +609,18 @@ namespace uniset
     }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset
+// -----------------------------------------------------------------------------
+namespace std
+{
+    std::string to_string( const uniset::UNetSender::Mode& m )
+    {
+        if( m == uniset::UNetSender::Mode::mEnabled )
+            return "Enabled";
+
+        if( m == uniset::UNetSender::Mode::mDisabled )
+            return "Disabled";
+
+        return "";
+    }
+}
+// -----------------------------------------------------------------------------

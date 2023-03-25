@@ -10,5 +10,5 @@ cd -
 
 ./uniset2-start.sh -f ./tests-with-sm $* -- --confile unetudp-test-configure.xml --e-startup-pause 10 \
 --unet-name UNetExchange --unet-filter-field unet --unet-filter-value 1 --unet-maxdifferense 5 \
---unet-recv-timeout 1000 --unet-sendpause 500 --unet-update-strategy evloop 
-#--unet-log-add-levels any
+--unet-recv-timeout 1000 --unet-sendpause 300 --unet-update-strategy evloop
+# --unet-log-add-levels any

@@ -40,25 +40,31 @@
 
 	<ObjectsMap idfromfile="1">
 		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="badip">
-			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000"
+            <item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000"
                 unet_multicast_ip="224.0.0.1"
                 unet_multicast_iface="127.0.0.1"
                 unet_multicast_ip2="225.0.0.1"
                 unet_multicast_port2="3030"
-                unet_multicast_iface2="127.0.0.1"/>
-			<item id="3001" ip="127.0.0.1" name="localhost1" textname="Локальный узел" unet_ignore="1" unet_port="3001"/>
-			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_respond_id="Node1_Not_Respond_S" unet_respond_invert="1" unet_channelswitchcount_id="Node1_ChannelSwitchCount_AS"
+                unet_multicast_iface2="127.0.0.1"
+                unet_sendmode_id="Localhost_SendMode_S"
+            />
+            <item id="3001" ip="127.0.0.1" name="localhost1" textname="Локальный узел" unet_ignore="1" unet_port="3001"/>
+            <item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_respond_id="Node1_Not_Respond_S" unet_respond_invert="1" unet_channelswitchcount_id="Node1_ChannelSwitchCount_AS"
+                unet_recvmode_id="Node1_RecvMode_S"
                 unet_multicast_ip="224.0.0.2"
                 unet_multicast_iface="127.0.0.1"
                 unet_multicast_ip2="225.0.0.2"
                 unet_multicast_port2="3032"
-                unet_multicast_iface2="127.0.0.1"/>
-			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_respond_id="Node2_Respond_S" unet_lostpackets_id="Node2_LostPackets_AS" unet_numchannel_id="Node2_NumChannel_AS"
+                unet_multicast_iface2="127.0.0.1"
+            />
+            <item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_respond_id="Node2_Respond_S" unet_lostpackets_id="Node2_LostPackets_AS" unet_numchannel_id="Node2_NumChannel_AS"
+                unet_recvmode_id="Node2_RecvMode_S"
                 unet_multicast_ip="224.0.0.3"
                 unet_multicast_iface="127.0.0.1"
                 unet_multicast_ip2="225.0.0.3"
                 unet_multicast_port2="3033"
-                unet_multicast_iface2="127.0.0.1"/>
+                unet_multicast_iface2="127.0.0.1"
+			/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
@@ -79,6 +85,9 @@
 			<item id="13" iotype="AI" name="Node2_LostPackets_AS" textname="Node2 lost packets"/>
 			<item id="14" iotype="AI" name="Node2_NumChannel_AS" textname="Node2 num channel"/>
 			<item id="15" iotype="AI" name="Node1_ChannelSwitchCount_AS" textname="Node1 channel switch count"/>
+			<item id="16" iotype="AI" name="Node1_RecvMode_S" textname="Node1: unet receive mode"/>
+			<item id="17" iotype="AI" name="Node2_RecvMode_S" textname="Node2: unet receive mode"/>
+			<item id="18" iotype="AI" name="Localhost_SendMode_S" textname="localhost: unet send mode"/>
 			
 		</sensors>
 		<thresholds name="thresholds"/>
