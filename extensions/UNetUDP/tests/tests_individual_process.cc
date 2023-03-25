@@ -51,12 +51,18 @@ int main(int argc, char* argv[] )
         int tout = 6000;
         PassiveTimer pt(tout);
 
-        while( !pt.checkTime() && !act->exist() )
+        while( !pt.checkTime() && !act->exist() && !unet->exist() )
             msleep(100);
 
         if( !act->exist() )
         {
             cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+            return 1;
+        }
+
+        if( !unet->exist() )
+        {
+            cerr << "(tests_with_sm): UNetExchange not exist! (timeout=" << tout << ")" << endl;
             return 1;
         }
 

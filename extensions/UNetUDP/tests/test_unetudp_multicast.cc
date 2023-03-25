@@ -29,6 +29,8 @@ static int maxDifferense = 5; // см. unetudp-test-configure.xml --unet-maxdiff
 static int recvTimeout = 1000; // --unet-recv-timeout
 static ObjectId node1_numchannel_as = 14;
 static ObjectId node1_channelSwitchCount_as = 15;
+static ObjectId localnode_sendMode_S = 18;
+static ObjectId node1_recvMode_S = 16;
 // -----------------------------------------------------------------------------
 static void initHelpers()
 {
@@ -85,6 +87,9 @@ void InitMulticastTest()
 
     if( udp_s == nullptr )
         initHelpers();
+
+    REQUIRE_NOTHROW( ui->setValue(localnode_sendMode_S, (long) UNetSender::Mode::mEnabled) );
+    REQUIRE_NOTHROW( ui->setValue(node1_recvMode_S, (long) UNetReceiver::Mode::mEnabled) );
 }
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
@@ -242,6 +247,132 @@ TEST_CASE("[UNetUDP]: check multicast receiver", "[unetudp][multicast][receiver]
         REQUIRE( ui->getValue(9) == -10 );
         REQUIRE( ui->getValue(10) == 0 );
         REQUIRE( ui->getValue(11) == 1 );
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: check send mode", "[unetudp][multicast][sendmode]")
+{
+    InitMulticastTest();
+
+    ui->setValue(localnode_sendMode_S, (long)UNetSender::Mode::mEnabled);
+
+    size_t lastPackNum = 0;
+    SECTION("Test: read default pack..")
+    {
+        UniSetUDP::UDPMessage p = mreceive(0, 500, 2);
+        REQUIRE( p.header.num != 0 );
+        REQUIRE( p.asize() == 4 );
+
+        // т.к. данные в SM не менялись, то должен прийти пакет с теми же crc что и были
+        UniSetUDP::UDPMessage p2 = mreceive();
+        REQUIRE( p2.header.dcrc == p.header.dcrc );
+        REQUIRE( p2.header.acrc == p.header.acrc );
+        lastPackNum = p2.header.num;
+    }
+
+    SECTION("Test: change AI data..")
+    {
+        UniSetUDP::UDPMessage pack0 = mreceive(lastPackNum + 1);
+        ui->setValue(2, 100);
+        REQUIRE( ui->getValue(2) == 100 );
+        msleep(120);
+        UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1 );
+        REQUIRE( pack.a_dat[0].val == 100 );
+
+        ui->setValue(2, 250);
+        REQUIRE( ui->getValue(2) == 250 );
+        msleep(120);
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.header.num + 1 );
+        REQUIRE( pack2.a_dat[0].val == 250 );
+
+        lastPackNum = pack2.header.num;
+    }
+
+    SECTION("Test: disable exchange..")
+    {
+        UniSetUDP::UDPMessage pack0 = mreceive(lastPackNum + 1);
+        REQUIRE( pack0.a_dat[0].val == 250 );
+        ui->setValue(localnode_sendMode_S, (long)UNetSender::Mode::mDisabled);
+        msleep(120);
+        // read all messages
+        UniSetUDP::UDPMessage pack1 = mreceive(pack0.header.num + 1);
+        // update data
+        ui->setValue(2, 100);
+        REQUIRE( ui->getValue(2) == 100 );
+        msleep(120);
+        UniSetUDP::UDPMessage pack2 = mreceive();
+        REQUIRE( pack1.header.num == 0 ); // no changes
+        msleep(120);
+        UniSetUDP::UDPMessage pack3 = mreceive( pack2.header.num + 1 );
+        REQUIRE( pack2.header.num == 0 ); // no changes
+    }
+
+    SECTION("Test: enable exchange..")
+    {
+        ui->setValue(2, 100);
+        REQUIRE( ui->getValue(2) == 100 );
+        ui->setValue(localnode_sendMode_S, (long)UNetSender::Mode::mEnabled);
+        msleep(120);
+        UniSetUDP::UDPMessage pack1 = mreceive();
+        REQUIRE( pack1.a_dat[0].val == 100 );
+
+        ui->setValue(2, 150);
+        REQUIRE( ui->getValue(2) == 150 );
+        msleep(120);
+        UniSetUDP::UDPMessage pack2 = mreceive( pack1.header.num + 1 );
+        REQUIRE( pack2.a_dat[0].val == 150 );
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: check recv mode", "[unetudp][multicast][recvmode]")
+{
+    InitMulticastTest();
+
+    ui->setValue(node1_recvMode_S, (long) UNetReceiver::Mode::mEnabled);
+
+    SECTION("Test: send data pack..")
+    {
+        REQUIRE( ui->getValue(8) != 99 );
+        UniSetUDP::UDPMessage pack;
+        pack.addAData(8, 99);
+        msend(pack);
+        msleep(300);
+        REQUIRE( ui->getValue(8) == 99 );
+    }
+
+    SECTION("Test: disable receive from node2..")
+    {
+        ui->setValue(node1_recvMode_S, (long) UNetReceiver::Mode::mDisabled);
+        msleep(200);
+        UniSetUDP::UDPMessage pack;
+        pack.addAData(8, 98);
+        REQUIRE( ui->getValue(8) != 98 );
+        msend(pack);
+        msleep(120);
+        REQUIRE( ui->getValue(8) != 98 );
+        // again
+        msend(pack);
+        msleep(120);
+        REQUIRE( ui->getValue(8) != 98 );
+    }
+
+    SECTION("Test: enable receive from node2..")
+    {
+        ui->setValue(node1_recvMode_S, (long) UNetReceiver::Mode::mEnabled);
+        msleep(200);
+        UniSetUDP::UDPMessage pack;
+        pack.addAData(8, 97);
+        REQUIRE( ui->getValue(8) != 97 );
+        msend(pack);
+        msend(pack);
+        msleep(200);
+        REQUIRE( ui->getValue(8) == 97 );
+        // again
+        UniSetUDP::UDPMessage pack2;
+        pack2.addAData(8, 96);
+        msend(pack2);
+        msleep(120);
+        REQUIRE( ui->getValue(8) == 96 );
     }
 }
 // -----------------------------------------------------------------------------

@@ -252,7 +252,8 @@
                 unet_multicast_ip2="227.0.31.1"
                 unet_multicast_port2="3120"
                 unet_multicast_sender_ip2="192.168.0.47"
-				opcua_ip="0.0.0.0">
+				opcua_ip="0.0.0.0"
+				unet_sendmode_id="Localhost_SendMode1_S">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>
@@ -260,6 +261,7 @@
 				</iocards>
 			</item>
 			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел"
+				unet_recvmode_id="Node1_RecvMode1_S"
                 unet_port="2049"
                 unet_multicast_ip="226.0.31.2"
                 unet_multicast_iface="lo"
@@ -405,6 +407,10 @@
 			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1" opcua="1" opcua_rwmode="w" opcua_mask="3" opcua_nodeid="MB2_AS"/>
 			<item id="234" iotype="AI" name="OPCUA_Float1_AS" textname="OPCUA: sensor1" opc="1" opcua_nodeid="Float1" opcua_type="float" precision="2" />
 
+			<!-- unet exchange mode -->
+			<item id="219" iotype="AI" name="Node1_RecvMode1_S" textname="Node1: unet receive mode"/>
+			<item id="220" iotype="AI" name="Localhost_SendMode1_S" textname="Localhost: unet send mode"/>
+			
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->
 			<item id="301" name="01_01_S" iotype="DI" mtype="2" textname="ГДГ1: Аварийно-низкое давление смазочного масла" unet="gdg1" aps="301" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4526" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="0" jardelay="8000"/>
