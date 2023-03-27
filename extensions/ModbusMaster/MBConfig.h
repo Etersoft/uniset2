@@ -115,9 +115,9 @@ namespace uniset
             {
                 // т.к. RSProperty содержит rwmutex с запрещённым конструктором копирования
                 // приходится здесь тоже объявлять разрешенными только операции "перемещения"
-                RegInfo( const RegInfo& r ) = default;
+                RegInfo( const RegInfo& r ) = delete;
                 RegInfo& operator=(const RegInfo& r) = delete;
-                RegInfo( RegInfo&& r ) = delete;
+                RegInfo( RegInfo&& r ) = default;
                 RegInfo& operator=(RegInfo&& r) = default;
                 RegInfo() = default;
 
