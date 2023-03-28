@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+    <UserData/>
+    <ObjectsMap idfromfile="1">
+        <sensors name="Sensors">
+            <xi:include href="tests_unixml_nonExist.xml" xpointer="xpointer(//item)"/>
+        </sensors>
+    </ObjectsMap>
+</UNISETPLC>
