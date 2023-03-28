@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sensors name="rs_sensors">
+    <item id="50" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="0" mbtype="rtu" name="Input50_S" priority="Medium" rs="5" textname="Команда 2"/>
+    <item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" ntit="1" mbtype="rtu" name="Input51_S" priority="Medium" rs="5" textname="Команда 2"/>
+    <item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="1" mbtype="rtu" name="Input52_S" priority="Medium" rs="5" textname="Команда 2"/>
+    <item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" nbit="2" mbtype="rtu" name="Input53_S" priority="Medium" rs="5" textname="Команда 2"/>
+    <item id="64" iotype="AI" name="AI64_AS" textname="AI64" mbaddr="0x01" mbfunc="0x03" mbreg="64" mbtype="rtu" rs="5"/>
+    <item id="65" iotype="DI" name="D65_S" textname="D65" threshold_aid="AI64_AS" lowlimit="3" hilimit="5" threshold_invert="1" rs="5" />
+</sensors>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sensors name="mb_sensors">
+    <item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input"/>
+    <item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
+    <item default="65536045" id="29" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
+    <item id="30" iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
+    <item id="31" iotype="AI" mb_vtype="I2" mbreg="43" name="imitator_performance1" precision="6" rs="mbslave" textname="Производительность танка 1"/>
+    <item id="32" iotype="AI" mbtcp_mbaddr="1" mbtcp_mbfunc="0x04" mbtcp_mbreg="43" mbtcp_mbtype="rtu" mbtcp_vtype="I2" name="performance1" noprecision="1" precision="6" rs="mbmaster" textname="Производительность танка 1"/>
+</sensors>

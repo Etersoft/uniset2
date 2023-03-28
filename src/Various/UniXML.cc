@@ -131,7 +131,9 @@ void UniXML::createFromText( const std::string& text )
 	// Support for XInclude (see eterbug #6304)
 	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"
 	//For include: <xi:include href="test2.xml"/>
-	xmlXIncludeProcess(doc.get());
+	auto ret = xmlXIncludeProcess(doc.get());
+	if( ret == -1 )
+		throw SystemError("UniXML(createFromText): XInclude error");
 }
 // -----------------------------------------------------------------------------
 void UniXML::open( const string& _filename )
@@ -150,7 +152,9 @@ void UniXML::open( const string& _filename )
 	// Support for XInclude (see eterbug #6304)
 	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"
 	//For include: <xi:include href="test2.xml"/>
-	xmlXIncludeProcess(doc.get());
+	auto ret = xmlXIncludeProcess(doc.get());
+	if( ret == -1 )
+		throw SystemError("UniXML(open): XInclude error");
 
 	filename = _filename;
 }
@@ -450,6 +454,9 @@ bool UniXML_iterator::goNext() noexcept
 	if ( getName() == "comment" )
 		return goNext();
 
+	if( curNode && (curNode->type == XML_XINCLUDE_START || curNode->type == XML_XINCLUDE_END) )
+		return goNext();
+
 	return true;
 }
 // -------------------------------------------------------------------------
@@ -468,6 +475,9 @@ bool UniXML_iterator::goThrowNext() noexcept
 	if ( getName() == "comment" )
 		return goThrowNext();
 
+	if( curNode && (curNode->type == XML_XINCLUDE_START || curNode->type == XML_XINCLUDE_END) )
+		return goThrowNext();
+
 	return true;
 }
 // -------------------------------------------------------------------------
@@ -482,6 +492,9 @@ bool UniXML_iterator::goPrev() noexcept
 		return goPrev();
 
 	if ( getName() == "comment" )
+		return goPrev();
+
+	if( curNode && (curNode->type == XML_XINCLUDE_START || curNode->type == XML_XINCLUDE_END) )
 		return goPrev();
 
 	return true;
@@ -530,6 +543,9 @@ bool UniXML_iterator::goChildren() noexcept
 	if( getName() == "comment" )
 		return goNext();
 
+	if( curNode && (curNode->type == XML_XINCLUDE_START || curNode->type == XML_XINCLUDE_END) )
+		return goNext();
+
 	if( getName().empty() )
 	{
 		curNode = tmp;
@@ -556,7 +572,6 @@ const string UniXML_iterator::getName() const noexcept
 
 	return "";
 }
-
 // -------------------------------------------------------------------------
 string UniXML_iterator::getProp2( const string& name, const string& defval ) const noexcept
 {
@@ -720,7 +735,8 @@ UniXML_iterator& UniXML_iterator::operator+(int step) noexcept
 
 		if( curNode )
 		{
-			if( getName() == "text" || getName() == "comment" )
+			if( getName() == "text" || getName() == "comment" ||
+				curNode->type == XML_XINCLUDE_START || curNode->type == XML_XINCLUDE_END )
 				continue;
 
 			i++;
@@ -758,7 +774,8 @@ UniXML_iterator& UniXML_iterator::operator-(int step) noexcept
 
 		if( curNode )
 		{
-			if( getName() == "text" || getName() == "comment" )
+			if( getName() == "text" || getName() == "comment" ||
+				curNode->type == XML_XINCLUDE_START || curNode->type == XML_XINCLUDE_END )
 				continue;
 
 			i++;
