@@ -924,6 +924,8 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
     {
         // сперва формируем очередной пакет(поток байт) из накопившихся данных для отправки
         ostringstream out;
+        out.rdbuf()->pubsetbuf(sbuf, sbufLen);
+
         out << "{\"data\":[";
 
         size_t i = 0;
@@ -949,7 +951,7 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
         out << "]}";
 
         auto b = wbufpool->borrowObject();
-        b->reset(std::move(out.str()));
+        b->reset((unsigned char*)sbuf, out.tellp());
         wbuf.emplace(b);
 
         myinfoV(4) << req->clientAddress().toString() << "(write): batch " << i << " objects" << endl;
