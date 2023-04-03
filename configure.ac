@@ -578,7 +578,7 @@ AC_CONFIG_FILES([Makefile
 				 IDL/Processes/Makefile
 				 contrib/Makefile
 				 contrib/cityhash102/Makefile
-				 contrib/libfarmhash/Makefile
+				 contrib/murmurhash/Makefile
 				 src/Core/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile

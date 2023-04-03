@@ -29,7 +29,7 @@
 #include "UniSetTypes.h"
 #include "Configuration.h"
 #include "city.h"
-#include "farmhash.h"
+#include "MurmurHash2.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -987,11 +987,11 @@ uint64_t uniset::hash64( const char* buf, size_t sz ) noexcept
 // ---------------------------------------------------------------------------------------------------------------
 uint32_t uniset::hash32( const std::string& str ) noexcept
 {
-    return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(str.data(), str.size());
+    return MurmurHash2( (const void*)str.data(), str.size(), 0);
 }
 
 uint32_t uniset::hash32( const char* buf, size_t sz ) noexcept
 {
-    return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(buf, sz);
+    return MurmurHash2((const void*)buf, sz, 0);
 }
 // -------------------------------------------------------------------------
