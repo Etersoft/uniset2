@@ -59,6 +59,7 @@ static struct option longopts[] =
     { "sendText", required_argument, 0, 'm' },
     { "freeze", required_argument, 0, 'z' },
     { "unfreeze", required_argument, 0, 'n' },
+    { "hash", required_argument, 0, 'd' },
     { NULL, 0, 0, 0 }
 };
 
@@ -134,7 +135,8 @@ static void usage()
     print_help(36, "-k|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
     print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. mtype text", "Послать объектам текстовое сообщение text типа mtype\n");
     print_help(36, "-z|--freeze id1@node1=val1,id2@node2=val2,id3=val3,...", "Заморозить указанные датчики и выставить соответствующие значения.\n");
-    print_help(36, "-n|--unfreeze id1@node1,id2@node2,id3,...", "Разаморозить указанные датчики.\n");
+    print_help(36, "-n|--unfreeze id1@node1,id2@node2,id3,...", "Разморозить указанные датчики.\n");
+    print_help(36, "-d|--hash name", "Вывести hash для указанного имени\n");
     cout << endl;
     cout << "Глобальные параметры, которые необходимо передавать через '--'" << endl;
     cout << "-----------------------------------------\n";
@@ -165,7 +167,7 @@ int main(int argc, char** argv)
 
         while(1)
         {
-            opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:j:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:j:t:d:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -455,6 +457,15 @@ int main(int argc, char** argv)
                     return 0;
                 }
                 break;
+
+                case 'd':  // hash
+                {
+                    std::string name(optarg);
+                    cout << "  name: " << name << endl
+                         << "hash32: " << uniset::hash32(name) << endl
+                         << "hash64: " << uniset::hash64(name) << endl;
+                    return 0;
+                }
 
                 case '?':
                 default:
