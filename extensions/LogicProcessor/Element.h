@@ -50,7 +50,7 @@ namespace uniset
                 internal
             };
 
-            explicit Element( const ElementID& id ): myid(id) {};
+            explicit Element( const ElementID& id, bool _init = false ): myid(id),init_out(_init) {};
             virtual ~Element() {};
 
 
@@ -113,10 +113,9 @@ namespace uniset
             InputList ins;
 
             ElementID myid;
+            bool init_out;
 
         private:
-
-
     };
     // ---------------------------------------------------------------------------
     class TOR:

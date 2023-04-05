@@ -299,3 +299,45 @@ TEST_CASE("Logic processor: lp", "[LogicProcessor][logic]")
     REQUIRE_FALSE( ui->getValue(507) );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("Logic processor: link with NOT", "[LogicProcessor][link][not]")
+{
+    SECTION( "FALSE" )
+    {
+        auto eNOT = make_shared<TNOT>("1",false);
+        std::shared_ptr<Element> eAND = make_shared<TAND>("2",1); // элемент на один вход для проверки
+
+        eNOT->addChildOut(eAND, 1);
+        eNOT->setIn(1, false);
+        CHECK( eAND->getOut() );
+        eNOT->setIn(1, true);
+        CHECK_FALSE( eAND->getOut() );
+    }
+
+    SECTION( "TRUE" )
+    {
+        auto eNOT = make_shared<TNOT>("1",true);
+        std::shared_ptr<Element> eAND = make_shared<TAND>("2",1); // элемент на один вход для проверки
+
+        eNOT->addChildOut(eAND, 1);
+        eNOT->setIn(1, false);
+        CHECK( eAND->getOut() );
+        eNOT->setIn(1, true);
+        CHECK_FALSE( eAND->getOut() );
+    }
+
+    SECTION( "LAST ELEMENT" )
+    {
+        std::shared_ptr<Element> eAND1 = make_shared<TAND>("1",1); // элемент на один вход для проверки
+        std::shared_ptr<Element> eAND2 = make_shared<TAND>("2",1); // элемент на один вход для проверки
+        std::shared_ptr<Element> eNOT = make_shared<TNOT>("3",false);
+
+        eAND1->addChildOut(eAND2, 1);
+        eAND2->addChildOut(eNOT, 1);
+
+        eAND1->setIn(1, false);
+        CHECK( eNOT->getOut() );
+        eNOT->setIn(1, true);
+        CHECK_FALSE( eNOT->getOut() );
+    }
+}
+// -----------------------------------------------------------------------------

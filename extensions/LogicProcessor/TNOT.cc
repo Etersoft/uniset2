@@ -26,7 +26,7 @@ namespace uniset
     using namespace uniset::extensions;
     // -------------------------------------------------------------------------
     TNOT::TNOT( ElementID id, bool out_default ):
-        Element(id),
+        Element(id, true),
         myout(out_default)
     {
         ins.emplace_front(1, !out_default);
@@ -41,8 +41,11 @@ namespace uniset
         bool prev = myout;
         myout = ( value ? false : true ); // отрицание.. !value
 
-        if( prev != myout )
+        if( prev != myout || init_out )
+        {
+            init_out = false;
             Element::setChildOut();
+        }
     }
     // -------------------------------------------------------------------------
 } // end of namespace uniset
