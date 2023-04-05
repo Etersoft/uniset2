@@ -26,7 +26,7 @@ namespace uniset
     using namespace uniset::extensions;
     // -------------------------------------------------------------------------
     TOR::TOR(ElementID id, size_t num, bool st):
-        Element(id),
+        Element(id,true),
         myout(false)
     {
         if( num != 0 )
@@ -53,7 +53,7 @@ namespace uniset
         {
             if( it.num == num )
             {
-                if( it.value == value )
+                if( it.value == value && !init_out )
                     return; // вход не менялся можно вообще прервать проверку
 
                 it.value = value;
@@ -81,8 +81,11 @@ namespace uniset
 
         dinfo << this << ": myout " << myout << endl;
 
-        if( prev != myout )
+        if( prev != myout || init_out )
+        {
+            init_out = false;
             Element::setChildOut();
+        }
     }
     // -------------------------------------------------------------------------
 } // end of namespace uniset

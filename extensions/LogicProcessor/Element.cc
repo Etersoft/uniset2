@@ -31,7 +31,7 @@ namespace uniset
         if( el.get() == this )
         {
             ostringstream msg;
-            msg << "(" << myid << "): ПОПТКА СДЕЛАТь ССЫЛКУ НА САМОГО СЕБЯ!!!";
+            msg << "(" << myid << "): ПОПЫТКА СДЕЛАТЬ ССЫЛКУ НА САМОГО СЕБЯ!!!";
             throw LogicException(msg.str());
         }
 
@@ -51,7 +51,7 @@ namespace uniset
         if( el->find(myid) != NULL )
         {
             ostringstream msg;
-            msg << "(" << myid << "):  ПОПЫТКА СОЗДАТЬ ЦИКЛИЧЕКУЮ ЗАВИСИМОСТЬ!!!\n";
+            msg << "(" << myid << "):  ПОПЫТКА СОЗДАТЬ ЦИКЛИЧЕСКУЮ ЗАВИСИМОСТЬ!!!\n";
             msg << " id" << el->getId() << " имеет в своих 'потомках' Element id=" << myid << endl;
             throw LogicException(msg.str());
         }
