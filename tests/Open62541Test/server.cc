@@ -2,15 +2,17 @@
 
 #include "open62541pp/open62541pp.h"
 
-int main() {
+int main()
+{
     opcua::Server server;
     server.setApplicationName("open62541pp server example");
 
-    server.setLogger([](auto level, auto category, auto msg) {
+    server.setLogger([](auto level, auto category, auto msg)
+    {
         std::cout
-            << "[" << opcua::getLogLevelName(level) << "] "
-            << "[" << opcua::getLogCategoryName(category) << "] "
-            << msg << std::endl;
+                << "[" << opcua::getLogLevelName(level) << "] "
+                << "[" << opcua::getLogCategoryName(category) << "] "
+                << msg << std::endl;
     });
 
     const auto        myIntegerNodeId = opcua::NodeId("the.answer", 1);

@@ -276,7 +276,7 @@ TEST_CASE("UniXML include", "[unixml][XInclude]")
 
         REQUIRE( it.goChildren() == true );
 
-        REQUIRE( it.findName("item","DumpSensor8_S") == true );
+        REQUIRE( it.findName("item", "DumpSensor8_S") == true );
 
         REQUIRE(it.getProp("name") == "DumpSensor8_S");
         it++;
