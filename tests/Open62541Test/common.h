@@ -9,12 +9,15 @@
  * @param  path               specifies the file name given in argv[]
  * @return Returns the file content after parsing */
 static UA_INLINE UA_ByteString
-loadFile(const char *const path) {
+loadFile(const char* const path)
+{
     UA_ByteString fileContents = UA_STRING_NULL;
 
     /* Open the file */
-    FILE *fp = fopen(path, "rb");
-    if(!fp) {
+    FILE* fp = fopen(path, "rb");
+
+    if(!fp)
+    {
         errno = 0; /* We read errno also from the tcp layer... */
         return fileContents;
     }
@@ -22,31 +25,42 @@ loadFile(const char *const path) {
     /* Get the file length, allocate the data and read */
     fseek(fp, 0, SEEK_END);
     fileContents.length = (size_t)ftell(fp);
-    fileContents.data = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
-    if(fileContents.data) {
+    fileContents.data = (UA_Byte*)UA_malloc(fileContents.length * sizeof(UA_Byte));
+
+    if(fileContents.data)
+    {
         fseek(fp, 0, SEEK_SET);
         size_t read = fread(fileContents.data, sizeof(UA_Byte), fileContents.length, fp);
+
         if(read != fileContents.length)
             UA_ByteString_clear(&fileContents);
-    } else {
+    }
+    else
+    {
         fileContents.length = 0;
     }
+
     fclose(fp);
 
     return fileContents;
 }
 
 static UA_INLINE UA_StatusCode
-writeFile(const char* const path, const UA_ByteString buffer) {
-    FILE *fp = NULL;
+writeFile(const char* const path, const UA_ByteString buffer)
+{
+    FILE* fp = NULL;
 
     fp = fopen(path, "wb");
-    if(fp == NULL) 
+
+    if(fp == NULL)
         return UA_STATUSCODE_BADINTERNALERROR;
 
-    for(UA_UInt32 bufIndex = 0; bufIndex < buffer.length; bufIndex++) {
+    for(UA_UInt32 bufIndex = 0; bufIndex < buffer.length; bufIndex++)
+    {
         int retVal = fputc(buffer.data[bufIndex], fp);
-        if(retVal == EOF) {
+
+        if(retVal == EOF)
+        {
             fclose(fp);
             return UA_STATUSCODE_BADINTERNALERROR;
         }
