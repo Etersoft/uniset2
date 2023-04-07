@@ -16,22 +16,27 @@ print_usage()
 {
     [ "$1" = 0 ] || exec >&2
     cat <<EOF
-Usage: $PROG [command] config.xml
 
-$PROG - generate data for clickhouse server
+Usage: $PROG [command] [config.xml] -- [extra args..]
 
 Valid command are:
   -h, --help            - display help
-  -d, --dicts           - Generate dictionaries data (csv files) for Clickhouse
-  -c, --create [dbname] - Create database. Default dbname=uniset
-  -s, --size            - Show table sizes
+  -g, --dicts           - Generate dictionaries data (csv files) for Clickhouse
+  -c, --create          - Create database. Default dbname=uniset (see --dbname)
+  -z, --size            - Show table sizes
+  -s, --show            - Show create table
+  -d, --desc            - Describe table
+  -t, --set-ttl DAYS    - Set TTL for main table. Default: dbname=uniset, table=main_history
+
+  --dbname name         - Use name as dbname. Default: dbname=uniset
+  --table name          - Use name as table name. Default: main_history
   --outdir dir          - write files to directory
 EOF
     [ -n "$1" ] && exit "$1" || exit
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,d,l,s,c: -l help,dicts,outdir,local,size,create: -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,g,l,c,z,s,d,t: -l help,dicts,outdir,local,size,create,dbname:,table:,set-ttl:,show,desc -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 outdir=.
@@ -41,17 +46,33 @@ while :; do
 	case "$1" in
 	-h|--help) print_usage 0
 	;;
-	-d|--dicts)
+	-g|--dicts)
 		cmd="dict-gen"
-	 ;;
+	;;
 	-c|--create)
 		cmd="create"
+	;;
+	-d|--desc)
+		cmd="desc"
+	;;
+	-s|--show)
+		cmd="show"
+	;;
+	--dbname)
 		shift
 		dbname=$1
-		[ -z "$dbname" ] && dbname="uniset"
 	;;
-	-s|--size)
+	--table)
+		shift
+		tablename=$1
+	;;
+	-z|--size)
 		cmd="size"
+	;;
+	-t|--set-ttl)
+		cmd="set-ttl"
+		shift
+		ttldays="$1"
 	;;
 	-l|--local)
 		bindir=.
@@ -61,7 +82,6 @@ while :; do
 	-outdir)
 		shift
 		outdir=$1
-		[ -z "${outdir}" ] && outdir=.
 		;;
 	--) shift; break
 	;;
@@ -72,18 +92,41 @@ while :; do
 	shift
 done
 
+EXTRA="$@"
+
+[ -z "${outdir}" ] && outdir=.
+[ -z "$dbname" ] && dbname="uniset"
+[ -z "$tablename" ] && tablename="main_history"
+
 if [ "$cmd" == "size" ]; then
   query="select concat(database, '.', table) as table, formatReadableSize(sum(bytes)) as size, sum(rows) as rows, max(modification_time) as latest_modification, sum(bytes) as bytes_size, any(engine) as engine, formatReadableSize(sum(primary_key_bytes_in_memory)) as primary_keys_size from system.parts where active group by database, table order by bytes_size desc FORMAT PrettyCompact"
-  clickhouse-client -m -n $* --query "${query}"
+  clickhouse-client ${EXTRA} -m -n --query "${query}"
   exit $?
 fi
 
 if [ "$cmd" == "create" ]; then
   fname=$(mktemp)
-  sed "s/uniset/$dbname/" <"${src_datadir}/tables.sql" > ${fname} && clickhouse-client -m -n $* <${fname}
+  sed "s/uniset/$dbname/g;s/main_history/$tablename/g;" <"${src_datadir}/tables.sql" > ${fname} && clickhouse-client ${EXTRA} -m -n <${fname}
   RET=$?
   rm -f ${fname}
   exit $RET
+fi
+
+
+if [ "$cmd" = "set-ttl" ]; then
+  [ -z "$ttldays" ] && echo "Not found TTL DAYS parameter. Use --set-ttl days" && exit 1
+  clickhouse-client ${EXTRA} -m -n --query "ALTER TABLE ${dbname}.${tablename} MODIFY TTL timestamp + INTERVAL $ttldays DAY"
+  exit $?
+fi
+
+if [ "$cmd" = "show" ]; then
+  clickhouse-client ${EXTRA} -m -n --query "show create table ${dbname}.${tablename} FORMAT PrettyCompact"
+  exit $?
+fi
+
+if [ "$cmd" = "desc" ]; then
+  clickhouse-client ${EXTRA} -m -n --query "desc ${dbname}.${tablename} FORMAT PrettyCompact"
+  exit $?
 fi
 
 confile="$1"
