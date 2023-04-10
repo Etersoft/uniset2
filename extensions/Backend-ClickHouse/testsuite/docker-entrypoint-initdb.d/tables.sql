@@ -20,4 +20,4 @@ CREATE TABLE IF NOT EXISTS uniset.main_history
 PARTITION BY toStartOfDay(timestamp)
 PRIMARY KEY(timestamp,time_usec,name_hash_id)
 ORDER BY (timestamp,time_usec,name_hash_id)
-TTL timestamp + INTERVAL 90 DAY;
+TTL timestamp + INTERVAL 180 DAY;
