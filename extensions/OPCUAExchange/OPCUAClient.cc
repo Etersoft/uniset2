@@ -76,6 +76,11 @@ OPCUAClient::VarType OPCUAClient::str2vtype( std::string_view s )
     return VarType::Int32;
 }
 // -----------------------------------------------------------------------------
+bool OPCUAClient::ResultVar::statusOk()
+{
+    return status == UA_STATUSCODE_GOOD;
+}
+// -----------------------------------------------------------------------------
 int32_t OPCUAClient::ResultVar::get()
 {
     if( type == VarType::Int32 )
@@ -122,14 +127,15 @@ OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std
             for( size_t i = 0; i < response.resultsSize; i++ )
             {
                 result[i].status = response.results[i].status;
+                result[i].value = 0;
 
-                if (response.results[i].status == UA_STATUSCODE_GOOD)
+                if( response.results[i].status == UA_STATUSCODE_GOOD )
                 {
                     result[i].type = VarType::Int32; // by default
                     UA_Variant* val = &response.results[i].value;
 
                     if (val->type == &UA_TYPES[UA_TYPES_INT32])
-                        result[i].value = *(UA_Int32*) val->data;
+                        result[i].value = int32_t(*(UA_Int32*) val->data);
                     else if (val->type == &UA_TYPES[UA_TYPES_UINT32])
                         result[i].value = int32_t(*(UA_UInt32*) val->data);
                     else if (val->type == &UA_TYPES[UA_TYPES_INT64])
@@ -139,11 +145,11 @@ OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std
                     else if (val->type == &UA_TYPES[UA_TYPES_BOOLEAN])
                         result[i].value = *(UA_Boolean*) val->data ? 1 : 0;
                     else if (val->type == &UA_TYPES[UA_TYPES_UINT16])
-                        result[i].value = *(UA_UInt16*) val->data;
+                        result[i].value = int32_t(*(UA_UInt16*) val->data);
                     else if (val->type == &UA_TYPES[UA_TYPES_INT16])
-                        result[i].value = *(UA_Int16*) val->data;
+                        result[i].value = int32_t(*(UA_Int16*) val->data);
                     else if (val->type == &UA_TYPES[UA_TYPES_BYTE])
-                        result[i].value = *(UA_Byte*) val->data;
+                        result[i].value = int32_t(*(UA_Byte*) val->data);
                     else if (val->type == &UA_TYPES[UA_TYPES_FLOAT])
                     {
                         result[i].type  = VarType::Float;
@@ -157,6 +163,11 @@ OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std
                 }
             }
         }
+    }
+    else
+    {
+        for( auto&& r : result )
+            r.status = retval;
     }
 
     UA_ReadResponse_clear(&response);

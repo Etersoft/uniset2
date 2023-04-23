@@ -447,9 +447,10 @@ namespace uniset
                 {
                     opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " write "
                             << v.second->ids.size() << " attrs" << endl;
+
                     auto ret = ch->client->write32(v.second->ids);
 
-                    if (ret != UA_STATUSCODE_GOOD)
+                    if( ret != UA_STATUSCODE_GOOD )
                         opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
                                 << " write error: " << UA_StatusCode_name(ret) << endl;
                 }
@@ -466,7 +467,7 @@ namespace uniset
                             << v.second->ids.size() << " attrs" << endl;
                     auto ret = ch->client->read(v.second->ids, v.second->results);
 
-                    if (ret != UA_STATUSCODE_GOOD)
+                    if( ret != UA_STATUSCODE_GOOD )
                         opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
                                 << " read error: " << UA_StatusCode_name(ret) << endl;
                 }
@@ -782,12 +783,18 @@ namespace uniset
         if( !gr )
             return 0;
 
+        if( !statusOk() || !gr->results[grIndex].statusOk() )
+            return 0;
+
         return gr->results[grIndex].get();
     }
     // ------------------------------------------------------------------------------------------
     float OPCUAExchange::OPCAttribute::RdValue::getF()
     {
         if( !gr )
+            return 0;
+
+        if( !statusOk() || !gr->results[grIndex].statusOk() )
             return 0;
 
         if( gr->results[grIndex].type == OPCUAClient::VarType::Float )
