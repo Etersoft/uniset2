@@ -37,7 +37,7 @@ namespace uniset
             bool connect( const std::string& addr, const std::string& user, const std::string& pass );
 
             // supported types (other types are converted to these if possible)
-            enum class VarType
+            enum class VarType : int
             {
                 Int32 = 0,
                 Float = 1
@@ -50,6 +50,8 @@ namespace uniset
                 std::variant<int32_t, float> value = { 0 };
                 UA_StatusCode status;
                 VarType type = { VarType::Int32 }; // by default
+
+                bool statusOk();
 
                 // get as int32_t (cast to int32_t if possible)
                 int32_t get();
