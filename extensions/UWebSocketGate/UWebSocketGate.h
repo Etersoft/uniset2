@@ -314,7 +314,7 @@ namespace uniset
 
                     struct sinfo
                     {
-                        sinfo( const std::string& _cmd, uniset::ObjectId _id ): cmd(_cmd), id(_id) {}
+                        sinfo( const std::string& _cmd, uniset::ObjectId _id ): id(_id), cmd(_cmd) {}
 
                         std::string err; // ошибка при работе с датчиком (например при заказе)
                         uniset::ObjectId id = { uniset::DefaultObjectId };

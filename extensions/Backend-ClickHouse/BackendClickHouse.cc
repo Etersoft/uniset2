@@ -245,21 +245,18 @@ std::shared_ptr<BackendClickHouse> BackendClickHouse::init_clickhouse( int argc,
 {
     auto conf = uniset_conf();
 
+    ObjectId ID = conf->getDBServer();
     string name = conf->getArgParam("--" + prefix + "-name", "BackendClickHouse");
 
-    if( name.empty() )
+    if( !name.empty() )
     {
-        dcrit << "(BackendClickHouse): Unknown name. Usage: --" <<  prefix << "-name" << endl;
-        return 0;
-    }
-
-    ObjectId ID = conf->getObjectID(name);
-
-    if( ID == uniset::DefaultObjectId )
-    {
-        dcrit << "(BackendClickHouse): Not found ID for '" << name
-              << " in '" << conf->getObjectsSection() << "' section" << endl;
-        return 0;
+        ID = conf->getServiceID(name);
+        if( ID == uniset::DefaultObjectId )
+        {
+            dcrit << "(BackendClickHouse): Not found ServiceID for '" << name
+                  << " in '" << conf->getServicesSection() << "' section" << endl;
+            return nullptr;
+        }
     }
 
     string confname = conf->getArgParam("--" + prefix + "-confnode", name);
@@ -268,7 +265,7 @@ std::shared_ptr<BackendClickHouse> BackendClickHouse::init_clickhouse( int argc,
     if( !cnode )
     {
         dcrit << "(BackendClickHouse): " << name << "(init): Not found <" + confname + ">" << endl;
-        return 0;
+        return nullptr;
     }
 
     dinfo << "(BackendClickHouse): name = " << name << "(" << ID << ")" << endl;
