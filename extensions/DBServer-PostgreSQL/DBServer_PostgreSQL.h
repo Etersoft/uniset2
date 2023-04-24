@@ -81,8 +81,7 @@ namespace uniset
             typedef std::unordered_map<int, std::string> DBTableMap;
 
             virtual void initDBServer() override;
-            virtual void initDB( std::unique_ptr<PostgreSQLInterface>& db ) {};
-            virtual void initDBTableMap( DBTableMap& tblMap ) {};
+            virtual void onReconnect( std::unique_ptr<PostgreSQLInterface>& db ) {};
 
             virtual void timerInfo( const uniset::TimerMessage* tm ) override;
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
@@ -93,7 +92,6 @@ namespace uniset
             virtual std::string getMonitInfo( const std::string& params ) override;
 
             bool writeToBase( const std::string& query );
-            void createTables( const std::shared_ptr<PostgreSQLInterface>& db );
 
             inline std::string tblName(int key)
             {

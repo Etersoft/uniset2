@@ -588,14 +588,11 @@ namespace uniset
             else if( name == "LocalDBServer" )
             {
                 name = it.getProp("name");
-                //DBServer
-                const string secDB( getServicesSection() + "/" + name);
-                localDBServer = oind->getIdByName(secDB);
-
+                localDBServer = getServiceID(name);
                 if( localDBServer == DefaultObjectId )
                 {
                     ostringstream msg;
-                    msg << "Configuration: DBServer '" << secDB << "' not found ServiceID in <services>!";
+                    msg << "Configuration: DBServer '" << name << "' not found ServiceID in <services>!";
                     ucrit << msg.str() << endl;
                     throw uniset::SystemError(msg.str());
                 }
@@ -963,18 +960,16 @@ namespace uniset
                 ninf.dbserver = uniset::DefaultObjectId;
             else
             {
-                string dname(getServicesSection() + "/" + tmp);
-                ninf.dbserver = oind->getIdByName(dname);
-
+                ninf.dbserver = getServiceID(tmp);
                 if( ninf.dbserver == DefaultObjectId )
                 {
-                    ucrit << "Configuration(createNodesList): Not found ID for DBServer name='" << dname << "'" << endl;
-                    throw uniset::SystemError("Configuration(createNodesList: Not found ID for DBServer name='" + dname + "'");
+                    ucrit << "Configuration(createNodesList): Not found ServiceID for DBServer name='" << tmp << "'" << endl;
+                    throw uniset::SystemError("Configuration(createNodesList): Not found ServiceID for DBServer name='" + tmp + "'");
                 }
-            }
 
-            if( ninf.id == getLocalNode() )
-                localDBServer = ninf.dbserver;
+                if( ninf.id == getLocalNode() )
+                    localDBServer = ninf.dbserver;
+            }
 
             ninf.connected = false;
 

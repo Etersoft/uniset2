@@ -420,12 +420,12 @@ std::shared_ptr<DBServer_SQLite> DBServer_SQLite::init_dbserver( int argc, const
 
     if( !name.empty() )
     {
-        ObjectId ID = conf->getObjectID(name);
+        ObjectId ID = conf->getServiceID(name);
 
         if( ID == uniset::DefaultObjectId )
         {
-            cerr << "(DBServer_SQLite): Unknown ObjectID for '" << name << endl;
-            return 0;
+            cerr << "(DBServer_SQLite): Unknown ServiceID for '" << name << endl;
+            return nullptr;
         }
     }
 

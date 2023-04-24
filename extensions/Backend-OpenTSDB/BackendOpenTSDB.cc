@@ -185,20 +185,17 @@ std::shared_ptr<BackendOpenTSDB> BackendOpenTSDB::init_opendtsdb( int argc,
     auto conf = uniset_conf();
 
     string name = conf->getArgParam("--" + prefix + "-name", "BackendOpenTSDB");
+    ObjectId ID = conf->getDBServer();
 
-    if( name.empty() )
+    if( !name.empty() )
     {
-        dcrit << "(BackendOpenTSDB): Unknown name. Usage: --" <<  prefix << "-name" << endl;
-        return 0;
-    }
-
-    ObjectId ID = conf->getObjectID(name);
-
-    if( ID == uniset::DefaultObjectId )
-    {
-        dcrit << "(BackendOpenTSDB): Not found ID for '" << name
-              << " in '" << conf->getObjectsSection() << "' section" << endl;
-        return 0;
+        ID = conf->getServiceID(name);
+        if( ID == uniset::DefaultObjectId )
+        {
+            dcrit << "(BackendOpenTSDB): Not found ServiceID for '" << name
+                  << " in '" << conf->getServicesSection() << "' section" << endl;
+            return nullptr;
+        }
     }
 
     string confname = conf->getArgParam("--" + prefix + "-confnode", name);

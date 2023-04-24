@@ -321,8 +321,7 @@ void DBServer_PostgreSQL::initDBServer()
 
     if( connect_ok )
     {
-        initDBTableMap(tblMap);
-        initDB(db);
+        onReconnect(db);
         return;
     }
 
@@ -394,41 +393,8 @@ void DBServer_PostgreSQL::initDBServer()
         connect_ok = true;
         askTimer(DBServer_PostgreSQL::ReconnectTimer, 0);
         askTimer(DBServer_PostgreSQL::PingTimer, PingTime);
-        //        createTables(db);
-        initDB(db);
-        initDBTableMap(tblMap);
+        onReconnect(db);
         flushBuffer();
-    }
-}
-//--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::createTables( const std::shared_ptr<PostgreSQLInterface>& db )
-{
-    auto conf = uniset_conf();
-
-    UniXML_iterator it( conf->getNode("Tables") );
-
-    if(!it)
-    {
-        dbcrit << myname << ": section <Tables> not found.." << endl;
-        throw Exception();
-    }
-
-    if( !it.goChildren() )
-        return;
-
-    for( ; it; it.goNext() )
-    {
-        if( it.getName() != "comment" )
-        {
-            dbcrit << myname  << "(createTables): create " << it.getName() << endl;
-            ostringstream query;
-            query << "CREATE TABLE " << conf->getProp(it, "name") << "(" << conf->getProp(it, "create") << ")";
-
-            if( !db->query(query.str()) )
-            {
-                dbcrit << myname << "(createTables): error: \t\t" << db->error() << endl;
-            }
-        }
     }
 }
 //--------------------------------------------------------------------------------------------
@@ -541,12 +507,12 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
 
     if( !name.empty() )
     {
-        ObjectId ID = conf->getObjectID(name);
+        ObjectId ID = conf->getServiceID(name);
 
         if( ID == uniset::DefaultObjectId )
         {
-            cerr << "(DBServer_PostgreSQL): Unknown ObjectID for '" << name << endl;
-            return 0;
+            cerr << "(DBServer_PostgreSQL): Unknown ServiceID for '" << name << endl;
+            return nullptr;
         }
     }
 
