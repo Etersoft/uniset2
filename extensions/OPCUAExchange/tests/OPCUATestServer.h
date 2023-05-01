@@ -40,8 +40,8 @@ class OPCUATestServer
 
         struct IONode
         {
-            opcua::Node node;
-            IONode( const opcua::Node& n ):  node(n) {};
+            opcua::Node<opcua::Server> node;
+            IONode( const opcua::Node<opcua::Server>& n ):  node(n) {};
         };
 
         std::unique_ptr<opcua::Server> server;

@@ -15,22 +15,23 @@ int main()
                 << msg << std::endl;
     });
 
-    const auto        myIntegerNodeId = opcua::NodeId("the.answer", 1);
+    const auto        myIntegerNodeId = opcua::NodeId(1, "the.answer");
     const std::string myIntegerName   = "the answer";
 
     // create node
     auto parentNode    = server.getObjectsNode();
-    auto myIntegerNode = parentNode.addVariable(myIntegerNodeId, myIntegerName, opcua::Type::Int32);
+    auto myIntegerNode = parentNode.addVariable(myIntegerNodeId, myIntegerName);
+    myIntegerNode.writeDataType(opcua::Type::Int32);
 
     // set node attributes
-    myIntegerNode.setDisplayName("the answer");
-    myIntegerNode.setDescription("the answer");
+    myIntegerNode.writeDisplayName({"en-US", "the answer"});
+    myIntegerNode.writeDescription({"en-US", "the answer"});
 
     // write value
-    myIntegerNode.write(42);
+    myIntegerNode.writeScalar(42);
 
     // read value
-    std::cout << "The answer is: " << myIntegerNode.read<int>() << std::endl;
+    std::cout << "The answer is: " << myIntegerNode.readScalar<int>() << std::endl;
 
     server.run();
 

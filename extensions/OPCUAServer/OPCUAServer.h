@@ -182,8 +182,8 @@ namespace uniset
 
             struct IOVariable
             {
-                IOVariable(const opcua::Node& n) : node(n) {};
-                opcua::Node node;
+                IOVariable(const opcua::Node<opcua::Server>& n) : node(n) {};
+                opcua::Node<opcua::Server> node;
                 IOController::IOStateList::iterator it;
                 UniversalIO::IOType stype = { UniversalIO::AO };
 
@@ -201,13 +201,13 @@ namespace uniset
 
             struct IONode
             {
-                opcua::Node node;
-                IONode( const opcua::Node& n ):  node(n) {};
+                opcua::Node<opcua::Server> node;
+                IONode( const opcua::Node<opcua::Server>& n ):  node(n) {};
             };
 
         private:
-            std::unique_ptr<opcua::Server> opcServer = {nullptr };
-            std::unique_ptr<IONode> ioNode = {nullptr};
+            std::unique_ptr<opcua::Server> opcServer = { nullptr };
+            std::unique_ptr<IONode> ioNode = { nullptr };
             std::string prefix;
             std::string s_field;
             std::string s_fvalue;

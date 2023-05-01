@@ -75,7 +75,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
                         << msg << std::endl;
     });
 
-    auto opcConfig = opcServer->getConfig();
+    auto opcConfig = UA_Server_getConfig(opcServer->handle());
     opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
     opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
 
@@ -97,8 +97,8 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
 
-    auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId("uniset"), "uniset");
-    uroot.setDescription("uniset i/o", "en");
+    auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
+    uroot.writeDescription({"en", "uniset i/o"});
 
     auto localNode = conf->getLocalNode();
     auto nodes = conf->getXMLNodesSection();
@@ -118,12 +118,12 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
             if( nodeID == localNode )
             {
                 const auto uname = nIt.getProp("name");
-                auto unode = uroot.addFolder(opcua::NodeId(uname), uname);
-                unode.setDescription(nIt.getProp("textname"), "ru-RU");
-                unode.setDisplayName(uname, "en");
+                auto unode = uroot.addFolder(opcua::NodeId(0, uname), uname);
+                unode.writeDescription({"ru-RU", nIt.getProp("textname")});
+                unode.writeDisplayName({"en", uname});
 
-                ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId("io"), "I/O"));
-                ioNode->node.setDescription("I/O", "en-US");
+                ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId(0, "io"), "I/O"));
+                ioNode->node.writeDescription({"en-US", "I/O"});
 
                 auto opcAddr = init3_str(ip, nIt.getProp2("opcua_ip", nIt.getProp("ip")), "127.0.0.1");
                 opcServer->setCustomHostname(opcAddr);
@@ -286,19 +286,20 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
 
     sname = it.getProp2("opcua_name", sname);
 
-    auto vnode = ioNode->node.addVariable(opcua::NodeId(sname), sname, opctype);
-    vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ);
+    auto vnode = ioNode->node.addVariable(opcua::NodeId(0, sname), sname);
+    vnode.writeDataType(opctype);
+    vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ);
 
     if( iotype == UniversalIO::AI || iotype == UniversalIO::DI )
-        vnode.setAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
+        vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
 
     auto desc = it.getProp2("opcua_description", it.getProp("textname"));
     auto descLang = it.getProp2("opcua_description_lang", "ru");
-    vnode.setDescription(desc, descLang);
+    vnode.writeDescription({descLang, desc});
 
     auto displayName = it.getProp2("opcua_displayname", sname);
     auto displayNameLang = it.getProp2("opcua_displayname_lang", "en");
-    vnode.setDisplayName(displayName, displayNameLang);
+    vnode.writeDisplayName({displayNameLang, displayName});
 
     // init default value
     DefaultValueType defVal = (DefaultValueType)it.getPIntProp("default", 0);
@@ -306,15 +307,15 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     if( opctype == opcua::Type::Boolean )
     {
         bool set = defVal ? true : false;
-        vnode.write(set);
+        vnode.writeScalar(set);
     }
     else if( opctype == opcua::Type::Float )
     {
         float v = defVal;
-        vnode.write(v);
+        vnode.writeScalar(v);
     }
     else
-        vnode.write(defVal);
+        vnode.writeScalar(defVal);
 
     auto i = variables.emplace(sid, vnode);
     i.first->second.stype = iotype;
@@ -627,7 +628,7 @@ void OPCUAServer::update()
             if( it->second.stype == UniversalIO::DO )
             {
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                it->second.node.write(it->second.state);
+                it->second.node.writeScalar(it->second.state);
             }
             else if( it->second.stype == UniversalIO::AO )
             {
@@ -635,18 +636,18 @@ void OPCUAServer::update()
                 {
                     uniset::uniset_rwmutex_rlock lock(it->second.vmut);
                     float fval = (float)it->second.value / pow(10.0, it->second.precision);
-                    it->second.node.write( fval );
+                    it->second.node.writeScalar( fval );
                 }
                 else
                 {
                     uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                    it->second.node.write(it->second.value);
+                    it->second.node.writeScalar(it->second.value);
                 }
             }
             else if( it->second.stype == UniversalIO::DI )
             {
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                auto set = it->second.node.read<bool>();
+                auto set = it->second.node.readScalar<bool>();
                 auto val = getBits(set ? 1 : 0, it->second.mask, it->second.offset);
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " set=" << set
@@ -660,9 +661,9 @@ void OPCUAServer::update()
                 DefaultValueType val = 0;
 
                 if( it->second.vtype == opcua::Type::Float )
-                    val = lroundf( it->second.node.read<float>() * pow(10.0, it->second.precision) );
+                    val = lroundf( it->second.node.readScalar<float>() * pow(10.0, it->second.precision) );
                 else
-                    val = getBits(it->second.node.read<DefaultValueType>(), it->second.mask, it->second.offset);
+                    val = getBits(it->second.node.readScalar<DefaultValueType>(), it->second.mask, it->second.offset);
 
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " value=" << val
