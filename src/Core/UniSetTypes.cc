@@ -910,7 +910,7 @@ uniset::Timespec_var uniset::now_to_uniset_timespec()
 // -------------------------------------------------------------------------
 uniset::Timespec_var uniset::to_uniset_timespec( const chrono::system_clock::duration& d )
 {
-    uniset::Timespec_var ts;
+    uniset::Timespec_var ts = new uniset::Timespec();
 
     if( d.count() == 0 )
         ts->sec = ts->nsec = 0;

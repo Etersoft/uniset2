@@ -587,7 +587,7 @@ namespace uniset
                         oref = resolve( id, node );
 
                     IONotifyController_i_var inc = IONotifyController_i::_narrow(oref);
-                    uniset::ConsumerInfo_var ci;
+                    uniset::ConsumerInfo_var ci = new uniset::ConsumerInfo();
                     ci->id = backid;
                     ci->node = uconf->getLocalNode();
                     inc->askSensor(id, ci, cmd );
@@ -1137,7 +1137,7 @@ namespace uniset
 
         uniset::Timespec_var ts = uniset::now_to_uniset_timespec();
 
-        uniset::ProducerInfo_var pi;
+        uniset::ProducerInfo_var pi = new uniset::ProducerInfo();
         pi->id = myid;
         pi->node = uconf->getLocalNode();
 
@@ -1207,11 +1207,11 @@ namespace uniset
 
         uniset::ObjectId onode = (node == uniset::DefaultObjectId) ? uconf->getLocalNode() : node;
 
-        uniset::Timespec_var ts;
+        uniset::Timespec_var ts = new uniset::Timespec();
         ts->sec = msg.tm.tv_sec;
         ts->nsec = msg.tm.tv_nsec;
 
-        uniset::ProducerInfo_var pi;
+        uniset::ProducerInfo_var pi = new uniset::ProducerInfo();
         pi->id = msg.supplier;
         pi->node = msg.node;
 
@@ -1756,7 +1756,7 @@ namespace uniset
                         oref = resolve( sid, node );
 
                     IONotifyController_i_var inc = IONotifyController_i::_narrow(oref);
-                    uniset::ConsumerInfo_var ci;
+                    uniset::ConsumerInfo_var ci = new uniset::ConsumerInfo();
                     ci->id = backid;
                     ci->node = uconf->getLocalNode();
 
@@ -2428,7 +2428,7 @@ namespace uniset
 
                     IONotifyController_i_var iom = IONotifyController_i::_narrow(oref);
 
-                    uniset::ConsumerInfo_var ci;
+                    uniset::ConsumerInfo_var ci = new uniset::ConsumerInfo();
                     ci->id = backid;
                     ci->node = uconf->getLocalNode();
                     uniset::IDSeq_var seq = lst.getIDSeq();

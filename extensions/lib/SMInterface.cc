@@ -147,7 +147,7 @@ long SMInterface::getValue( uniset::ObjectId id )
 // --------------------------------------------------------------------------
 void SMInterface::askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd, uniset::ObjectId backid )
 {
-    ConsumerInfo_var ci;
+    ConsumerInfo_var ci = new ConsumerInfo();
     ci->id   = (backid == DefaultObjectId) ? myid : backid;
     ci->node = ui->getConf()->getLocalNode();
 
