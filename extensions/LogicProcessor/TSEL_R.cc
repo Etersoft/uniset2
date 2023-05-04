@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Pavel Vainerman.
+ * Copyright (c) 2023 Ilya Polshchikov.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -25,21 +25,42 @@ namespace uniset
     using namespace std;
     using namespace uniset::extensions;
     // -------------------------------------------------------------------------
-    TNOT::TNOT( ElementID id, bool st ):
+    TSEL_R::TSEL_R( ElementID id, bool st, long _sel_false, long _sel_true ):
         Element(id, true),
-        myout(st)
+        myout(0),
+        control_inp(st),
+        true_inp(_sel_true),
+        false_inp(_sel_false)
     {
-        ins.emplace_front(1, !st);
+        myout = control_inp ? true_inp : false_inp;
     }
     // -------------------------------------------------------------------------
-    TNOT::~TNOT()
+    TSEL_R::~TSEL_R()
     {
     }
     // -------------------------------------------------------------------------
-    void TNOT::setIn( size_t num, long value )
+    void TSEL_R::setIn( size_t num, long value )
     {
         bool prev = myout;
-        myout = ( value ? false : true ); // отрицание.. !value
+
+        //обновление входов
+        switch(num)
+        {
+          case 1:
+            control_inp = (bool)value;
+            break;
+          case 2:
+            true_inp = value;
+            break;
+          case 3:
+            false_inp = value;
+            break;
+          default:
+            break;
+        };
+
+        //обновление выхода
+        myout = control_inp ? true_inp : false_inp;
 
         if( prev != myout || init_out )
         {

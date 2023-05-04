@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="koi8-r"?>
+<Schema>
+<text-view>
+         ----
+        |    |
+1-------|NOT |--|
+        |    |  |                -----
+         ----   |               |     |--|OUT
+                |          |----|SEL_R|
+                |  ----    |    |     |
+           1set |-|    |   |     -----
+                  | RS |   |
+2-----------------|    |---|
+           2reset |    |
+                   ----
+
+</text-view>
+
+<elements>
+	<item id="1" type="NOT" default_out_state="0"/>
+	<item id="2" type="RS" dominantReset="1"/>
+	<item id="3" type="SEL_R"/>
+</elements>
+
+<connections>
+	<item type="ext" from="In1_S" to="1" toInput="1" />
+	<item type="ext" from="In2_S" to="2" toInput="2" />
+	<item type="ext" from="In3_S" to="3" toInput="2" />
+	<item type="ext" from="In4_S" to="3" toInput="3" />
+	<item type="int" from="1" to="2" toInput="1" />
+	<item type="int" from="2" to="3" toInput="1" />
+	<item type="out" from="3" to="Out1_S"/>
+</connections>
+
+</Schema>

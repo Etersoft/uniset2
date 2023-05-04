@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Pavel Vainerman.
+ * Copyright (c) 2023 Ilya Polshchikov.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -25,21 +25,48 @@ namespace uniset
     using namespace std;
     using namespace uniset::extensions;
     // -------------------------------------------------------------------------
-    TNOT::TNOT( ElementID id, bool st ):
+    TRS::TRS( ElementID id, bool st, bool _dominantReset):
         Element(id, true),
-        myout(st)
-    {
-        ins.emplace_front(1, !st);
-    }
-    // -------------------------------------------------------------------------
-    TNOT::~TNOT()
+        myout(st),
+        dominantReset(_dominantReset),
+        set_inp(false),
+        reset_inp(false)
     {
     }
     // -------------------------------------------------------------------------
-    void TNOT::setIn( size_t num, long value )
+    TRS::~TRS()
+    {
+    }
+    // -------------------------------------------------------------------------
+    void TRS::setIn( size_t num, long value )
     {
         bool prev = myout;
-        myout = ( value ? false : true ); // отрицание.. !value
+
+        //обновление входов
+        //обновление входов
+        switch(num)
+        {
+          case 1:
+            set_inp = (bool)value;
+            break;
+          case 2:
+            reset_inp = (bool)value;
+            break;
+          default:
+            break;
+        };
+
+        //обновление выхода
+        if(dominantReset)
+        {
+            myout = set_inp ? true : myout;
+            myout = reset_inp ? false : myout;
+        }
+        else
+        {
+            myout = reset_inp ? false : myout;
+            myout = set_inp ? true : myout;
+        }
 
         if( prev != myout || init_out )
         {

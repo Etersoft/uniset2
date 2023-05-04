@@ -123,7 +123,7 @@ namespace uniset
     {
 
         public:
-            TOR( ElementID id, size_t numbers = 0, bool outstate = false );
+            TOR( ElementID id, size_t numbers = 0, bool st = false );
             virtual ~TOR();
 
             virtual void setIn( size_t num, long value ) override;
@@ -169,7 +169,7 @@ namespace uniset
     {
 
         public:
-            TNOT( ElementID id, bool out_default );
+            TNOT( ElementID id, bool st = false );
             virtual ~TNOT();
 
             virtual long getOut() const override
@@ -189,6 +189,98 @@ namespace uniset
         protected:
             TNOT(): myout(false) {}
             bool myout;
+
+        private:
+    };
+    // --------------------------------------------------------------------------
+    /* элемент с одним управляющим входом, двумя входными параметрами и одним выходом.
+    * выход выбирается между двумя входными параметрами по состоянию управляющего входа:
+    * Входные параметры(ВП 1 и 2) - целочисленные переменные, управляющий вход(УВ) - булева переменная,
+    * выход(ВЫХ) - целочисленная переменная.
+    * Значения входные параметров задаются статически при создании элемента через
+    * параметры sel_true и sel_false, а также можно привязать внешние входы.
+    * 
+    * Пример таблицы:
+    *  
+    *  ВП1(true_inp) | ВП2(false_inp) | УВ | ВЫХ
+    *       50       |      100       | 0  | 100
+    *       50       |      100       | 1  | 50
+
+    *
+    */
+    class TSEL_R:
+        public Element
+    {
+
+        public:
+            TSEL_R( ElementID id, bool st = false, long _sel_false = 0, long _sel_true = 1 );
+            virtual ~TSEL_R();
+
+            virtual long getOut() const override
+            {
+                return myout;
+            }
+
+            /*! num игнорируется, т.к. элемент с одним входом */
+            virtual void setIn( size_t num, long value ) override ;
+            virtual std::string getType() const override
+            {
+                return "SEL_R";
+            }
+            virtual void addInput( size_t num, long value = 0 ) override {}
+            virtual void delInput( size_t num ) override {}
+
+        protected:
+            TSEL_R(): myout(0), control_inp(false), false_inp(0), true_inp(1) {}
+            long myout;       /*<! Selected value */
+            bool control_inp; /*<! Input selection */
+            long true_inp;    /*<! Input  value 1 when control_inp=true */
+            long false_inp;   /*<! Input  value 2 when control_inp=false */
+
+        private:
+    };
+    // --------------------------------------------------------------------------
+    /* Элемент с двумя входами и одним выходом.
+    * первый вход для выставления выхода в true.
+    * второй вход для сброса выхода в false.
+    * На вход подается только логическая единица
+    * ,а ноль игнорируется.
+    * Таблица истинности:
+    *  
+    *  вход 1(set) | вход 2(reset) | выход(out)
+    *    0         |    0          |   значение по-умолчанию или предыдущее значение выхода
+    *    0         |    1          |   0
+    *    1         |    0          |   1
+    *    1         |    1          |   доминантный вход
+    *
+    */
+    class TRS:
+        public Element
+    {
+
+        public:
+            TRS( ElementID id, bool st = false, bool _dominantReset = false );
+            virtual ~TRS();
+
+            virtual long getOut() const override
+            {
+                return ( myout ? 1 : 0 );
+            }
+
+            virtual void setIn( size_t num, long value ) override ;
+            virtual std::string getType() const override
+            {
+                return "RS";
+            }
+            virtual void addInput( size_t num, long value = 0 ) override {}
+            virtual void delInput( size_t num ) override {}
+
+        protected:
+            TRS(): myout(false), dominantReset(false), set_inp(false), reset_inp(false) {}
+            bool myout;         /*<! Output */
+            bool dominantReset; /*<! Dominant reset input (by default: set input is dominant) */
+            bool set_inp;       /*<! Set input */
+            bool reset_inp;     /*<! Reset input */
 
         private:
     };
