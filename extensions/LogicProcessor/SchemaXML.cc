@@ -93,6 +93,19 @@ namespace uniset
                 int filterValue = xml.getIntProp(it, "filterValue");
                 manage( make_shared<TA2D>(ID, filterValue) );
             }
+            else if( type == "SEL_R" )
+            {
+                bool defout = xml.getIntProp(it, "default_out_state");
+                int sel_true = xml.getPIntProp(it, "sel_true",1);
+                int sel_false = xml.getPIntProp(it, "sel_false",0);
+                manage( make_shared<TSEL_R>(ID, defout, sel_false, sel_true) );
+            }
+            else if( type == "RS" )
+            {
+                bool dominantReset = xml.getIntProp(it, "dominantReset");
+                bool defout = xml.getIntProp(it, "default_out_state");
+                manage( make_shared<TRS>(ID, defout, dominantReset) );
+            }
             else
             {
                 ostringstream msg;

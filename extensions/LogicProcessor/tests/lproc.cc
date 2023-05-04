@@ -15,6 +15,8 @@ static shared_ptr<UInterface> ui;
 
 
 static const std::string lp_schema = "lp_schema.xml";
+static const std::string schema2 = "schema2.xml";
+static const std::string schema3 = "schema3.xml";
 // -----------------------------------------------------------------------------
 bool run_lproc( std::shared_ptr<LProcessor> lp )
 {
@@ -25,10 +27,13 @@ bool run_lproc( std::shared_ptr<LProcessor> lp )
 class LPRunner
 {
     public:
-        LPRunner()
+
+        LPRunner() = delete;
+
+        LPRunner(const std::string& schm)
         {
             lp = make_shared<LProcessor>();
-            lp->open(lp_schema);
+            lp->open(schm);
             res = std::async(std::launch::async, run_lproc, lp);
         }
 
@@ -166,6 +171,94 @@ TEST_CASE("Logic processor: elements", "[LogicProcessor][elements]")
         e.setIn(1, 6);
         REQUIRE_FALSE( e.getOut() );
     }
+
+    SECTION( "SEL_R" )
+    {
+        TSEL_R e("1", false, 5, 7);
+        CHECK( e.getOut() == 5 );
+        e.setIn(1, true);
+        CHECK( e.getOut() == 7 );
+        e.setIn(1, false);
+        REQUIRE( e.getOut() == 5 );
+
+        // other constructor
+        TSEL_R e1("2", true, 4, 6);
+        CHECK( e1.getOut() == 6 );
+        e1.setIn(1, false);
+        CHECK( e1.getOut() == 4 );
+        e1.setIn(1, true);
+        CHECK( e1.getOut() == 6 );
+
+        //change input variables
+        TSEL_R e2("3", false, 3, 9);
+        CHECK( e2.getOut() == 3 );
+        e2.setIn(1, true);
+        CHECK( e2.getOut() == 9 );
+        e2.setIn(1, false);
+        CHECK( e2.getOut() == 3 );
+        e2.setIn(3, 10); // false inp
+        CHECK( e2.getOut() == 10 );
+        e2.setIn(2, 19); // true inp
+        CHECK( e2.getOut() == 10 );
+        e2.setIn(1, true);
+        CHECK( e2.getOut() == 19 );
+        e2.setIn(1, false);
+        REQUIRE( e2.getOut() == 10 );
+    }
+
+    SECTION( "RS" )
+    {
+        TRS e("1", false);
+        REQUIRE_FALSE( e.getOut() );
+        e.setIn(1, false);
+        e.setIn(2, false);
+        REQUIRE_FALSE( e.getOut() );
+        e.setIn(1, true);//set=1
+        REQUIRE( e.getOut() );
+        e.setIn(1, false);
+        REQUIRE( e.getOut() );
+        e.setIn(2, true);//reset
+        REQUIRE_FALSE( e.getOut() );
+        e.setIn(2, false);
+        REQUIRE_FALSE( e.getOut() );
+
+        // default true
+        TRS e1("2", true);
+        REQUIRE( e1.getOut() );
+        e1.setIn(1, true);//set
+        e1.setIn(2, false);
+        REQUIRE( e1.getOut() );
+        e1.setIn(1, false);
+        REQUIRE( e1.getOut() );
+        e1.setIn(2, true); //reset
+        REQUIRE_FALSE( e1.getOut() );
+        e1.setIn(2, false);
+        REQUIRE_FALSE( e1.getOut() );
+
+        // set input is dominante
+        TRS e2("1", false );
+        REQUIRE_FALSE( e2.getOut() );
+        e2.setIn(1, true);//set
+        REQUIRE( e2.getOut() );
+        e2.setIn(2, true);//reset
+        REQUIRE( e2.getOut() );
+        e2.setIn(1, false);
+        REQUIRE_FALSE( e2.getOut() );
+        e2.setIn(2, false); //reset
+        REQUIRE_FALSE( e2.getOut() );
+
+        // reset inpiut is dominante
+        TRS e3("1", true, /*dominantReset=*/true);
+        REQUIRE( e3.getOut() );
+        e3.setIn(1, true);//set
+        REQUIRE( e3.getOut() );
+        e3.setIn(2, true);//reset
+        REQUIRE_FALSE( e3.getOut() );
+        e3.setIn(2, false);
+        REQUIRE( e3.getOut() );
+        e3.setIn(1, false);
+        REQUIRE( e3.getOut() );
+    }
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("Logic processor: schema", "[LogicProcessor][schema]")
@@ -194,7 +287,7 @@ TEST_CASE("Logic processor: schema", "[LogicProcessor][schema]")
 TEST_CASE("Logic processor: lp", "[LogicProcessor][logic]")
 {
     InitTest();
-    LPRunner p;
+    LPRunner p(lp_schema);
     auto lp = p.get();
 
     auto sch = lp->getSchema();
@@ -339,5 +432,262 @@ TEST_CASE("Logic processor: link with NOT", "[LogicProcessor][link][not]")
         eNOT->setIn(1, true);
         CHECK_FALSE( eNOT->getOut() );
     }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("Logic processor: SEL_R", "[LogicProcessor][link][sel_r]")
+{
+    SECTION( "FALSE" )
+    {
+        std::shared_ptr<Element> eSEL_R1 = make_shared<TSEL_R>("1",false, 5, 7);
+        std::shared_ptr<Element> eTA2D1 = make_shared<TA2D>("2", 5);
+        std::shared_ptr<Element> eTA2D2 = make_shared<TA2D>("3", 7);
+
+        //!Только добавляем выходы, но не значения!
+        eSEL_R1->addChildOut(eTA2D1, 1);
+        eSEL_R1->addChildOut(eTA2D2, 1);
+
+        CHECK_FALSE( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+
+        eSEL_R1->setIn(1, false);
+        CHECK( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+
+        eSEL_R1->setIn(1, true);
+        CHECK( eTA2D2->getOut() );
+        CHECK_FALSE( eTA2D1->getOut() );
+
+        eSEL_R1->setIn(1, false);
+        CHECK( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+    }
+
+    SECTION( "TRUE" )
+    {
+        std::shared_ptr<Element> eSEL_R1 = make_shared<TSEL_R>("1",true, 9, 2);
+        std::shared_ptr<Element> eTA2D1 = make_shared<TA2D>("2", 9);
+        std::shared_ptr<Element> eTA2D2 = make_shared<TA2D>("3", 2);
+
+        eSEL_R1->addChildOut(eTA2D1, 1);
+        eSEL_R1->addChildOut(eTA2D2, 1);
+
+        CHECK_FALSE( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+
+        eSEL_R1->setIn(1, true);
+        CHECK( eTA2D2->getOut() );
+        CHECK_FALSE( eTA2D1->getOut() );
+
+        eSEL_R1->setIn(1, false);
+        CHECK( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+
+        eSEL_R1->setIn(1, true);
+        CHECK( eTA2D2->getOut() );
+        CHECK_FALSE( eTA2D1->getOut() );
+    }
+
+    SECTION( "CHANGE INPUT VARIABLES" )
+    {
+        std::shared_ptr<Element> eSEL_R1 = make_shared<TSEL_R>("1",true, 7, 3);
+        std::shared_ptr<Element> eTA2D1 = make_shared<TA2D>("2", 4);
+        std::shared_ptr<Element> eTA2D2 = make_shared<TA2D>("3", 5);
+
+        eSEL_R1->addChildOut(eTA2D1, 1);
+        eSEL_R1->addChildOut(eTA2D2, 1);
+
+        CHECK_FALSE( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+
+        eSEL_R1->setIn(1, true);
+        CHECK_FALSE( eTA2D2->getOut() );
+        CHECK_FALSE( eTA2D1->getOut() );
+
+        eSEL_R1->setIn(1, false);
+        CHECK_FALSE( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+
+        eSEL_R1->setIn(2, 4);//true input
+        eSEL_R1->setIn(3, 5);//false input
+        CHECK_FALSE( eTA2D1->getOut() );
+        CHECK( eTA2D2->getOut() );
+        eSEL_R1->setIn(1, true);
+        CHECK( eTA2D1->getOut() );
+        CHECK_FALSE( eTA2D2->getOut() );
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("Logic processor: RS", "[LogicProcessor][link][rs]")
+{
+    SECTION( "FALSE" )
+    {
+        std::shared_ptr<Element> eNOT1 = make_shared<TNOT>("1", false);
+        std::shared_ptr<Element> eAND1 = make_shared<TAND>("2",1);
+        std::shared_ptr<Element> eRS1 = make_shared<TRS>("3",false);
+
+        eNOT1->addChildOut(eRS1, 1);//set
+        eAND1->addChildOut(eRS1, 2);//reset
+
+        eNOT1->setIn(1, true);
+        CHECK_FALSE( eRS1->getOut() );
+
+        eNOT1->setIn(1, false);
+        CHECK( eRS1->getOut() );
+
+        eNOT1->setIn(1, true);
+        CHECK( eRS1->getOut() );
+
+        eAND1->setIn(1, true);
+        CHECK_FALSE( eRS1->getOut() );
+
+        eAND1->setIn(1, false);
+        CHECK_FALSE( eRS1->getOut() );
+    }
+
+    SECTION( "TRUE" )
+    {
+        std::shared_ptr<Element> eNOT1 = make_shared<TNOT>("1", true);
+        std::shared_ptr<Element> eAND1 = make_shared<TAND>("2",1);
+        std::shared_ptr<Element> eRS1 = make_shared<TRS>("3",false);
+
+        eNOT1->addChildOut(eRS1, 1);//set
+        eAND1->addChildOut(eRS1, 2);//reset
+
+        eNOT1->setIn(1, false);
+        CHECK( eRS1->getOut() );
+
+        eNOT1->setIn(1, true);
+        CHECK( eRS1->getOut() );
+
+        eAND1->setIn(1, true);
+        CHECK_FALSE( eRS1->getOut() );
+
+        eAND1->setIn(1, false);
+        CHECK_FALSE( eRS1->getOut() );
+    }
+
+    SECTION( "DOMINANT RESET" )
+    {
+        std::shared_ptr<Element> eNOT1 = make_shared<TNOT>("1", true);
+        std::shared_ptr<Element> eAND1 = make_shared<TAND>("2",1);
+        std::shared_ptr<Element> eRS1 = make_shared<TRS>("3",false, /*dominantReset=*/true);
+
+        eNOT1->addChildOut(eRS1, 1);//set
+        eAND1->addChildOut(eRS1, 2);//reset
+
+        eAND1->setIn(1, true);
+        CHECK_FALSE( eRS1->getOut() );
+
+        eNOT1->setIn(1, false);
+        CHECK_FALSE( eRS1->getOut() );
+
+        eAND1->setIn(1, false);
+        CHECK( eRS1->getOut() );
+
+        eNOT1->setIn(1, true);
+        CHECK( eRS1->getOut() );      
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("Logic processor: schema2", "[LogicProcessor][schema][not_rs_sel_r]")
+{
+    InitTest();
+    LPRunner p(schema2);
+    auto lp = p.get();
+
+    auto sch = lp->getSchema();
+
+    CHECK( sch != nullptr );
+
+    CHECK_FALSE( sch->empty() );
+    REQUIRE( sch->size() == 3 );
+
+    auto e1 = sch->find("1");
+    REQUIRE( e1 != nullptr );
+    auto e2 = sch->find("2");
+    REQUIRE( e2 != nullptr );
+    auto e3 = sch->find("3");
+    REQUIRE( e3 != nullptr );
+
+    REQUIRE( sch->findOut("Out1_S") != nullptr );
+
+    CHECK_FALSE( e1->getOut() );
+    CHECK_FALSE( e2->getOut() );
+    CHECK( e3->getOut() == 3 );
+
+    //In1_S 500
+    //In2_S 501
+    //Out1_S 506
+    ui->setValue(500, 1);
+    ui->setValue(501, 0);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 3);
+
+    ui->setValue(500, 0);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 7);
+    ui->setValue(500, 1);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 7);
+
+    ui->setValue(501, 1);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 3);
+    ui->setValue(501, 0);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 3);
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("Logic processor: schema3", "[LogicProcessor][schema][not_rs_sel_r][params]")
+{
+    InitTest();
+    LPRunner p(schema3);
+    auto lp = p.get();
+
+    auto sch = lp->getSchema();
+
+    CHECK( sch != nullptr );
+
+    CHECK_FALSE( sch->empty() );
+    REQUIRE( sch->size() == 3 );
+
+    auto e1 = sch->find("1");
+    REQUIRE( e1 != nullptr );
+    auto e2 = sch->find("2");
+    REQUIRE( e2 != nullptr );
+    auto e3 = sch->find("3");
+    REQUIRE( e3 != nullptr );
+
+    REQUIRE( sch->findOut("Out1_S") != nullptr );
+
+    CHECK_FALSE( e1->getOut() );
+    CHECK_FALSE( e2->getOut() );
+    CHECK( e3->getOut() == 0 );
+
+    //In1_S 500 !set
+    //In2_S 501 reset
+    //In3_S 502 true input var
+    //In4_S 503 false input var
+    //Out1_S 506 out
+    ui->setValue(500, 1);//TRS set off
+    ui->setValue(501, 0);//TRS reset off
+    ui->setValue(502, 7);
+    ui->setValue(503, 2);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 2);
+
+    ui->setValue(500, 0);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 7);
+    ui->setValue(501, 1); // reset is dominant
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 2);
+
+    ui->setValue(501, 0);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 7);
+    ui->setValue(500, 0);
+    msleep(lp->getSleepTime() + 10);
+    CHECK(ui->getValue(506) == 7);
 }
 // -----------------------------------------------------------------------------
