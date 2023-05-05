@@ -315,6 +315,8 @@ namespace uniset
             size_t cacheMissed; // количество промахов
             bool ignoreCRC = { false }; /*!< отключение проверки crc */
 
+            Trigger trOnMode; /*!< триггер на включение режима mEnabled */
+
             CacheInfo* getDCache( UniSetUDP::UDPMessage* upack ) noexcept;
             CacheInfo* getACache( UniSetUDP::UDPMessage* pack ) noexcept;
     };
