@@ -656,6 +656,10 @@ namespace uniset
             {
                 unetcrit << myname << "(updateEvent): mode update error: " << ex.what() << std::endl;
             }
+
+            // сброс при включении режима mEnabled
+            if( trOnMode.hi( mode == Mode::mEnabled ) )
+                forceUpdate();
         }
 
         if( sidRespond != DefaultObjectId )
