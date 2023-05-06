@@ -39,6 +39,33 @@ static void InitTest()
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[UWebSocketGate]: parse command", "[uwebsocketgate]")
+{
+    {
+        string_view cmd = "ask:sensor1,sensor2";
+        auto pos = cmd.find_first_of(':');
+        REQUIRE_FALSE(pos == string_view::npos);
+        REQUIRE(cmd.substr(0, pos) == "ask");
+        REQUIRE(cmd.substr(pos + 1) == "sensor1,sensor2");
+    }
+
+    {
+        string_view cmd = "freeze:sensor1=1,sensor2=2";
+        auto pos = cmd.find_first_of(':');
+        REQUIRE_FALSE(pos == string_view::npos);
+        REQUIRE(cmd.substr(0, pos) == "freeze");
+        REQUIRE(cmd.substr(pos + 1) == "sensor1=1,sensor2=2");
+    }
+
+    {
+        string_view cmd = "unfreeze:sensor1,sensor2";
+        auto pos = cmd.find_first_of(':');
+        REQUIRE_FALSE(pos == string_view::npos);
+        REQUIRE(cmd.substr(0, pos) == "unfreeze");
+        REQUIRE(cmd.substr(pos + 1) == "sensor1,sensor2");
+    }
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("[UWebSocketGate]: set", "[uwebsocketgate]")
 {
     InitTest();
@@ -65,6 +92,57 @@ TEST_CASE("[UWebSocketGate]: set", "[uwebsocketgate]")
     REQUIRE( ui->getValue(1) == 11 );
     REQUIRE( ui->getValue(2) == 21 );
     REQUIRE( ui->getValue(3) == 31 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UWebSocketGate]: freeze/unfreeze", "[uwebsocketgate]")
+{
+    InitTest();
+
+    REQUIRE_NOTHROW( ui->setValue(1, 1) );
+    REQUIRE_NOTHROW( ui->setValue(2, 2) );
+    REQUIRE_NOTHROW( ui->setValue(3, 3) );
+
+    REQUIRE( ui->getValue(1) == 1 );
+    REQUIRE( ui->getValue(2) == 2 );
+    REQUIRE( ui->getValue(3) == 3 );
+
+    HTTPClientSession cs(addr, port);
+    HTTPRequest request(HTTPRequest::HTTP_GET, "/wsgate", HTTPRequest::HTTP_1_1);
+    HTTPResponse response;
+    WebSocket ws(cs, request, response);
+
+    std::string cmd("freeze:1=10,2=20,3=30");
+    ws.sendFrame(cmd.data(), (int)cmd.size());
+
+    msleep(50);
+
+    REQUIRE( ui->getValue(1) == 10 );
+    REQUIRE( ui->getValue(2) == 20 );
+    REQUIRE( ui->getValue(3) == 30 );
+
+    REQUIRE_NOTHROW( ui->setValue(1, 11) );
+    REQUIRE_NOTHROW( ui->setValue(2, 12) );
+    REQUIRE_NOTHROW( ui->setValue(3, 13) );
+
+    REQUIRE( ui->getValue(1) == 10 );
+    REQUIRE( ui->getValue(2) == 20 );
+    REQUIRE( ui->getValue(3) == 30 );
+
+    cmd = "unfreeze:1,2,3";
+    ws.sendFrame(cmd.data(), (int)cmd.size());
+
+    msleep(50);
+
+    REQUIRE( ui->getValue(1) == 11 );
+    REQUIRE( ui->getValue(2) == 12 );
+    REQUIRE( ui->getValue(3) == 13 );
+
+    REQUIRE_NOTHROW( ui->setValue(1, 1) );
+    REQUIRE_NOTHROW( ui->setValue(2, 2) );
+    REQUIRE_NOTHROW( ui->setValue(3, 3) );
+    REQUIRE( ui->getValue(1) == 1 );
+    REQUIRE( ui->getValue(2) == 2 );
+    REQUIRE( ui->getValue(3) == 3 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UWebSocketGate]: ask", "[uwebsocketgate]")

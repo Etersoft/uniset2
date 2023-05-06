@@ -210,6 +210,23 @@ void SMInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool 
     END_FUNC(SMInterface::setUndefinedState)
 }
 // --------------------------------------------------------------------------
+void SMInterface::freezeValue( uniset::ObjectId id, bool set,
+                               long value, uniset::ObjectId sup_id )
+{
+    if( ic )
+    {
+        BEG_FUNC1(SMInterface::freezeValue)
+        ic->freezeValue(id, set, value, sup_id);
+        return;
+        END_FUNC(SMInterface::freezeValue)
+    }
+
+    BEG_FUNC(SMInterface::freezeValue)
+    shm->freezeValue(id, set, value, sup_id);;
+    return;
+    END_FUNC(SMInterface::freezeValue)
+}
+// --------------------------------------------------------------------------
 bool SMInterface::exist()
 {
     if( ic )
