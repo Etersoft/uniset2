@@ -1110,6 +1110,19 @@ void UWebSocketGate::UWebSocket::set( uniset::ObjectId id, long value )
     qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::freeze( uniset::ObjectId id, long value )
+{
+    auto s = std::make_shared<sinfo>("freeze", id);
+    s->value = value;
+    qcmd.push(s);
+}
+// -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::unfreeze( uniset::ObjectId id )
+{
+    auto s = std::make_shared<sinfo>("unfreeze", id);
+    qcmd.push(s);
+}
+// -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::get( uniset::ObjectId id )
 {
     qcmd.push(std::make_shared<sinfo>("get", id));
@@ -1178,6 +1191,14 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             else if( s->cmd == "set" )
             {
                 ui->setValue(s->id, s->value);
+            }
+            else if( s->cmd == "freeze" )
+            {
+                ui->freezeValue(s->id, true, s->value, ui->ID());
+            }
+            else if( s->cmd == "unfreeze" )
+            {
+                ui->freezeValue(s->id, false, 0, ui->ID());
             }
             else if( s->cmd == "get" )
             {
@@ -1268,8 +1289,18 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
         return;
     }
 
-    string_view cmd = cmdtxt.substr(0, 3);
-    string_view params = cmdtxt.substr(4);
+    auto cpos = cmdtxt.find_first_of(':');
+    if( cpos == string_view::npos )
+    {
+        myinfoV(3) << "(websocket): " << req->clientAddress().toString()
+                   << " error: bad command format '" << cmdtxt << "'. Must be: 'cmd:params'" << endl;
+
+        sendError("Bad command format. Command must be 'cmd:params'");
+        return;
+    }
+
+    string_view cmd = cmdtxt.substr(0, cpos);
+    string_view params = cmdtxt.substr(cpos+1);
 
     myinfoV(3) << "(websocket)(command): " << req->clientAddress().toString()
                << "(" << cmd << "): " << params << endl;
@@ -1322,6 +1353,32 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 
         for( const auto& id : idlist.ref() )
             get(id);
+
+        // уведомление о новой команде
+        cmdsignal->send();
+    }
+    else if( cmd == "freeze" )
+    {
+        myinfoV(3) << "(websocket): " << req->clientAddress().toString()
+                   << "(freeze): " << params << endl;
+
+        auto idlist = uniset::getSInfoList_sv(params, uniset_conf());
+
+        for( const auto& i : idlist )
+            freeze(i.si.id, i.val);
+
+        // уведомление о новой команде
+        cmdsignal->send();
+    }
+    else if( cmd == "unfreeze" )
+    {
+        myinfoV(3) << "(websocket): " << req->clientAddress().toString()
+                   << "(unfreeze): " << params << endl;
+
+        auto idlist = uniset::split_by_id(params);
+
+        for( const auto& id: idlist.ref() )
+            unfreeze(id);
 
         // уведомление о новой команде
         cmdsignal->send();

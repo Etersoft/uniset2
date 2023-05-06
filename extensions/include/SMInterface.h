@@ -44,6 +44,8 @@ namespace uniset
             void askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd,
                             uniset::ObjectId backid = uniset::DefaultObjectId );
 
+            void freezeValue( uniset::ObjectId id, bool set, long value, uniset::ObjectId supplier );
+
             IOController_i::SensorInfoSeq* getSensorsMap();
             IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
