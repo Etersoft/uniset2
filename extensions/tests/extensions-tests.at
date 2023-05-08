@@ -6,6 +6,6 @@ AT_SETUP([Extensions tests with conf])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/tests tests_with_conf.sh],[0],[ignore],[ignore])
 AT_CLEANUP
 
-AT_SETUP([Extensions tests with sharedmemory])
+AT_SETUP([Extensions tests with SM])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/tests tests_with_sm.sh],[0],[ignore],[ignore])
 AT_CLEANUP
