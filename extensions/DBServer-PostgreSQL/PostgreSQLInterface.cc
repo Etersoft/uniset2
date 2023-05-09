@@ -15,7 +15,6 @@
  */
 // --------------------------------------------------------------------------
 #include <sstream>
-#include <cstdio>
 #include "UniSetTypes.h"
 #include "unisetstd.h"
 #include "PostgreSQLInterface.h"
