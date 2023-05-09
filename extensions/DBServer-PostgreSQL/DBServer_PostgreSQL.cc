@@ -14,17 +14,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // --------------------------------------------------------------------------
-#include <sys/time.h>
 #include <sstream>
-#include <iomanip>
 #include <cmath>
-
 #include "unisetstd.h"
 #include "ORepHelpers.h"
 #include "DBServer_PostgreSQL.h"
-#include "Configuration.h"
-#include "Debug.h"
-#include "UniXML.h"
 #include "DBLogSugar.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
