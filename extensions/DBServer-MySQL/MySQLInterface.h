@@ -39,10 +39,8 @@ namespace uniset
     {
         public:
 
-            MySQLInterface();
+            MySQLInterface( size_t maxbuf = 4 * 1024 );
             ~MySQLInterface();
-
-            //            DBResult listFields( const std::string& table, const std::string& wild );
 
             virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
                                    const std::string& dbname, unsigned int port = 0 ) override;
@@ -55,8 +53,6 @@ namespace uniset
 
             virtual const std::string lastQuery() override;
             virtual bool insert( const std::string& q ) override;
-
-            std::string addslashes(const std::string& str);
 
             /*!
                 проверка связи с БД.
@@ -81,6 +77,8 @@ namespace uniset
             MYSQL* mysql;
             std::string lastQ;
             bool connected;
+            char* qbuf = { nullptr };
+            size_t qbufLen = { 0 };
     };
     // ----------------------------------------------------------------------------------
 } // end of namespace uniset
