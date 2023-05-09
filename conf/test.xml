@@ -5497,6 +5497,8 @@
 			<item id="5011" name="DBServer1"/>
 			<item id="5012" name="PrintServer"/>
 			<item id="5013" name="TimeService"/>
+			<item id="5014" name="BackendOpenTSDB"/>
+			<item id="5015" name="BackendClickHouse"/>
 		</services>
 		<!-- ******************* Идентификаторы объектов ***************** -->
 		<objects name="UniObjects">
@@ -5583,10 +5585,8 @@
 			<item id="6087" name="MBSlave10"/>
 			<item id="6088" name="TestGroup"/>
 			<item id="6089" name="MQTTPublisher1"/>
-			<item id="6090" name="BackendOpenTSDB"/>
 			<item id="6091" name="UWebSocketGate1"/>
 			<item id="6092" name="UWebSocketGate2"/>
-			<item id="6093" name="BackendClickHouse"/>
 			<item id="6094" name="OPCUAServer1"/>
 			<item id="6095" name="OPCUAClient1"/>
 			<item id="6096" name="OPCUAServer2"/>

@@ -435,3 +435,15 @@ TEST_CASE("UniSetTypes: key", "[utypes][key]" )
     REQUIRE( uniset::key(2147483646, 2147483647) == uint64_t(18348137753129063869) );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: timespec_to_nanosec", "[utypes][timespec_to_nanosec]" )
+{
+    struct timespec tm;
+    tm.tv_sec = 0;
+    tm.tv_nsec = 10;
+    REQUIRE(uniset::timespec_to_nanosec(tm) == 10 );
+
+    tm.tv_sec = 10;
+    tm.tv_nsec = 0;
+    REQUIRE(uniset::timespec_to_nanosec(tm) == 10 * 1e9 );
+}
+// -----------------------------------------------------------------------------

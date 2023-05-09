@@ -188,6 +188,7 @@ namespace uniset
 
     uniset::Timespec_var to_uniset_timespec( const std::chrono::system_clock::duration& d );
     uniset::Timespec_var now_to_uniset_timespec(); /*!< получение текущего времени */
+    int64_t timespec_to_nanosec( const struct timespec& tm );
 
     /*! Разбивка строки по указанному символу */
     IDList explode( const std::string& str, char sep = ',' );
