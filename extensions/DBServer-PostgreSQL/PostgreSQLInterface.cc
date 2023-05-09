@@ -112,7 +112,7 @@ bool PostgreSQLInterface::close()
     return true;
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::copy( const std::string& tblname, const  std::initializer_list<std::string_view>& cols,
+bool PostgreSQLInterface::copy( const std::string& tblname, std::string_view cols,
                                 const PostgreSQLInterface::Data& data )
 {
     if( !db )
@@ -124,7 +124,7 @@ bool PostgreSQLInterface::copy( const std::string& tblname, const  std::initiali
     try
     {
         pqxx::work tx{ *(db.get()) };
-        auto t{pqxx::stream_to::table(tx, {tblname}, cols)};
+        auto t{pqxx::stream_to::raw_table(tx, {tblname}, cols)};
 
         for( const auto& d : data )
             t << d;

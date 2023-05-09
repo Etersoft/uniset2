@@ -271,7 +271,7 @@ void DBServer_PostgreSQL::addRecord( const PostgreSQLInterface::Record&& rec )
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_PostgreSQL::writeInsertBufferToDB( const std::string& tableName
-        , const std::initializer_list<std::string_view> colNames
+        , std::string_view colNames
         , const InsertBuffer& wbuf )
 {
     return db->copy(tableName, colNames, wbuf);
@@ -497,7 +497,7 @@ string DBServer_PostgreSQL::getMonitInfo( const string& params )
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,
-    const std::shared_ptr<uniset::SharedMemory>& shm, const std::string& prefix )
+        const std::shared_ptr<uniset::SharedMemory>& shm, const std::string& prefix )
 {
     auto conf = uniset_conf();
 
@@ -518,8 +518,10 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
 
     uinfo << "(DBServer_PostgreSQL): name = " << name << "(" << ID << ")" << endl;
     auto db = make_shared<DBServer_PostgreSQL>(ID, prefix);
+
     if( shm )
         shm->setDBServer(db);
+
     return db;
 }
 // -----------------------------------------------------------------------------

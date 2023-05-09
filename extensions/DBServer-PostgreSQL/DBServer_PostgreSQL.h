@@ -77,6 +77,8 @@ namespace uniset
 
             bool isConnectOk() const;
 
+            static constexpr std::string_view tblcols = { "date,time,time_usec,sensor_id,value,node" };
+
         protected:
             typedef std::unordered_map<int, std::string> DBTableMap;
 
@@ -112,13 +114,12 @@ namespace uniset
             void flushBuffer();
 
             // writeBuffer
-            const std::initializer_list<std::string_view> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
 
             typedef std::vector<PostgreSQLInterface::Record> InsertBuffer;
             void flushInsertBuffer();
             virtual void addRecord( const PostgreSQLInterface::Record&& rec );
             virtual bool writeInsertBufferToDB( const std::string& table
-                                                , const std::initializer_list<std::string_view> colname
+                                                , std::string_view colname
                                                 , const InsertBuffer& ibuf );
 
         private:
