@@ -2,6 +2,7 @@
 #include <sstream>
 #include "Exceptions.h"
 #include "PostgreSQLInterface.h"
+#include "DBServer_PostgreSQL.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
@@ -64,7 +65,6 @@ int main(int argc, char** argv)
 
         if( ver == 3 )
         {
-            std::initializer_list<std::string_view> cols{ "date", "time", "time_usec", "sensor_id", "value", "node" };
             PostgreSQLInterface::Data data;
 
             for( size_t i = 0; i < num; i++ )
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 
             start = std::chrono::system_clock::now();
 
-            if( !db.copy("main_history", cols, data) )
+            if( !db.copy("main_history", DBServer_PostgreSQL::tblcols, data) )
             {
                 cerr << "query error: " << db.error() << endl;
                 db.close();

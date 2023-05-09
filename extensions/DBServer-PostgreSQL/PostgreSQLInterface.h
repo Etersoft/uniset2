@@ -59,7 +59,7 @@ namespace uniset
             typedef std::vector<Record> Data;
 
             // fast insert: Use COPY..from SDTIN..
-            bool copy( const std::string& tblname, const std::initializer_list<std::string_view>& cols, const Data& data );
+            bool copy( const std::string& tblname, std::string_view cols, const Data& data );
 
             virtual const std::string error() override;
 
