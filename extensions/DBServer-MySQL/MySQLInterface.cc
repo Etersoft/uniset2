@@ -25,7 +25,7 @@ using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------------------
 
-MySQLInterface::MySQLInterface():
+MySQLInterface::MySQLInterface( size_t maxbuf ):
     lastQ(""),
     connected(false)
 {
@@ -33,6 +33,9 @@ MySQLInterface::MySQLInterface():
     mysql_init(mysql);
     //    mysql_options(mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
     mysql_options(mysql, MYSQL_OPT_COMPRESS, 0);
+
+    qbuf = new char[maxbuf];
+    qbufLen = maxbuf;
 }
 
 MySQLInterface::~MySQLInterface()
@@ -47,6 +50,7 @@ MySQLInterface::~MySQLInterface()
     }
 
     delete mysql;
+    delete qbuf;
 }
 
 // -----------------------------------------------------------------------------------------
@@ -75,7 +79,15 @@ bool MySQLInterface::insert( const string& q )
     if( !mysql )
         return false;
 
-    if( mysql_query(mysql, q.c_str()) )
+    if( q.size() >= qbufLen ) // +1 - '\0'
+    {
+        cerr << "(insert): buffer overflow. Query len=" << q.size() << " maxBufLen=" << qbufLen << endl;
+        return false;
+    }
+
+    size_t len = mysql_real_escape_string(mysql, qbuf, q.c_str(), q.size());
+
+    if( mysql_real_query(mysql, qbuf, len) != 0 )
         return false;
 
     return true;
@@ -86,11 +98,16 @@ DBResult MySQLInterface::query( const std::string& q )
     if( !mysql )
         return DBResult();
 
-    if( mysql_query(mysql, q.c_str()) )
+    if( q.size() >= qbufLen ) // +1 - '\0'
     {
-        cerr << error() << endl;
+        cerr << "(query): buffer overflow. Query len=" << q.size() << " maxBufLen=" << qbufLen << endl;
         return DBResult();
     }
+
+    size_t len = mysql_real_escape_string(mysql, qbuf, q.c_str(), q.size());
+
+    if( mysql_real_query(mysql, qbuf, len) != 0 )
+        return DBResult();
 
     lastQ = q;
     MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
@@ -106,7 +123,15 @@ bool MySQLInterface::query_ok( const string& q )
     if( !mysql )
         return false;
 
-    if( mysql_query(mysql, q.c_str()) )
+    if( q.size() >= qbufLen ) // +1 - '\0'
+    {
+        cerr << "(query_ok): buffer overflow. Query len=" << q.size() << " maxBufLen=" << qbufLen << endl;
+        return false;
+    }
+
+    size_t len = mysql_real_escape_string(mysql, qbuf, q.c_str(), q.size());
+
+    if( mysql_real_query(mysql, qbuf, len) != 0 )
         return false;
 
     lastQ = q;
@@ -160,22 +185,6 @@ bool MySQLInterface::ping() const
 bool MySQLInterface::isConnection() const
 {
     return ping(); //!mysql;
-}
-// -----------------------------------------------------------------------------------------
-string MySQLInterface::addslashes( const string& str )
-{
-    ostringstream tmp;
-
-    for( unsigned int i = 0; i < str.size(); i++ )
-    {
-        //        if( !strcmp(str[i],'\'') )
-        if( str[i] == '\'' )
-            tmp << "\\";
-
-        tmp << str[i];
-    }
-
-    return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
 DBResult MySQLInterface::makeResult( MYSQL_RES* myres, bool finalize )
