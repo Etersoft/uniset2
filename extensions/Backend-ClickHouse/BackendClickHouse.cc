@@ -179,8 +179,7 @@ void BackendClickHouse::init( xmlNode* cnode )
 //--------------------------------------------------------------------------------
 void BackendClickHouse::createColumns()
 {
-    colTimeStamp = std::make_shared<clickhouse::ColumnDateTime>();
-    colTimeUsec = std::make_shared<clickhouse::ColumnUInt64>();
+    colTimeStamp = std::make_shared<clickhouse::ColumnDateTime64>(9);
     colValue = std::make_shared<clickhouse::ColumnFloat64>();
     colName = std::make_shared<clickhouse::ColumnString>();
     colNodeName = std::make_shared<clickhouse::ColumnString>();
@@ -192,7 +191,6 @@ void BackendClickHouse::createColumns()
 void BackendClickHouse::clearData()
 {
     colTimeStamp->Clear();
-    colTimeUsec->Clear();
     colValue->Clear();
     colName->Clear();
     colNodeName->Clear();
@@ -251,9 +249,10 @@ std::shared_ptr<BackendClickHouse> BackendClickHouse::init_clickhouse( int argc,
     if( !name.empty() )
     {
         ID = conf->getServiceID(name);
+
         if( ID == uniset::DefaultObjectId )
         {
-            dcrit << "(BackendClickHouse): Not found ServiceID for '" << name
+            cerr << "(BackendClickHouse): Not found ServiceID for '" << name
                   << " in '" << conf->getServicesSection() << "' section" << endl;
             return nullptr;
         }
@@ -264,7 +263,7 @@ std::shared_ptr<BackendClickHouse> BackendClickHouse::init_clickhouse( int argc,
 
     if( !cnode )
     {
-        dcrit << "(BackendClickHouse): " << name << "(init): Not found <" + confname + ">" << endl;
+        cerr << "(BackendClickHouse): " << name << "(init): Not found <" + confname + ">" << endl;
         return nullptr;
     }
 
@@ -328,8 +327,7 @@ void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
 
     try
     {
-        colTimeStamp->Append(sm->sm_tv.tv_sec);
-        colTimeUsec->Append(sm->sm_tv.tv_nsec);
+        colTimeStamp->Append( uniset::timespec_to_nanosec(sm->sm_tv) );
         colValue->Append(sm->value);
         colName->Append(oinf->name);
 
@@ -460,7 +458,6 @@ bool BackendClickHouse::flushBuffer()
 
     clickhouse::Block blk(8, colTimeStamp->Size());
     blk.AppendColumn("timestamp", colTimeStamp);
-    blk.AppendColumn("time_usec", colTimeUsec);
     blk.AppendColumn("value", colValue);
     blk.AppendColumn("name", colName);
     blk.AppendColumn("nodename", colNodeName);

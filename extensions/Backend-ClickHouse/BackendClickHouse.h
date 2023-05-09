@@ -222,8 +222,7 @@ namespace uniset
             std::string lastError;
 
             // работа с ClickHouse
-            std::shared_ptr<clickhouse::ColumnDateTime> colTimeStamp;
-            std::shared_ptr<clickhouse::ColumnUInt64> colTimeUsec;
+            std::shared_ptr<clickhouse::ColumnDateTime64> colTimeStamp;
             std::shared_ptr<clickhouse::ColumnFloat64> colValue;
             std::shared_ptr<clickhouse::ColumnString> colName;
             std::shared_ptr<clickhouse::ColumnString> colNodeName;

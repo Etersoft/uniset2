@@ -2,8 +2,7 @@ CREATE DATABASE IF NOT EXISTS uniset;
 
 CREATE TABLE IF NOT EXISTS uniset.main_history
 (
-    timestamp DateTime('UTC') DEFAULT now(),
-    time_usec UInt64 Codec(DoubleDelta, LZ4),
+    timestamp DateTime64(9,'UTC') DEFAULT now(),
     value Float64 Codec(DoubleDelta, LZ4),
     uniset_hash_id UInt32 Default murmurHash2_32(name),
     name_hash_id UInt64 Default cityHash64(name),
@@ -18,6 +17,6 @@ CREATE TABLE IF NOT EXISTS uniset.main_history
     )
 ) ENGINE = MergeTree
 PARTITION BY toStartOfDay(timestamp)
-PRIMARY KEY(timestamp,time_usec,name_hash_id)
-ORDER BY (timestamp,time_usec,name_hash_id)
-TTL timestamp + INTERVAL 180 DAY;
+PRIMARY KEY(timestamp,name_hash_id)
+ORDER BY (timestamp,name_hash_id)
+TTL toStartOfDay(timestamp) + INTERVAL 180 DAY;

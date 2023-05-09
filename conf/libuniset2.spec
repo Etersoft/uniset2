@@ -69,7 +69,7 @@ BuildRequires: libpqxx-devel >= 7.6.0
 %endif
 
 %if_enabled clickhouse
-BuildRequires: libclickhouse-cpp-devel
+BuildRequires: libclickhouse-cpp-devel >= 2.4.0
 %endif
 
 %if_enabled rrd

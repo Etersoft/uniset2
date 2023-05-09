@@ -908,6 +908,11 @@ uniset::Timespec_var uniset::now_to_uniset_timespec()
     return to_uniset_timespec(d);
 }
 // -------------------------------------------------------------------------
+int64_t uniset::timespec_to_nanosec( const struct timespec& tm )
+{
+    return static_cast<int64_t>(tm.tv_sec) * 1000000000LL + static_cast<int64_t>(tm.tv_nsec);
+}
+// -------------------------------------------------------------------------
 uniset::Timespec_var uniset::to_uniset_timespec( const chrono::system_clock::duration& d )
 {
     uniset::Timespec_var ts = new uniset::Timespec();
