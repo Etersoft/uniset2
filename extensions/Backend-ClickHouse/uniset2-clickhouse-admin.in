@@ -105,6 +105,15 @@ if [ "$cmd" == "size" ]; then
 fi
 
 if [ "$cmd" == "create" ]; then
+  if [ -d "${src_datadir}/init.d" ]; then
+      flist=$(find "${src_datadir}/init.d" -type f -name '*.sql')
+      for f in ${flist}; do
+         echo "apply $f.."
+         clickhouse-client ${EXTRA} -m -n <"${f}" || exit 1
+      done
+  fi
+
+  # create main_history if not exists
   fname=$(mktemp)
   sed "s/uniset/$dbname/g;s/main_history/$tablename/g;" <"${src_datadir}/tables.sql" > ${fname} && clickhouse-client ${EXTRA} -m -n <${fname}
   RET=$?
