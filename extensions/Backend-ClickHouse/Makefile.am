@@ -34,11 +34,15 @@ clickhouse_test_SOURCES = test.cc
 
 bin_SCRIPTS = @PACKAGE@-clickhouse-admin
 
+initd_dir = $(datadir)/@PACKAGE@/clickhouse/init.d
 #xsldir = $(datadir)/@PACKAGE@/xslt
 #xsl_DATA = xslt/*.xsl
 
 all-local:
 	chmod 'a+x' @PACKAGE@-clickhouse-admin
+
+install-data-local:
+	$(MKDIR_P) "$(DESTDIR)$(initd_dir)"
 
 testdata:
 	$(CURDIR)/@PACKAGE@-clickhouse-helper --confile test.xml --generate-dict-objects $(CURDIR)/testsuite/data/dict-objects.csv
@@ -52,8 +56,10 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2BackendClickHouse.pc
 
-ddir =  $(datadir)/@PACKAGE@/clickhouse
+ddir = $(datadir)/@PACKAGE@/clickhouse
 d_DATA = testsuite/docker-entrypoint-initdb.d/*.sql testsuite/clickhouse_uniset_dictionary.xml
+
+
 
 include $(top_builddir)/include.mk
 

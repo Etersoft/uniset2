@@ -512,6 +512,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_bindir/%oname-clickhouse-helper
 %_libdir/libUniSet2BackendClickHouse.so.*
 %_datadir/%oname/clickhouse/
+%dir %_datadir/%oname/clickhouse/init.d
 
 %files extension-clickhouse-devel
 %_pkgconfigdir/libUniSet2BackendClickHouse.pc
