@@ -56,8 +56,10 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     UniXML::iterator it(cnode);
 
-    auto ip = conf->getArgParam("--" + argprefix + "host", "");
+    auto ip = conf->getArgParam("--" + argprefix + "host", "0.0.0.0");
     auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
+    auto browseName = it.getProp2("browseName", conf->oind->getMapName(conf->getLocalNode()));
+    auto description = it.getProp2("description", browseName);
 
     opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
     opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
@@ -79,7 +81,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
     opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
 
-    myinfo << myname << "(init): OPC UA server: "
+    myinfo << myname << "(init): OPC UA server:"
            << " maxSessions=" << opcConfig->maxSessions
            << " maxSubscriptions=" << opcConfig->maxSubscriptions
            << endl;
@@ -98,43 +100,14 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
 
     auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
+    auto unode = uroot.addFolder(opcua::NodeId(0, browseName), browseName);
     uroot.writeDescription({"en", "uniset i/o"});
+    unode.writeDescription({"ru-RU", description});
+    unode.writeDisplayName({"en", browseName});
 
-    auto localNode = conf->getLocalNode();
-    auto nodes = conf->getXMLNodesSection();
-    UniXML::iterator nIt = nodes;
-
-    if( nIt.goChildren() )
-    {
-        for( ; nIt; nIt++ )
-        {
-            auto nodeID = DefaultObjectId;
-
-            if( nIt.getProp("id").empty() )
-                nodeID = conf->getNodeID(nIt.getProp("name"));
-            else
-                nodeID = nIt.getPIntProp("id", DefaultObjectId);
-
-            if( nodeID == localNode )
-            {
-                const auto uname = nIt.getProp("name");
-                auto unode = uroot.addFolder(opcua::NodeId(0, uname), uname);
-                unode.writeDescription({"ru-RU", nIt.getProp("textname")});
-                unode.writeDisplayName({"en", uname});
-
-                ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId(0, "io"), "I/O"));
-                ioNode->node.writeDescription({"en-US", "I/O"});
-
-                auto opcAddr = init3_str(ip, nIt.getProp2("opcua_ip", nIt.getProp("ip")), "127.0.0.1");
-                opcServer->setCustomHostname(opcAddr);
-                myinfo << myname << "(init): OPC UA address " << opcAddr << ":" << port << endl;
-                break;
-            }
-        }
-    }
-
-    if( ioNode == nullptr )
-        throw SystemError("not found localNode=" + std::to_string(localNode) + " in <nodes>");
+    ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId(0, "io"), "I/O"));
+    ioNode->node.writeDescription({"en-US", "I/O"});
+    opcServer->setCustomHostname(ip);
 
     serverThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::serverLoop);
     serverThread->setFinalAction(this, &OPCUAServer::serverLoopTerminate);

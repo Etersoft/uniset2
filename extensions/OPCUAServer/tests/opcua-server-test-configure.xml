@@ -27,7 +27,7 @@
 	
 	<settings>
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
-	    <OPCUAServer name="OPCUAServer" port="44999"/>
+	    <OPCUAServer name="OPCUAServer" port="44999" host="127.0.0.1"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
