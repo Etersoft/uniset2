@@ -53,7 +53,7 @@ namespace uniset
     в которой указываются настроечные параметры по умолчанию.
     Пример:
     \code
-     <OPCUAServer name="OPCUAServer" port="4840"
+     <OPCUAServer name="OPCUAServer" port="4840" host="0.0.0.0"
          appName="uniset2 OPC UA Server"
          maxSubscriptions="10"
          maxSessions="10"
@@ -63,22 +63,17 @@ namespace uniset
     К основным параметрам относятся
      - \b updatePause - мсек, период с которым обновляются значения датчиков
      - \b port - port на котором слушает OPC UA сервер
+     - \b host - адрес на котором запускается сервер. По умолчанию 0.0.0.0
+
+    К дополнительным:
+     - \b browseName - имя видимое в списке доступных. По умолчанию name узла
+     - \b description - описание узла. По умолчанию будет взято browseName
+     - \b appName - По умолчанию 'Uniset2 OPC UA Server'
+     - \b appUri - По умолчанию 'urn:uniset2.server'
+     - \b productUri - По умолчанию 'https://github.com/Etersoft/uniset2/'
 
     Остальные параметры определяют детали функционирования OPC UA сервера
      https://www.open62541.org/doc/master/server.html#limits
-
-    Часть параметров берётся из настроек текущего локального узла в секции <nodes>
-    \code
-     <LocalNode name="localhost"/>
-     ..
-     <nodes>
-        <item id="3000" ip="127.0.0.1" name="node2" textname="Локальный узел" opcua_ip="0.0.0.0" .../>
-        ...
-     </nodes>
-     \endcode
-    В частности параметр \b opcua_ip - позволяет задать адрес на котором будет слушать OPC UA сервер.
-    <br>По умолчанию адрес берётся из параметра \b ip.
-    <br>В качестве \a browseName берётся \b name в качестве \a description - \b textname
 
     См. так же help \a uniset2-opcua-server -h
 
