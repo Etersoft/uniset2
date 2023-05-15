@@ -141,7 +141,7 @@ void LProcessor::build( const string& lfile )
         ei.el = it->to;
         ei.numInput = it->numInput;
 
-        extInputs.emplace_front( std::move(ei) );
+        extInputs.emplace_back( std::move(ei) );
     }
 
     for( auto it = sch->outBegin(); it != sch->outEnd(); ++it )
@@ -161,7 +161,7 @@ void LProcessor::build( const string& lfile )
         ei.sid = sid;
         ei.el = it->from;
 
-        extOuts.emplace_front(std::move(ei));
+        extOuts.emplace_back(std::move(ei));
     }
 }
 // -------------------------------------------------------------------------

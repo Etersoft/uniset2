@@ -34,7 +34,7 @@ namespace uniset
             // создаём заданное количество входов
             for( size_t i = 1; i <= num; i++ )
             {
-                ins.emplace_front(i, st); // addInput(i,st);
+                ins.emplace_back(i, st); // addInput(i,st);
 
                 if( st == true )
                     myout = true;

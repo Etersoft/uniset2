@@ -64,7 +64,7 @@ namespace uniset
         e1->addChildOut(e2, numIn);
 
         // сохраняем в список соединений
-        inLinks.emplace_front(e1, e2, numIn);
+        inLinks.emplace_back(e1, e2, numIn);
     }
     // -------------------------------------------------------------------------
     void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
@@ -125,7 +125,7 @@ namespace uniset
         //    уже должен быть
 
         // заносим в список
-        extLinks.emplace_front(name, el, numIn);
+        extLinks.emplace_back(name, el, numIn);
     }
     // -------------------------------------------------------------------------
     std::shared_ptr<Element> Schema::manage( std::shared_ptr<Element> el )
