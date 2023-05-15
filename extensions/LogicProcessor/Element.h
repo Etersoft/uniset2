@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 #include <memory>
 #include <string>
-#include <list>
+#include <vector>
 #include <ostream>
 #include "Exceptions.h"
 //--------------------------------------------------------------------------
@@ -96,7 +96,7 @@ namespace uniset
                 size_t num;
             };
 
-            typedef std::list<ChildInfo> OutputList;
+            typedef std::vector<ChildInfo> OutputList;
             OutputList outs;
             virtual void setChildOut();
 
@@ -109,7 +109,7 @@ namespace uniset
                 InputType type;
             };
 
-            typedef std::list<InputInfo> InputList;
+            typedef std::vector<InputInfo> InputList;
             InputList ins;
 
             ElementID myid;

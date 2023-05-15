@@ -106,7 +106,7 @@
     Логика исполняется в порядке следования в файле, сверху вниз (в порядке считывания из файла).
 */
 // --------------------------------------------------------------------------
-#include <list>
+#include <vector>
 #include <atomic>
 #include "UniSetTypes.h"
 #include "UInterface.h"
@@ -158,8 +158,8 @@ namespace uniset
                 std::shared_ptr<Element> el = { nullptr };
             };
 
-            typedef std::list<EXTInfo> EXTList;
-            typedef std::list<EXTOutInfo> OUTList;
+            typedef std::vector<EXTInfo> EXTList;
+            typedef std::vector<EXTOutInfo> OUTList;
 
             EXTList extInputs;
             OUTList extOuts;

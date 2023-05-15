@@ -29,7 +29,6 @@ namespace uniset
         myout(false),
         fvalue(filterValue)
     {
-        ins.emplace_front(1, myout);
     }
 
     TA2D::~TA2D()

@@ -163,7 +163,7 @@ namespace uniset
 
                 dinfo << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
 
-                outList.emplace_front(tID, el);
+                outList.emplace_back(tID, el);
             }
         }
     }
