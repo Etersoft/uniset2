@@ -212,6 +212,13 @@ namespace uniset
 		inf->value = inf->default_val;
 		inf->undefined = false;
 		inf->real_value = inf->value;
+        inf->readonly =  it.getIntProp("readonly");
+        if( !it.getProp("frozen_value").empty() )
+        {
+            inf->frozen_value = it.getIntProp("frozen_value");
+            inf->frozen = true;
+            inf->value =  inf->frozen_value;
+        }
 
 		if( !it.getProp("undefined_value").empty() )
 			inf->undef_value = it.getIntProp("undefined_value");

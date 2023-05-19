@@ -205,6 +205,15 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	bool changed = false;
 	{
 		auto usi = li->second;
+
+        if( usi->readonly )
+        {
+            ostringstream err;
+            err << myname << "(localSetUndefined): Readonly sensor (" << sid << ")"
+                << "name: " << uniset_conf()->oind->getNameById(sid);
+            throw IOController_i::IOBadParam(err.str().c_str());
+        }
+
 		// lock
 		uniset_rwmutex_wrlock lock(usi->val_lock);
 		changed = (usi->undefined != undefined);
@@ -306,6 +315,14 @@ void IOController::localFreezeValue( std::shared_ptr<USensorInfo>& usi,
 									 CORBA::Long value,
 									 uniset::ObjectId sup_id )
 {
+    if( usi->readonly )
+    {
+        ostringstream err;
+        err << myname << "(localFreezeValue): Readonly sensor (" << usi->si.id << ")"
+            << "name: " << uniset_conf()->oind->getNameById(usi->si.id);
+        throw IOController_i::IOBadParam(err.str().c_str());
+    }
+
 	ulog4 << myname << "(localFreezeValue): (" << usi->si.id << ")"
 		  << uniset_conf()->oind->getNameById(usi->si.id)
 		  << " value=" << value
@@ -359,6 +376,14 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 								  CORBA::Long value, uniset::ObjectId sup_id )
 {
 	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
+
+    if( usi->readonly )
+    {
+        ostringstream err;
+        err << myname << "(localSetValue): Readonly sensor (" << usi->si.id << ")"
+            << "name: " << uniset_conf()->oind->getNameById(usi->si.id);
+        throw IOController_i::IOBadParam(err.str().c_str());
+    }
 
 	bool changed = false;
 	bool blockChanged = false;
@@ -1098,6 +1123,7 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 	jsens->set("undefined", s->undefined);
 	jsens->set("frozen", s->frozen);
 	jsens->set("blocked", s->blocked);
+    jsens->set("readonly", s->readonly);
 	if( s->depend_sid != DefaultObjectId )
 	{
 		jsens->set("depend_sensor", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->depend_sid)));

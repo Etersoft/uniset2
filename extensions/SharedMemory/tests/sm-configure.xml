@@ -58,6 +58,8 @@
 			<item id="516" iotype="AI" name="MonotonicAI_S" priority="Medium" textname="monitonic AI"/>
 
 			<item id="517" iotype="AI" name="FreezeAI_S" priority="Medium" textname="Freeze AI sesnor"/>
+			<item id="518" iotype="AI" name="DefaultFreezeAI_S" frozen_value="10" priority="Medium" textname="Freeze AI sesnor(default)"/>
+			<item id="519" iotype="AI" name="ReadOnly_S" default="100" readonly="1" priority="Medium" textname="Freeze AI sesnor"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor name="AI1_AS">

@@ -62,15 +62,15 @@ interface IOController_i : UniSetManager_i
 
     long getValue(in uniset::ObjectId sid) raises(NameNotFound,Undefined);
     void setValue(in uniset::ObjectId sid, in long value,
-                    in uniset::ObjectId sup_id) raises(NameNotFound,Undefined);
+                    in uniset::ObjectId sup_id) raises(NameNotFound,Undefined,IOBadParam);
 
     // установка неопределённого состояния
     // (пока работает только для аналоговых датчиков)
     void setUndefinedState(in uniset::ObjectId sid, in boolean undefined, in uniset::ObjectId sup_id )
-                            raises(NameNotFound);
+                            raises(NameNotFound,IOBadParam);
 
     // "заморозка"/"разморозка" значения. set=true - выставить value и не менять, пока не будет вызван set=false
-    void freezeValue(in uniset::ObjectId sid, in boolean set, in long value, in uniset::ObjectId sup_id ) raises(NameNotFound);
+    void freezeValue(in uniset::ObjectId sid, in boolean set, in long value, in uniset::ObjectId sup_id ) raises(NameNotFound,IOBadParam);
 
     UniversalIO::IOType getIOType(in uniset::ObjectId sid) raises(NameNotFound);
 

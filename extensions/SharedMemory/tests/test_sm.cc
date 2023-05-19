@@ -351,4 +351,26 @@ TEST_CASE("[SM]: freezeValue", "[sm][freezeValue]")
     REQUIRE( ui->getValue(517) == 150 );
     msleep(300);
     REQUIRE( obj->in_freeze_s == 150 );
+
+    // default freezvalue
+    REQUIRE( ui->getValue(518) == 10 );
+    REQUIRE_NOTHROW( ui->setValue(518, 160) );
+    REQUIRE( ui->getValue(518) == 10 );
+    si.id = 518;
+    si.node = uniset_conf()->getLocalNode();
+    REQUIRE_NOTHROW( ui->freezeValue(si, false, 5) );
+    REQUIRE( ui->getValue(518) == 160 );
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: readonly", "[sm][readonly]")
+{
+    InitTest();
+
+    REQUIRE_THROWS_AS(ui->setValue(519, 11), uniset::IOBadParam);
+    REQUIRE(ui->getValue(519) == 100);
+    msleep(300);
+    REQUIRE(ui->getValue(519) == 100);
+    REQUIRE_THROWS_AS(ui->setValue(519, 11), uniset::IOBadParam);
+    REQUIRE(ui->getValue(519) == 100);
+}
+// -----------------------------------------------------------------------------
