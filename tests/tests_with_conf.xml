@@ -35,6 +35,7 @@
 
 	<testnode name="testnode" id2="-100"/>
 	<test_check_filter name="test_check_filter" one_prop="1" empty_prop="" fprop="fvalue"/>
+	<test_check_filter_re name="test_check_filter_re" fprop1="1" fprop2="2" fprop3="3"/>
 	<Services>
 		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
 		<LocalInfoServer name="InfoServer" dbrepeat="1">

@@ -274,6 +274,23 @@ TEST_CASE("UniSetTypes: check_filter", "[utypes][check_filter]" )
     CHECK_FALSE( check_filter(it, "fprop", "badvalue") );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: check_filter_re", "[utypes][check_filter_re]" )
+{
+    // <test_check_filter_re name="test_check_filter_re" fprop="1|2"/>
+    auto xml = uniset_conf()->getConfXML();
+
+    xmlNode* xnode = xml->findNode(xml->getFirstNode(), "test_check_filter_re");
+    REQUIRE(xnode);
+
+    UniXML::iterator it(xnode);
+
+    auto re = std::regex("1|2");
+
+    REQUIRE( check_filter_re(it,"fprop1",re) );
+    REQUIRE( check_filter_re(it,"fprop2",re) );
+    REQUIRE_FALSE( check_filter_re(it,"fprop3",re) );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: findArgParam", "[utypes][findArgParam]" )
 {
     // int findArgParam( const std::string& name, int _argc, const char* const* _argv )

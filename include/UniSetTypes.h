@@ -32,6 +32,7 @@
 #include <ostream>
 #include <chrono>
 #include <thread>
+#include <regex>
 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes_i.hh"
@@ -338,6 +339,7 @@ namespace uniset
     // Проверка xml-узла на соответствие <...f_prop="f_val">,
     // если не задано f_val, то проверяется, что просто f_prop!=""
     bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
+    bool check_filter_re( UniXML::iterator& it, const std::string& f_prop, const std::regex& re ) noexcept;
 
     // RAII для флагов форматирования ostream..
     class ios_fmt_restorer
