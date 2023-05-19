@@ -356,6 +356,8 @@ namespace uniset
                 long undef_value = { not_specified_value }; // значение для "неопределённого состояния датчика"
                 long frozen_value = { 0 };
 
+                bool readonly = { false }; // readonly датчик
+
                 // функция обработки информации об изменении состояния датчика, от которого зависит данный
                 void checkDepend( std::shared_ptr<USensorInfo>& d_usi, IOController* );
 
