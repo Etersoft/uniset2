@@ -21,6 +21,8 @@
 #include <memory>
 #include <deque>
 #include <string>
+#include <regex>
+#include <optional>
 #include "UniXML.h"
 #include "ThreadCreator.h"
 #include "PassiveTimer.h"
@@ -310,6 +312,7 @@ namespace uniset
 
             std::string s_field;
             std::string s_fvalue;
+            std::optional<std::regex> s_fvalue_re;
 
             std::shared_ptr<SMInterface> shm;
             std::string prefix;

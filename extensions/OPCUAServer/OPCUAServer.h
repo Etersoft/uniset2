@@ -19,6 +19,8 @@
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <atomic>
+#include <regex>
+#include <optional>
 #include <unordered_map>
 #include "open62541pp/open62541pp.h"
 #include "UObject_SK.h"
@@ -80,11 +82,16 @@ namespace uniset
     \section sec_OPCUAServer_Sensors_Conf Конфигурирование списка доступных переменных (variables) для OPC UA
     Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
     Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
-     - \b --xxx-filter-field  - задаёт фильтрующее поле для датчиков
-     - \b --xxx-filter-value  - задаёт значение фильтрующего поля. Необязательный параметр.
+     - \b --xxx-filter-field     - задаёт фильтрующее поле для датчиков
+     - \b --xxx-filter-value     - задаёт значение фильтрующего поля. Необязательный параметр.
+     - \b --xxx-filter-value-re  - задаёт значение фильтрующего поля, в виде регулярного выражения. Необязательный параметр.
 
     Пример конфигурационных параметров для запуска с параметрами
     `--opcua-s-filter-field opcua --opcua-s-filter-value 1`
+
+    Пример с регулярным выражением
+     `--opcua-s-filter-field opcua --opcua-s-filter-value-re "1|2"`
+
     \code
     <sensors name="Sensors">
      ...
@@ -206,6 +213,7 @@ namespace uniset
             std::string prefix;
             std::string s_field;
             std::string s_fvalue;
+            std::optional<std::regex> s_fvalue_re;
             uniset::timeout_t updateTime_msec = { 100 };
             std::atomic_bool firstUpdate = false;
     };

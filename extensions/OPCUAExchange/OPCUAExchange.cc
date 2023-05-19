@@ -183,6 +183,22 @@ namespace uniset
         // определяем фильтр
         s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
         s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
+        auto regexp_fvalue = conf->getArg2Param("--" + prefix + "filter-value-re", it.getProp("filterValueRE"));
+
+        if( !regexp_fvalue.empty() )
+        {
+            try
+            {
+                s_fvalue = regexp_fvalue;
+                s_fvalue_re = std::regex(regexp_fvalue);
+            }
+            catch (const std::regex_error& e)
+            {
+                ostringstream err;
+                err << myname << "(init): 'filter-value-re' regular expression error: " << e.what();
+                throw uniset::SystemError(err.str());
+            }
+        }
 
         vmonit(s_field);
         vmonit(s_fvalue);
@@ -763,7 +779,12 @@ namespace uniset
 
         for( ; it.getCurrent(); it.goNext() )
         {
-            if( uniset::check_filter(it, s_field, s_fvalue) )
+            if( s_fvalue_re.has_value() )
+            {
+                if( uniset::check_filter_re(it, s_field, *s_fvalue_re) )
+                    initIOItem(it);
+            }
+            else if( uniset::check_filter(it, s_field, s_fvalue) )
                 initIOItem(it);
         }
 
@@ -772,7 +793,12 @@ namespace uniset
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
     {
-        if( uniset::check_filter(it, s_field, s_fvalue) )
+        if( s_fvalue_re.has_value() )
+        {
+            if( uniset::check_filter_re(it, s_field, *s_fvalue_re) )
+                initIOItem(it);
+        }
+        else if( uniset::check_filter(it, s_field, s_fvalue) )
             initIOItem(it);
 
         return true;

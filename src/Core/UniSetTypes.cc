@@ -663,6 +663,14 @@ std::ostream& uniset::operator<<( std::ostream& os, const UniversalIO::IOType t 
     return os << iotype2str(t);
 }
 // ------------------------------------------------------------------------------------------
+bool uniset::check_filter_re( UniXML::iterator& it, const std::string& f_prop, const std::regex& re ) noexcept
+{
+    if( f_prop.empty() )
+        return true;
+
+    return std::regex_search(it.getProp(f_prop), re);
+}
+// ------------------------------------------------------------------------------------------
 bool uniset::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val ) noexcept
 {
     if( f_prop.empty() )

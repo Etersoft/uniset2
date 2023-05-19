@@ -14,14 +14,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
-#include <string.h>
-#include <errno.h>
 #include <Poco/Net/NetException.h>
 #include <iostream>
 #include <sstream>
 #include <regex>
 #include "PassiveTimer.h"
-#include "Exceptions.h"
 #include "LogReader.h"
 #include "UniSetTypes.h"
 // -------------------------------------------------------------------------
