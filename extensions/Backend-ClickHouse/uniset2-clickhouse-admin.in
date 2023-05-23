@@ -139,6 +139,7 @@ if [ "$cmd" = "desc" ]; then
 fi
 
 confile="$1"
+[ -z "$confile" ] && [ -a "./configure.xml" ] && confile="./configure.xml"
 [ -n "$confile" ] || print_usage
 
 if [ "$cmd" = "dict-gen" ]; then
