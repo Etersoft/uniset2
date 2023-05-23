@@ -113,8 +113,8 @@ namespace uniset
      SELECT
         timestamp,
         value,
-        dictGetString('dict_sensors', 'name', name_hash_id),
-        dictGetString('dict_nodes', 'ip', node_hash_id)
+        dictGetString('dict_sensors', 'name', name_hid),
+        dictGetString('dict_nodes', 'ip', node_hid)
      FROM main_history
      WHERE timestamp > now() - toIntervalHour(1)
      \endcode
@@ -123,10 +123,10 @@ namespace uniset
      SELECT
          timestamp,
          value,
-         dictGetString('dict_sensors', 'name', name_hash_id),
-         dictGetString('dict_nodes', 'ip', node_hash_id)
+         dictGetString('dict_sensors', 'name', name_hid),
+         dictGetString('dict_nodes', 'ip', node_hid)
      FROM main_history
-     WHERE timestamp > now() - toIntervalHour(30) and name_hash_id = cityHash64('Sensor1_AS')
+     WHERE timestamp > now() - toIntervalHour(30) and name_hid = cityHash64('Sensor1_AS')
      \endcode
 
      Пример запрос с использованием тегов
