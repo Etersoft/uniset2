@@ -227,7 +227,7 @@
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
 
 		<MQTTPublisher1 name="MQTTPublisher" />
-		<OPCUAServer name="OPCUAServer1" port="4840" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
+		<OPCUAServer name="OPCUAServer1" port="4840" namePrefix="uniset." appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 		<OPCUAServer2 name="OPCUAServer2" port="4841" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 
 		<OPCUAClient name="OPCUAClient1" addr2="opc.tcp://localhost:4841" exchangeModeID="OPCUA_Mode_AS" respond1_s="OPCUA_Respond1_S" respond_s="OPCUA_Respond_S"/>

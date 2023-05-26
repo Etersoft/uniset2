@@ -66,6 +66,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
     opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
+    namePrefix = it.getProp2("namePrefix", "");
     updateTime_msec = conf->getArgPInt("--" + argprefix + "updatetime", it.getProp("updateTime"), (int)updateTime_msec);
     vmonit(updateTime_msec);
     myinfo << myname << "(init): OPC UA server " << ip << ":" << port << " updatePause=" << updateTime_msec << endl;
@@ -284,7 +285,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         offset = firstBit(mask);
     }
 
-    sname = it.getProp2("opcua_name", sname);
+    sname = namePrefix + it.getProp2("opcua_name", sname);
 
     auto vnode = ioNode->node.addVariable(opcua::NodeId(0, sname), sname);
     vnode.writeDataType(opctype);
