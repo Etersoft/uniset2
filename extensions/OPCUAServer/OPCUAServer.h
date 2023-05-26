@@ -75,6 +75,11 @@ namespace uniset
      - \b appUri - По умолчанию 'urn:uniset2.server'
      - \b productUri - По умолчанию 'https://github.com/Etersoft/uniset2/'
      - \b namePrefix - Префикс добавляемый к названиям переменных.
+     - \b maxSessions - Максимальное количество подключений
+     - \b maxSecureChannels - максимальное количество https-подключений
+     - \b maxSessionTimeout - мсек, Таймаут для сессий. По умолчанию 5 сек.
+     - \b maxSecurityTokenLifetime - мсек, таймаут для токена
+     - \b maxSubscriptions
 
     Остальные параметры определяют детали функционирования OPC UA сервера
      https://www.open62541.org/doc/master/server.html#limits

@@ -82,10 +82,16 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     auto opcConfig = UA_Server_getConfig(opcServer->handle());
     opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
     opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
+    opcConfig->maxSecureChannels = conf->getArgPInt("--" + argprefix + "maxSecureChannels", it.getProp("maxSecureChannels"), (int)opcConfig->maxSessions);
+    opcConfig->maxSessionTimeout = conf->getArgPInt("--" + argprefix + "maxSessionTimeout", it.getProp("maxSessionTimeout"), 5000);
+    opcConfig->maxSecurityTokenLifetime = conf->getArgPInt("--" + argprefix + "maxSecurityTokenLifetime", it.getProp("maxSecurityTokenLifetime"), (int)opcConfig->maxSecurityTokenLifetime);
 
     myinfo << myname << "(init): OPC UA server:"
            << " maxSessions=" << opcConfig->maxSessions
            << " maxSubscriptions=" << opcConfig->maxSubscriptions
+           << " maxSecureChannels=" << opcConfig->maxSecureChannels
+           << " maxSessionTimeout=" << opcConfig->maxSessionTimeout
+           << " maxSecurityTokenLifetime=" << opcConfig->maxSecurityTokenLifetime
            << endl;
 
     UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
