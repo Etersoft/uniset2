@@ -60,6 +60,7 @@ namespace uniset
          maxSubscriptions="10"
          maxSessions="10"
          updatePause="200"
+         namePrefix="uniset."
     />
     \endcode
     К основным параметрам относятся
@@ -73,6 +74,7 @@ namespace uniset
      - \b appName - По умолчанию 'Uniset2 OPC UA Server'
      - \b appUri - По умолчанию 'urn:uniset2.server'
      - \b productUri - По умолчанию 'https://github.com/Etersoft/uniset2/'
+     - \b namePrefix - Префикс добавляемый к названиям переменных.
 
     Остальные параметры определяют детали функционирования OPC UA сервера
      https://www.open62541.org/doc/master/server.html#limits
@@ -104,7 +106,7 @@ namespace uniset
      - \b opcua_rwmode - Режим доступа к датчику.
        - \b w - датчик будет доступен на запись через OPC UA.
        - \b none - не предоставлять доступ к датчику (не будет виден через OPC UA)
-     - \b opcua_name - Имя OPC UA переменной, если не задано, то используется name
+     - \b opcua_name - Имя OPC UA переменной, если не задано, то используется name (см. так же namePrefix)
      - \b opcua_displayname - Отображаемое имя. По умолчанию берётся name
      - \b opcua_displayname_lang - Язык для отображаемого имени. По умолчанию "en".
      - \b opcua_description - Описание. По умолчанию берётся textname
@@ -214,6 +216,7 @@ namespace uniset
             std::string s_field;
             std::string s_fvalue;
             std::optional<std::regex> s_fvalue_re;
+            std::string namePrefix;
             uniset::timeout_t updateTime_msec = { 100 };
             std::atomic_bool firstUpdate = false;
     };
