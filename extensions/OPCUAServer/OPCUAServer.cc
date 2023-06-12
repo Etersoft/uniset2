@@ -23,6 +23,7 @@ extern "C" {
 #include <cmath>
 #include <iomanip>
 #include <sstream>
+#include "open62541pp/ErrorHandling.h"
 #include "Exceptions.h"
 #include "OPCUAServer.h"
 #include "unisetstd.h"
@@ -109,14 +110,17 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
 
     auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
-    auto unode = uroot.addFolder(opcua::NodeId(0, browseName), browseName);
     uroot.writeDescription({"en", "uniset i/o"});
-    unode.writeDescription({"ru-RU", description});
-    unode.writeDisplayName({"en", browseName});
 
-    ioNode = unisetstd::make_unique<IONode>(unode.addFolder(opcua::NodeId(0, "io"), "I/O"));
-    ioNode->node.writeDescription({"en-US", "I/O"});
+    ioNode = unisetstd::make_unique<IONode>(uroot.addFolder(opcua::NodeId(0, browseName), browseName));
+    ioNode->node.writeDescription({"ru-RU", description});
+    ioNode->node.writeDisplayName({"en", browseName});
     opcServer->setCustomHostname(ip);
+
+    /* Инициализация каталога */
+    UniXML::iterator tit = conf->findNode(cnode, "folders");
+    if(tit)
+        initFolderMap(tit, "", ioNode);
 
     serverThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::serverLoop);
     serverThread->setFinalAction(this, &OPCUAServer::serverLoopTerminate);
@@ -168,6 +172,51 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 // -----------------------------------------------------------------------------
 OPCUAServer::~OPCUAServer()
 {
+}
+// -----------------------------------------------------------------------------
+void OPCUAServer::initFolderMap( uniset::UniXML::iterator it, const std::string& parent_name, std::unique_ptr<IONode>& parent )
+{
+    if( !it.goChildren() )
+    {
+        return;
+    }
+
+    for( ; it.getCurrent(); it++ )
+    {
+        std::string cname = it.getProp("name");
+
+        if( cname.empty() )
+        {
+            ostringstream err;
+            err << myname << ": not found 'name' for folder <" << it.getName() << ">" << endl;
+            throw uniset::SystemError(err.str());
+        }
+
+        std::string desc = it.getProp("description");
+
+        auto folder_name=cname;
+
+        if(!parent_name.empty())
+            folder_name=parent_name+"."+folder_name;
+
+        try
+        {
+            auto ioNode = unisetstd::make_unique<IONode>(parent->node.addFolder(opcua::NodeId(0, folder_name), cname));
+            ioNode->node.writeDescription({"en-US", desc});
+
+            UniXML::iterator tit = it;
+            initFolderMap( tit, folder_name, ioNode );
+
+            myinfo << myname << "(initFolderMap): add new folder=" << folder_name << "(" << desc << ")" << endl;
+            foldermap.emplace(folder_name, std::move(ioNode));
+        }
+        catch(const opcua::BadStatus& status)
+        {
+            ostringstream err;
+            err << myname << ": catch <" << status.what() << "> on " << folder_name << endl;
+            throw uniset::SystemError(err.str());
+        }
+    }
 }
 //------------------------------------------------------------------------------
 void OPCUAServer::readConfiguration()
@@ -297,7 +346,34 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
 
     sname = namePrefix + it.getProp2(propPrefix + "opcua_name", sname);
 
-    auto vnode = ioNode->node.addVariable(opcua::NodeId(0, sname), sname);
+    auto folder = it.getProp("opcua_folder");
+
+    uniset::OPCUAServer::IONode *node = nullptr;
+
+    if( !folder.empty() )
+    {
+        if( foldermap.find(folder) == foldermap.end() )
+        {
+            ostringstream err;
+            err << myname << "(initVariable): wrong opcua_folder for sensor "<< sname << endl;
+            throw SystemError(err.str());
+        }
+        node = foldermap[folder].get();
+    }
+    else
+    {
+        myinfo << myname << "(initVariable): opcua_folder not found.Using root folder for sensor " << sname << endl;
+        node = ioNode.get();
+    }
+
+    if(!node)
+    {
+        ostringstream err;
+        err << myname << "(initVariable): can't get node?!";
+        throw SystemError(err.str());
+    }
+
+    auto vnode = node->node.addVariable(opcua::NodeId(0, sname), sname);
     vnode.writeDataType(opctype);
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ);
 

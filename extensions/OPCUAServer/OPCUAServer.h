@@ -127,8 +127,27 @@ namespace uniset
 
     \section sec_OPCUAServer_Folders Структура OPC UA узла
     При запуске в дереве объектов создаётся специальный корневой объект "uniset", внутри которого регистрируются
-    остальные доступные для работы объекты. В частности каждый uniset-узел регистрирует свои датчики в разделе
-    \b "uniset/имя_узла/io/xxx". На рисунке представлен пример иерархии объектов
+    остальные доступные для работы объекты. В частности каждый uniset-узел регистрирует свои датчики в конкретном
+    разделе заданном в теге opcua_folder="folder1.subfolder1", например. Каталоги разделяются точкой и корневой
+    считается "имя_узла", от которого начинается путь каталога для каждого датчика.
+    \b "uniset/имя_узла/folder1/subfolder1/xxx". Структура каталогов задается в общей секции OPCUA сервера в подсекции
+    <folders>, например:
+
+        <OPCUAServer ...>
+            <folders>
+                <folder name="folder1" description="some sensors">
+                    <folder name="subfolder1" description="some sensors"/>
+                </folder>
+                <folder name="folder2" description="some sensors">
+                    <folder name="subfolder2" description="some sensors"/>
+                </folder>
+            </folders>
+        </OPCUAServer>
+
+    \b Если путь каталога в теге opcua_folder будет не соответсвовать каталогу в структуре(или просто ошибка в тексте), то будет
+    генерироваться исключение и запуск остановится с ошибкой.
+
+    \b На рисунке представлен пример иерархии объектов
 
      \image html uniset-opcua-folders.png
     */
@@ -225,6 +244,10 @@ namespace uniset
             std::string namePrefix;
             uniset::timeout_t updateTime_msec = { 100 };
             std::atomic_bool firstUpdate = false;
+
+            using folderMap  = std::unordered_map<std::string, std::unique_ptr<IONode>>;
+            folderMap foldermap; // список тегов
+            void initFolderMap( uniset::UniXML::iterator it, const std::string& parent_name, std::unique_ptr<IONode>& parent );
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset
