@@ -241,7 +241,8 @@ namespace uniset
                 emWriteOnly = 1,    /*!< "только посылка данных" (работают только write-функции) */
                 emReadOnly = 2,     /*!< "только чтение" (работают только read-функции) */
                 emSkipSaveToSM = 3, /*!< не писать данные в SM (при этом работают и read и write функции) */
-                emSkipExchange = 4  /*!< отключить обмен */
+                emSkipExchange = 4, /*!< отключить обмен */
+                emLastNumber
             };
 
         protected:

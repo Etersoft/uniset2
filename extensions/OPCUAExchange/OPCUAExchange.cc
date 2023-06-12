@@ -244,6 +244,11 @@ namespace uniset
                 opccrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
+
+            // Режим обмена по-умолчанию при старте процесса
+            auto default_emode = conf->getArgInt("--" + prefix + "-default-exchange-mode", it.getProp("defaultExchangeMode"));
+            if( default_emode > 0 && default_emode < emLastNumber )
+                exchangeMode = default_emode;
         }
 
         // -----------------------
@@ -1348,6 +1353,7 @@ namespace uniset
         cout << "--opcua-write-to-all-channels - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
 
         cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
+        cout << "--opcua-default-exchange-mode  - Режим обмена по-умолчанию при старте процесса" << endl;
         cout << endl;
         cout << " OPC UA: N=[1,2]" << endl;
         cout << "--opcua-addrN addr        - OPC UA server N address (channelN). Default: opc.tcp://localhost:4840/" << endl;
