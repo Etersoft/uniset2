@@ -227,7 +227,22 @@
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
 
 		<MQTTPublisher1 name="MQTTPublisher" />
-		<OPCUAServer name="OPCUAServer1" port="4840" namePrefix="uniset." appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
+		<OPCUAServer name="OPCUAServer1" port="4840" namePrefix="uniset." appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1">
+			<folders>
+				<folder name="DI" description="some sensors">
+					<folder name="OUT" description="some sensors"/>
+					<folder name="IN" description="some sensors"/>
+				</folder>
+				<folder name="AI" description="some sensors">
+					<folder name="OUT" description="some sensors"/>
+					<folder name="FOUT" description="some sensors"/>
+					<folder name="IN" description="some sensors"/>
+				</folder>
+				<folder name="AO" description="some sensors">
+					<folder name="OUT" description="some sensors"/>
+				</folder>
+			</folders>
+		</OPCUAServer>
 		<OPCUAServer2 name="OPCUAServer2" port="4841" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 
 		<OPCUAClient name="OPCUAClient1" addr2="opc.tcp://localhost:4841" exchangeModeID="OPCUA_Mode_AS" respond1_s="OPCUA_Respond1_S" respond_s="OPCUA_Respond_S"/>
@@ -284,18 +299,18 @@
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
 			<item dbignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
-			<item id="2" iotype="DI" opcua="1" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" opcua_name="Input2_S" opcua_nodeid="s=Inp2" priority="Medium" rs="4" textname="Команда 2"/>
-			<item id="3" iotype="DI" opcua="1" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
+			<item id="2" iotype="DI" opcua="1" opcua_folder="DI.IN" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" opcua_name="Input2_S" opcua_nodeid="s=Inp2" priority="Medium" rs="4" textname="Команда 2"/>
+			<item id="3" iotype="DI" opcua="1" opcua_folder="DI.IN" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2" depend="Input4_S"/>
-			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2" opcua="1" opcua_rwmode="w"/>
+			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2" opcua="1" opcua_folder="DI.OUT" opcua_rwmode="w" opcua_method="1"/>
 			<item id="11" iotype="AI" name="AI11_AS" priority="Medium" textname="AI 11" depend="Input4_S" depend_off_value="-50"/>
 			<item id="12" iotype="DI" name="Input12_S" priority="Medium" textname="Команда 12" iofront="01"/>
 			<item id="60" iotype="DI" name="Input60_S" priority="Medium" textname="Команда 61" iofront="10"/>
 			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
 			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" unet_sendfactor="2" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>
-			<item default="378" id="10" iotype="AI" opcua="1" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" opcua_name="AI_AS" precision="3" priority="Medium" rs="1" textname="Analog input" vtype="F2">
+			<item default="378" id="10" iotype="AI" opcua="1" opcua_folder="AI.IN" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" opcua_name="AI_AS" precision="3" priority="Medium" rs="1" textname="Analog input" vtype="F2">
 				<consumers>
 					<consumer cfilter="test1" name="TestProc" type="objects"/>
 					<consumer name="PLCProcessor" type="objects"/>
@@ -317,8 +332,8 @@
 			<item a2="1" id="24" iotype="DI" name="DumpSensor6_S" priority="Medium" textname="alarm dumpm sensor 6"/>
 			<item a2="1" id="25" iotype="DI" name="DumpSensor7_S" priority="Medium" textname="alarm dumpm sensor 7"/>
 			<item a2="1" id="26" iotype="DI" name="DumpSensor8_S" priority="Medium" textname="alarm dumpm sensor 8"/>
-			<item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input" opcua="1" opcua_rwmode="w"/>
-			<item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input" opcua="1" opcua_rwmode="w"/>
+			<item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input" opcua="1" opcua_folder="AI.OUT" opcua_rwmode="w"/>
+			<item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input" opcua="1" opcua_folder="AI.OUT" opcua_rwmode="w"/>
 			<item default="65536045" id="29" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
 			<item id="30" iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
 			<item id="31" iotype="AI" mb_vtype="I2" mbreg="43" name="imitator_performance1" precision="6" rs="mbslave" textname="Производительность танка 1"/>
@@ -402,10 +417,10 @@
 			<item id="217" iotype="DI" name="OPCUA_Respond1_S" textname="OPCUA: наличие связи (канал N1)"/>
 			<item id="218" iotype="DI" name="OPCUA_Respond2_S" textname="OPCUA: наличие связи (канал N2)"/>
 			<item id="219" iotype="AI" name="OPCUA_Mode_AS" textname="OPCUA: Режим работы"/>
-			<item id="220" iotype="AI" name="OPCUA_SensorMask3_AS" textname="OPCUA: sensor1 mask3" opc="1" opcua="1" opcua_mask="3" opcua_nodeid="AI_AS" />
+			<item id="220" iotype="AI" name="OPCUA_SensorMask3_AS" textname="OPCUA: sensor1 mask3" opc="1" opcua="1" opcua_folder="AI.IN" opcua_mask="3" opcua_nodeid="AI_AS" />
 			<item id="221" iotype="AI" name="OPCUA_SensorMask12_AS" textname="OPCUA: sensor1 mask12" opc="1" opcua_mask="12" opcua_nodeid="AI_AS" />
-			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1" opcua="1" opcua_rwmode="w" opcua_mask="3" opcua_nodeid="MB2_AS"/>
-			<item id="234" iotype="AI" name="OPCUA_Float1_AS" textname="OPCUA: sensor1" opc="1" opcua_nodeid="Float1" opcua_type="float" precision="2" />
+			<item id="233" iotype="AO" name="OPCUA_OutputMask3_AS" textname="OPCUA: output mask3" opc="1" opcua="1" opcua_folder="AO.OUT" opcua_rwmode="w" opcua_mask="3" opcua_nodeid="MB2_AS"/>
+			<item id="234" iotype="AI" name="OPCUA_Float1_AS" textname="OPCUA: sensor1" opc="1" opcua="1" opcua_nodeid="Float1" opcua_type="float" precision="2" opcua_rwmode="w" opcua_method="1" opcua_folder="AI.FOUT"/>
 
 			<!-- unet exchange mode -->
 			<item id="219" iotype="AI" name="Node1_RecvMode1_S" textname="Node1: unet receive mode"/>

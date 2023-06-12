@@ -5,3 +5,7 @@ AT_CLEANUP
 AT_SETUP([OPCUAServer tests (separately)])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAServer/tests tests_with_sm_apart.sh],[0],[ignore],[ignore])
 AT_CLEANUP
+
+AT_SETUP([OPCUAServer test folders (with sm)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAServer/tests test_folders_with_sm.sh],[0],[ignore],[ignore])
+AT_CLEANUP
