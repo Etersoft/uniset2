@@ -407,12 +407,8 @@ AC_SUBST(UNISET_EXT_LIBS)
 #AC_LANG_POP([C++])
 
 CATCH_VERSION_MAJOR=1
-CATCH_CFLAGS=
-CATCH_FILE="include/catch.hpp"
-if test ! -e ${CATCH_FILE}; then 
-	CATCH_FILE="/usr/include/catch2/catch.hpp"
-	CATCH_CFLAGS="-I/usr/include/catch2"
-fi
+CATCH_CFLAGS="-I\$(top_builddir)/contrib/catch2"
+CATCH_FILE="contrib/catch2/catch.hpp"
 
 AC_MSG_CHECKING([catch version in $CATCH_FILE])
 CATCH_RESULT=
