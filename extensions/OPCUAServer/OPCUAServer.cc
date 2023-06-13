@@ -61,6 +61,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
     auto browseName = it.getProp2("browseName", conf->oind->getMapName(conf->getLocalNode()));
     auto description = it.getProp2("description", browseName);
+    propPrefix = conf->getArgParam("--" + argprefix + "prop-prefix", it.getProp("propPrefix"));
 
     opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
     opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
@@ -133,7 +134,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
             s_fvalue = regexp_fvalue;
             s_fvalue_re = std::regex(regexp_fvalue);
         }
-        catch (const std::regex_error& e)
+        catch( const std::regex_error& e )
         {
             ostringstream err;
             err << myname << "(init): 'filter-value-re' regular expression error: " << e.what();
@@ -143,9 +144,12 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     vmonit(s_field);
     vmonit(s_fvalue);
+    vmonit(propPrefix);
 
     myinfo << myname << "(init): read s_field='" << s_field
-           << "' s_fvalue='" << s_fvalue << "'" << endl;
+           << "' s_fvalue='" << s_fvalue << "'"
+           << " propPrefx='" << propPrefix << "'"
+           << endl;
 
     if( !shm->isLocalwork() )
         ic->addReadItem(sigc::mem_fun(this, &OPCUAServer::readItem));
@@ -243,7 +247,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
 
     UniversalIO::IOType iotype = UniversalIO::AO; // by default
 
-    auto rwmode = it.getProp("opcua_rwmode");
+    auto rwmode = it.getProp(propPrefix + "opcua_rwmode");
 
     if( rwmode == "none" )
     {
@@ -268,7 +272,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
             iotype = UniversalIO::AO; // read access
     }
 
-    auto vtype = it.getProp("opcua_type");
+    auto vtype = it.getProp(propPrefix + "opcua_type");
     opcua::Type opctype = DefaultVariableType;
 
     if( vtype == "bool" )
@@ -278,12 +282,12 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     else if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
         opctype = opcua::Type::Boolean;
 
-    uint8_t precision = (uint8_t)it.getIntProp("precision");
+    uint8_t precision = (uint8_t)it.getIntProp(propPrefix + "precision");
 
     DefaultValueUType mask = 0;
     uint8_t offset =  0;
 
-    auto smask = it.getProp("opcua_mask");
+    auto smask = it.getProp(propPrefix + "opcua_mask");
 
     if( !smask.empty() )
     {
@@ -291,7 +295,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         offset = firstBit(mask);
     }
 
-    sname = namePrefix + it.getProp2("opcua_name", sname);
+    sname = namePrefix + it.getProp2(propPrefix + "opcua_name", sname);
 
     auto vnode = ioNode->node.addVariable(opcua::NodeId(0, sname), sname);
     vnode.writeDataType(opctype);
@@ -300,12 +304,12 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     if( iotype == UniversalIO::AI || iotype == UniversalIO::DI )
         vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
 
-    auto desc = it.getProp2("opcua_description", it.getProp("textname"));
-    auto descLang = it.getProp2("opcua_description_lang", "ru");
+    auto desc = it.getProp2(propPrefix + "opcua_description", it.getProp("textname"));
+    auto descLang = it.getProp2(propPrefix + "opcua_description_lang", "ru");
     vnode.writeDescription({descLang, desc});
 
-    auto displayName = it.getProp2("opcua_displayname", sname);
-    auto displayNameLang = it.getProp2("opcua_displayname_lang", "en");
+    auto displayName = it.getProp2(propPrefix + "opcua_displayname", sname);
+    auto displayNameLang = it.getProp2(propPrefix + "opcua_displayname_lang", "en");
     vnode.writeDisplayName({displayNameLang, displayName});
 
     // init default value

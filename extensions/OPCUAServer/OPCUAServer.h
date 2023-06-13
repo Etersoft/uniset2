@@ -218,6 +218,7 @@ namespace uniset
             std::unique_ptr<opcua::Server> opcServer = { nullptr };
             std::unique_ptr<IONode> ioNode = { nullptr };
             std::string prefix;
+            std::string propPrefix;
             std::string s_field;
             std::string s_fvalue;
             std::optional<std::regex> s_fvalue_re;
