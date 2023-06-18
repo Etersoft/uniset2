@@ -283,6 +283,7 @@ namespace uniset
             double wsSendTime_sec = { 0.2 };
             size_t wsMaxSend = { 5000 };
             size_t wsMaxCmd = { 200 };
+            double wsPongTimeout_sec = {5.0 };
 
             int jpoolCapacity = { 200 };
             int jpoolPeakCapacity = { 5000 };
@@ -313,6 +314,7 @@ namespace uniset
                     void send( ev::timer& t, int revents );
                     void ping( ev::timer& t, int revents );
                     void read( ev::io& io, int revents );
+                    void pong( ev::timer& t, int revents );
 
                     struct sinfo
                     {
@@ -347,6 +349,7 @@ namespace uniset
                     void setSendPeriod( const double& sec );
                     void setMaxSendCount( size_t val );
                     void setMaxCmdCount( size_t val );
+                    void setPongTimeout( const double& set );
 
                     std::shared_ptr<DebugStream> mylog;
 
@@ -370,6 +373,9 @@ namespace uniset
                     ev::timer ioping;
                     double ping_sec = { 3.0 };
                     static const std::string ping_str;
+                    ev::timer iopong;
+                    double pongTimeout_sec = { 5.0 };
+                    size_t pongCounter = { 0 };
 
                     ev::io iorecv;
                     char rbuf[64 * 1024]; //! \todo сделать настраиваемым или применить Poco::FIFOBuffer
