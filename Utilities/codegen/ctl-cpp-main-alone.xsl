@@ -36,6 +36,7 @@
 #include <xsl:call-template name="preinclude"/>Configuration.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>UniSetActivator.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Debug.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>UHelpers.h<xsl:call-template name="postinclude"/>
 #include "<xsl:value-of select="$CLASSNAME"/>.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -46,6 +47,7 @@ int main( int argc,char* argv[] )
 	if( argc>1 &amp;&amp; ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
 	{
 		cout &lt;&lt; "--name name		- ID процесса. По умолчанию IOController1." &lt;&lt; endl;
+		cout &lt;&lt; "--secname section - Имя настроечной секции. По умолчанию <xsl:value-of select="$CLASSNAME"/>." &lt;&lt; endl;
 		cout &lt;&lt; "--confile fname	- Конф. файл. по умолчанию configure.xml" &lt;&lt; endl;
 		return 0;
 	}
@@ -54,21 +56,9 @@ int main( int argc,char* argv[] )
 	{
 		auto conf = uniset_init(argc, argv);
 
-		// определяем ID объекта
-		ObjectId ID = DefaultObjectId;
 		string name = conf->getArgParam("--name","<xsl:value-of select="normalize-space($OID)"/>");
-		if( !name.empty() )
-			ID = conf->getObjectID(name);
-
-		if( ID == uniset::DefaultObjectId )
-		{
-			cerr &lt;&lt; "(main): идентификатор '" &lt;&lt; name 
-				&lt;&lt; "' не найден в конф. файле!"
-				&lt;&lt; " в секции " &lt;&lt; conf->getObjectsSection() &lt;&lt; endl;
-			return 1;
-		}
-	
-		auto obj = make_shared&lt;<xsl:value-of select="$CLASSNAME"/>&gt;(ID);
+		string secname = conf->getArgParam("--secname","<xsl:value-of select="$CLASSNAME"/>");
+		auto obj = make_object&lt;<xsl:value-of select="$CLASSNAME"/>&gt;(name, secname);
 
 		auto act = UniSetActivator::Instance();
 		act-&gt;add(obj);
