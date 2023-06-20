@@ -207,7 +207,7 @@
 		<UNetExchange name="UNetExchange" transport1="multicast"/>
 		<HeartBeatTime msec="5000"/>
 		<NCReadyTimeout msec="120000"/>
-		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C" output2_c="DO1_C"/>
+		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestProc" output1_c="DO_C" output2_c="DO1_C"/>
 		<RRDServer1 name="RRDServer1">
 			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds" overwrite="0">
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
