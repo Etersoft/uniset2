@@ -33,6 +33,7 @@ Valid options are:
   --no-gen-statistics  - disable generate code for the account of statistics
   --alone           - Use 'alone' templates. See the documentation.
   --no-main         - Don't generate main.cc
+  --no-ask          - Use "no ask" template.
 
   --make-skel name  - generate process skeleton (name.src.xml, Name.cc, Name.hh, Makefile.am, main.cc)
                       Additional arguments: --no-main, --no-makefile
