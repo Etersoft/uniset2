@@ -396,7 +396,7 @@ void UWebSocketGate::help_print()
     cout << "websockets: " << endl;
     cout << "--ws-max-conn num             - Максимальное количество одновременных подключений (клиентов). По умолчанию: 50" << endl;
     cout << "--ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-    cout << "--ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+    cout << "--ws-send-time msec           - Период посылки сообщений. По умолчанию: 200 мсек" << endl;
     cout << "--ws-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
     cout << "--ws-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
     cout << "--ws-pong-timeout msec        - Таймаут, на ответ на сообщение ping. По умолчанию: 5000" << endl;
@@ -1036,29 +1036,32 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
 
         int n = receiveFrame(rbuf, sizeof(rbuf), flags);
 
+        if( n >= 0 )
+        {
+            if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
+            {
+                term();
+                return;
+            }
+
+            if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PING )
+            {
+                myinfoV(4) << req->clientAddress().toString() << "(read): ping request => send pong" << endl;
+                sendFrame(rbuf, n, WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PONG);
+                return;
+            }
+
+            if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
+            {
+                myinfoV(4) << req->clientAddress().toString() << "(read): pong.." << endl;
+                iopong.stop();
+                pongCounter = 0;
+                return;
+            }
+        }
+
         if( n <= 0 )
             return;
-
-        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PING)
-        {
-            myinfoV(4) << req->clientAddress().toString() << "(read): ping request => send pong" << endl;
-            sendFrame(rbuf, n, WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PONG);
-            return;
-        }
-
-        if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
-        {
-            myinfoV(4) << req->clientAddress().toString() << "(read): pong.." << endl;
-            iopong.stop();
-            pongCounter = 0;
-            return;
-        }
-
-        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
-        {
-            term();
-            return;
-        }
 
         if( n == sizeof(rbuf) )
         {
