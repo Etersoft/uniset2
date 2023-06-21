@@ -1,6 +1,8 @@
 #include <sstream>
+#include <string>
 #include <memory>
-#include <UniSetActivator.h>
+#include "UniSetActivator.h"
+#include "UHelpers.h"
 #include "Skel.h"
 // -----------------------------------------------------------------------------
 using namespace uniset;
@@ -12,15 +14,10 @@ int main( int argc, const char** argv )
     {
         auto conf = uniset_init(argc, argv);
 
-        xmlNode* cnode = conf->getNode("Skel");
+        string name = conf->getArgParam("--name","Skel");
+        string secname = conf->getArgParam("--secname","Skel");
 
-        if( cnode == NULL )
-        {
-            cerr << "(Skel): not found <Skel> in conffile" << endl;
-            return 1;
-        }
-
-        auto o = make_shared<Skel>("Skel", cnode);
+        auto o = make_object<Skel>(name,secname);
 
         auto act = UniSetActivator::Instance();
         act->add(o);
@@ -30,8 +27,6 @@ int main( int argc, const char** argv )
 
         ulogany << "\n\n\n";
         ulogany << "(Skel::main): -------------- Skel START -------------------------\n\n";
-        dlogany << "\n\n\n";
-        dlogany << "(Skel::main): -------------- Skel START -------------------------\n\n";
         act->run(false);
         return 0;
     }

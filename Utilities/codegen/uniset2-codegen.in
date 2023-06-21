@@ -173,7 +173,7 @@ if [ -n "$make_skel" ]; then
 	cp ${xsltdir}/$skel_c ${make_name}.cc && subst "s|Skel|${make_name}|g" ${make_name}.cc
 	cp ${xsltdir}/$skel_xml ${make_name}.src.xml && subst "s|Skel|${make_name}|g" ${make_name}.src.xml
 	[ -z "$no_main" ] && cp ${xsltdir}/$skel_m ${make_name}-main.cc && subst "s|Skel|${make_name}|g" ${make_name}-main.cc
-	[ -z "$no_makefile" ] && cp ${xsltdir}/$skel_make Makefile.am && subst "s|Skel|${make_name}|g" Makefile.am
+	[ -z "$no_makefile" ] && cp ${xsltdir}/$skel_make Makefile.am && subst "s|Skel|${make_name}|g" Makefile.am.sk
 
 	exit 0
 fi
