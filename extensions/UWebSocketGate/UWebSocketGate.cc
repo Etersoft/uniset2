@@ -1093,6 +1093,11 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
                 resp->send();
                 break;
         }
+
+        myinfoV(3) << "(websocket): WebSocketException: "
+                   << req->clientAddress().toString()
+                   << " error: " << exc.displayText()
+                   << endl;
     }
     catch( const Poco::Net::NetException& e )
     {
@@ -1331,9 +1336,6 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
     string_view cmd = cmdtxt.substr(0, cpos);
     string_view params = cmdtxt.substr(cpos + 1);
 
-    myinfoV(3) << "(websocket)(command): " << req->clientAddress().toString()
-               << "(" << cmd << "): " << params << endl;
-
     if( cmd == "set" )
     {
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
@@ -1411,6 +1413,11 @@ void UWebSocketGate::UWebSocket::onCommand( std::string_view cmdtxt )
 
         // уведомление о новой команде
         cmdsignal->send();
+    }
+    else
+    {
+        mywarnV(3) << "(websocket)(command): " << req->clientAddress().toString()
+                   << " UNKNOWN COMMAND '" << cmd << "'  params: " << params << endl;
     }
 }
 // -----------------------------------------------------------------------------
