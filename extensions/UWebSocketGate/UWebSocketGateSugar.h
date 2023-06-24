@@ -10,6 +10,9 @@
 #ifndef mywarn
 #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
 #endif
+#ifndef mywarnV
+#define mywarnV(N) if( mylog->debugging(Debug::WARN) ) mylog->V(N)[Debug::WARN]
+#endif
 #ifndef mycrit
 #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
 #endif
