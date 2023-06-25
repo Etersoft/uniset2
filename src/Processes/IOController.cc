@@ -510,6 +510,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi )
 	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(ioRegistration): " << ex << endl;
+		throw;
 	}
 }
 // ---------------------------------------------------------------------------

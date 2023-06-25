@@ -99,7 +99,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	if( name.empty() )
 	{
 		err << "ObjectRepository(registration): (InvalidObjectName): empty name?!";
-		throw ( InvalidObjectName(err.str()) );
+		throw InvalidObjectName(err.str());
 	}
 
 	// Проверка корректности имени
@@ -108,8 +108,8 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	if( bad != 0 )
 	{
 		err << "ObjectRepository(registration): (InvalidObjectName) " << name;
-		err << " содержит недопустимый символ " << bad;
-		throw ( InvalidObjectName(err.str()) );
+		err << " содержит недопустимый символ '" << bad << "'";
+		throw InvalidObjectName(err.str());
 	}
 
 	CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
