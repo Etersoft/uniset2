@@ -211,6 +211,7 @@ CLICKHOUSE_LIBS=
 CLICKHOUSE_CFLAGS=
 if test ${buildclickhouse} = true; then
 	AC_MSG_RESULT([enabled])
+	CPPFLAGS="${CPPFLAGS} -I/usr/include/clickhouse-cpp"
 	AC_CHECK_HEADER(clickhouse-cpp/client.h,,exit)
     CLICKHOUSE_LIBS="-lclickhouse-cpp"
     CLICKHOUSE_CFLAGS="-I/usr/include/clickhouse-cpp"
