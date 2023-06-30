@@ -138,3 +138,53 @@ static bool opcuaWriteFloat( uint16_t nodeId, const std::string& attrName, float
     UA_Variant_delete(myVariant);
     return retval == UA_STATUSCODE_GOOD;
 }
+
+static UA_StatusCode opcuaCallBool( uint16_t nodeId, const std::string& objName, const std::string& attrName, bool set )
+{
+    UA_Variant* myVariant = UA_Variant_new();
+    UA_Variant_setScalarCopy(myVariant, &set, &UA_TYPES[UA_TYPES_BOOLEAN]);
+
+    UA_StatusCode retval = UA_Client_call(client,
+                                          UA_NODEID_STRING((UA_UInt16)nodeId, (char*)objName.c_str()),
+                                          UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()),
+                                          1, myVariant,
+                                          0, nullptr);
+
+    UA_Variant_delete(myVariant);
+
+    return retval;
+}
+
+static UA_StatusCode opcuaCallInt32( uint16_t nodeId, const std::string& objName, const std::string& attrName, long value )
+{
+
+    UA_Variant* myVariant = UA_Variant_new();
+    UA_Variant_setScalarCopy(myVariant, &value, &UA_TYPES[UA_TYPES_INT32]);
+
+    UA_StatusCode retval = UA_Client_call(client,
+                                          UA_NODEID_STRING((UA_UInt16)nodeId, (char*)objName.c_str()),
+                                          UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()),
+                                          1, myVariant,
+                                          0, nullptr);
+
+    UA_Variant_delete(myVariant);
+
+    return retval;
+}
+
+static UA_StatusCode opcuaCallFloat( uint16_t nodeId, const std::string& objName, const std::string& attrName, float value )
+{
+
+    UA_Variant* myVariant = UA_Variant_new();
+    UA_Variant_setScalarCopy(myVariant, &value, &UA_TYPES[UA_TYPES_FLOAT]);
+
+    UA_StatusCode retval = UA_Client_call(client,
+                                          UA_NODEID_STRING((UA_UInt16)nodeId, (char*)objName.c_str()),
+                                          UA_NODEID_STRING((UA_UInt16)nodeId, (char*)attrName.c_str()),
+                                          1, myVariant,
+                                          0, nullptr);
+
+    UA_Variant_delete(myVariant);
+
+    return retval;
+}
