@@ -122,6 +122,16 @@ namespace uniset
         Действует как на читаемые так и на записываемые переменные.
      - \b precision - точность, для преобразования числа в целое. Используется только для типа float. Задаёт степень 10.
        precision="2" означает 10^2 = 100.  precision="3" означает 10^3 = 1000. При преобразовании AI датчиков используется округление.
+     - \b opcua_method - Флаг означающий, что датчик привязан к OPCUA методу. OPCUA метод вызывается клиентом с аргументом, тип которого
+        зависит от типа датчика. В данной реализации поддерживается три типа: boolean для DI, INT32 для AI и float для AI с precision.
+        После вызова метода клиентом на сервере происходит выставление значения датчика вне цикла обновления SM т.е. принудительно.
+        Проверка аргумента перед вызовом метода(см. open62541/server/ua_service_method.c) реализована путем сверки типов аргумента в запросе
+        и в вызываемом методе. Если типы не совпадают, то вызов метода отклоняется сервером OPCUA с кодом ошибки UA_STATUSCODE_BADINVALIDARGUMENT
+        и обработчик UA_setValueMethod не вызывается. Таким образом корректность типов проверяется на уровне libopen62541 перед вызовом обработчика,
+        заданного при конфигурировании MethodNode в uniset2. Также в самом обработчике UA_setValueMethod тип аргумента сверяется с указанными ранее,
+        а аргументы другого типа отклоняются с выставлением кода ошибки UA_STATUSCODE_BADINVALIDARGUMENT. Если же будет вызван обработчик
+        с неизвестным methodID т.е. не будет совпадать ни с одним из сконфигурированных MethodNode в uniset2, то также обработка запроса отклоняется
+        с кодом ошибки UA_STATUSCODE_BADMETHODINVALID.
 
      По умолчанию все датчики доступны только на чтение.
 
@@ -186,6 +196,10 @@ namespace uniset
             // if mask=0 return set
             static DefaultValueUType forceSetBits( DefaultValueUType value, DefaultValueUType set, DefaultValueUType mask, uint8_t offset );
 
+            static UA_StatusCode UA_setValueMethod(UA_Server* server, const UA_NodeId* sessionId, void* sessionHandle,
+                                                   const UA_NodeId* methodId, void* methodContext, const UA_NodeId* objectId,
+                                                   void* objectContext, size_t inputSize, const UA_Variant* input, size_t outputSize, UA_Variant* output);
+
         protected:
             OPCUAServer();
 
@@ -232,6 +246,18 @@ namespace uniset
                 opcua::Node<opcua::Server> node;
                 IONode( const opcua::Node<opcua::Server>& n ):  node(n) {};
             };
+
+            struct IOMethod
+            {
+                IOMethod( uniset::ObjectId _sid) : sid(_sid) {};
+
+                IOController::IOStateList::iterator it;
+                uniset::ObjectId sid = { DefaultObjectId };
+                uint8_t precision = { 0 }; // only for float
+            };
+
+            std::unordered_map<uint32_t, IOMethod> methods;
+            size_t methodCount = { 0 };
 
         private:
             std::unique_ptr<opcua::Server> opcServer = { nullptr };

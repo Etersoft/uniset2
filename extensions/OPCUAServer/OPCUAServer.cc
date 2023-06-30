@@ -17,6 +17,7 @@
 extern "C" {
 #include <open62541/server_config_default.h>
 #include <open62541/plugin/log_stdout.h>
+#include <open62541/plugin/nodestore.h>
 }
 
 #include <chrono>
@@ -119,6 +120,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     /* Инициализация каталога */
     UniXML::iterator tit = conf->findNode(cnode, "folders");
+
     if(tit)
         initFolderMap(tit, "", ioNode);
 
@@ -194,10 +196,10 @@ void OPCUAServer::initFolderMap( uniset::UniXML::iterator it, const std::string&
 
         std::string desc = it.getProp("description");
 
-        auto folder_name=cname;
+        auto folder_name = cname;
 
         if(!parent_name.empty())
-            folder_name=parent_name+"."+folder_name;
+            folder_name = parent_name + "." + folder_name;
 
         try
         {
@@ -346,18 +348,19 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
 
     sname = namePrefix + it.getProp2(propPrefix + "opcua_name", sname);
 
-    auto folder = it.getProp("opcua_folder");
+    auto folder = it.getProp(propPrefix + "opcua_folder");
 
-    uniset::OPCUAServer::IONode *node = nullptr;
+    uniset::OPCUAServer::IONode* node = nullptr;
 
     if( !folder.empty() )
     {
         if( foldermap.find(folder) == foldermap.end() )
         {
             ostringstream err;
-            err << myname << "(initVariable): wrong opcua_folder for sensor "<< sname << endl;
+            err << myname << "(initVariable): wrong opcua_folder for sensor " << sname << endl;
             throw SystemError(err.str());
         }
+
         node = foldermap[folder].get();
     }
     else
@@ -373,6 +376,92 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         throw SystemError(err.str());
     }
 
+    auto desc = it.getProp2(propPrefix + "opcua_description", it.getProp("textname"));
+    auto descLang = it.getProp2(propPrefix + "opcua_description_lang", "ru");
+
+    auto displayName = it.getProp2(propPrefix + "opcua_displayname", sname);
+    auto displayNameLang = it.getProp2(propPrefix + "opcua_displayname_lang", "en");
+
+    auto method = it.getProp(propPrefix + "opcua_method");
+
+    if(!method.empty())
+    {
+        if( iotype == UniversalIO::DO || iotype == UniversalIO::AO )
+        {
+            ostringstream err;
+            err << myname << "(initVariable): wrong rwmode='r' for method sensor " << sname << endl;
+            throw SystemError(err.str());
+        }
+
+        //Инициализация метода
+        opcua::NodeId methodNodeId = opcua::NodeId(0, sname);
+
+        UA_MethodAttributes attr = UA_MethodAttributes_default;
+        attr.description = UA_LOCALIZEDTEXT_ALLOC(descLang.c_str(), desc.c_str());
+        attr.displayName = UA_LOCALIZEDTEXT_ALLOC(displayNameLang.c_str(), displayName.c_str());
+        attr.executable = true;
+
+        UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.getNamespaceIndex(), sname.c_str());
+
+        UA_Argument inputArguments;
+        UA_Argument_init(&inputArguments);
+        inputArguments.valueRank = UA_VALUERANK_SCALAR;
+
+        if( iotype == UniversalIO::DI )
+        {
+            inputArguments.dataType = UA_TYPES[UA_TYPES_BOOLEAN].typeId;
+            inputArguments.description = UA_LOCALIZEDTEXT("en-US", "state");
+            inputArguments.name = UA_STRING("state");
+        }
+        else if( iotype == UniversalIO::AI )
+        {
+            if( opctype == opcua::Type::Float )
+            {
+                inputArguments.dataType = UA_TYPES[UA_TYPES_FLOAT].typeId;
+                inputArguments.description = UA_LOCALIZEDTEXT("en-US", "float value");
+                inputArguments.name = UA_STRING("float value");
+            }
+            else
+            {
+                inputArguments.dataType = UA_TYPES[UA_TYPES_INT32].typeId;
+                inputArguments.description = UA_LOCALIZEDTEXT("en-US", "value");
+                inputArguments.name = UA_STRING("value");
+            }
+        }
+
+        UA_StatusCode result = UA_Server_addMethodNode(opcServer->handle(),
+                               *methodNodeId.handle(), //requestedNewNodeId
+                               *node->node.getNodeId().handle(),//parentNodeId
+                               UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),//referenceTypeId
+                               methodBrowseName,
+                               attr,
+                               &UA_setValueMethod,
+                               1, &inputArguments,
+                               0, nullptr,
+                               this, nullptr);
+
+        if (result == UA_STATUSCODE_GOOD)
+        {
+            auto i = methods.emplace(methodNodeId.hash(), sid);
+            i.first->second.precision = precision;//only for float value
+            methodCount++;
+            shm->initIterator(i.first->second.it);
+            myinfo << myname << "(initVariable): init method for " << sname << "(" << sid << ")" << endl;
+        }
+
+        UA_NodeId_clear(methodNodeId.handle());
+        UA_MethodAttributes_clear(&attr);
+        UA_QualifiedName_clear(&methodBrowseName);
+
+        if (result != UA_STATUSCODE_GOOD)
+        {
+            mycrit << myname << "(initVariable): can't init method for " << sname << "(" << sid << ")" << endl;
+            return false;
+        }
+
+        return true;
+    }
+
     auto vnode = node->node.addVariable(opcua::NodeId(0, sname), sname);
     vnode.writeDataType(opctype);
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ);
@@ -380,12 +469,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     if( iotype == UniversalIO::AI || iotype == UniversalIO::DI )
         vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
 
-    auto desc = it.getProp2(propPrefix + "opcua_description", it.getProp("textname"));
-    auto descLang = it.getProp2(propPrefix + "opcua_description_lang", "ru");
     vnode.writeDescription({descLang, desc});
-
-    auto displayName = it.getProp2(propPrefix + "opcua_displayname", sname);
-    auto displayNameLang = it.getProp2(propPrefix + "opcua_displayname_lang", "en");
     vnode.writeDisplayName({displayNameLang, displayName});
 
     // init default value
@@ -781,6 +865,69 @@ std::string OPCUAServer::getMonitInfo() const
     inf << "   iolist: " << variables.size() << endl;
     inf << "write(in): " << writeCount << endl;
     inf << "read(out): " << variables.size() - writeCount << endl;
+    inf << "methods(call): " << methodCount << endl;
     return inf.str();
+}
+// -----------------------------------------------------------------------------
+UA_StatusCode OPCUAServer::UA_setValueMethod(UA_Server* server,
+        const UA_NodeId* sessionId, void* sessionHandle,
+        const UA_NodeId* methodId, void* methodContext,
+        const UA_NodeId* objectId, void* objectContext,
+        size_t inputSize, const UA_Variant* input,
+        size_t outputSize, UA_Variant* output)
+{
+    if(inputSize != 1)
+        return UA_STATUSCODE_BADARGUMENTSMISSING;
+
+    OPCUAServer* srv = static_cast<OPCUAServer*>(methodContext);
+
+    if(!srv)
+        return UA_STATUSCODE_BADINTERNALERROR;
+
+    auto it = srv->methods.find(UA_NodeId_hash(methodId));
+
+    if( it == srv->methods.end() )
+        return UA_STATUSCODE_BADMETHODINVALID;
+
+    bool ret = false;
+    DefaultValueType value = 0;
+
+    // Корректность типов проверяется на уровне libopen62541(смотри описание opcua_method в OPCUAServer.h) перед вызовом обработчика UA_setValueMethod.
+    if( input[0].type == &UA_TYPES[UA_TYPES_INT32] )
+    {
+        value = *(UA_Int32*) input[0].data;
+    }
+    else if( input[0].type == &UA_TYPES[UA_TYPES_BOOLEAN] )
+    {
+        value = *(UA_Boolean*) input[0].data ? 1 : 0;
+    }
+    else if( input[0].type == &UA_TYPES[UA_TYPES_FLOAT] )
+    {
+        value = lroundf( ( *(UA_Float*) input[0].data ) * pow(10.0, it->second.precision) );
+    }
+    else
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+
+    if(srv->log()->is_level6())
+        srv->log()->level6() << srv->myname << "(update): " << value
+                             << " nodeid: " << std::string_view((char*)methodId->identifier.string.data, methodId->identifier.string.length)
+                             << " sid: "    << it->second.sid << endl;
+
+    try
+    {
+        srv->shm->localSetValue(it->second.it, it->second.sid, value, srv->getId());
+        ret = true;
+    }
+    catch( const std::exception& ex )
+    {
+        if(srv->log()->is_crit())
+            srv->log()->crit() << srv->myname << "(UA_setValueMethod): (hb) " << ex.what() << std::endl;
+    }
+
+
+    if ( ret )
+        return UA_STATUSCODE_GOOD;
+
+    return UA_STATUSCODE_BAD;
 }
 // -----------------------------------------------------------------------------

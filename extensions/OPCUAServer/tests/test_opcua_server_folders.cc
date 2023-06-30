@@ -31,7 +31,8 @@ static void InitTest()
     REQUIRE( opcuaCreateClient(addr) );
 }
 // -----------------------------------------------------------------------------
-struct nodeIterData {
+struct nodeIterData
+{
     UA_NodeId id;
     UA_Boolean isInverse;
     UA_NodeId referenceTypeID;
@@ -41,7 +42,7 @@ struct nodeIterData {
 const int NODE_ITER_DATA_SIZE = 9;
 
 static UA_StatusCode
-nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId referenceTypeId, void *handle)
+nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId referenceTypeId, void* handle)
 {
     if (isInverse || (referenceTypeId.identifierType == UA_NODEIDTYPE_NUMERIC &&
                       referenceTypeId.identifier.numeric == UA_NS0ID_HASTYPEDEFINITION))
@@ -55,8 +56,10 @@ nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId referenceTypeId, voi
 
     int i;
 
-    for(i=0; i < NODE_ITER_DATA_SIZE; i++) {
-        if(UA_NodeId_equal(&childId, &objectsFolderChildren[i].id)) {
+    for(i = 0; i < NODE_ITER_DATA_SIZE; i++)
+    {
+        if(UA_NodeId_equal(&childId, &objectsFolderChildren[i].id))
+        {
             break;
         }
     }
@@ -92,87 +95,88 @@ TEST_CASE("[OPCUAServer]: check structure", "[opcuaserver]")
 
     /* Проверка только вложенных нод в корневой каталог. Подкаталоги не проверяются! */
     struct nodeIterData objectsFolderChildren[NODE_ITER_DATA_SIZE];
-    objectsFolderChildren[0].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"folder1");
+    objectsFolderChildren[0].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"folder1");
     objectsFolderChildren[0].isInverse = UA_FALSE;
     objectsFolderChildren[0].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[0].hit = UA_FALSE;
 
-    objectsFolderChildren[1].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"folder2");
+    objectsFolderChildren[1].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"folder2");
     objectsFolderChildren[1].isInverse = UA_FALSE;
     objectsFolderChildren[1].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[1].hit = UA_FALSE;
 
-    objectsFolderChildren[2].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"AO2_S");
+    objectsFolderChildren[2].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"AO2_S");
     objectsFolderChildren[2].isInverse = UA_FALSE;
     objectsFolderChildren[2].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[2].hit = UA_FALSE;
 
     //folder1
-    objectsFolderChildren[3].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"folder1.subfolder1");
+    objectsFolderChildren[3].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"folder1.subfolder1");
     objectsFolderChildren[3].isInverse = UA_FALSE;
     objectsFolderChildren[3].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[3].hit = UA_FALSE;
 
-    objectsFolderChildren[4].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"AO1_S");
+    objectsFolderChildren[4].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"AO1_S");
     objectsFolderChildren[4].isInverse = UA_FALSE;
     objectsFolderChildren[4].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[4].hit = UA_FALSE;
 
     //folder1.subfolder1
-    objectsFolderChildren[5].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"AI1_S");
+    objectsFolderChildren[5].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"AI1_S");
     objectsFolderChildren[5].isInverse = UA_FALSE;
     objectsFolderChildren[5].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[5].hit = UA_FALSE;
 
     //folder2
-    objectsFolderChildren[6].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"folder2.subfolder2");
+    objectsFolderChildren[6].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"folder2.subfolder2");
     objectsFolderChildren[6].isInverse = UA_FALSE;
     objectsFolderChildren[6].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[6].hit = UA_FALSE;
 
-    objectsFolderChildren[7].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"DO1_S");
+    objectsFolderChildren[7].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"DO1_S");
     objectsFolderChildren[7].isInverse = UA_FALSE;
     objectsFolderChildren[7].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[7].hit = UA_FALSE;
 
     //folder2.subfolder2
-    objectsFolderChildren[8].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char *)"DI1_S");
+    objectsFolderChildren[8].id = UA_NODEID_STRING((UA_UInt16)nodeId, (char*)"DI1_S");
     objectsFolderChildren[8].isInverse = UA_FALSE;
     objectsFolderChildren[8].referenceTypeID = UA_NODEID_NUMERIC((UA_UInt16)nodeId, UA_NS0ID_HASCOMPONENT);
     objectsFolderChildren[8].hit = UA_FALSE;
 
     UA_StatusCode retval =
-        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char *)"LocalhostNode"),
+        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char*)"LocalhostNode"),
                                        nodeIter, &objectsFolderChildren);
 
     REQUIRE(retval == UA_STATUSCODE_GOOD);
 
     retval =
-        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char *)"folder1"),
+        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char*)"folder1"),
                                        nodeIter, &objectsFolderChildren);
 
     REQUIRE(retval == UA_STATUSCODE_GOOD);
 
     retval =
-        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char *)"folder1.subfolder1"),
+        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char*)"folder1.subfolder1"),
                                        nodeIter, &objectsFolderChildren);
 
     REQUIRE(retval == UA_STATUSCODE_GOOD);
 
     retval =
-        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char *)"folder2"),
+        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char*)"folder2"),
                                        nodeIter, &objectsFolderChildren);
 
     REQUIRE(retval == UA_STATUSCODE_GOOD);
 
     retval =
-        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char *)"folder2.subfolder2"),
+        UA_Client_forEachChildNodeCall(client, UA_NODEID_STRING(0, (char*)"folder2.subfolder2"),
                                        nodeIter, &objectsFolderChildren);
 
     REQUIRE(retval == UA_STATUSCODE_GOOD);
 
     /* Check if all nodes are hit */
-    for (int i=0; i < NODE_ITER_DATA_SIZE; i++) {
+    for (int i = 0; i < NODE_ITER_DATA_SIZE; i++)
+    {
         REQUIRE(objectsFolderChildren[i].hit == true);
     }
 }
