@@ -18,6 +18,7 @@ class Skel:
         virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
         virtual void timerInfo( const uniset::TimerMessage* tm ) override;
         virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
+        virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 
     private:
 };
