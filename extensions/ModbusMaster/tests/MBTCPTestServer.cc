@@ -4,7 +4,6 @@
 #include <Poco/Net/NetException.h>
 #include "UniSetTypes.h"
 #include "MBTCPTestServer.h"
-#include "VTypes.h"
 #include "uniset-config.h"
 // -------------------------------------------------------------------------
 #ifndef PACKAGE_URL
@@ -318,7 +317,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutp
     lastWriteOutputQ = query;
 
     for( size_t i = 0; i < query.quant; i++ )
-        lastWriteRegister[query.start + i] = query.data[i];
+    {
+        lastWriteRegister[query.start + i].setValue(query.data[i]);
+    }
 
     if( query.start == 41 )
     {
@@ -340,7 +341,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( ModbusRTU::Writ
         cout << "(writeOutputSingleRegisters): " << query << endl;
 
     ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
-    lastWriteRegister[query.start] = query.data;
+    lastWriteRegister[query.start].setValue(query.data);
     reply.set(query.start, query.data);
     return ret;
 }
@@ -354,7 +355,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( ModbusRTU::ForceSingleCoi
     if( verbose )
         cout << "(forceSingleCoil): " << query << endl;
 
-    lastWriteRegister[query.start] = query.cmd() ? 1 : 0;
+    lastWriteRegister[query.start].setValue(query.cmd() ? 1 : 0);
     ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
     forceSingleCoilCmd = query.cmd();
     reply.set(query.start, query.cmd());

@@ -122,6 +122,14 @@ namespace uniset
                 RegInfo() = default;
 
                 ModbusRTU::ModbusData mbval = { 0 };
+                inline bool setMBVal(ModbusRTU::ModbusData nv)
+                {
+                    if( mbval != nv )
+                        mbval_changed = true;
+
+                    mbval = nv;
+                    return mbval_changed;
+                }
                 ModbusRTU::ModbusData mbreg = { 0 }; /*!< регистр */
                 ModbusRTU::SlaveFunctionCode mbfunc = { ModbusRTU::fnUnknown };    /*!< функция для чтения/записи */
                 PList slst;
@@ -152,6 +160,15 @@ namespace uniset
                 // Флаг sm_init означает, что писать в устройство нельзя, т.к. значение в "карте регистров"
                 // ещё не инициализировано из SM
                 bool sm_initOK = { false };    /*!< инициализировалось ли значение из SM */
+
+                // Флаг mbval_changed == true означает, что значение датчика для регистра на запись изменилось и нужно
+                // записать его в устройство.
+                // При старте по-умолчанию первый запрос отправляется, если для конкретного датчика не выставлен
+                // тег "init_mbval_changed=0".
+                // Также можно указать "init_mbval_changed=0" в глобальной секции для процесса обмена или параметром
+                // "--prefix-init-mbval-changed 0" командной строки. Тогда все регистры будут инициализировать mbval_changed
+                // этим значением, если не указать тег для датчика.
+                bool mbval_changed = { true }; /*!< Флаг означающий, что значение датчика для регистра изменилось */
             };
 
             friend std::ostream& operator<<( std::ostream& os, const RegInfo& r );
@@ -268,6 +285,11 @@ namespace uniset
 
             void cloneParams( const std::shared_ptr<MBConfig>& conf );
             std::string getShortInfo() const;
+
+            static const size_t changeOnlyWrite = { 65535 }; /*!< Номер pollfactor для регистров с записью только по изменению значения датчика */
+            bool init_mbval_changed = { true };              /*!< Глобальный флаг для инициализации флага изменения значения датчика каждого регистра */
+
+            bool checkDuplicationRegID( const ModbusRTU::RegID id, const std::shared_ptr<RTUDevice>& dev, const std::shared_ptr<RegMap>& rmap ) const; /*!< проверка регистров на дубликаты в pollmap */
 
         protected:
 

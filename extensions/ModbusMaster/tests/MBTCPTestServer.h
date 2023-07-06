@@ -6,6 +6,7 @@
 #include <ostream>
 #include <unordered_set>
 #include "modbus/ModbusTCPServerSlot.h"
+#include "VTypes.h"
 // -------------------------------------------------------------------------
 /*! Реализация MBTCPTestServer для тестирования */
 class MBTCPTestServer
@@ -43,7 +44,74 @@ class MBTCPTestServer
         }
         inline int16_t getLastWriteRegister( uint16_t reg )
         {
-            return lastWriteRegister[reg];
+            return lastWriteRegister[reg].value;
+        }
+        inline float getLastWriteRegisterF2( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value
+                                                   };
+            uniset::VTypes::F2 f2(data, uniset::VTypes::F2::wsize());
+            return (float)f2;
+        }
+        inline uint16_t getLastWriteRegisterByte( uint16_t reg )
+        {
+            uniset::VTypes::Byte b((uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value);
+            return (uint16_t)b;
+        }
+        inline float getLastWriteRegisterF2r( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value
+                                                   };
+            uniset::VTypes::F2r f2r(data, uniset::VTypes::F2r::wsize());
+            return (float)f2r;
+        }
+        inline double getLastWriteRegisterF4( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 2].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 3].value
+                                                   };
+            uniset::VTypes::F4 f4(data, uniset::VTypes::F4::wsize());
+            return (double)f4;
+        }
+        inline int32_t getLastWriteRegisterI2( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value
+                                                   };
+            uniset::VTypes::I2 i2(data, uniset::VTypes::I2::wsize());
+            return (int32_t)i2;
+        }
+        inline int32_t getLastWriteRegisterI2r( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value
+                                                   };
+            uniset::VTypes::I2r i2r(data, uniset::VTypes::I2r::wsize());
+            return (int32_t)i2r;
+        }
+        inline uint32_t getLastWriteRegisterU2( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value
+                                                   };
+            uniset::VTypes::U2 u2(data, uniset::VTypes::U2::wsize());
+            return (uint32_t)u2;
+        }
+        inline uint32_t getLastWriteRegisterU2r( uint16_t reg )
+        {
+            uniset::ModbusRTU::ModbusData data[] = {(uniset::ModbusRTU::ModbusData)lastWriteRegister[reg].value,
+                                                    (uniset::ModbusRTU::ModbusData)lastWriteRegister[reg + 1].value
+                                                   };
+            uniset::VTypes::U2r u2r(data, uniset::VTypes::U2r::wsize());
+            return (uint32_t)u2r;
+        }
+        inline long getWriteRegisterCount( uint16_t reg )
+        {
+            return lastWriteRegister[reg].count;
         }
         inline uniset::ModbusRTU::ForceCoilsMessage getLastForceCoilsQ()
         {
@@ -127,7 +195,17 @@ class MBTCPTestServer
         bool verbose;
         uint32_t replyVal;
         bool forceSingleCoilCmd;
-        std::unordered_map<int16_t, int16_t> lastWriteRegister;
+        struct regData
+        {
+            int16_t value = {0};
+            long count = {0};
+            void setValue(int16_t val)
+            {
+                value = val;
+                count++;
+            }
+        };
+        std::unordered_map<int16_t, regData> lastWriteRegister;
         uniset::ModbusRTU::ForceCoilsMessage lastForceCoilsQ;
         uniset::ModbusRTU::WriteOutputMessage lastWriteOutputQ;
         float f2_test_value = {0.0};

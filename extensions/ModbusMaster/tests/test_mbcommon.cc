@@ -53,3 +53,30 @@ TEST_CASE("MBTCPMaster: force set bits", "[modbus][forcesetbits]")
     REQUIRE( MBExchange::forceSetBits(3, 5, 3, 0) == 1 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBConfig: check duplication RegID", "[modbus][checkDuplicationRegID]")
+{
+    auto mblog = make_shared<DebugStream>();
+    MBConfig mbconfig( nullptr, nullptr, nullptr );
+    mbconfig.mblog = mblog;
+    mbconfig.myname = "MBConfig";
+    std::shared_ptr<MBConfig::RTUDevice> dev = std::make_shared<MBConfig::RTUDevice>();
+    std::shared_ptr<MBConfig::RegMap> rmap;
+
+    ModbusRTU::RegID rID = ModbusRTU::genRegID(77, 0x06);
+
+    rmap = make_shared<MBConfig::RegMap>();
+    dev->pollmap.emplace(1, rmap);
+    auto r = make_shared<MBConfig::RegInfo>();
+    r->mbreg = 77;
+    r->mbfunc = (ModbusRTU::SlaveFunctionCode)0x06;
+    r->regID = rID;
+    rmap->insert( std::make_pair(rID, r) );
+
+    rmap = make_shared<MBConfig::RegMap>();
+    dev->pollmap.emplace(2, rmap);
+
+    REQUIRE( mbconfig.checkDuplicationRegID( rID, dev, rmap ) );
+    REQUIRE_FALSE( mbconfig.checkDuplicationRegID( rID, dev, dev->pollmap[1] ) );
+    REQUIRE( mbconfig.checkDuplicationRegID( rID, dev, nullptr ) );
+}
+// -----------------------------------------------------------------------------
