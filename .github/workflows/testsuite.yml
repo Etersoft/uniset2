@@ -21,16 +21,29 @@ jobs:
             libxml2-devel libsigc++2-devel libpoco-devel libev-devel libomniORB-devel libmosquitto-devel \
             xsltproc python-base python3-dev libomniORB-names libomniORB-idl libomniORB-utils swig python-devel \
             python-module-distribute iputils libclickhouse-cpp-devel libopen62541-devel libopen62541pp-devel
-      - uses: actions/checkout@v2
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ vars.GITHUB_REF_NAME }}
+
       - name: configure
         run: |
+            export CCACHE_ENABLE=yes
+            export GCC_USE_CCACHE=1
             export CXXFLAGS='-pipe -O2 -pedantic -Wall'
             # due broken comedi
             export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
             autoreconf -fiv
             ./configure --disable-netdata --disable-python
       - name: make
-        run: make
+        run: |
+            export GCC_USE_CCACHE=1
+            export ALLOW_ROOT_USER=1
+            jmake
       - name: testsuite
         run: |
             cd testsuite;
