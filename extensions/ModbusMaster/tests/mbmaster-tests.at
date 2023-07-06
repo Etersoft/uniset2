@@ -9,3 +9,7 @@ AT_CLEANUP
 AT_SETUP([ModbusTCPMultiMaster tests (with SM)])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/ModbusMaster/tests run_test_mbtcpmultimaster.sh],[0],[ignore],[ignore])
 AT_CLEANUP
+
+AT_SETUP([ModbusTCPMaster tests pollfactor (with SM)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/ModbusMaster/tests run_test_mbtcpmaster_pollfactor.sh],[0],[ignore],[ignore])
+AT_CLEANUP

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+
+	<settings>
+	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+	    <MBTCPMaster1 name="MBTCPMaster1" exchangeModeID="MBTCPMaster_Mode_AS">
+            <DeviceList>
+                <item addr="0x01" timeout="1000" invert="1" respondSensor="Slave_Not_Respond_S"/>
+            </DeviceList>
+        </MBTCPMaster1>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+		<nodes port="2809">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+			<sensor id="10" iotype="DI" name="Slave_Not_Respond_S" textname="Наличие связи со Slave"/>
+			<sensor id="11" iotype="AI" name="MBTCPMaster_Mode_AS" textname="Режим работы MBTCPMaster"/>
+			<sensor id="12" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="259" mbfunc="0x05" iotype="DO" name="TestVtype" textname="Тестовый регистр для 0x05"/>
+			<sensor id="13" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="260" mbfunc="0x05" iotype="DO" name="TestVtype1" textname="Тестовый регистр для 0x05 по изменению" pollfactor="65535"/>
+			<sensor id="14" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="297" mbfunc="0x06" iotype="AO" name="TestVtype2" textname="Тестовый регистр по изменению" pollfactor="65535"/>
+			<sensor id="15" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="298" nbit="1" mbfunc="0x06" iotype="AO" name="TestVtype3" textname="Тестовый регистр по изменению" pollfactor="65535"/>
+			<sensor id="16" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="298" nbit="2" mbfunc="0x06" iotype="AO" name="TestVtype4" textname="Тестовый регистр по изменению" pollfactor="65535"/>
+			<sensor id="17" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="300" mbfunc="0x06" iotype="AO" name="TestVtype5" textname="Тестовый регистр по изменению" vtype="byte" nbyte="1" pollfactor="65535"/>
+			<sensor id="18" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="301" mbfunc="0x06" iotype="AO" name="TestVtype6" textname="Тестовый регистр по изменению" vtype="byte" nbyte="2" pollfactor="65535"/>
+			<sensor id="19" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="302" mbfunc="0x10" iotype="AO" name="TestVtype7" textname="Тестовый регистр по изменению" vtype="F2" pollfactor="65535" precision="2"/>
+			<sensor id="20" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="304" mbfunc="0x10" iotype="AO" name="TestVtype8" textname="Тестовый регистр по изменению" vtype="F2r" pollfactor="65535" precision="2"/>
+			<sensor id="21" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="306" mbfunc="0x10" iotype="AO" name="TestVtype9" textname="Тестовый регистр по изменению" vtype="F4" pollfactor="65535"/>
+			<sensor id="22" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="310" mbfunc="0x06" iotype="AO" name="TestVtype10" textname="Тестовый регистр по изменению" vtype="unsigned" pollfactor="65535"/>
+			<sensor id="23" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="311" mbfunc="0x06" iotype="AO" name="TestVtype11" textname="Тестовый регистр по изменению" vtype="signed" pollfactor="65535"/>
+			<sensor id="24" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="312" mbfunc="0x10" iotype="AO" name="TestVtype12" textname="Тестовый регистр по изменению" vtype="I2" pollfactor="65535"/>
+			<sensor id="25" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="314" mbfunc="0x10" iotype="AO" name="TestVtype13" textname="Тестовый регистр по изменению" vtype="I2r" pollfactor="65535"/>
+			<sensor id="26" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="316" mbfunc="0x10" iotype="AO" name="TestVtype14" textname="Тестовый регистр по изменению" vtype="U2" pollfactor="65535"/>
+			<sensor id="27" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="318" mbfunc="0x10" iotype="AO" name="TestVtype15" textname="Тестовый регистр по изменению" vtype="U2r" pollfactor="65535"/>
+			<sensor id="28" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="320" mbmask="3" mbfunc="0x06" iotype="AO" name="TestVtype16" textname="Тестовый регистр для 0x05 по изменению" pollfactor="65535"/>
+			<sensor id="29" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="320" mbmask="12" mbfunc="0x06" iotype="AO" name="TestVtype17" textname="Тестовый регистр для 0x05 по изменению" pollfactor="65535"/>
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="MBTCPMaster1"/>
+			<item id="6005" name="MBTCPMultiMaster1"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+</UNISETPLC>

@@ -140,8 +140,10 @@
 			<item id="1090" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="260" mbfunc="0x03" mbmask="3" iotype="AI" name="TestReadMask3_AI" textname="Mask: Тестовый регистр для Mask3 (AI)"/>
 			<item id="1091" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="260" mbfunc="0x03" mbmask="12" iotype="AI" name="TestReadMask12_AI" textname="Mask: Тестовый регистр для Mask12 (AI)"/>
 			<item id="1092" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="261" mbfunc="0x02" mbmask="3" iotype="DI" name="TestReadMask_DI" textname="Mask: Тестовый регистр для Mask (DI)"/>
-			<item id="1093" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="262" mbfunc="0x06" mbmask="3" iotype="AO" name="TestWriteMask_AO" textname="Mask: Тестовый регистр для Mask3 (AO)"/>
-			<item id="1094" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="262" mbfunc="0x06" mbmask="12" iotype="AO" name="TestWriteMask_AO" textname="Mask: Тестовый регистр для Mask12 (AO)"/>
+			<item id="1093" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="262" mbfunc="0x06" mbmask="3" iotype="AO" name="TestWriteMask3_AO" textname="Mask: Тестовый регистр для Mask3 (AO)"/>
+			<item id="1094" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="262" mbfunc="0x06" mbmask="12" iotype="AO" name="TestWriteMask12_AO" textname="Mask: Тестовый регистр для Mask12 (AO)"/>
+			<item id="1095" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="262" mbfunc="0x06" mbmask="48" iotype="AO" name="TestWriteMask48_AO" textname="Mask: Тестовый регистр для Mask48 (AO)"/>
+			<!-- <item id="1096" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="262" mbfunc="0x06" mbmask="24" iotype="AO" name="TestWriteMask24_AO" textname="Mask: Тестовый регистр для Mask24 (AO)"/> -->
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
