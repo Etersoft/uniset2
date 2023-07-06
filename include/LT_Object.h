@@ -147,6 +147,7 @@ namespace uniset
                     curTick(cnt - 1)
                 {
                     tmr.setTiming(timeMS);
+                    curTimeMS = timeMS;
                 };
 
                 inline void reset()

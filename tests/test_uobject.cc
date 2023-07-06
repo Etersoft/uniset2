@@ -17,7 +17,7 @@ using namespace uniset;
 // --------------------------------------------------------------------------
 shared_ptr<TestUObject> uobj;
 // --------------------------------------------------------------------------
-void initTest()
+static void initTest()
 {
     REQUIRE( uniset_conf() != nullptr );
 

@@ -286,9 +286,9 @@ TEST_CASE("UniSetTypes: check_filter_re", "[utypes][check_filter_re]" )
 
     auto re = std::regex("1|2");
 
-    REQUIRE( check_filter_re(it,"fprop1",re) );
-    REQUIRE( check_filter_re(it,"fprop2",re) );
-    REQUIRE_FALSE( check_filter_re(it,"fprop3",re) );
+    REQUIRE( check_filter_re(it, "fprop1", re) );
+    REQUIRE( check_filter_re(it, "fprop2", re) );
+    REQUIRE_FALSE( check_filter_re(it, "fprop3", re) );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: findArgParam", "[utypes][findArgParam]" )

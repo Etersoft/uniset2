@@ -221,6 +221,8 @@ namespace uniset
             TimerMessage();
             TimerMessage(uniset::TimerId id, Priority prior = Message::High,
                          ObjectId cons = uniset::DefaultObjectId);
+            TimerMessage(uniset::TimerId id, timeout_t interval_msec, Priority prior = Message::High,
+                            ObjectId cons = uniset::DefaultObjectId);
             TimerMessage(const VoidMessage* msg) noexcept ;
             inline TransportMessage transport_msg() const noexcept
             {
@@ -228,6 +230,7 @@ namespace uniset
             }
 
             uniset::TimerId id; /*!< id сработавшего таймера */
+            uniset::timeout_t interval_msec; /*! интервал, мсек */
     };
 
     // ------------------------------------------------------------------------
