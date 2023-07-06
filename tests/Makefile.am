@@ -44,7 +44,8 @@ test_runlock.cc \
 test_messagetype.cc \
 test_utypes.cc \
 test_mqueue.cc \
-test_uobject.cc
+test_uobject.cc \
+test_lt_object.cc
 
 # threadtst_SOURCES = threadtst.cc
 # threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS}

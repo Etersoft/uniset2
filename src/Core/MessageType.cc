@@ -197,6 +197,14 @@ namespace uniset
         this->consumer = cons;
     }
 
+    TimerMessage::TimerMessage(uniset::TimerId _id, uniset::timeout_t _interval_msec, Priority prior, ObjectId cons):
+            id(_id),
+            interval_msec(_interval_msec)
+    {
+        type = Message::Timer;
+        this->consumer = cons;
+    }
+
     TimerMessage::TimerMessage(const VoidMessage* msg) noexcept:
         Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
     {
