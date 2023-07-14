@@ -38,14 +38,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ vars.GITHUB_REF_NAME }}
+      # - name: Setup ccache
+      #   uses: hendrikmuhs/ccache-action@v1.2
+      #   with:
+      #     key: ${{ vars.GITHUB_REF_NAME }}
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
         with:
           languages: ${{ matrix.language }}
 
@@ -57,14 +57,14 @@ jobs:
 
       - name: build
         run: |
-         /usr/sbin/update-ccache-symlinks
-         export PATH="/usr/lib/ccache:$PATH"
-         export GCC_USE_CCACHE=1
+         # /usr/sbin/update-ccache-symlinks
+         # export PATH="/usr/lib/ccache:$PATH"
+         # export GCC_USE_CCACHE=1
          export CXXFLAGS='-pipe -O2 -pedantic -Wall'
          # due broken comedi
          export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
          autoreconf -fiv
-         ./configure --disable-python --disable-netdata --disable-pgsql --disable-clickhouse --disable-opcua
+         ./configure --disable-python --disable-netdata --disable-pgsql --disable-clickhouse --disable-opcua --disable-tests
          make
 
       - name: Perform CodeQL Analysis
