@@ -6,7 +6,7 @@
 AC_INIT([uniset2], [2.31.3], pv@etersoft.ru)
 AM_INIT_AUTOMAKE([subdir-objects])
 
-LIBVER=34:2:31
+LIBVER=33:3:31
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
