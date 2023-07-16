@@ -23,7 +23,26 @@ eval $(head -n1 $PCFILE)
 
 test -d "$prefix" || exit 1
 
-export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$EXPORTPATH/extensions/UniNetwork:$EXPORTPATH/extensions/LogicProcessor:$EXPORTPATH/extensions/UNetUDP:$EXPORTPATH/extensions/DBServer-MySQL:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH="$EXPORTPATH:\
+$EXPORTPATH/extensions/Backend-ClickHouse:\
+$EXPORTPATH/extensions/Backend-OpenTSDB:\
+$EXPORTPATH/extensions/DBServer-MySQL:\
+$EXPORTPATH/extensions/DBServer-PostgreSQL:\
+$EXPORTPATH/extensions/DBServer-SQLite:\
+$EXPORTPATH/extensions/IOControl:\
+$EXPORTPATH/extensions/LogicProcessor:\
+$EXPORTPATH/extensions/ModbusMaster:\
+$EXPORTPATH/extensions/ModbusSlave:\
+$EXPORTPATH/extensions/MQTTPublisher:\
+$EXPORTPATH/extensions/OPCUAExchange:\
+$EXPORTPATH/extensions/OPCUAServer:\
+$EXPORTPATH/extensions/RRDServer:\
+$EXPORTPATH/extensions/SharedMemory:\
+$EXPORTPATH/extensions/UNetUDP:\
+$EXPORTPATH/extensions/UniNetwork:\
+$EXPORTPATH/extensions/UWebSocketGate:\
+$EXPORTPATH/extensions:\
+$PKG_CONFIG_PATH"
 
 cflags()
 {
@@ -57,6 +76,14 @@ EXFILE="$EXPORTPATH/extensions libUniSet2Extensions.pc"
 export UNISET_EXT_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_LIBS="-L$EXPORTPATH/extensions/lib $( ext_libs $EXFILE )"
 
+EXFILE="$EXPORTPATH/extensions/Backend-ClickHouse libUniSet2BackendClickHouse.pc"
+export UNISET_EXT_BACKENDCLICKHOUSE_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_BACKENDCLICKHOUSE_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/Backend-OpenTSDB libUniSet2BackendOpenTSDB.pc"
+export UNISET_EXT_BACKENDOPENTSDB_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_BACKENDOPENTSDB_LIBS="$( ext_libs $EXFILE )"
+
 EXFILE="$EXPORTPATH/extensions/IOControl libUniSet2IOControl.pc"
 export UNISET_EXT_IO_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_IO_LIBS="$( ext_libs $EXFILE )"
@@ -89,8 +116,32 @@ EXFILE="$EXPORTPATH/extensions/DBServer-MySQL libUniSet2MySQL.pc"
 export UNISET_EXT_MYSQL_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_MYSQL_LIBS="$( ext_libs $EXFILE )"
 
+EXFILE="$EXPORTPATH/extensions/DBServer-PostgreSQL libUniSet2PostgreSQL.pc"
+export UNISET_EXT_PGSQL_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_PGSQL_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/DBServer-SQLite libUniSet2SQLite.pc"
+export UNISET_EXT_SQLITE_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_SQLITE_LIBS="$( ext_libs $EXFILE )"
+
 EXFILE="$EXPORTPATH/extensions/LogicProcessor libUniSet2LogicProcessor.pc"
 export UNISET_EXT_LP_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_LP_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/MQTTPublisher libUniSet2MQTTPublisher.pc"
+export UNISET_EXT_MQTTPUBLISHER_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MQTTPUBLISHER_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/OPCUAServer libUniSet2OPCUAServer.pc"
+export UNISET_EXT_OPCUASERVER_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_OPCUASERVER_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/OPCUAExchange libUniSet2OPCUAExchange.pc"
+export UNISET_EXT_OPCUAEXCHANGE_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_OPCUAEXCHANGE_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/RRDServer libUniSet2RRDServer.pc"
+export UNISET_EXT_RRDSERVER_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_RRDSERVER_LIBS="$( ext_libs $EXFILE )"
 
 export UNISET_CODEGEN="sh $EXPORTPATH/Utilities/codegen/uniset2-codegen --path $EXPORTPATH/Utilities/codegen"
