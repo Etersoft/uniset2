@@ -324,7 +324,12 @@ namespace uniset
         {
             try
             {
-                mbconf->initItem(it);
+                if( !mbconf->initItem(it) )
+                {
+                    ostringstream err;
+                    err << myname << "(readItem): Error during sensor configuration name -> " << it.getProp("name");
+                    throw SystemError(err.str());
+                }
             }
             catch( std::exception& ex )
             {
