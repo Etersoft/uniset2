@@ -100,8 +100,12 @@ namespace uniset
 
         for( ; it.getCurrent(); it.goNext() )
         {
-            if( uniset::check_filter(it, s_field, s_fvalue) )
-                initItem(it);
+            if( uniset::check_filter(it, s_field, s_fvalue) && !initItem(it) )
+            {
+                ostringstream err;
+                err << myname << "(readConfiguration): Error during sensor configuration name -> " << it.getProp("name");
+                throw SystemError(err.str());
+            }
         }
 
         //    readconf_ok = true;
