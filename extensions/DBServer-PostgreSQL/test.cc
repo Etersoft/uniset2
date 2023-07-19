@@ -9,7 +9,7 @@ using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    std::string dbname("test-db");
+    std::string dbname("UNISET_PLC");
 
     if( argc > 1 )
         dbname = string(argv[1]);
