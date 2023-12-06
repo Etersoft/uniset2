@@ -439,6 +439,11 @@ namespace uniset
             {
                 (r)(xml, it, sec);
             }
+            catch(const Exception& ex)
+            {
+                dcrit << "(SharedMemory::readItem): " << ex.what() << endl;
+                throw;
+            }
             catch(...) {}
         }
 
