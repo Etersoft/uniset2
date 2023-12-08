@@ -245,6 +245,11 @@ namespace uniset
                 emLastNumber
             };
 
+            typedef std::list<IOBase> ThresholdList;
+            // т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
+            // и отдельно его проверяем потом
+            ThresholdList thrlist;
+
         protected:
 
             enum Timers
