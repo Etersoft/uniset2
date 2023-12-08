@@ -428,7 +428,22 @@ namespace uniset
                 channelExchange(tick++, ch, writeToAllChannels || currentChannel == ch->idx);
 
                 if( currentChannel == ch->idx )
+                {
                     updateFromChannel(ch);
+
+                    // Обработка порогов, после обработки всех
+                    for( auto&& i : thrlist )
+                    {
+                        try
+                        {
+                            IOBase::processingThreshold(&i, shm, force);
+                        }
+                        catch( std::exception& ex )
+                        {
+                            opcwarn << myname << "(channel" << ch->num << "Thread): " << ex.what() << endl;
+                        }
+                    }
+                }
             }
             catch( const CORBA::SystemException& ex )
             {
@@ -1058,14 +1073,19 @@ namespace uniset
     {
         auto inf = make_shared<OPCAttribute>();
 
-        string attr = it.getProp(prop_prefix + "opcua_nodeid");
-
-        if( attr.empty() )
-        {
-            opcwarn << myname << "(readItem): Unknown OPC UA attribute name. Use opcua_nodeid='name'"
-                    << " for " << it.getProp("name") << endl;
+        if( !IOBase::initItem(inf.get(), it, shm, prop_prefix, false, opclog, myname, filtersize, filterT) )
             return false;
+
+        // значит это пороговый датчик..
+        if( inf->t_ai != DefaultObjectId )
+        {
+            opclog3 << myname << "(readItem): add threshold '" << it.getProp("name")
+                    << " for '" << uniset_conf()->oind->getNameById(inf->t_ai) << endl;
+            thrlist.emplace_back( std::move(*inf) );
+            return true;
         }
+
+        string attr = it.getProp(prop_prefix + "opcua_nodeid");
 
         //        * Examples:
         //        *   UA_NODEID("i=13")
@@ -1085,9 +1105,6 @@ namespace uniset
         if( attr[1] != '=' && attr[2] != '=' )
             attr = "s=" + attr;
 
-        if( !IOBase::initItem(inf.get(), it, shm, prop_prefix, false, opclog, myname, filtersize, filterT) )
-            return false;
-
         inf->attrName = attr;
 
         // если вектор уже заполнен
@@ -1106,15 +1123,6 @@ namespace uniset
         {
             inf->mask = uni_atoi(smask);
             inf->offset = firstBit(inf->mask);
-        }
-
-        // значит это пороговый датчик..
-        if( inf->t_ai != DefaultObjectId )
-        {
-            opclog3 << myname << "(readItem): add threshold '" << it.getProp("name")
-                    << " for '" << uniset_conf()->oind->getNameById(inf->t_ai) << endl;
-            std::swap(iolist[maxItem++], inf);
-            return true;
         }
 
         auto vtype = IOBase::initProp(it, "opcua_type", prop_prefix, false, "");
