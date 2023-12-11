@@ -36,6 +36,26 @@ static bool opcuaCreateClient( const std::string& addr )
     return true;
 }
 
+static bool opcuaReconnectClient( const std::string& addr )
+{
+    if( client == nullptr )
+        return false;
+
+    UA_StatusCode retval = UA_Client_disconnect(client);
+
+    if( retval != UA_STATUSCODE_GOOD )
+        return false;
+
+    retval = UA_Client_connect(client, addr.c_str());
+
+    if( retval != UA_STATUSCODE_GOOD )
+    {
+        return false;
+    }
+
+    return true;
+}
+
 //static void opcuaDeleteClient()
 //{
 //    if( client == nullptr )

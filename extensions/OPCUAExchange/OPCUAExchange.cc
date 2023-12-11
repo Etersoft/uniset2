@@ -489,6 +489,12 @@ namespace uniset
                     if( ret != UA_STATUSCODE_GOOD )
                         opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
                                 << " write error: " << UA_StatusCode_name(ret) << endl;
+
+                    if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                    {
+                        ch->client->disconnect();
+                        return;
+                    }
                 }
             }
         }
@@ -506,6 +512,12 @@ namespace uniset
                     if( ret != UA_STATUSCODE_GOOD )
                         opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
                                 << " read error: " << UA_StatusCode_name(ret) << endl;
+
+                    if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                    {
+                        ch->client->disconnect();
+                        return;
+                    }
                 }
             }
         }

@@ -68,6 +68,15 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     return UA_Client_connectUsername(client, addr.c_str(), user.c_str(), pass.c_str()) == UA_STATUSCODE_GOOD;
 }
 // -----------------------------------------------------------------------------
+void OPCUAClient::disconnect() noexcept
+{
+    if( client == nullptr )
+        return;
+
+    UA_Client_disconnect(client);
+}
+
+// -----------------------------------------------------------------------------
 OPCUAClient::VarType OPCUAClient::str2vtype( std::string_view s )
 {
     if( s == "float" || s == "double" )
