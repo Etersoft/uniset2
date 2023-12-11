@@ -517,3 +517,26 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
     REQUIRE(shm->getValue(sidRespond1) == 0);
     REQUIRE(shm->getValue(sidRespond2) == 0);
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
+{
+    InitTest();
+
+    opcTestServer1->setI32(rdI101, 10);
+    opcTestServer2->setI32(rdI101, 10);
+    REQUIRE(opcTestServer1->getI32(rdI101) == 10 );
+    REQUIRE(opcTestServer2->getI32(rdI101) == 10 );
+    msleep(step_pause_msec);
+    REQUIRE(shm->getValue(sidAttrI101) == 10);
+    REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emSkipExchange ) );
+    REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emSkipExchange );
+    msleep(timeout_msec);
+    opcTestServer1->setI32(rdI101, 20);
+    opcTestServer2->setI32(rdI101, 20);
+    REQUIRE(opcTestServer1->getI32(rdI101) == 20 );
+    REQUIRE(opcTestServer2->getI32(rdI101) == 20 );
+    REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emNone ) );
+    REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emNone );
+    msleep(timeout_msec);
+    REQUIRE(shm->getValue(sidAttrI101) == 20);
+}

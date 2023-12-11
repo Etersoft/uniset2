@@ -35,6 +35,7 @@ namespace uniset
 
             bool connect( const std::string& addr );
             bool connect( const std::string& addr, const std::string& user, const std::string& pass );
+            void disconnect() noexcept;
 
             // supported types (other types are converted to these if possible)
             enum class VarType : int
