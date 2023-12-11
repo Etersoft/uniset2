@@ -189,3 +189,31 @@ TEST_CASE("[OPCUAServer]: mask read/write", "[opcuaserver][mask]")
     REQUIRE( ui->getValue(7) == 0 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[OPCUAServer]: reconnect check", "[opcuaserver][reconnect]")
+{
+    InitTest();
+
+    REQUIRE( opcuaWrite(nodeId, "AO1_S", 0) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(3) == 0 );
+    REQUIRE( opcuaWrite(nodeId, "AO1_S", 10500) );
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(3) == 10500 );
+
+    msleep(4000); // Default maxSessionTimeout=5000
+
+    REQUIRE( opcuaWrite(nodeId, "AO1_S", 101) ); // Status = Good
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(3) == 101 );
+
+    msleep(6000); // Default maxSessionTimeout=5000
+
+    REQUIRE_FALSE( opcuaWrite(nodeId, "AO1_S", 1) ); // Status = BadSessionClosed or BadSessionIdInvalid
+
+    REQUIRE( opcuaReconnectClient(addr) );
+
+    REQUIRE( opcuaWrite(nodeId, "AO1_S", 1) ); // Status = Good
+    msleep(pause_msec);
+    REQUIRE( ui->getValue(3) == 1 );
+}
+// -----------------------------------------------------------------------------
