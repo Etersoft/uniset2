@@ -772,7 +772,7 @@ uniset::SimpleInfo* UNetExchange::getInfo( const char* userparam )
     if( logserv )
     {
         inf << "LogServer: " << logserv_host << ":" << logserv_port
-            << ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" )
+            << ( logserv->isRunning() ? "   [RUNNING]" : "   [STOPPED]" )
             << endl
             << "         " << logserv->getShortInfo()
             << endl;
