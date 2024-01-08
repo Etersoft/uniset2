@@ -875,6 +875,9 @@ UWebSocketGate::UWebSocket::~UWebSocket()
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::returnObjectToPool( Poco::JSON::Object::Ptr& json )
 {
+    if( !json )
+        return;
+
     auto stype = json->get("type").toString();
 
     if( stype == "Error" )
@@ -926,7 +929,7 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
     if( EV_ERROR & revents )
         return;
 
-    if( !jbuf.empty() )
+    while( !jbuf.empty() && !cancelled )
     {
         // сперва формируем очередной пакет(поток байт) из накопившихся данных для отправки
         ostringstream out;
@@ -945,13 +948,16 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
             jbuf.pop();
 
             if( !json )
-            {
-                returnObjectToPool(json);
                 continue;
-            }
 
             json->stringify(out);
             returnObjectToPool(json);
+
+            if( out.tellp() >= sbufLim )
+            {
+                myinfoV(4) << req->clientAddress().toString() << "(write): buffer limit[" << sbufLim << "]: " << i << " objects" << endl;
+                break;
+            }
         }
 
         out << "]}";
