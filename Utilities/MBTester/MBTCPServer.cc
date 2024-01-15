@@ -79,18 +79,9 @@ void MBTCPServer::setRandomReply( long min, long max )
     rndgen = make_unique<std::uniform_int_distribution<>>(min, max);
 }
 // -------------------------------------------------------------------------
-void MBTCPServer::setFreezeReply( vector<string> strreglist )
+void MBTCPServer::setFreezeReply( unordered_map<uint16_t, uint16_t>& strreglist )
 {
-    for (auto i : strreglist)
-    {
-        auto val = uniset::explode_str(i, '=');
-        int reg = uni_atoi(val[0]);
-        int value = uni_atoi(val[1]);
-        pair<int, int> v;
-        v.first = reg;
-        v.second = value;
-        reglist.insert(v);
-    }
+    reglist = strreglist;
 }
 // -------------------------------------------------------------------------
 void MBTCPServer::execute()
@@ -218,10 +209,10 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( rndgen )
-            reply.addData((*rndgen.get())(*gen.get()));
-        else if(auto search = reglist.find(reg); search != reglist.end())
+        if(auto search = reglist.find(reg); search != reglist.end())
             reply.addData(search->second);
+        else if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
         else
@@ -266,11 +257,10 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
 
     for( ; num < query.count; num++, reg++ )
     {
-
-        if( rndgen )
-            reply.addData((*rndgen.get())(*gen.get()));
-        else if(auto search = reglist.find(reg); search != reglist.end())
+        if(auto search = reglist.find(reg); search != reglist.end())
             reply.addData(search->second);
+        else  if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
         else

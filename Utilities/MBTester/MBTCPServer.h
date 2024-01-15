@@ -26,7 +26,7 @@ class MBTCPServer
 
         void setRandomReply( long min, long max );
 
-        void setFreezeReply( std::vector<std::string> );
+        void setFreezeReply( std::unordered_map<uint16_t, uint16_t>& );
 
         inline uniset::timeout_t setAfterSendPause( uniset::timeout_t msec )
         {
@@ -104,7 +104,7 @@ class MBTCPServer
         bool verbose = { false };
         long replyVal = { -1 };
 
-        std::map<int, int> reglist = {};
+        std::unordered_map<uint16_t, uint16_t> reglist = {};
 
         std::random_device rnd;
         std::unique_ptr<std::mt19937> gen = { nullptr };

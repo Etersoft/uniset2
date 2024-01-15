@@ -36,7 +36,7 @@ static void print_help()
     printf("[-s|--after-send-pause] msec        - Pause after send request. Default: 0\n");
     printf("[-m|--max-sessions] num             - Set the maximum number of sessions. Default: 10\n");
     printf("[-r|--random] [min,max]             - Reply random value for all queries. Default: [0,65535]\n");
-    printf("[-x|--freeze] id1=val1,id2=val2,... - Reply value for some registers.\n");
+    printf("[-z|--freeze] id1=val1,id2=val2,... - Reply value for some registers.\n");
 }
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -56,9 +56,8 @@ int main( int argc, char** argv )
     size_t maxSessions = 10;
     int min = 0;
     int max = 65535;
-    vector<string> reglist;
     bool random = false;
-    bool freeze = false;
+    std::unordered_map<uint16_t, uint16_t> reglist = {};
 
     try
     {
@@ -123,11 +122,30 @@ int main( int argc, char** argv )
                     break;
 
                 case 'z':
-                    freeze = true;
-
                     if( checkArg(optind, argc, argv) )
                     {
-                        reglist = uniset::explode_str(argv[optind], ',');
+                        auto str = uniset::explode_str(argv[optind], ',');
+
+                        if( str.size() < 1 )
+                        {
+                            cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
+                            return 1;
+                        }
+
+                        for (auto i : str)
+                        {
+                            auto tmp = uniset::explode_str(i, '=');
+
+                            if( tmp.size() < 2 )
+                            {
+                                cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
+                                return 1;
+                            }
+
+                            reglist[uni_atoi(tmp[0])] = uni_atoi(tmp[1]);
+
+
+                        }
                     }
 
                     break;
@@ -166,7 +184,7 @@ int main( int argc, char** argv )
         if( random )
             mbs.setRandomReply(min, max);
 
-        if( freeze )
+        if( !reglist.empty()  )
             mbs.setFreezeReply(reglist);
 
         mbs.execute();
