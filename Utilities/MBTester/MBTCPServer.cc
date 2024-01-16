@@ -107,7 +107,9 @@ ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
 
     if( query.count <= 1 )
     {
-        if( rndgen )
+        if(auto search = reglist.find(query.start); search != reglist.end())
+            reply.addData(search->second);
+        else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
@@ -123,7 +125,9 @@ ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
 
     for( ; num < query.count; num++, reg++ )
     {
-        if( rndgen )
+        if(auto search = reglist.find(reg); search != reglist.end())
+            reply.addData(search->second);
+        else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
@@ -175,7 +179,9 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 
         for( size_t i = 0; i < bcnt; i++ )
         {
-            if( rndgen )
+            if(auto search = reglist.find(query.start); search != reglist.end())
+                reply.addData(search->second);
+            else if( rndgen )
                 reply.addData((*rndgen.get())(*gen.get()));
             else
                 reply.addData(replyVal);
