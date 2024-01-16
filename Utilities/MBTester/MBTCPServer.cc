@@ -79,7 +79,7 @@ void MBTCPServer::setRandomReply( long min, long max )
     rndgen = make_unique<std::uniform_int_distribution<>>(min, max);
 }
 // -------------------------------------------------------------------------
-void MBTCPServer::setFreezeReply( unordered_map<uint16_t, uint16_t>& strreglist )
+void MBTCPServer::setFreezeReply( const unordered_map<uint16_t, uint16_t>& strreglist )
 {
     reglist = strreglist;
 }

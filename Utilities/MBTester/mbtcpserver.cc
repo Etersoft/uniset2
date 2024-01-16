@@ -63,7 +63,7 @@ int main( int argc, char** argv )
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "hva:p:i:c:s:m:r:z", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hva:p:i:c:s:m:rz", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -132,9 +132,9 @@ int main( int argc, char** argv )
                             return 1;
                         }
 
-                        for (auto i : str)
+                        for (const auto& s : str)
                         {
-                            auto tmp = uniset::explode_str(i, '=');
+                            auto tmp = uniset::explode_str(s, '=');
 
                             if( tmp.size() < 2 )
                             {
