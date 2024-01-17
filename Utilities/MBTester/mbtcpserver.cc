@@ -19,24 +19,24 @@ static struct option longopts[] =
     { "after-send-pause", required_argument, 0, 's' },
     { "max-sessions", required_argument, 0, 'm' },
     { "random", optional_argument, 0, 'r' },
-    { "freeze", optional_argument, 0, 'x' },
+    { "freeze", required_argument, 0, 'z' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
 static void print_help()
 {
     printf("Example: uniset-mbtcpserver-echo -i localhost -p 2049 -v \n");
-    printf("-h|--help                           - this message\n");
-    printf("[-v|--verbose]                      - Print all messages to stdout\n");
-    printf("[-i|--iaddr] ip                     - Server listen ip. Default 127.0.0.1\n");
-    printf("[-a|--myaddr] addr1,addr2,...       - Modbus address for master. Default: 0x01.\n");
-    printf("                    myaddr=0        - Reply to all RTU-addresses (broadcast).\n");
-    printf("[-p|--port] port                    - Server port. Default: 502.\n");
-    printf("[-c|--const-reply] val              - Reply 'val' for all queries\n");
-    printf("[-s|--after-send-pause] msec        - Pause after send request. Default: 0\n");
-    printf("[-m|--max-sessions] num             - Set the maximum number of sessions. Default: 10\n");
-    printf("[-r|--random] [min,max]             - Reply random value for all queries. Default: [0,65535]\n");
-    printf("[-z|--freeze] id1=val1,id2=val2,... - Reply value for some registers.\n");
+    printf("-h|--help                               - this message\n");
+    printf("[-v|--verbose]                          - Print all messages to stdout\n");
+    printf("[-i|--iaddr] ip                         - Server listen ip. Default 127.0.0.1\n");
+    printf("[-a|--myaddr] addr1,addr2,...           - Modbus address for master. Default: 0x01.\n");
+    printf("                    myaddr=0            - Reply to all RTU-addresses (broadcast).\n");
+    printf("[-p|--port] port                        - Server port. Default: 502.\n");
+    printf("[-c|--const-reply] val                  - Reply 'val' for all queries\n");
+    printf("[-s|--after-send-pause] msec            - Pause after send request. Default: 0\n");
+    printf("[-m|--max-sessions] num                 - Set the maximum number of sessions. Default: 10\n");
+    printf("[-r|--random] [min,max]                 - Reply random value for all queries. Default: [0,65535]\n");
+    printf("[-z|--freeze] reg1=val1,reg2=val2,...   - Reply value for some registers.\n");
 }
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -63,7 +63,7 @@ int main( int argc, char** argv )
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "hva:p:i:c:s:m:rz", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hva:p:i:c:s:m:rz:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -122,33 +122,32 @@ int main( int argc, char** argv )
                     break;
 
                 case 'z':
-                    if( checkArg(optind, argc, argv) )
-                    {
-                        auto str = uniset::explode_str(argv[optind], ',');
+                {
+                    auto str = uniset::explode_str(optarg, ',');
 
-                        if( str.size() < 1 )
+                    if( str.size() < 1 )
+                    {
+                        cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
+                        return 1;
+                    }
+
+                    for (const auto& s : str)
+                    {
+                        auto tmp = uniset::explode_str(s, '=');
+
+                        if( tmp.size() < 2 )
                         {
                             cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
                             return 1;
                         }
 
-                        for (const auto& s : str)
-                        {
-                            auto tmp = uniset::explode_str(s, '=');
-
-                            if( tmp.size() < 2 )
-                            {
-                                cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
-                                return 1;
-                            }
-
-                            reglist[uni_atoi(tmp[0])] = uni_atoi(tmp[1]);
+                        reglist[uni_atoi(tmp[0])] = uni_atoi(tmp[1]);
 
 
-                        }
                     }
+                }
 
-                    break;
+                break;
 
                 case '?':
                 default:
