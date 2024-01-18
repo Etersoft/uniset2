@@ -137,7 +137,7 @@ int main( int argc, char** argv )
 
                         if( tmp.size() < 2 )
                         {
-                            cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
+                            cerr << "Error in \"" << s << "\". Use -z reg1=value1,reg2=value" << endl;
                             return 1;
                         }
 
