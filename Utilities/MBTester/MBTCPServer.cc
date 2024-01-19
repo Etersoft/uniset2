@@ -18,14 +18,14 @@ using namespace ModbusRTU;
 MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const string& inetaddr, int port, bool verb ):
     sslot(NULL),
     vaddr(myaddr),
-    //    prev(ModbusRTU::erNoError),
-    //    askCount(0),
+    // prev(ModbusRTU::erNoError),
+    // askCount(0),
     verbose(verb),
     replyVal(-1)
 {
-    //    int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
-    //    if( replyTimeout <= 0 )
-    //        replyTimeout = 2000;
+    // int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
+    // if( replyTimeout <= 0 )
+    // replyTimeout = 2000;
 
     if( verbose )
         cout << "(init): "
@@ -33,7 +33,7 @@ MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const str
 
     sslot = new ModbusTCPServerSlot(inetaddr, port);
 
-    //    sslot->initLog(conf,name,logfile);
+    // sslot->initLog(conf,name,logfile);
 
     sslot->connectReadCoil( sigc::mem_fun(this, &MBTCPServer::readCoilStatus) );
     sslot->connectReadInputStatus( sigc::mem_fun(this, &MBTCPServer::readInputStatus) );
@@ -50,8 +50,8 @@ MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const str
     sslot->connectRemoteService( sigc::mem_fun(this, &MBTCPServer::remoteService) );
     sslot->connectFileTransfer( sigc::mem_fun(this, &MBTCPServer::fileTransfer) );
 
-    //  sslot->setRecvTimeout(6000);
-    //  sslot->setReplyTimeout(10000);
+    // sslot->setRecvTimeout(6000);
+    // sslot->setReplyTimeout(10000);
 
     // init random generator
     gen = std::make_unique<std::mt19937>(rnd());
@@ -157,7 +157,16 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
     d.b[3] = 1;
     d.b[7] = 1;
 
-    if( replyVal == -1 )
+    if(auto search = reglist.find(query.start); search != reglist.end())
+        reply.addData(search->second);
+    else if( rndgen )
+    {
+        size_t bcnt = ModbusRTU::numBytes(query.count);
+
+        for( size_t i = 0; i < bcnt; i++ )
+            reply.addData((*rndgen.get())(*gen.get()));
+    }
+    else if( replyVal == -1 )
     {
         size_t bnum = 0;
         size_t i = 0;
@@ -199,7 +208,9 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 
     if( query.count <= 1 )
     {
-        if( rndgen )
+        if(auto search = reglist.find(query.start); search != reglist.end())
+            reply.addData(search->second);
+        else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
@@ -225,8 +236,8 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
             reply.addData(reg);
     }
 
-    //    cerr << "************ reply: cnt=" << reply.count << endl;
-    //    cerr << "reply: " << reply << endl;
+    // cerr << "************ reply: cnt=" << reply.count << endl;
+    // cerr << "reply: " << reply << endl;
 
     // Если мы в начале проверили, что запрос входит в разрешёный диапазон
     // то теоретически этой ситуации возникнуть не может...
@@ -247,7 +258,9 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
 
     if( query.count <= 1 )
     {
-        if( rndgen )
+        if(auto search = reglist.find(query.start); search != reglist.end())
+            reply.addData(search->second);
+        else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
@@ -265,7 +278,7 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
     {
         if(auto search = reglist.find(reg); search != reglist.end())
             reply.addData(search->second);
-        else  if( rndgen )
+        else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
             reply.addData(replyVal);
@@ -433,10 +446,10 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
     }
 
     // вычисляем общий размер файла в "пакетах"
-    //    (void)lseek(fd,0,SEEK_END);
-    //    int numpacks = lseek(fd,0,SEEK_CUR) / ModbusRTU::FileTransferRetMessage::MaxDataLen;
-    //    if( lseek(fd,0,SEEK_CUR) % ModbusRTU::FileTransferRetMessage::MaxDataLen )
-    //        numpacks++;
+    // (void)lseek(fd,0,SEEK_END);
+    // int numpacks = lseek(fd,0,SEEK_CUR) / ModbusRTU::FileTransferRetMessage::MaxDataLen;
+    // if( lseek(fd,0,SEEK_CUR) % ModbusRTU::FileTransferRetMessage::MaxDataLen )
+    // numpacks++;
 
     struct stat fs;
 
@@ -449,8 +462,8 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 
     close(fd);
 
-    //    cerr << "******************* ret = " << ret << " fsize = " << fs.st_size
-    //        << " maxsize = " << ModbusRTU::FileTransferRetMessage::MaxDataLen << endl;
+    // cerr << "******************* ret = " << ret << " fsize = " << fs.st_size
+    // << " maxsize = " << ModbusRTU::FileTransferRetMessage::MaxDataLen << endl;
 
     int numpacks = fs.st_size / ModbusRTU::FileTransferRetMessage::MaxDataLen;
 
@@ -521,8 +534,8 @@ ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query,
         reply.mf = 0xFF;
         reply.conformity = rdevBasicDevice;
         reply.addData(query.objID, "etersoft");
-        //        reply.addData(rdiProductCode, PACKAGE_NAME);
-        //        reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+        // reply.addData(rdiProductCode, PACKAGE_NAME);
+        // reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
         return erNoError;
     }
     else if( query.objID == rdiProductCode )

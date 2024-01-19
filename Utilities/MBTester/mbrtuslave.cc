@@ -19,6 +19,7 @@ static struct option longopts[] =
     { "use485F", no_argument, 0, 'y' },
     { "const-reply", required_argument, 0, 'c' },
     { "random", optional_argument, 0, 'r' },
+    { "freeze", required_argument, 0, 'z' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -33,6 +34,7 @@ static void print_help()
     printf("[-v|--verbose]         - Print all messages to stdout\n");
     printf("[-c|--const-reply] val1 [val2 val3] - Reply val for all queries\n");
     printf("[-r|--random] [min,max] - Reply random value for all queries. Default: [0,65535]\n");
+    printf("[-z|--freeze] reg1=val1,reg2=val2,...   - Reply value for some registers.\n");
 }
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -54,12 +56,13 @@ int main( int argc, char** argv )
     int min = 0;
     int max = 65535;
     bool random = false;
+    std::unordered_map<uint16_t, uint16_t> reglist = {};
 
     try
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "hva:d:s:yc:r", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hva:d:s:yc:rz:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -120,6 +123,34 @@ int main( int argc, char** argv )
 
                     break;
 
+                case 'z':
+                {
+                    auto str = uniset::explode_str(optarg, ',');
+
+                    if( str.size() < 1 )
+                    {
+                        cerr << "Unknown reg or value. Use -z reg1=value1,reg2=value" << endl;
+                        return 1;
+                    }
+
+                    for (const auto& s : str)
+                    {
+                        auto tmp = uniset::explode_str(s, '=');
+
+                        if( tmp.size() < 2 )
+                        {
+                            cerr << "Error in \"" << s << "\". Use -z reg1=value1,reg2=value" << endl;
+                            return 1;
+                        }
+
+                        reglist[uni_atoi(tmp[0])] = uni_atoi(tmp[1]);
+
+
+                    }
+                }
+
+                break;
+
                 case '?':
                 default:
                     printf("? argument\n");
@@ -152,6 +183,9 @@ int main( int argc, char** argv )
 
         if( replyVal3 != -1 )
             mbs.setReply3(replyVal3);
+
+        if( !reglist.empty()  )
+            mbs.setFreezeReply(reglist);
 
         if( random )
             mbs.setRandomReply(min, max);

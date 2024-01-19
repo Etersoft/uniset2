@@ -36,6 +36,8 @@ class MBSlave
 
         void setRandomReply( long min, long max );
 
+        void setFreezeReply( const std::unordered_map<uint16_t, uint16_t>& );
+
         void execute();    /*!< основной цикл работы */
 
         void setLog( std::shared_ptr<DebugStream> dlog );
@@ -105,6 +107,7 @@ class MBSlave
         std::random_device rnd;
         std::unique_ptr<std::mt19937> gen = { nullptr };
         std::unique_ptr<std::uniform_int_distribution<>> rndgen = { nullptr };
+        std::unordered_map<uint16_t, uint16_t> reglist = {};
 #if 0
         typedef std::unordered_map<uniset::ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
