@@ -18,27 +18,25 @@ using namespace ModbusRTU;
 MBSlave::MBSlave(const std::unordered_set<ModbusAddr>& _vaddr, const std::string& dev, const std::string& speed, bool use485 ):
     rscomm(NULL),
     vaddr(_vaddr),
-    //    prev(ModbusRTU::erNoError),
-    //    askCount(0),
+    // prev(ModbusRTU::erNoError),
+    // askCount(0),
     verbose(false),
-    replyVal(-1),
-    replyVal2(-1),
-    replyVal3(-1)
+    replyVal(-1)
 {
-    //    int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
-    //    if( replyTimeout <= 0 )
-    //        replyTimeout = 2000;
+    // int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
+    // if( replyTimeout <= 0 )
+    // replyTimeout = 2000;
 
-    //  if( verbose )
-    //      cout << "(init): "
-    //           << " addr=" << ModbusServer::vaddr2str(vaddr)
-    //           << " dev=" << dev
-    //           << " speed=" << speed;
+    // if( verbose )
+    // cout << "(init): "
+    // << " addr=" << ModbusServer::vaddr2str(vaddr)
+    // << " dev=" << dev
+    // << " speed=" << speed;
 
-    rscomm     = new ModbusRTUSlaveSlot(dev, use485);
+    rscomm = new ModbusRTUSlaveSlot(dev, use485);
 
     rscomm->setSpeed(speed);
-    //    rscomm->initLog(conf,name,logfile);
+    // rscomm->initLog(conf,name,logfile);
 
     rscomm->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
     rscomm->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
@@ -57,8 +55,8 @@ MBSlave::MBSlave(const std::unordered_set<ModbusAddr>& _vaddr, const std::string
 
 
     rscomm->setRecvTimeout(2000);
-    //    rscomm->setAfterSendPause(afterSend);
-    //    rscomm->setReplyTimeout(replyTimeout);
+    // rscomm->setAfterSendPause(afterSend);
+    // rscomm->setReplyTimeout(replyTimeout);
 
     // build file list...
 
@@ -99,7 +97,7 @@ void MBSlave::execute()
         // собираем статистику обмена
         if( prev != ModbusRTU::erTimeOut )
         {
-            //  с проверкой на переполнение
+            // с проверкой на переполнение
             askCount = askCount >= numeric_limits<long>::max() ? 0 : askCount + 1;
 
             if( res != ModbusRTU::erNoError )
@@ -131,10 +129,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
     d.b[4] = 1;
     d.b[6] = 1;
 
-    // Фомирование ответа:
-    size_t bcnt = ModbusRTU::numBytes(query.count);
-
-    for( size_t i = 0; i < bcnt; i++ )
+    if( query.count <= 1 )
     {
         if(auto search = reglist.find(query.start); search != reglist.end())
             reply.addData(search->second);
@@ -144,6 +139,32 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
             reply.addData(replyVal);
         else
             reply.addData(d);
+
+        return ModbusRTU::erNoError;
+    }
+
+    // Фомирование ответа:
+    int num = 0; // добавленное количество данных
+    ModbusData reg = query.start;
+
+    for( ; num < query.count; num++, reg++ )
+    {
+        if(auto search = reglist.find(reg); search != reglist.end())
+            reply.addData(search->second);
+        else if( rndgen )
+            reply.addData((*rndgen.get())(*gen.get()));
+        else if( replyVal != -1 )
+            reply.addData(replyVal);
+        else
+            reply.addData(d);
+    }
+
+    // Если мы в начале проверили, что запрос входит в разрешёный диапазон
+    // то теоретически этой ситуации возникнуть не может...
+    if( reply.bcnt < query.count )
+    {
+        cerr << "(readCoilStatus): Получили меньше чем ожидали. "
+             << " Запросили " << query.count << " получили " << reply.bcnt << endl;
     }
 
     return ModbusRTU::erNoError;
@@ -171,14 +192,14 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
     }
     else if( replyVal == -1 )
     {
-        int bnum = 0;
-        int i = 0;
+        size_t bnum = 0;
+        size_t i = 0;
 
         while( i < query.count )
         {
             reply.addData(0);
 
-            for( unsigned int nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
+            for( size_t nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
                 reply.setBit(bnum, nbit, d.b[nbit]);
 
             bnum++;
@@ -194,10 +215,6 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
                 reply.addData(search->second);
             else if( rndgen )
                 reply.addData((*rndgen.get())(*gen.get()));
-            else if( i == 1 )
-                reply.addData(replyVal2);
-            else if( i == 2 )
-                reply.addData(replyVal3);
             else
                 reply.addData(replyVal);
         }
@@ -237,14 +254,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
         else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
-        {
-            if( num == 1 && replyVal2 != -1  )
-                reply.addData(replyVal2);
-            else if( num == 2 && replyVal3 != -1 )
-                reply.addData(replyVal3);
-            else
-                reply.addData(replyVal);
-        }
+            reply.addData(replyVal);
         else
             reply.addData(reg);
     }
@@ -291,14 +301,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
         else if( rndgen )
             reply.addData((*rndgen.get())(*gen.get()));
         else if( replyVal != -1 )
-        {
-            if( num == 1 && replyVal2 != -1  )
-                reply.addData(replyVal2);
-            else if( num == 2 && replyVal3 != -1 )
-                reply.addData(replyVal3);
-            else
-                reply.addData(replyVal);
-        }
+            reply.addData(replyVal);
         else
             reply.addData(reg);
     }
@@ -463,10 +466,10 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
     }
 
     // вычисляем общий размер файла в "пакетах"
-    //    (void)lseek(fd,0,SEEK_END);
-    //    int numpacks = lseek(fd,0,SEEK_CUR) / ModbusRTU::FileTransferRetMessage::MaxDataLen;
-    //    if( lseek(fd,0,SEEK_CUR) % ModbusRTU::FileTransferRetMessage::MaxDataLen )
-    //        numpacks++;
+    // (void)lseek(fd,0,SEEK_END);
+    // int numpacks = lseek(fd,0,SEEK_CUR) / ModbusRTU::FileTransferRetMessage::MaxDataLen;
+    // if( lseek(fd,0,SEEK_CUR) % ModbusRTU::FileTransferRetMessage::MaxDataLen )
+    // numpacks++;
 
     struct stat fs;
 
@@ -479,8 +482,8 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 
     close(fd);
 
-    //    cerr << "******************* ret = " << ret << " fsize = " << fs.st_size
-    //        << " maxsize = " << ModbusRTU::FileTransferRetMessage::MaxDataLen << endl;
+    // cerr << "******************* ret = " << ret << " fsize = " << fs.st_size
+    // << " maxsize = " << ModbusRTU::FileTransferRetMessage::MaxDataLen << endl;
 
     int numpacks = fs.st_size / ModbusRTU::FileTransferRetMessage::MaxDataLen;
 
@@ -554,8 +557,8 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
         reply.mf = 0xFF;
         reply.conformity = rdevBasicDevice;
         reply.addData(query.objID, "etersoft");
-        //        reply.addData(rdiProductCode, PACKAGE_NAME);
-        //        reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+        // reply.addData(rdiProductCode, PACKAGE_NAME);
+        // reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
         return erNoError;
     }
     else if( query.objID == rdiProductCode )
