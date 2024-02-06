@@ -183,7 +183,7 @@ namespace uniset
         // определяем фильтр
         s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
         s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
-        auto regexp_fvalue = conf->getArg2Param("--" + prefix + "filter-value-re", it.getProp("filterValueRE"));
+        auto regexp_fvalue = conf->getArg2Param("--" + prefix + "-filter-value-re", it.getProp("filterValueRE"));
 
         if( !regexp_fvalue.empty() )
         {
