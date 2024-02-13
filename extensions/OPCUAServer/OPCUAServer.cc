@@ -131,7 +131,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     // определяем фильтр
     s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"));
     s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"));
-    auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "filter-value-re", it.getProp("filterValueRE"));
+    auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "-filter-value-re", it.getProp("filterValueRE"));
 
     if( !regexp_fvalue.empty() )
     {
@@ -143,7 +143,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
         catch( const std::regex_error& e )
         {
             ostringstream err;
-            err << myname << "(init): 'filter-value-re' regular expression error: " << e.what();
+            err << myname << "(init): '--" + argprefix + "-filter-value-re' regular expression error: " << e.what();
             throw uniset::SystemError(err.str());
         }
     }
