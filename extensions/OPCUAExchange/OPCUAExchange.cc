@@ -195,7 +195,7 @@ namespace uniset
             catch (const std::regex_error& e)
             {
                 ostringstream err;
-                err << myname << "(init): 'filter-value-re' regular expression error: " << e.what();
+                err << myname << "(init): '--" + prefix + "-filter-value-re' regular expression error: " << e.what();
                 throw uniset::SystemError(err.str());
             }
         }
