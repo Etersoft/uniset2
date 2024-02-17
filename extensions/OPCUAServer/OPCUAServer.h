@@ -186,7 +186,7 @@ namespace uniset
 
             using DefaultValueType = int32_t;
             using DefaultValueUType = uint32_t;
-            static const opcua::Type DefaultVariableType = { opcua::Type::Int32 };
+            static const opcua::DataTypeId DefaultVariableType = { opcua::DataTypeId::Int32 };
 
             static uint8_t firstBit( DefaultValueUType mask );
             // offset = firstBit(mask)
@@ -234,7 +234,7 @@ namespace uniset
                 bool state = { false };
                 DefaultValueUType mask = { 0 };
                 uint8_t offset = { 0 };
-                opcua::Type vtype = { DefaultVariableType };
+                opcua::DataTypeId vtype = { DefaultVariableType };
                 uint8_t precision = { 0 }; // only for float
             };
 

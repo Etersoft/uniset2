@@ -324,14 +324,14 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     }
 
     auto vtype = it.getProp(propPrefix + "opcua_type");
-    opcua::Type opctype = DefaultVariableType;
+    opcua::DataTypeId opctype = DefaultVariableType;
 
     if( vtype == "bool" )
-        opctype = opcua::Type::Boolean;
+        opctype = opcua::DataTypeId::Boolean;
     else if( vtype == "float" )
-        opctype = opcua::Type::Float;
+        opctype = opcua::DataTypeId::Float;
     else if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
-        opctype = opcua::Type::Boolean;
+        opctype = opcua::DataTypeId::Boolean;
 
     uint8_t precision = (uint8_t)it.getIntProp(propPrefix + "precision");
 
@@ -415,7 +415,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         }
         else if( iotype == UniversalIO::AI )
         {
-            if( opctype == opcua::Type::Float )
+            if( opctype == opcua::DataTypeId::Float )
             {
                 inputArguments.dataType = UA_TYPES[UA_TYPES_FLOAT].typeId;
                 inputArguments.description = UA_LOCALIZEDTEXT("en-US", "float value");
@@ -475,18 +475,18 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     // init default value
     DefaultValueType defVal = (DefaultValueType)it.getPIntProp("default", 0);
 
-    if( opctype == opcua::Type::Boolean )
+    if( opctype == opcua::DataTypeId::Boolean )
     {
         bool set = defVal ? true : false;
-        vnode.writeScalar(set);
+        vnode.writeValueScalar(set);
     }
-    else if( opctype == opcua::Type::Float )
+    else if( opctype == opcua::DataTypeId::Float )
     {
         float v = defVal;
-        vnode.writeScalar(v);
+        vnode.writeValueScalar(v);
     }
     else
-        vnode.writeScalar(defVal);
+        vnode.writeValueScalar(defVal);
 
     auto i = variables.emplace(sid, vnode);
     i.first->second.stype = iotype;
@@ -799,26 +799,26 @@ void OPCUAServer::update()
             if( it->second.stype == UniversalIO::DO )
             {
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                it->second.node.writeScalar(it->second.state);
+                it->second.node.writeValueScalar(it->second.state);
             }
             else if( it->second.stype == UniversalIO::AO )
             {
-                if( it->second.vtype == opcua::Type::Float )
+                if( it->second.vtype == opcua::DataTypeId::Float )
                 {
                     uniset::uniset_rwmutex_rlock lock(it->second.vmut);
                     float fval = (float)it->second.value / pow(10.0, it->second.precision);
-                    it->second.node.writeScalar( fval );
+                    it->second.node.writeValueScalar( fval );
                 }
                 else
                 {
                     uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                    it->second.node.writeScalar(it->second.value);
+                    it->second.node.writeValueScalar(it->second.value);
                 }
             }
             else if( it->second.stype == UniversalIO::DI )
             {
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                auto set = it->second.node.readScalar<bool>();
+                auto set = it->second.node.readValueScalar<bool>();
                 auto val = getBits(set ? 1 : 0, it->second.mask, it->second.offset);
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " set=" << set
@@ -831,10 +831,10 @@ void OPCUAServer::update()
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
                 DefaultValueType val = 0;
 
-                if( it->second.vtype == opcua::Type::Float )
-                    val = lroundf( it->second.node.readScalar<float>() * pow(10.0, it->second.precision) );
+                if( it->second.vtype == opcua::DataTypeId::Float )
+                    val = lroundf( it->second.node.readValueScalar<float>() * pow(10.0, it->second.precision) );
                 else
-                    val = getBits(it->second.node.readScalar<DefaultValueType>(), it->second.mask, it->second.offset);
+                    val = getBits(it->second.node.readValueScalar<DefaultValueType>(), it->second.mask, it->second.offset);
 
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " value=" << val

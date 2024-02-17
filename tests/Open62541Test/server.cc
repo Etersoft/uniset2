@@ -28,10 +28,10 @@ int main()
     myIntegerNode.writeDescription({"en-US", "the answer"});
 
     // write value
-    myIntegerNode.writeScalar(42);
+    myIntegerNode.writeValueScalar(42);
 
     // read value
-    std::cout << "The answer is: " << myIntegerNode.readScalar<int>() << std::endl;
+    std::cout << "The answer is: " << myIntegerNode.readValueScalar<int>() << std::endl;
 
     server.run();
 

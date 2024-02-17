@@ -186,17 +186,17 @@ TEST_CASE("OPCUAExchange: read types", "[opcua][exchange][types]")
     InitTest();
 
     // init
-    REQUIRE_NOTHROW(opcTestServer1->setX(1002, 2, opcua::Type::Int16));
-    REQUIRE_NOTHROW(opcTestServer1->setX(1003, 3, opcua::Type::UInt16));
-    REQUIRE_NOTHROW(opcTestServer1->setX(1004, 4, opcua::Type::Int64));
-    REQUIRE_NOTHROW(opcTestServer1->setX(1005, 5, opcua::Type::UInt64));
-    REQUIRE_NOTHROW(opcTestServer1->setX(1006, 6, opcua::Type::Byte));
+    REQUIRE_NOTHROW(opcTestServer1->setX(1002, 2, opcua::DataTypeId::Int16));
+    REQUIRE_NOTHROW(opcTestServer1->setX(1003, 3, opcua::DataTypeId::UInt16));
+    REQUIRE_NOTHROW(opcTestServer1->setX(1004, 4, opcua::DataTypeId::Int64));
+    REQUIRE_NOTHROW(opcTestServer1->setX(1005, 5, opcua::DataTypeId::UInt64));
+    REQUIRE_NOTHROW(opcTestServer1->setX(1006, 6, opcua::DataTypeId::Byte));
     // check
-    REQUIRE(opcTestServer1->getX(1002, opcua::Type::Int16) == 2 );
-    REQUIRE(opcTestServer1->getX(1003, opcua::Type::UInt16) == 3 );
-    REQUIRE(opcTestServer1->getX(1004, opcua::Type::Int64) == 4 );
-    REQUIRE(opcTestServer1->getX(1005, opcua::Type::UInt64) == 5 );
-    REQUIRE(opcTestServer1->getX(1006, opcua::Type::Byte) == 6 );
+    REQUIRE(opcTestServer1->getX(1002, opcua::DataTypeId::Int16) == 2 );
+    REQUIRE(opcTestServer1->getX(1003, opcua::DataTypeId::UInt16) == 3 );
+    REQUIRE(opcTestServer1->getX(1004, opcua::DataTypeId::Int64) == 4 );
+    REQUIRE(opcTestServer1->getX(1005, opcua::DataTypeId::UInt64) == 5 );
+    REQUIRE(opcTestServer1->getX(1006, opcua::DataTypeId::Byte) == 6 );
 
     REQUIRE_NOTHROW(shm->setValue(1022, 102)); // int16
     REQUIRE_NOTHROW(shm->setValue(1023, 103)); // uint16
@@ -205,11 +205,11 @@ TEST_CASE("OPCUAExchange: read types", "[opcua][exchange][types]")
     REQUIRE_NOTHROW(shm->setValue(1026, 106)); // byte
     msleep(step_pause_msec);
 
-    REQUIRE(opcTestServer1->getX(1002, opcua::Type::Int16) == 102 );
-    REQUIRE(opcTestServer1->getX(1003, opcua::Type::UInt16) == 103 );
-    REQUIRE(opcTestServer1->getX(1004, opcua::Type::Int64) == 104 );
-    REQUIRE(opcTestServer1->getX(1005, opcua::Type::UInt64) == 105 );
-    REQUIRE(opcTestServer1->getX(1006, opcua::Type::Byte) == 106 );
+    REQUIRE(opcTestServer1->getX(1002, opcua::DataTypeId::Int16) == 102 );
+    REQUIRE(opcTestServer1->getX(1003, opcua::DataTypeId::UInt16) == 103 );
+    REQUIRE(opcTestServer1->getX(1004, opcua::DataTypeId::Int64) == 104 );
+    REQUIRE(opcTestServer1->getX(1005, opcua::DataTypeId::UInt64) == 105 );
+    REQUIRE(opcTestServer1->getX(1006, opcua::DataTypeId::Byte) == 106 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: first bit", "[opcua][firstbit]")
