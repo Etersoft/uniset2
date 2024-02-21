@@ -26,6 +26,7 @@ class OPCUATestServer
         void setBool( const std::string& varname, bool set );
         void setI32( int num, int32_t val );
         void setF32( const std::string& varname, float val );
+        void setRWLimits(unsigned int rlim, unsigned int wlim);
 
         void setX( int num, int32_t val, opcua::DataTypeId type );
         int32_t getX( int num, opcua::DataTypeId type );

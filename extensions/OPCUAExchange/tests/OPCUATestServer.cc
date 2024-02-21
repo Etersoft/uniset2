@@ -48,6 +48,13 @@ OPCUATestServer::~OPCUATestServer()
 {
 }
 // -------------------------------------------------------------------------
+void OPCUATestServer::setRWLimits(unsigned int rlim, unsigned int wlim)
+{
+    auto opcConfig = UA_Server_getConfig(server->handle());
+    opcConfig->maxNodesPerRead = rlim;
+    opcConfig->maxNodesPerWrite = wlim;
+}
+// -------------------------------------------------------------------------
 void OPCUATestServer::setI32( int num, int32_t val )
 {
     auto it = imap.find(num);
