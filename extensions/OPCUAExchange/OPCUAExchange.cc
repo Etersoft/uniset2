@@ -280,6 +280,9 @@ namespace uniset
 
         vmonit(activateTimeout);
 
+        maxReadItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerRead", it.getProp("maxNodesPerRead"),0);
+        maxWriteItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerWrite", it.getProp("maxNodesPerWrite"),0);
+
         if( !shm->isLocalwork() ) // ic
         {
             force_out = true;
@@ -481,19 +484,22 @@ namespace uniset
             {
                 if (v.first == 0 || tick % v.first == 0)
                 {
-                    opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " write "
-                            << v.second->ids.size() << " attrs" << endl;
-
-                    auto ret = ch->client->write32(v.second->ids);
-
-                    if( ret != UA_STATUSCODE_GOOD )
-                        opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
-                                << " write error: " << UA_StatusCode_name(ret) << endl;
-
-                    if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                    for(auto &it: v.second->ids)
                     {
-                        ch->client->disconnect();
-                        return;
+                        opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " write "
+                                << it.size() << " attrs" << endl;
+
+                        auto ret = ch->client->write32(it);
+
+                        if( ret != UA_STATUSCODE_GOOD )
+                            opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
+                                    << " write error: " << UA_StatusCode_name(ret) << endl;
+
+                        if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                        {
+                            ch->client->disconnect();
+                            return;
+                        }
                     }
                 }
             }
@@ -505,18 +511,23 @@ namespace uniset
             {
                 if (v.first == 0 || tick % v.first == 0)
                 {
-                    opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
-                            << v.second->ids.size() << " attrs" << endl;
-                    auto ret = ch->client->read(v.second->ids, v.second->results);
-
-                    if( ret != UA_STATUSCODE_GOOD )
-                        opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
-                                << " read error: " << UA_StatusCode_name(ret) << endl;
-
-                    if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                    std::vector<std::vector<OPCUAClient::ResultVar>>::iterator rit = v.second->results.begin();
+                    for(auto &it: v.second->ids)
                     {
-                        ch->client->disconnect();
-                        return;
+                        opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
+                            << it.size() << " attrs" << endl;
+
+                        auto ret = ch->client->read(it, *rit++);
+
+                        if( ret != UA_STATUSCODE_GOOD )
+                            opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
+                                    << " read error: " << UA_StatusCode_name(ret) << endl;
+
+                        if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                        {
+                            ch->client->disconnect();
+                            return;
+                        }
                     }
                 }
             }
@@ -841,10 +852,10 @@ namespace uniset
         if( !gr )
             return 0;
 
-        if( !statusOk() || !gr->results[grIndex].statusOk() )
+        if( !statusOk() || !gr->results[grNumber][grIndex].statusOk() )
             return 0;
 
-        return gr->results[grIndex].get();
+        return gr->results[grNumber][grIndex].get();
     }
     // ------------------------------------------------------------------------------------------
     float OPCUAExchange::OPCAttribute::RdValue::getF()
@@ -852,13 +863,13 @@ namespace uniset
         if( !gr )
             return 0;
 
-        if( !statusOk() || !gr->results[grIndex].statusOk() )
+        if( !statusOk() || !gr->results[grNumber][grIndex].statusOk() )
             return 0;
 
-        if( gr->results[grIndex].type == OPCUAClient::VarType::Float )
-            return gr->results[grIndex].as<float>();
+        if( gr->results[grNumber][grIndex].type == OPCUAClient::VarType::Float )
+            return gr->results[grNumber][grIndex].as<float>();
 
-        return gr->results[grIndex].get();
+        return gr->results[grNumber][grIndex].get();
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::OPCAttribute::RdValue::statusOk()
@@ -871,7 +882,7 @@ namespace uniset
         if( !gr )
             return UA_STATUSCODE_BAD;
 
-        return gr->results[grIndex].status;
+        return gr->results[grNumber][grIndex].status;
     }
     // ------------------------------------------------------------------------------------------
     uint8_t OPCUAExchange::firstBit( uint32_t mask )
@@ -987,7 +998,7 @@ namespace uniset
         if( !gr )
             return false;
 
-        auto& wv = gr->ids[grIndex];
+        auto& wv = gr->ids[grNumber][grIndex];
 
         if( wv.value.value.type == &UA_TYPES[UA_TYPES_FLOAT] )
         {
@@ -1008,7 +1019,7 @@ namespace uniset
         if( !gr )
             return false;
 
-        auto& wv = gr->ids[grIndex];
+        auto& wv = gr->ids[grNumber][grIndex];
 
         if( wv.value.value.type == &UA_TYPES[UA_TYPES_BOOLEAN] )
         {
@@ -1069,7 +1080,7 @@ namespace uniset
         if( !gr )
             return UA_STATUSCODE_BAD;
 
-        return gr->ids[grIndex].value.status;
+        return gr->ids[grNumber][grIndex].value.status;
     }
     // ------------------------------------------------------------------------------------------
     static const UA_WriteValue nullWriteValue = UA_WriteValue{};
@@ -1078,7 +1089,7 @@ namespace uniset
         if( !gr )
             return nullWriteValue;
 
-        return gr->ids[grIndex];
+        return gr->ids[grNumber][grIndex];
     }
     // ------------------------------------------------------------------------------------------
     bool OPCUAExchange::initIOItem( UniXML::iterator& it )
@@ -1167,9 +1178,21 @@ namespace uniset
                 {
                     gr = std::make_shared<ReadGroup>();
                     channels[chan].readValues.emplace(inf->tick, gr);
+                    gr->ids.emplace_back(std::vector<UA_ReadValueId>());
+                    gr->results.emplace_back(std::vector<OPCUAClient::ResultVar>());
                 }
 
-                UA_ReadValueId* rv = &(gr->ids.emplace_back(UA_ReadValueId{}));
+                UA_ReadValueId* rv;
+                // Добавление нового регистра в зависимости от ограничений на чтение.
+                if(maxReadItems)
+                {
+                    if(gr->ids.back().size() >= maxReadItems)
+                    {
+                        gr->ids.emplace_back(std::vector<UA_ReadValueId>());
+                        gr->results.emplace_back(std::vector<OPCUAClient::ResultVar>());
+                    }
+                }
+                rv = &(gr->ids.back().emplace_back(UA_ReadValueId{}));
                 UA_ReadValueId_init(rv);
                 rv->attributeId = UA_ATTRIBUTEID_VALUE;
                 rv->nodeId = UA_NODEID(attr.c_str());
@@ -1191,10 +1214,11 @@ namespace uniset
                     res.value = (int32_t)forceSetBits(0, inf->defval, inf->mask, inf->offset);
                 }
 
-                gr->results.emplace_back(res);
+                gr->results.back().emplace_back(res);
                 OPCAttribute::RdValue rd;
                 rd.gr = gr;
-                rd.grIndex = gr->results.size() - 1;
+                rd.grIndex = gr->results.back().size() - 1;
+                rd.grNumber = gr->results.size() - 1;
                 inf->rval[chan] = rd;
             }
             else
@@ -1209,14 +1233,28 @@ namespace uniset
                 {
                     gr = std::make_shared<WriteGroup>();
                     channels[chan].writeValues.emplace(inf->tick, gr);
+                    gr->ids.emplace_back(std::vector<UA_WriteValue>());
                 }
 
-                UA_WriteValue* wv = &(gr->ids.emplace_back(UA_WriteValue{}));
+                UA_WriteValue* wv;
+
+                // Добавление нового регистра в зависимости от ограничений на запись.
+                if(maxWriteItems)
+                {
+                    if(gr->ids.back().size() >= maxWriteItems)
+                    {
+                        gr->ids.emplace_back(std::vector<UA_WriteValue>());
+                    }
+                }
+
+                wv = &(gr->ids.back().emplace_back(UA_WriteValue{}));
+
                 OPCAttribute::WrValue::init(wv, attr, vtype, forceSetBits(0, inf->defval, inf->mask, inf->offset));
 
                 OPCAttribute::WrValue wr;
                 wr.gr = gr;
-                wr.grIndex = gr->ids.size() - 1;
+                wr.grIndex = gr->ids.back().size() - 1;
+                wr.grNumber = gr->ids.size() - 1;
 
                 if( inf->vtype == OPCUAClient::VarType::Float )
                 {
