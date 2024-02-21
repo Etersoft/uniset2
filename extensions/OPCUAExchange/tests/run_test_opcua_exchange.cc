@@ -73,6 +73,12 @@ int main(int argc, const char* argv[] )
 
         opcTestServer1 = make_shared<OPCUATestServer>("127.0.0.1", 4840);
         opcTestServer2 = make_shared<OPCUATestServer>("127.0.0.1", 4841);
+
+        int rlimit = getArgInt("--server-maxNodesPerRead", argc, argv, "0");
+        int wlimit = getArgInt("--server-maxNodesPerWrite", argc, argv, "0");
+        opcTestServer1->setRWLimits(rlimit, wlimit);
+        opcTestServer2->setRWLimits(rlimit, wlimit);
+
         RAIITestServer r1(opcTestServer1);
         RAIITestServer r2(opcTestServer2);
 

@@ -173,12 +173,12 @@ namespace uniset
             static const size_t numChannels = 2;
             struct ReadGroup
             {
-                std::vector<OPCUAClient::ResultVar> results;
-                std::vector<UA_ReadValueId> ids;
+                std::vector<std::vector<OPCUAClient::ResultVar>> results;
+                std::vector<std::vector<UA_ReadValueId>> ids;
             };
             struct WriteGroup
             {
-                std::vector<UA_WriteValue> ids;
+                std::vector<std::vector<UA_WriteValue>> ids;
             };
             /*! Информация о входе/выходе */
             struct OPCAttribute:
@@ -209,7 +209,8 @@ namespace uniset
                 struct RdValue
                 {
                     std::shared_ptr<ReadGroup> gr;
-                    size_t grIndex = {0};
+                    size_t grIndex = {0};  // индекс в запросе (номер в запросе)
+                    size_t grNumber = {0}; // Номер группы запроса в общем списке
                     int32_t get();
                     float getF();
                     bool statusOk();
@@ -220,7 +221,8 @@ namespace uniset
                 struct WrValue
                 {
                     std::shared_ptr<WriteGroup> gr;
-                    size_t grIndex = {0};
+                    size_t grIndex = {0};  // индекс в запросе (номер в запросе)
+                    size_t grNumber = {0}; // Номер группы запроса в общем списке
                     bool set( int32_t val );
                     bool setF( float val );
                     bool statusOk();
@@ -291,6 +293,8 @@ namespace uniset
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */
             size_t maxItem = { 0 };
+            size_t maxReadItems = { 0 };
+            size_t maxWriteItems = { 0 };
 
             struct Channel
             {
@@ -337,6 +341,7 @@ namespace uniset
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };
             std::atomic_bool readconf_ok = { false };
+
             int activateTimeout;
             uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
             uniset::ObjectId sidRespond = {uniset::DefaultObjectId };

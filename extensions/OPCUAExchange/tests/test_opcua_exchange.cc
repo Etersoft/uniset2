@@ -154,6 +154,7 @@ TEST_CASE("OPCUAExchange: write", "[opcua][exchange][write]")
 TEST_CASE("OPCUAExchange: ignore", "[opcua][exchange][ignore]")
 {
     InitTest();
+
     opcTestServer1->setI32(ignAttr5, 100);
     REQUIRE(opcTestServer1->getI32(ignAttr5) == 100 );
     REQUIRE( shm->getValue(sidAttr5) == 0 );
@@ -516,6 +517,10 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
     REQUIRE(shm->getValue(sidRespond) == 0);
     REQUIRE(shm->getValue(sidRespond1) == 0);
     REQUIRE(shm->getValue(sidRespond2) == 0);
+
+    opcTestServer1->start();
+    opcTestServer2->start();
+    msleep(timeout_msec);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
@@ -540,3 +545,4 @@ TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
     msleep(timeout_msec);
     REQUIRE(shm->getValue(sidAttrI101) == 20);
 }
+// -----------------------------------------------------------------------------

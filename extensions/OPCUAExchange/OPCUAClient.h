@@ -70,7 +70,7 @@ namespace uniset
                 }
             };
 
-            using ErrorCode = int;
+            using ErrorCode = unsigned int;
 
             ErrorCode read( std::vector<UA_ReadValueId>& attrs, std::vector<ResultVar>& result );
             ErrorCode write32( std::vector<UA_WriteValue>& values );
