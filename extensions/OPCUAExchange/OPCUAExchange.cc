@@ -122,6 +122,103 @@ namespace uniset
                     throw SystemError(err.str());
                 }
             }
+
+            if( findArgParam("--" + prefix + "-enable-subscription", conf->getArgc(), conf->getArgv()) != -1 )
+                enaSub = true;
+            else
+                enaSub = conf->getArgInt(it.getProp("enableSubscription"), "0");
+
+            //Подписка для opcua по флагу
+            if(enaSub)
+            {
+                opclog3 << myname << " Create subscription for channel " << i + 1 << endl;
+
+                (*channels[i].client)()->onSessionActivated([this,i]
+                {
+                    opcua::log(*(*channels[i].client)(), opcua::LogLevel::Info, opcua::LogCategory::Client, "Session activated!");
+ 
+                    auto sub = (*channels[i].client)()->createSubscription();
+
+                    // Modify and delete the subscription via the returned Subscription<T> object
+                    opcua::SubscriptionParameters subscriptionParameters{};
+                    subscriptionParameters.publishingInterval = 0.0;
+                    sub.setSubscriptionParameters(subscriptionParameters);
+                    sub.setPublishingMode(true);
+
+                    unsigned short j = 0;
+
+                    for( const auto& it : iolist )
+                    {
+                        if(it->stype != UniversalIO::AI && it->stype != UniversalIO::DI)
+                            continue;
+
+                        if( it->ignore )
+                            continue;
+
+                        opclog3 << myname << " [" << ++j << "] Add monitoring item " << it->attrName.c_str() << endl;
+                        auto t_start = std::chrono::steady_clock::now();
+                        // Create a monitored item within the subscription for data change notifications
+                        try
+                        {
+
+                            auto mon = sub.subscribeDataChange(
+                                           UA_NODEID(it->attrName.c_str()),
+                                           opcua::AttributeId::Value,  // monitored attribute
+                                           [&,i](const auto & item, const opcua::DataValue & value)
+                            {
+                                opclog5 << myname << "[" << it.use_count() << "] item: " << item.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
+                                it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].status = value.getStatus();
+
+                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_INT32]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Int32*) value.getValue().data());
+                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_UINT32]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_UInt32*) value.getValue().data());
+
+                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_INT64]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Int64*) value.getValue().data());
+                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_UINT64]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_UInt64*) value.getValue().data());
+                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = (bool)(*(UA_Boolean*) value.getValue().data() ? 1 : 0);
+
+                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_INT16]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Int16*) value.getValue().data());
+                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_UINT16]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_UInt16*) value.getValue().data());
+
+                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_BYTE]))
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Byte*) value.getValue().data());
+                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_FLOAT]))
+                                {
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].type = OPCUAClient::VarType::Float;
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = (float)(*(UA_Float*) value.getValue().data());
+                                }
+                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_DOUBLE]))
+                                {
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].type = OPCUAClient::VarType::Float;
+                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = (float)(*(UA_Double*) value.getValue().data());
+                                }
+
+                            }
+                                       );
+
+                            // Modify and delete the monitored item via the returned MonitoredItem<T> object
+                            opcua::MonitoringParameters monitoringParameters{};
+                            monitoringParameters.samplingInterval = -1.0;
+                            mon.setMonitoringParameters(monitoringParameters);
+                            mon.setMonitoringMode(opcua::MonitoringMode::Reporting);
+
+                            auto t_end = std::chrono::steady_clock::now();
+                            opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
+                                    << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+                        }
+                        catch(const std::exception &ex)
+                        {
+                            opcwarn << myname << " Error while subscribe data change for " << it->attrName.c_str() << " : " << ex.what() << endl;
+                        }
+                    }
+                });
+            }
         }
 
         if( channels[0].addr.empty() )
@@ -247,6 +344,7 @@ namespace uniset
 
             // Режим обмена по-умолчанию при старте процесса
             auto default_emode = conf->getArgInt("--" + prefix + "-default-exchange-mode", it.getProp("defaultExchangeMode"));
+
             if( default_emode > 0 && default_emode < emLastNumber )
                 exchangeMode = default_emode;
         }
@@ -280,8 +378,8 @@ namespace uniset
 
         vmonit(activateTimeout);
 
-        maxReadItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerRead", it.getProp("maxNodesPerRead"),0);
-        maxWriteItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerWrite", it.getProp("maxNodesPerWrite"),0);
+        maxReadItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerRead", it.getProp("maxNodesPerRead"), 0);
+        maxWriteItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerWrite", it.getProp("maxNodesPerWrite"), 0);
 
         if( !shm->isLocalwork() ) // ic
         {
@@ -422,6 +520,8 @@ namespace uniset
                     continue;
                 }
 
+                auto t_start = std::chrono::steady_clock::now();
+
                 ch->status = true;
 
                 if( tick >= std::numeric_limits<Tick>::max() )
@@ -447,6 +547,10 @@ namespace uniset
                         }
                     }
                 }
+
+                auto t_end = std::chrono::steady_clock::now();
+                opclog8 << myname << "(channelThread): " << setw(10) << setprecision(7) << std::fixed
+                        << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
             }
             catch( const CORBA::SystemException& ex )
             {
@@ -484,7 +588,7 @@ namespace uniset
             {
                 if (v.first == 0 || tick % v.first == 0)
                 {
-                    for(auto &it: v.second->ids)
+                    for(auto& it : v.second->ids)
                     {
                         opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " write "
                                 << it.size() << " attrs" << endl;
@@ -505,36 +609,47 @@ namespace uniset
             }
         }
 
+        auto t_end = std::chrono::steady_clock::now();
+        opclog8 << myname << "(WR channelExchange): " << setw(10) << setprecision(7) << std::fixed
+                << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+        t_start = std::chrono::steady_clock::now();
+
         if( exchangeMode != emWriteOnly )
         {
-            for( auto&& v : ch->readValues )
+            if(enaSub)
+                (*ch->client)()->runIterate(100);
+            else
             {
-                if (v.first == 0 || tick % v.first == 0)
+                for( auto&& v : ch->readValues )
                 {
-                    std::vector<std::vector<OPCUAClient::ResultVar>>::iterator rit = v.second->results.begin();
-                    for(auto &it: v.second->ids)
+                    if (v.first == 0 || tick % v.first == 0)
                     {
-                        opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
-                            << it.size() << " attrs" << endl;
+                        std::vector<std::vector<OPCUAClient::ResultVar>>::iterator rit = v.second->results.begin();
 
-                        auto ret = ch->client->read(it, *rit++);
-
-                        if( ret != UA_STATUSCODE_GOOD )
-                            opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
-                                    << " read error: " << UA_StatusCode_name(ret) << endl;
-
-                        if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                        for(auto& it : v.second->ids)
                         {
-                            ch->client->disconnect();
-                            return;
+                            opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
+                                    << it.size() << " attrs" << endl;
+
+                            auto ret = ch->client->read(it, *rit++);
+
+                            if( ret != UA_STATUSCODE_GOOD )
+                                opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
+                                        << " read error: " << UA_StatusCode_name(ret) << endl;
+
+                            if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                            {
+                                ch->client->disconnect();
+                                return;
+                            }
                         }
                     }
                 }
             }
         }
 
-        auto t_end = std::chrono::steady_clock::now();
-        opclog8 << myname << "(update): " << setw(10) << setprecision(7) << std::fixed
+        t_end = std::chrono::steady_clock::now();
+        opclog8 << myname << "(RD channelExchange): " << setw(10) << setprecision(7) << std::fixed
                 << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
     }
     // --------------------------------------------------------------------------------
@@ -1183,6 +1298,7 @@ namespace uniset
                 }
 
                 UA_ReadValueId* rv;
+
                 // Добавление нового регистра в зависимости от ограничений на чтение.
                 if(maxReadItems)
                 {
@@ -1192,6 +1308,7 @@ namespace uniset
                         gr->results.emplace_back(std::vector<OPCUAClient::ResultVar>());
                     }
                 }
+
                 rv = &(gr->ids.back().emplace_back(UA_ReadValueId{}));
                 UA_ReadValueId_init(rv);
                 rv->attributeId = UA_ATTRIBUTEID_VALUE;
@@ -1394,21 +1511,23 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::help_print( int argc, const char* const* argv )
     {
-        cout << "--opcua-confnode name     - Использовать для настройки указанный xml-узел" << endl;
-        cout << "--opcua-name name         - ID процесса. По умолчанию OPCUAExchange1." << endl;
-        cout << "--opcua-polltime msec     - Пауза между циклами обмена. По умолчанию 100 мсек." << endl;
-        cout << "--opcua-updatetime msec   - Период обновления данных в/из SM. По умолчанию 100 мсек." << endl;
-        cout << "--opcua-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
-        cout << "--opcua-filterT val       - Постоянная:: времени фильтра." << endl;
-        cout << "--opcua-filter-field      - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--opcua-filter-value      - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--opcua-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
-        cout << "--opcua-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--opcua-sm-ready-timeout  - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-        cout << "--opcua-sm-test-sid       - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
-        cout << "--opcua-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-        cout << "--opcua-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
-        cout << "--opcua-write-to-all-channels - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
+        cout << "--opcua-confnode name          - Использовать для настройки указанный xml-узел" << endl;
+        cout << "--opcua-name name              - ID процесса. По умолчанию OPCUAExchange1." << endl;
+        cout << "--opcua-polltime msec          - Пауза между циклами обмена. По умолчанию 100 мсек." << endl;
+        cout << "--opcua-updatetime msec        - Период обновления данных в/из SM. По умолчанию 100 мсек." << endl;
+        cout << "--opcua-filtersize val         - Размерность фильтра для аналоговых входов." << endl;
+        cout << "--opcua-filterT val            - Постоянная:: времени фильтра." << endl;
+        cout << "--opcua-filter-field           - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-filter-value           - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+        cout << "--opcua-heartbeat-id           - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
+        cout << "--opcua-heartbeat-max          - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+        cout << "--opcua-sm-ready-timeout       - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+        cout << "--opcua-sm-test-sid            - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+        cout << "--opcua-force                  - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+        cout << "--opcua-force-out              - Обновлять выходы принудительно (не по заказу)" << endl;
+        cout << "--opcua-write-to-all-channels  - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
+        cout << "--opcua-maxNodesPerRead        - Количество элементов для чтения в одном запросе. По-умолчанию неограниченно" << endl;
+        cout << "--opcua-maxNodesPerWrite       - Количество элементов для записи в одном запросе. По-умолчанию неограниченно" << endl;
 
         cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
         cout << "--opcua-default-exchange-mode  - Режим обмена по-умолчанию при старте процесса" << endl;

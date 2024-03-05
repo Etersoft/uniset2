@@ -15,6 +15,11 @@
  */
 // -------------------------------------------------------------------------
 #include <sstream>
+
+#include <limits>
+#include <iomanip>
+#include <chrono>
+
 #include <open62541/client_highlevel.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/types_generated_handling.h>
@@ -25,55 +30,64 @@ using namespace std;
 // -----------------------------------------------------------------------------
 OPCUAClient::OPCUAClient()
 {
-    ss = UA_SESSIONSTATE_CLOSED;
-    client = UA_Client_new();
-    auto conf = UA_Client_getConfig(client);
-    conf->logger = UA_Log_Stdout_withLevel( UA_LOGLEVEL_ERROR );
-    UA_ClientConfig_setDefault(conf);
-
+    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "create OPCUAClient");
     val = UA_Variant_new();
 }
 // -----------------------------------------------------------------------------
 OPCUAClient::~OPCUAClient()
 {
-    UA_Client_disconnect(client);
-    UA_Client_delete(client);
+    client.disconnect();
     UA_Variant_delete(val);
 }
 // -----------------------------------------------------------------------------
 bool OPCUAClient::connect( const std::string& addr )
 {
-    if( client == nullptr )
-        return false;
+    UA_SessionState sessionState{};
+    UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
 
-    UA_Client_getState(client, NULL, &ss, NULL);
-
-    if( ss ==  UA_SESSIONSTATE_ACTIVATED )
+    if(sessionState == UA_SESSIONSTATE_ACTIVATED)
         return true;
 
-    return UA_Client_connect(client, addr.c_str()) == UA_STATUSCODE_GOOD;
+    try
+    {
+        client.connect(addr.c_str());
+    }
+    catch(const std::exception& ex)
+    {
+        //cerr << addr << " (exception) "<< ex.what()<<endl;
+        opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
+        return false;
+    }
+    UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
+    return (sessionState == UA_SESSIONSTATE_ACTIVATED);
 }
 
 // -----------------------------------------------------------------------------
 bool OPCUAClient::connect( const std::string& addr, const std::string& user, const std::string& pass )
 {
-    if( client == nullptr )
-        return false;
+    UA_SessionState sessionState{};
+    UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
 
-    UA_Client_getState(client, NULL, &ss, NULL);
-
-    if( ss ==  UA_SESSIONSTATE_ACTIVATED )
+    if(sessionState == UA_SESSIONSTATE_ACTIVATED)
         return true;
 
-    return UA_Client_connectUsername(client, addr.c_str(), user.c_str(), pass.c_str()) == UA_STATUSCODE_GOOD;
+    try
+    {
+        client.connect(addr.c_str(), {user, pass});
+    }
+    catch(const std::exception& ex)
+    {
+        cerr << addr << " (exception) "<< ex.what()<<endl;
+        opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
+        return false;
+    }
+    UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
+    return (sessionState == UA_SESSIONSTATE_ACTIVATED);
 }
 // -----------------------------------------------------------------------------
 void OPCUAClient::disconnect() noexcept
 {
-    if( client == nullptr )
-        return;
-
-    UA_Client_disconnect(client);
+    client.disconnect();
 }
 
 // -----------------------------------------------------------------------------
@@ -124,7 +138,7 @@ OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std
     request.nodesToRead = attrs.data();
     request.nodesToReadSize = attrs.size();
 
-    UA_ReadResponse response = UA_Client_Service_read(client, request);
+    UA_ReadResponse response = UA_Client_Service_read(client.handle(), request);
     auto retval = response.responseHeader.serviceResult;
 
     if( retval == UA_STATUSCODE_GOOD )
@@ -175,6 +189,7 @@ OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std
     }
     else
     {
+        opcua::log(client, opcua::LogLevel::Warning, opcua::LogCategory::Client, "read error!");
         for( auto&& r : result )
             r.status = retval;
     }
@@ -189,7 +204,7 @@ OPCUAClient::ErrorCode OPCUAClient::write32( std::vector<UA_WriteValue>& values 
     UA_WriteRequest_init(&request);
     request.nodesToWrite = values.data();
     request.nodesToWriteSize = values.size();
-    UA_WriteResponse response = UA_Client_Service_write(client, request);
+    UA_WriteResponse response = UA_Client_Service_write(client.handle(), request);
 
     auto retval = response.responseHeader.serviceResult;
 
@@ -212,7 +227,7 @@ OPCUAClient::ErrorCode OPCUAClient::write( const UA_WriteValue& val )
     UA_WriteValue wrval[1] = { val };
     request.nodesToWrite = wrval;
     request.nodesToWriteSize = 1;
-    UA_WriteResponse response = UA_Client_Service_write(client, request);
+    UA_WriteResponse response = UA_Client_Service_write(client.handle(), request);
 
     auto retval = response.responseHeader.serviceResult;
 
@@ -231,14 +246,14 @@ OPCUAClient::ErrorCode OPCUAClient::set( const std::string& attr, bool set )
     UA_Variant_clear(val);
     UA_Variant_setScalarCopy(val, &set, &UA_TYPES[UA_TYPES_BOOLEAN]);
 
-    return UA_Client_writeValueAttribute(client, UA_NODEID(attr.c_str()), val);
+    return UA_Client_writeValueAttribute(client.handle(), UA_NODEID(attr.c_str()), val);
 }
 // -----------------------------------------------------------------------------
 OPCUAClient::ErrorCode OPCUAClient::write32( const std::string& attr, int32_t value )
 {
     UA_Variant_clear(val);
     UA_Variant_setScalarCopy(val, &value, &UA_TYPES[UA_TYPES_INT32]);
-    return UA_Client_writeValueAttribute(client, UA_NODEID(attr.c_str()), val);
+    return UA_Client_writeValueAttribute(client.handle(), UA_NODEID(attr.c_str()), val);
 }
 // -----------------------------------------------------------------------------
 UA_WriteValue OPCUAClient::makeWriteValue32( const std::string& name, int32_t val )

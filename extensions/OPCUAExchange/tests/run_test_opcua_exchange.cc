@@ -37,21 +37,22 @@ int main(int argc, const char* argv[] )
         int returnCode = session.applyCommandLine( argc, argv );
         auto conf = uniset_init(argc, argv);
         bool apart = findArgParam("--apart", argc, argv) != -1;
+        bool subscr = findArgParam("--subscr", argc, argv) != -1;
 
         shm = SharedMemory::init_smemory(argc, argv);
 
         if( !shm )
             return 1;
 
+        auto act = UniSetActivator::Instance();
+
         opc = OPCUAExchange::init_opcuaexchange(argc, argv, shm->getId(), (apart ? nullptr : shm ), "opcua");
 
         if( !opc )
             return 1;
 
-        auto act = UniSetActivator::Instance();
-
-        act->add(shm);
         act->add(opc);
+        act->add(shm);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
@@ -78,6 +79,31 @@ int main(int argc, const char* argv[] )
         int wlimit = getArgInt("--server-maxNodesPerWrite", argc, argv, "0");
         opcTestServer1->setRWLimits(rlimit, wlimit);
         opcTestServer2->setRWLimits(rlimit, wlimit);
+
+        if(subscr) //Если работает по подписке, то нужно до старта сервера создать объекты для подписки!
+        {
+            opcTestServer1->setI32("Attr1", 0);
+            opcTestServer1->setBool("Attr2", false);
+            opcTestServer1->setI32("Attr3", 0);
+            opcTestServer1->setBool("Attr4", false);
+            opcTestServer1->setI32("Attr5", 0);
+            opcTestServer1->setI32("Attr6", 0);
+            opcTestServer1->setI32("Attr7", 0);
+            opcTestServer1->setF32("FloatOut1", 0.0);
+            opcTestServer1->setF32("Float1", 0.0);
+            opcTestServer1->setI32(101, 0);
+
+            opcTestServer2->setI32("Attr1", 0);
+            opcTestServer2->setBool("Attr2", false);
+            opcTestServer2->setI32("Attr3", 0);
+            opcTestServer2->setBool("Attr4", false);
+            opcTestServer2->setI32("Attr5", 0);
+            opcTestServer2->setI32("Attr6", 0);
+            opcTestServer2->setI32("Attr7", 0);
+            opcTestServer2->setF32("FloatOut1", 0.0);
+            opcTestServer2->setF32("Float1", 0.0);
+            opcTestServer2->setI32(101, 0);
+        }
 
         RAIITestServer r1(opcTestServer1);
         RAIITestServer r2(opcTestServer2);

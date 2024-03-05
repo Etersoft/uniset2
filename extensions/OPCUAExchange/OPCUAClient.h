@@ -20,6 +20,9 @@
 #include <string>
 #include <vector>
 #include <variant>
+
+#include "open62541pp/open62541pp.h"
+
 #include <open62541/client_config_default.h>
 #include "Exceptions.h"
 //--------------------------------------------------------------------------
@@ -80,10 +83,17 @@ namespace uniset
             static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val );
             static UA_ReadValueId makeReadValue32( const std::string& name );
 
+            opcua::Client* operator()()
+            {
+                return &client;
+            }
+
         protected:
-            UA_Client* client = { nullptr };
+
+            //UA_Client* client = { nullptr };
+            opcua::Client client;
             UA_Variant* val = { nullptr };
-            UA_SessionState ss;
+            //UA_SessionState ss;
 
         private:
     };

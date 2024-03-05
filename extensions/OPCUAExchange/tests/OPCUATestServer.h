@@ -48,14 +48,14 @@ class OPCUATestServer
         std::unique_ptr<opcua::Server> server;
         std::unique_ptr<IONode> ioNode;
         std::string addr;
-        bool verbose;
+        bool verbose = {true};
 
         std::unordered_map<int, std::unique_ptr<IONode>> imap;
         std::unordered_map<std::string, std::unique_ptr<IONode>> smap;
         std::shared_ptr< uniset::ThreadCreator<OPCUATestServer> > serverThread;
 
     private:
-        bool disabled;
+        //bool disabled;
         std::string myname;
 };
 // -------------------------------------------------------------------------
