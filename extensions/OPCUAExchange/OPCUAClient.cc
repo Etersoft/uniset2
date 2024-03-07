@@ -58,6 +58,7 @@ bool OPCUAClient::connect( const std::string& addr )
         opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
         return false;
     }
+
     UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
     return (sessionState == UA_SESSIONSTATE_ACTIVATED);
 }
@@ -77,10 +78,11 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     }
     catch(const std::exception& ex)
     {
-        cerr << addr << " (exception) "<< ex.what()<<endl;
+        cerr << addr << " (exception) " << ex.what() << endl;
         opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
         return false;
     }
+
     UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
     return (sessionState == UA_SESSIONSTATE_ACTIVATED);
 }
@@ -190,6 +192,7 @@ OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std
     else
     {
         opcua::log(client, opcua::LogLevel::Warning, opcua::LogCategory::Client, "read error!");
+
         for( auto&& r : result )
             r.status = retval;
     }

@@ -133,10 +133,10 @@ namespace uniset
             {
                 opclog3 << myname << " Create subscription for channel " << i + 1 << endl;
 
-                (*channels[i].client)()->onSessionActivated([this,i]
+                (*channels[i].client)()->onSessionActivated([this, i]
                 {
                     opcua::log(*(*channels[i].client)(), opcua::LogLevel::Info, opcua::LogCategory::Client, "Session activated!");
- 
+
                     auto sub = (*channels[i].client)()->createSubscription();
 
                     // Modify and delete the subscription via the returned Subscription<T> object
@@ -157,6 +157,7 @@ namespace uniset
 
                         opclog3 << myname << " [" << ++j << "] Add monitoring item " << it->attrName.c_str() << endl;
                         auto t_start = std::chrono::steady_clock::now();
+
                         // Create a monitored item within the subscription for data change notifications
                         try
                         {
@@ -164,7 +165,7 @@ namespace uniset
                             auto mon = sub.subscribeDataChange(
                                            UA_NODEID(it->attrName.c_str()),
                                            opcua::AttributeId::Value,  // monitored attribute
-                                           [&,i](const auto & item, const opcua::DataValue & value)
+                                           [&, i](const auto & item, const opcua::DataValue & value)
                             {
                                 opclog5 << myname << "[" << it.use_count() << "] item: " << item.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
                                 it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].status = value.getStatus();
@@ -212,7 +213,7 @@ namespace uniset
                             opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
                                     << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
                         }
-                        catch(const std::exception &ex)
+                        catch(const std::exception& ex)
                         {
                             opcwarn << myname << " Error while subscribe data change for " << it->attrName.c_str() << " : " << ex.what() << endl;
                         }
@@ -1582,10 +1583,42 @@ namespace uniset
         inf << "iolist: " << iolist.size() << endl;
 
         for( const auto& v : channels[0].writeValues )
-            inf << "write attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids.size() << endl;
+        {
+            if(v.second->ids.size() == 1)      // Одним запросом опрос происходит
+                inf << "write attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids[0].size() << endl;
+            else if(v.second->ids.size() > 1) // Опрос разбит на несколько запросов из-за ограничений сервера
+            {
+                inf << "write attributes[tick " << setw(2) << (int) v.first << "]:";
+                int sum = 0;
+
+                for(const auto& vv : v.second->ids)
+                {
+                    sum += vv.size();
+                    inf << " " << vv.size();
+                }
+
+                inf << " - " << sum << endl;
+            }
+        }
 
         for( const auto& v : channels[0].readValues )
-            inf << " read attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids.size() << endl;
+        {
+            if(v.second->ids.size() == 1)      // Одним запросом опрос происходит
+                inf << "read attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids[0].size() << endl;
+            else if(v.second->ids.size() > 1) // Опрос разбит на несколько запросов из-за ограничений сервера
+            {
+                inf << "read attributes[tick " << setw(2) << (int) v.first << "]:";
+                int sum = 0;
+
+                for(const auto& vv : v.second->ids)
+                {
+                    sum += vv.size();
+                    inf << " " << vv.size();
+                }
+
+                inf << " - " << sum << endl;
+            }
+        }
 
         inf << endl;
 
