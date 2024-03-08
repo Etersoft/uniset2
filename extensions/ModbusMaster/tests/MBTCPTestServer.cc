@@ -127,26 +127,14 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
         return ModbusRTU::erBadDataValue;
     }
 
-    if( query.count <= 1 )
+    size_t bcnt = ModbusRTU::numBytes(query.count);
+
+    for( size_t i = 0; i < bcnt; i++ )
     {
-        if( replyVal != std::numeric_limits<uint32_t>::max() )
-            reply.addData(replyVal);
-        else
+        if( replyVal == std::numeric_limits<uint32_t>::max() )
             reply.addData(d);
-
-        return ModbusRTU::erNoError;
-    }
-
-    // Фомирование ответа:
-    size_t num = 0; // добавленное количество данных
-    size_t bcnt = numBytes(query.count);
-
-    for( ; num < bcnt; num++ )
-    {
-        if( replyVal != std::numeric_limits<uint32_t>::max() )
-            reply.addData(replyVal);
         else
-            reply.addData(d);
+            reply.addData(replyVal);
     }
 
     return ModbusRTU::erNoError;
@@ -169,31 +157,18 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
     if( query.count == 0 )
     {
         if( verbose )
-            cout << "(readInputStatus): ERROR qount=0" << endl;
+            cout << "(readInputStatus): ERROR count=0" << endl;
 
         return ModbusRTU::erBadDataValue;
     }
 
-    if( replyVal == std::numeric_limits<uint32_t>::max() )
+    size_t bcnt = ModbusRTU::numBytes(query.count);
+
+    for( size_t i = 0; i < bcnt; i++ )
     {
-        size_t bnum = 0;
-        size_t i = 0;
-
-        while( i < query.count )
-        {
-            reply.addData(0);
-
-            for( size_t nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
-                reply.setBit(bnum, nbit, d.b[nbit]);
-
-            bnum++;
-        }
-    }
-    else
-    {
-        size_t bcnt = ModbusRTU::numBytes(query.count);
-
-        for( size_t i = 0; i < bcnt; i++ )
+        if( replyVal == std::numeric_limits<uint32_t>::max() )
+            reply.addData(d);
+        else
             reply.addData(replyVal);
     }
 
@@ -208,16 +183,6 @@ mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
 
     if( verbose )
         cout << "(readInputRegisters): " << query << endl;
-
-    if( query.count <= 1 )
-    {
-        if( replyVal != std::numeric_limits<uint32_t>::max() )
-            reply.addData(replyVal);
-        else
-            reply.addData(query.start);
-
-        return ModbusRTU::erNoError;
-    }
 
     // Фомирование ответа:
     size_t num = 0; // добавленное количество данных
@@ -254,17 +219,6 @@ ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
     if( verbose )
         cout << "(readOutputRegisters): " << query << endl;
 
-    if( query.count <= 1 )
-    {
-        if( replyVal != std::numeric_limits<uint32_t>::max() )
-            reply.addData(replyVal);
-        else
-            reply.addData(query.start);
-
-        return ModbusRTU::erNoError;
-    }
-
-    // Фомирование ответа:
     size_t num = 0; // добавленное количество данных
     ModbusData reg = query.start;
 

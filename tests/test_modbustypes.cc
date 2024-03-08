@@ -147,3 +147,188 @@ TEST_CASE("genRegID", "[modbus][genRegID]" )
     }
 }
 // ---------------------------------------------------------------
+TEST_CASE("BitsBuffer data manipulation", "[modbus][bitsBuffer]" )
+{
+    ModbusRTU::BitsBuffer bits;
+    REQUIRE_FALSE(bits.isFull());
+
+    // at first ADD DATA
+    ModbusRTU::DataBits d1;
+    d1.set(0, true);
+    REQUIRE(bits.addData(d1));
+
+    ModbusRTU::DataBits d2;
+    d2.set(0, true);
+    REQUIRE(bits.addData(d2));
+
+    uint8_t dnum = 0;
+    uint8_t bnum = 0;
+    bool state = false;
+
+    REQUIRE( bits.getBit(dnum, bnum, state) );
+    REQUIRE( state );
+
+    // reset bit
+    REQUIRE( bits.setBit(dnum, dnum, false) );
+    state = true;
+    REQUIRE( bits.getBit(dnum, bnum, state) );
+    REQUIRE_FALSE( state );
+
+    dnum = ModbusRTU::MAXLENPACKET / 2;
+    bnum = 6;
+    REQUIRE_FALSE( bits.setBit(dnum, bnum, true) );
+    REQUIRE_FALSE( bits.getBit(dnum, bnum, state) );
+}
+// ---------------------------------------------------------------
+TEST_CASE("BitsBuffer bits manipulation", "[modbus][bitsBuffer]" )
+{
+    ModbusRTU::BitsBuffer bits;
+    REQUIRE_FALSE(bits.isFull());
+
+    REQUIRE( bits.setByBitNum(0, true) );
+    bool state = false;
+    REQUIRE( bits.getByBitNum(0, state) );
+    REQUIRE( state );
+    REQUIRE( bits.bcnt == 1 );
+
+    uint16_t nbit = (ModbusRTU::MAXPDULEN / 2) * 8;
+    REQUIRE( bits.setByBitNum(nbit, true) );
+    REQUIRE( bits.getByBitNum(nbit, state) );
+    REQUIRE( state );
+    REQUIRE( bits.setByBitNum(nbit, false) );
+    REQUIRE( bits.getByBitNum(nbit, state) );
+    REQUIRE_FALSE( state );
+    REQUIRE( (size_t)(bits.bcnt) == (ModbusRTU::MAXPDULEN / 2) + 1 );
+
+    nbit = (ModbusRTU::MAXPDULEN * 8) - 1;
+    REQUIRE( bits.setByBitNum(nbit, true) );
+    REQUIRE( bits.getByBitNum(nbit, state) );
+    REQUIRE(state);
+
+    nbit = (ModbusRTU::MAXPDULEN * 8);
+    REQUIRE_FALSE( bits.setByBitNum(nbit, true) );
+    state = true;
+    REQUIRE_FALSE( bits.getByBitNum(nbit, state) );
+    REQUIRE(state); // no change state
+}
+// ---------------------------------------------------------------
+TEST_CASE("ReadCoilRetMessage", "[modbus][coil message]" )
+{
+    ModbusRTU::ModbusMessage buf;
+    buf.pduhead.addr = 1;
+    buf.pduhead.func = ModbusRTU::fnReadCoilStatus;
+    buf.data[0] = 2; // bcnt
+    buf.data[1] = 1; // byte 1
+    buf.data[2] = 255; // byte 2
+    buf.data[3] = 2; // hi crc
+    buf.data[4] = 2; // low crc
+
+    ModbusRTU::ReadCoilRetMessage msg(buf);
+    REQUIRE( msg.addr == 1 );
+    REQUIRE( msg.func == ModbusRTU::fnReadCoilStatus );
+    REQUIRE( msg.bcnt == 2 );
+    bool state = false;
+    REQUIRE( msg.getByBitNum(0, state) );
+    REQUIRE( state );
+    REQUIRE( msg.getByBitNum(1, state) );
+    REQUIRE_FALSE( state );
+    REQUIRE( msg.getByBitNum(10, state) );
+    REQUIRE( state );
+
+    // too long
+    buf.data[0] = ModbusRTU::MAXPDULEN;
+    REQUIRE_NOTHROW(ModbusRTU::ReadCoilRetMessage(buf) );
+    buf.data[0] = ModbusRTU::MAXPDULEN + 1;
+    REQUIRE_THROWS_AS(ModbusRTU::ReadCoilRetMessage(buf), ModbusRTU::mbException); // erPacketTooLong
+}
+// ---------------------------------------------------------------
+TEST_CASE("ReadCoilMessage", "[modbus][coil message]" )
+{
+    ModbusRTU::ReadCoilMessage msg(1, 1, 100);
+    REQUIRE( msg.addr == 1 );
+    REQUIRE( msg.func == ModbusRTU::fnReadCoilStatus );
+    REQUIRE( msg.start == 1 );
+    REQUIRE( msg.count == 100 );
+
+    ModbusRTU::ModbusMessage buf;
+    buf.pduhead.addr = 2;
+    buf.pduhead.func = ModbusRTU::fnReadCoilStatus;
+    buf.data[0] = 0;
+    buf.data[1] = 2;
+    buf.data[2] = 0;
+    buf.data[3] = 200;
+
+    ModbusRTU::ReadCoilMessage msg2 = buf;
+    REQUIRE( msg2.start == 2 );
+    REQUIRE( msg2.count == 200 );
+
+    ModbusRTU::ReadCoilMessage msg3(buf);
+    REQUIRE( msg3.start == 2 );
+    REQUIRE( msg3.count == 200 );
+
+    // too long
+    buf.data[2] = 255;
+    buf.data[3] = 255;
+    REQUIRE_THROWS_AS(ModbusRTU::ReadCoilMessage(buf), ModbusRTU::mbException); // erPacketTooLong
+}
+// ---------------------------------------------------------------
+TEST_CASE("ReadInputStatusMessage", "[modbus][input status message]" )
+{
+    ModbusRTU::ReadInputStatusMessage msg(1, 1, 100);
+    REQUIRE( msg.addr == 1 );
+    REQUIRE( msg.func == ModbusRTU::fnReadInputStatus );
+    REQUIRE( msg.start == 1 );
+    REQUIRE( msg.count == 100 );
+
+    ModbusRTU::ModbusMessage buf;
+    buf.pduhead.addr = 2;
+    buf.pduhead.func = ModbusRTU::fnReadInputStatus;
+    buf.data[0] = 0; // start hi
+    buf.data[1] = 1; // start low
+    buf.data[2] = 7; // count hi
+    buf.data[3] = 208; // count low
+
+    ModbusRTU::ReadInputStatusMessage msg2 = buf;
+    REQUIRE( msg2.start == 1 );
+    REQUIRE( msg2.count == 2000 );
+
+    ModbusRTU::ReadInputStatusMessage msg3(buf);
+    REQUIRE( msg3.start == 1 );
+    REQUIRE( msg3.count == 2000 );
+
+    // too long
+    buf.data[2] = 255;
+    buf.data[3] = 255;
+    REQUIRE_THROWS_AS(ModbusRTU::ReadInputStatusMessage(buf), ModbusRTU::mbException); // erPacketTooLong
+}
+// ---------------------------------------------------------------
+TEST_CASE("ReadInputStatusRetMessage", "[modbus][input status message]" )
+{
+    ModbusRTU::ModbusMessage buf;
+    buf.pduhead.addr = 1;
+    buf.pduhead.func = ModbusRTU::fnReadInputStatus;
+    buf.data[0] = 2; // bcnt
+    buf.data[1] = 1; // byte 1
+    buf.data[2] = 255; // byte 2
+    buf.data[3] = 2; // hi crc
+    buf.data[4] = 2; // low crc
+
+    ModbusRTU::ReadInputStatusRetMessage msg(buf);
+    REQUIRE( msg.addr == 1 );
+    REQUIRE( msg.func == ModbusRTU::fnReadInputStatus );
+    REQUIRE( msg.bcnt == 2 );
+    bool state = false;
+    REQUIRE( msg.getByBitNum(0, state) );
+    REQUIRE( state );
+    REQUIRE( msg.getByBitNum(1, state) );
+    REQUIRE_FALSE( state );
+    REQUIRE( msg.getByBitNum(10, state) );
+    REQUIRE( state );
+
+    // too long
+    buf.data[0] = ModbusRTU::MAXPDULEN;
+    REQUIRE_NOTHROW(ModbusRTU::ReadInputStatusRetMessage(buf) );
+    buf.data[0] = ModbusRTU::MAXPDULEN + 1;
+    REQUIRE_THROWS_AS(ModbusRTU::ReadInputStatusRetMessage(buf), ModbusRTU::mbException); // erPacketTooLong
+}
+// ---------------------------------------------------------------

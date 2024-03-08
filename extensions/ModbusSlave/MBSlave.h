@@ -513,11 +513,12 @@ namespace uniset
             void readConfiguration();
             bool check_item( UniXML::iterator& it );
 
-            ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData val, const int fn = 0 );
-            ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn = 0  );
-            ModbusRTU::mbErrCode real_read( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData& val, const int fn = 0  );
-            ModbusRTU::mbErrCode much_real_read( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0  );
-            ModbusRTU::mbErrCode much_real_write(RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0  );
+            ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn = 0 );
+            ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regK, ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn = 0  );
+            ModbusRTU::mbErrCode real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn = 0 );
+            ModbusRTU::mbErrCode much_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0 );
+            ModbusRTU::mbErrCode much_write(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0 );
+            ModbusRTU::mbErrCode bits_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::BitsBuffer* dat, size_t count, const int fn = 0 );
 
             ModbusRTU::mbErrCode real_read_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData& val );
             ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );

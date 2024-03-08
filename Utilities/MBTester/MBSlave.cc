@@ -607,5 +607,3 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
     return ModbusRTU::erBadDataAddress;
 }
 // -------------------------------------------------------------------------
-
-

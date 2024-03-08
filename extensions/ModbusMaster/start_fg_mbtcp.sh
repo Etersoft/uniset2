@@ -4,13 +4,12 @@
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---mbtcp-set-prop-prefix \
+--mbtcp-set-prop-prefix rs_ \
 --mbtcp-filter-field rs \
---mbtcp-filter-value 6 \
+--mbtcp-filter-value 7 \
 --mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 2048 \
 --mbtcp-recv-timeout 900 \
---mbtcp-polltime 200 \
 --mbtcp-polltime 200 \
 --mbtcp-force-out 1 \
 --mbtcp-persistent-connection 1 \

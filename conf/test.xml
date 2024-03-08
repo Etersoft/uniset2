@@ -393,6 +393,10 @@
 			</item>
 			<item id="112" iotype="DI" name="MQTT_DI_S" textname="MQTT test DI" mqtt="1"/>
 
+			<item id="150" iotype="DI" name="RS_DI1_S" priority="Medium" rs="7" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="1" rs_mbtype="rtu" textname="RS: Test DI sensor N1"/>
+			<item id="151" iotype="DI" name="RS_DI2_S" priority="Medium" rs="7" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="2" rs_mbtype="rtu" textname="RS: Test DI sensor N2"/>
+			<item id="152" iotype="DI" name="RS_DI3_S" priority="Medium" rs="7" rs_mbaddr="0x01" rs_mbfunc="0x01" rs_mbreg="3" rs_mbtype="rtu" textname="RS: Test DI sensor N3"/>
+
 			<item id="2052" mbtcp="3" mbaddr="1" mbreg="263" iotype="AI" name="AIForThresholds" textname="Тестовый регистр для проверки пороговых датчиков"/>
 			<item id="2053" mbtcp="3" mbaddr="1" iotype="DI" name="Threshold1" textname="Порог N1" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" />
 			<item id="2054" mbtcp="3" mbaddr="1" iotype="DI" name="Threshold2" textname="Порог N2" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" threshold_invert="1"/>

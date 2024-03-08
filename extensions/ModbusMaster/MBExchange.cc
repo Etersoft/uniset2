@@ -552,14 +552,12 @@ namespace uniset
             {
                 ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, q_count);
                 ModbusRTU::DataGuard d(q_count);
-                size_t m = 0;
 
-                for( size_t i = 0; i < ret.bcnt; i++ )
+                for( size_t i = 0; i < q_count; i++ )
                 {
-                    ModbusRTU::DataBits b(ret.data[i]);
-
-                    for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
-                        d.data[m] = b[k];
+                    bool state = false;
+                    ret.getByBitNum(i, state);
+                    d.data[i] = state ? 1 : 0;
                 }
 
                 p->initOK = initSMValue(d.data, d.len, &(p->p));
@@ -570,14 +568,12 @@ namespace uniset
             {
                 ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, q_count);
                 ModbusRTU::DataGuard d(q_count);
-                size_t m = 0;
 
-                for( size_t i = 0; i < ret.bcnt; i++ )
+                for( size_t i = 0; i < q_count; i++ )
                 {
-                    ModbusRTU::DataBits b(ret.data[i]);
-
-                    for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
-                        d.data[m] = b[k];
+                    bool state = false;
+                    ret.getByBitNum(i, state);
+                    d.data[i] = state ? 1 : 0;
                 }
 
                 p->initOK = initSMValue(d.data, d.len, &(p->p));
