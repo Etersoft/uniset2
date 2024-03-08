@@ -208,8 +208,6 @@
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
-
-
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">

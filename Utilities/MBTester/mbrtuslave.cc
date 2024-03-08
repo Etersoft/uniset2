@@ -142,6 +142,7 @@ int main( int argc, char** argv )
                             cerr << "Error in \"" << s << "\". Use -z reg1=value1,reg2=value" << endl;
                             return 1;
                         }
+
                         reglist[uni_atoi(tmp[0])] = uni_atoi(tmp[1]);
                     }
                 }

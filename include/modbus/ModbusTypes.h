@@ -127,7 +127,7 @@ namespace uniset
             /*! максимальное количество данных в пакете (c учётом контрольной суммы) */
             MAXLENPACKET     = 508, /*!< максимальная длина пакета 512 - header(2) - CRC(2) */
             BroadcastAddr    = 0, /*!< адрес для широковещательных сообщений */
-            MAXPDULEN       = 253, // 255 - 2(CRC)
+            MAXPDULEN        = 253, // 255 - 2(CRC)
             MAXDATALEN       = 125  /*!< максимальное число слов, которое можно запросить.
                                     Связано с тем, что в ответе есть поле bcnt - количество байт
                                     Соответственно максимум туда можно записать только 255
@@ -334,12 +334,83 @@ namespace uniset
             {
                 b.set(n, s);
             }
+            void reset()
+            {
+                b.reset();
+            }
 
             std::bitset<BitsPerData> b;
         };
 
         std::ostream& operator<<(std::ostream& os, DataBits16& m );
         std::ostream& operator<<(std::ostream& os, DataBits16* m );
+        // -----------------------------------------------------------------------
+        struct BitsBuffer
+        {
+            ModbusByte bcnt = { 0 };       /*!< numbers of bytes */
+            ModbusByte data[MAXPDULEN];    /*!< данные */
+
+            BitsBuffer();
+
+            /*! добавление данных.
+             * \return TRUE - если удалось
+             * \return FALSE - если НЕ удалось
+            */
+            bool addData( DataBits d );
+
+            /*! установить бит (до этого должны быть добавлены данные при помощи addData)
+             * \param dnum  - номер байта (0..MAXPDULEN)
+             * \param bnum  - номер бита (0...7)
+             * \param state - состояние
+             * \return TRUE - если есть
+             * \return FALSE - если НЕ найдено
+            */
+            bool setBit( uint8_t dnum, uint8_t bnum, bool state );
+
+            /*! установить бит (по абсолютному номеру)
+             * \param num   - номер бита (0...MAXPDULEN*8)
+             * \param state - состояние
+             * \return TRUE - если есть
+             * \return FALSE - если НЕ найдено
+            */
+            bool setByBitNum( uint16_t num, bool state );
+
+            /*! получение данных.
+             * \param dnum  - номер байта (0..MAXPDULEN)
+             * \param d     - найденные данные
+             * \return TRUE - если есть
+             * \return FALSE - если НЕ найдено
+            */
+            bool getData( uint8_t dnum, DataBits& d ) const;
+
+            /*! получение данных.
+             * \param num    - номер бита (0...MAXPDULEN*8)
+             * \param state  - состояние
+             * \return TRUE  - если есть
+             * \return FALSE - если НЕ найдено
+            */
+            bool getByBitNum( uint16_t num, bool& state ) const;
+
+            /*! получение данных
+             * \param dnum  - номер байта (0..MAXPDULEN)
+             * \param bnum  - номер бита (0...7)
+             * \param state  - состояние
+             * \return TRUE  - если есть
+             * \return FALSE - если НЕ найдено
+            */
+            bool getBit( uint8_t dnum, uint8_t bnum, bool& state ) const;
+
+            /*! очистка данных */
+            void clear();
+
+            /*! проверка на переполнение */
+            inline bool isFull() const
+            {
+                return ( (size_t)bcnt >= sizeof(data) );
+            }
+        };
+        std::ostream& operator<<(std::ostream& os, BitsBuffer& m );
+        std::ostream& operator<<(std::ostream& os, BitsBuffer* m );
         // -----------------------------------------------------------------------
         /*! Запрос 0x01 */
         struct ReadCoilMessage:
@@ -371,14 +442,11 @@ namespace uniset
         std::ostream& operator<<(std::ostream& os, ReadCoilMessage* m );
 
         // -----------------------------------------------------------------------
-
         /*! Ответ на 0x01 */
         struct ReadCoilRetMessage:
-            public ModbusHeader
+            public ModbusHeader,
+            public BitsBuffer
         {
-            ModbusByte bcnt = { 0 };          /*!< numbers of bytes */
-            ModbusByte data[MAXLENPACKET];    /*!< данные */
-
             // ------- from slave -------
             ReadCoilRetMessage( const ModbusMessage& m );
             ReadCoilRetMessage& operator=( const ModbusMessage& m );
@@ -396,43 +464,11 @@ namespace uniset
             static size_t getDataLen( const ModbusMessage& m );
             ModbusCRC crc = { 0 };
 
-            // ------- to master -------
-            ReadCoilRetMessage( ModbusAddr _from );
-
-            /*! добавление данных.
-             * \return TRUE - если удалось
-             * \return FALSE - если НЕ удалось
-            */
-            bool addData( DataBits d );
-
-            /*! установить бит.
-             * \param dnum  - номер байта (0..MAXLENPACKET)
-             * \param bnum  - номер бита (0..7)
-             * \param state - состояние
-             * \return TRUE - если есть
-             * \return FALSE - если НЕ найдено
-            */
-            bool setBit( uint8_t dnum, uint8_t bnum, bool state );
-
-            /*! получение данных.
-             * \param bnum  - номер байта(0..MAXLENPACKET)
-             * \param d     - найденные данные
-             * \return TRUE - если есть
-             * \return FALSE - если НЕ найдено
-            */
-            bool getData( uint8_t bnum, DataBits& d ) const;
-
-            /*! очистка данных */
-            void clear();
-
-            /*! проверка на переполнение */
-            inline bool isFull() const
-            {
-                return ( (int)bcnt >= MAXPDULEN );
-            }
-
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
+
+            // ------- to master -------
+            ReadCoilRetMessage( ModbusAddr _from );
 
             /*! преобразование для посылки в сеть */
             ModbusMessage transport_msg();
@@ -474,11 +510,9 @@ namespace uniset
         // -----------------------------------------------------------------------
         /*! Ответ на 0x02 */
         struct ReadInputStatusRetMessage:
-            public ModbusHeader
+            public ModbusHeader,
+            public BitsBuffer
         {
-            ModbusByte bcnt = { 0 };          /*!< numbers of bytes */
-            ModbusByte data[MAXLENPACKET];    /*!< данные */
-
             // ------- from slave -------
             ReadInputStatusRetMessage( const ModbusMessage& m );
             ReadInputStatusRetMessage& operator=( const ModbusMessage& m );
@@ -496,43 +530,11 @@ namespace uniset
             static size_t getDataLen( const ModbusMessage& m );
             ModbusCRC crc = { 0 };
 
-            // ------- to master -------
-            ReadInputStatusRetMessage( ModbusAddr _from );
-
-            /*! добавление данных.
-             * \return TRUE - если удалось
-             * \return FALSE - если НЕ удалось
-            */
-            bool addData( DataBits d );
-
-            /*! установить бит.
-             * \param dnum  - номер байта (0..MAXLENPACKET)
-             * \param bnum  - номер бита (0...7)
-             * \param state - состояние
-             * \return TRUE - если есть
-             * \return FALSE - если НЕ найдено
-            */
-            bool setBit( uint8_t dnum, uint8_t bnum, bool state );
-
-            /*! получение данных.
-             * \param dnum  - номер байта (0..MAXLENPACKET)
-             * \param d     - найденные данные
-             * \return TRUE - если есть
-             * \return FALSE - если НЕ найдено
-            */
-            bool getData( uint8_t dnum, DataBits& d ) const;
-
-            /*! очистка данных */
-            void clear();
-
-            /*! проверка на переполнение */
-            inline bool isFull() const
-            {
-                return ( (int)bcnt >= MAXPDULEN );
-            }
-
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
+
+            // ------- to master -------
+            ReadInputStatusRetMessage( ModbusAddr _from );
 
             /*! преобразование для посылки в сеть */
             ModbusMessage transport_msg();

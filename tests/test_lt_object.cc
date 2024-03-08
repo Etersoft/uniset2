@@ -109,7 +109,7 @@ TEST_CASE( "LT_Object: local timer1, timer2", "[lt_object]" )
     REQUIRE( lt_uobj->mqEmpty() == true );
 
     // remove timer1
-    lt.askTimer(1,0);
+    lt.askTimer(1, 0);
     REQUIRE( lt.getTimeInterval(1) == 0 );
     REQUIRE( lt.getTimeLeft(1) == 0 );
     REQUIRE( lt.getTimeInterval(2) == 30 );
