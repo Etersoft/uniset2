@@ -10,7 +10,6 @@
 #include "ModbusRTUErrors.h"
 // -------------------------------------------------------------------------
 /* Основные предположения:
- * - младший и старший байт переворачиваются только в CRC
  * - В случае неправильного формата пакета(запроса), логической ошибки и т.п
  *         ОТВЕТ просто не посылается, а пакет отбрасывается...
  * - CRC считается по всей посылке (с начальным адресом)
@@ -28,7 +27,7 @@ namespace uniset
         typedef uint8_t ModbusByte;    /*!< modbus-байт */
         const size_t BitsPerByte = 8;
         typedef uint8_t ModbusAddr;    /*!< адрес узла в modbus-сети */
-        typedef uint16_t ModbusData;    /*!< размер данных в modbus-сообщениях */
+        typedef uint16_t ModbusData;   /*!< размер данных в modbus-сообщениях */
         const uint8_t BitsPerData = 16;
         typedef uint16_t ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
 
@@ -275,9 +274,11 @@ namespace uniset
 
             // ------- to master -------
             ErrorRetMessage( ModbusAddr _from, ModbusByte _func, ModbusByte ecode );
+            static void make_to( ModbusAddr addr, ModbusByte _func, ModbusByte ecode, ModbusMessage& m );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             /*! размер данных(после заголовка) у данного типа сообщения
                 Для данного типа он постоянный..
@@ -424,8 +425,11 @@ namespace uniset
 
             // ------- to slave -------
             ReadCoilMessage( ModbusAddr addr, ModbusData start, ModbusData count );
+            static void make_to( ModbusAddr addr, ModbusData start, ModbusData count, ModbusMessage& m );
+
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             ReadCoilMessage( const ModbusMessage& m );
@@ -477,7 +481,8 @@ namespace uniset
             ReadCoilRetMessage( ModbusAddr _from );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
         };
 
         std::ostream& operator<<(std::ostream& os, ReadCoilRetMessage& m );
@@ -493,9 +498,11 @@ namespace uniset
 
             // ------- to slave -------
             ReadInputStatusMessage( ModbusAddr addr, ModbusData start, ModbusData count );
+            static void make_to( ModbusAddr addr, ModbusData start, ModbusData count, ModbusMessage& m );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             ReadInputStatusMessage( const ModbusMessage& m );
@@ -547,7 +554,8 @@ namespace uniset
             ReadInputStatusRetMessage( ModbusAddr _from );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
         };
 
         std::ostream& operator<<(std::ostream& os, ReadInputStatusRetMessage& m );
@@ -564,8 +572,10 @@ namespace uniset
 
             // ------- to slave -------
             ReadOutputMessage( ModbusAddr addr, ModbusData start, ModbusData count );
+            static void make_to( ModbusAddr addr, ModbusData start, ModbusData count, ModbusMessage& m );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             ReadOutputMessage( const ModbusMessage& m );
@@ -634,14 +644,15 @@ namespace uniset
             size_t szData() const;
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // Это поле не входит в стандарт modbus
             // оно вспомогательное и игнорируется при
             // преобразовании в ModbusMessage.
             // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
             // Используйте специальную функцию transport_msg()
-            size_t count = { 0 };    /*!< фактическое количество данных в сообщении */
+            size_t count = { 0 }; /*!< фактическое количество данных в сообщении */
         };
 
         std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage& m );
@@ -657,8 +668,10 @@ namespace uniset
 
             // ------- to slave -------
             ReadInputMessage( ModbusAddr addr, ModbusData start, ModbusData count );
+            static void make_to( ModbusAddr addr, ModbusData start, ModbusData count, ModbusMessage& m );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             ReadInputMessage( const ModbusMessage& m );
@@ -683,7 +696,7 @@ namespace uniset
         struct ReadInputRetMessage:
             public ModbusHeader
         {
-            ModbusByte bcnt = { 0 };                                    /*!< numbers of bytes */
+            ModbusByte bcnt = { 0 };                             /*!< bytes count */
             ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
             // ------- from slave -------
@@ -730,7 +743,8 @@ namespace uniset
             size_t szData() const;
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // Это поле не входит в стандарт modbus
             // оно вспомогательное и игнорируется при
@@ -747,8 +761,8 @@ namespace uniset
         struct ForceCoilsMessage:
             public ModbusHeader
         {
-            ModbusData start = { 0 };    /*!< стартовый адрес записи */
-            ModbusData quant = { 0 };    /*!< количество записываемых битов */
+            ModbusData start = { 0 };   /*!< стартовый адрес записи */
+            ModbusData quant = { 0 };   /*!< количество записываемых битов */
             ModbusByte bcnt = { 0 };    /*!< количество байт данных */
             /*! данные */
             ModbusByte data[MAXLENPACKET - sizeof(ModbusData) * 2 - sizeof(ModbusByte)];
@@ -757,7 +771,8 @@ namespace uniset
             // ------- to slave -------
             ForceCoilsMessage( ModbusAddr addr, ModbusData start );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             /*! добавление данных.
              * \return TRUE - если удалось
@@ -842,12 +857,14 @@ namespace uniset
              * \param quant    - количество записанных слов
             */
             ForceCoilsRetMessage( ModbusAddr _from, ModbusData start = 0, ModbusData quant = 0 );
+            static void make_to( ModbusAddr _from, ModbusData start, ModbusData count, ModbusMessage& m );
 
             /*! записать данные */
             void set( ModbusData start, ModbusData quant );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             /*! размер данных(после заголовка) у данного типа сообщения
                 Для данного типа он постоянный..
@@ -866,8 +883,8 @@ namespace uniset
         struct WriteOutputMessage:
             public ModbusHeader
         {
-            ModbusData start = { 0 };    /*!< стартовый адрес записи */
-            ModbusData quant = { 0 };    /*!< количество слов данных */
+            ModbusData start = { 0 };   /*!< стартовый адрес записи */
+            ModbusData quant = { 0 };   /*!< количество слов данных */
             ModbusByte bcnt = { 0 };    /*!< количество байт данных */
             /*! данные */
             ModbusData data[MAXLENPACKET / sizeof(ModbusData) - sizeof(ModbusData) * 2 - sizeof(ModbusByte)];
@@ -876,7 +893,8 @@ namespace uniset
             // ------- to slave -------
             WriteOutputMessage( ModbusAddr addr, ModbusData start );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             bool addData( ModbusData d );
             void clear();
@@ -920,7 +938,7 @@ namespace uniset
         struct WriteOutputRetMessage:
             public ModbusHeader
         {
-            ModbusData start = { 0 };     /*!< записанный начальный адрес */
+            ModbusData start = { 0 };    /*!< записанный начальный адрес */
             ModbusData quant = { 0 };    /*!< количество записанных слов данных */
 
             // ------- from slave -------
@@ -934,16 +952,18 @@ namespace uniset
             // ------- to master -------
             /*!
              * \param _from - адрес отправителя
-             * \param start    - записанный регистр
-             * \param quant    - количество записанных слов
+             * \param start - записанный регистр
+             * \param quant - количество записанных слов
             */
             WriteOutputRetMessage( ModbusAddr _from, ModbusData start = 0, ModbusData quant = 0 );
+            static void make_to( ModbusAddr _from, ModbusData start, ModbusData quant, ModbusMessage& m );
 
             /*! записать данные */
             void set( ModbusData start, ModbusData quant );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             /*! размер данных(после заголовка) у данного типа сообщения
                 Для данного типа он постоянный..
@@ -973,8 +993,10 @@ namespace uniset
 
             // ------- to slave -------
             ForceSingleCoilMessage( ModbusAddr addr, ModbusData reg, bool state );
+            static void make_to( ModbusAddr addr, ModbusData ref, bool state, ModbusMessage& m );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             ForceSingleCoilMessage( const ModbusMessage& m );
@@ -1032,15 +1054,16 @@ namespace uniset
             // ------- to master -------
             /*!
              * \param _from - адрес отправителя
-             * \param start    - записанный регистр
             */
             ForceSingleCoilRetMessage( ModbusAddr _from );
+            static void make_to( ModbusAddr addr, ModbusData start, bool cmd, ModbusMessage& m );
 
             /*! записать данные */
             void set( ModbusData start, bool cmd );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             /*! размер данных(после заголовка) у данного типа сообщения
                 Для данного типа он постоянный..
@@ -1066,8 +1089,10 @@ namespace uniset
 
             // ------- to slave -------
             WriteSingleOutputMessage( ModbusAddr addr, ModbusData reg = 0, ModbusData data = 0 );
+            static void make_to( ModbusAddr addr, ModbusData start, ModbusData data, ModbusMessage& m );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             WriteSingleOutputMessage( const ModbusMessage& m );
@@ -1123,12 +1148,14 @@ namespace uniset
              * \param start    - записанный регистр
             */
             WriteSingleOutputRetMessage( ModbusAddr _from, ModbusData start = 0 );
+            static void make_to( ModbusAddr addr, ModbusData start, ModbusData data, ModbusMessage& m );
 
             /*! записать данные */
             void set( ModbusData start, ModbusData data );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             /*! размер данных(после заголовка) у данного типа сообщения
                 Для данного типа он постоянный..
@@ -1191,7 +1218,8 @@ namespace uniset
             size_t szData() const;
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // Это поле не входит в стандарт modbus
             // оно вспомогательное и игнорируется при
@@ -1227,8 +1255,11 @@ namespace uniset
 
             // ------- to slave -------
             MEIMessageRDI( ModbusAddr addr, ModbusByte devID, ModbusByte objID );
+            static void make_to( ModbusAddr addr, ModbusByte devID, ModbusByte objID, ModbusMessage& m );
+
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             MEIMessageRDI( const ModbusMessage& m );
@@ -1329,7 +1360,8 @@ namespace uniset
             size_t szData() const;
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             size_t bcnt = { 0 }; /*! размер данных в байтах, внутреннее служебное поле */
         };
@@ -1405,7 +1437,8 @@ namespace uniset
             static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // Это поле не входит в стандарт modbus
             // оно вспомогательное и игнорируется при
@@ -1451,7 +1484,8 @@ namespace uniset
             // ------- to slave -------
             SetDateTimeMessage( ModbusAddr addr );
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // ------- from master -------
             SetDateTimeMessage( const ModbusMessage& m );
@@ -1492,7 +1526,8 @@ namespace uniset
             static void cpy( SetDateTimeRetMessage& reply, const SetDateTimeMessage& query );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
         };
         // -----------------------------------------------------------------------
 
@@ -1565,7 +1600,8 @@ namespace uniset
             static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
 
             // Это поле не входит в стандарт modbus
             // оно вспомогательное и игнорируется при
@@ -1632,7 +1668,9 @@ namespace uniset
 
             // ------- to slave -------
             FileTransferMessage( ModbusAddr addr, ModbusData numfile, ModbusData numpacket );
-            ModbusMessage transport_msg();     /*!< преобразование для посылки в сеть */
+            static void make_to( ModbusAddr addr, ModbusByte numfile, ModbusByte numpacket, ModbusMessage& m );
+            ModbusMessage transport_msg() const;     /*!< преобразование для посылки в сеть */
+            void transport_msg_to( ModbusMessage& m ) const;
 
 
             // ------- from master -------
@@ -1698,7 +1736,8 @@ namespace uniset
             size_t szData() const;
 
             /*! преобразование для посылки в сеть */
-            ModbusMessage transport_msg();
+            ModbusMessage transport_msg() const;
+            void transport_msg_to( ModbusMessage& m ) const;
         };
 
         std::ostream& operator<<(std::ostream& os, FileTransferRetMessage& m );

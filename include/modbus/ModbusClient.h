@@ -76,23 +76,23 @@ namespace uniset
 
             /*! Запись одного регистра (0x06)
                 \param addr - адрес slave-узла
-                \param reg - записываемый регистр
-                \param data    - данные
+                \param reg  - записываемый регистр
+                \param data - данные
 
                 throw ModbusRTU::mbException
             */
-            ModbusRTU::WriteSingleOutputRetMessage write06( ModbusRTU::ModbusAddr addr,
+            ModbusRTU::WriteSingleOutputRetMessage write06( const ModbusRTU::ModbusAddr addr,
                     ModbusRTU::ModbusData reg, ModbusRTU::ModbusData data );
 
             /*! Запись группы выходов (0x0F) throw ModbusRTU::mbException*/
-            ModbusRTU::ForceCoilsRetMessage write0F( ModbusRTU::ForceCoilsMessage& msg );
+            ModbusRTU::ForceCoilsRetMessage write0F( const ModbusRTU::ForceCoilsMessage& msg );
 
             /*! Запись группы регистров (0x10) throw ModbusRTU::mbException*/
-            ModbusRTU::WriteOutputRetMessage write10( ModbusRTU::WriteOutputMessage& msg );
+            ModbusRTU::WriteOutputRetMessage write10( const ModbusRTU::WriteOutputMessage& msg );
 
             /*! Диагностика (0x08) throw ModbusRTU::mbException*/
             ModbusRTU::DiagnosticRetMessage diag08( ModbusRTU::ModbusAddr addr,
-                                                    ModbusRTU::DiagnosticsSubFunction subfunc,
+                                                    const ModbusRTU::DiagnosticsSubFunction subfunc,
                                                     ModbusRTU::ModbusData dat = 0 );
 
             /*! Modbus Encapsulated Interface 43(0x2B)
@@ -105,10 +105,10 @@ namespace uniset
 
             /*! Установить системное время (0x50)
                 hour    - часы [0..23]
-                min        - минуты [0..59]
-                sec        - секунды [0..59]
-                day        - день [1..31]
-                mon        - месяц [1..12]
+                min     - минуты [0..59]
+                sec     - секунды [0..59]
+                day     - день [1..31]
+                mon     - месяц [1..12]
                 year    - год [0..99]
                 century - столетие [19-20]
 
@@ -174,8 +174,8 @@ namespace uniset
 
             /*! get next data block from channel ot recv buffer
                 \param begin - get from position
-                \param buf  - buffer for data
-                \param len     - size of buf
+                \param buf   - buffer for data
+                \param len   - size of buf
                 \return real data length ( must be <= len )
             */
             virtual size_t getNextData( unsigned char* buf, size_t len ) = 0;
@@ -200,9 +200,9 @@ namespace uniset
             virtual ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusByte qfunc,
                                                    ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
-            timeout_t replyTimeOut_ms;    /*!< таймаут на ожидание ответа */
+            timeout_t replyTimeOut_ms;   /*!< таймаут на ожидание ответа */
             timeout_t aftersend_msec;    /*!< пауза после посылки запроса */
-            timeout_t sleepPause_usec;     /*!< пауза между попытками чтения символа из канала */
+            timeout_t sleepPause_usec;   /*!< пауза между попытками чтения символа из канала */
 
             bool crcNoCheckit;
 

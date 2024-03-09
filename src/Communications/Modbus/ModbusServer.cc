@@ -160,18 +160,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mRead.addr, mRead.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
-            // return send(buf);
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -194,18 +191,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mRead.addr, mRead.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тотже буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
-            // return send(buf);
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -228,18 +222,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mRead.addr, mRead.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тотже буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
-            // return send(buf);
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -262,18 +253,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mRead.addr, mRead.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тотже буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
-            // return send(buf);
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -296,16 +284,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mWrite.addr, mWrite.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!)
-            buf = reply.transport_msg();
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             // --------------------------------
             printProcessingTime();
@@ -328,16 +315,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mWrite.addr, mWrite.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -358,17 +344,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mDiag.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mDiag.addr, mDiag.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mDiag.addr, mDiag.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -391,17 +375,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mRDI.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mRDI.addr, mRDI.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mRDI.addr, mRDI.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -425,18 +407,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mWrite.addr, mWrite.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // -----------------------------------
-            //        return send(buf);
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -460,17 +439,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mWrite.addr, mWrite.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // --------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -493,17 +470,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mJournal.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mJournal.addr, mJournal.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mJournal.addr, mJournal.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // --------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -526,17 +501,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && mSet.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( mSet.addr, mSet.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( mSet.addr, mSet.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // --------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -559,17 +532,15 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && query.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( query.addr, query.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( query.addr, query.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // --------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
@@ -592,25 +563,22 @@ namespace uniset
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
                 if( res < erInternalErrorCode && query.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage em( query.addr, query.func, res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( query.addr, query.func, res, buf );
                     return send(buf);
                 }
 
                 return res;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен!!!)...
-            buf = reply.transport_msg();
-            // --------------------------------
+            // отвечаем (используя тот же буфер, который будет очищен)
+            reply.transport_msg_to(buf);
             res = send(buf);
             printProcessingTime();
             // --------------------------------
             return res;
         }
 
-        ErrorRetMessage em( buf.addr(), buf.func(), erUnExpectedPacketType );
-        buf = em.transport_msg();
+        ErrorRetMessage::make_to( buf.addr(), buf.func(), erUnExpectedPacketType, buf );
         send(buf);
         printProcessingTime();
         return erUnExpectedPacketType;
