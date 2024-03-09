@@ -64,14 +64,7 @@ namespace uniset
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
-        {
-            ReadCoilRetMessage ret(qreply);
-
-            if( ret.bcnt != numBytes(count) )
-                throw mbException(erBadDataValue);
-
-            return ret;
-        }
+            return ReadCoilRetMessage(qreply);
 
         throw mbException(res);
     }
@@ -83,14 +76,7 @@ namespace uniset
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
-        {
-            ReadInputStatusRetMessage ret(qreply);
-
-            if( ret.bcnt != numBytes(count) )
-                throw mbException(erBadDataValue);
-
-            return ret;
-        }
+            return ReadInputStatusRetMessage(qreply);
 
         throw mbException(res);
     }
