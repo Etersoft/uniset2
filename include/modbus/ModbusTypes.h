@@ -300,7 +300,7 @@ namespace uniset
             operator ModbusByte();
             ModbusByte mbyte();
 
-            bool operator[]( const size_t i )
+            bool operator[] ( const size_t i ) const
             {
                 return b[i];
             }
@@ -326,7 +326,7 @@ namespace uniset
             operator ModbusData();
             ModbusData mdata() const;
 
-            bool operator[]( const size_t i )
+            bool operator[]( const size_t i ) const
             {
                 return b[i];
             }
@@ -707,7 +707,7 @@ namespace uniset
             void swapData();
 
             /*! размер данных(после заголовка) у данного типа сообщения */
-            size_t szData();
+            size_t szData() const;
 
             /*! преобразование для посылки в сеть */
             ModbusMessage transport_msg();
@@ -762,7 +762,7 @@ namespace uniset
              * \return TRUE - если есть
              * \return FALSE - если НЕ найдено
             */
-            bool getData( uint8_t dnum, DataBits& d );
+            bool getData( uint8_t dnum, DataBits& d ) const;
 
             void clear();
             inline bool isFull() const
@@ -942,7 +942,7 @@ namespace uniset
             ModbusCRC crc = { 0 };      /*!< контрольная сумма */
 
             /*! получить значение команды */
-            inline bool cmd()
+            inline bool cmd() const
             {
                 return (data & 0xFF00);
             }
@@ -1064,10 +1064,8 @@ namespace uniset
             */
             static size_t getDataLen( const ModbusMessage& m );
 
-            /*! проверка корректности данных
-                что quant и bcnt - совпадают...
-            */
-            bool checkFormat();
+            /*! проверка корректности данных */
+            bool checkFormat() const;
         } __attribute__((packed));
 
 
@@ -1398,13 +1396,13 @@ namespace uniset
         struct SetDateTimeMessage:
             public ModbusHeader
         {
-            ModbusByte hour = { 0 };    /*!< часы [0..23] */
-            ModbusByte min = { 0 };        /*!< минуты [0..59] */
-            ModbusByte sec = { 0 };        /*!< секунды [0..59] */
-            ModbusByte day = { 1 };        /*!< день [1..31] */
-            ModbusByte mon = { 1 };        /*!< месяц [1..12] */
-            ModbusByte year = { 0 };    /*!< год [0..99] */
-            ModbusByte century = { 20 };    /*!< столетие [19-20] */
+            ModbusByte hour = { 0 };     /*!< часы [0..23] */
+            ModbusByte min = { 0 };      /*!< минуты [0..59] */
+            ModbusByte sec = { 0 };      /*!< секунды [0..59] */
+            ModbusByte day = { 1 };      /*!< день [1..31] */
+            ModbusByte mon = { 1 };      /*!< месяц [1..12] */
+            ModbusByte year = { 0 };     /*!< год [0..99] */
+            ModbusByte century = { 20 }; /*!< столетие [19-20] */
 
             ModbusCRC crc = { 0 };
 

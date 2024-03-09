@@ -230,7 +230,7 @@ void TestProc::mbThread()
     mylog9 << myname << "ModbusSlave stopped.." << endl;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode TestProc::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+ModbusRTU::mbErrCode TestProc::writeOutputSingleRegister( const ModbusRTU::WriteSingleOutputMessage& query,
         ModbusRTU::WriteSingleOutputRetMessage& reply )
 {
     mylog9 << myname << "(writeOutputSingleRegister): " << query << endl;

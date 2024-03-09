@@ -607,10 +607,9 @@ namespace uniset
         {
             if( p->vType == VTypes::vtUnknown )
             {
-                ModbusRTU::DataBits16 b(data[0]);
-
                 if( p->nbit >= 0 )
                 {
+                    const ModbusRTU::DataBits16 b(data[0]);
                     bool set = b[p->nbit];
                     IOBase::processingAsDI( p, set, shm, true );
                     return true;
@@ -785,7 +784,7 @@ namespace uniset
         {
             case ModbusRTU::fnReadInputRegisters:
             {
-                ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr, p->mbreg, p->q_count);
+                const ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr, p->mbreg, p->q_count);
 
                 for( size_t i = 0; i < p->q_count; i++, it++ )
                 {
@@ -799,7 +798,7 @@ namespace uniset
 
             case ModbusRTU::fnReadOutputRegisters:
             {
-                ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg, p->q_count);
+                const ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg, p->q_count);
 
                 for( size_t i = 0; i < p->q_count; i++, it++ )
                 {
@@ -813,12 +812,12 @@ namespace uniset
 
             case ModbusRTU::fnReadInputStatus:
             {
-                ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, p->q_count);
+                const ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, p->q_count);
                 size_t m = 0;
 
                 for( uint i = 0; i < ret.bcnt; i++ )
                 {
-                    ModbusRTU::DataBits b(ret.data[i]);
+                    const ModbusRTU::DataBits b(ret.data[i]);
 
                     for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < p->q_count; k++, it++, m++ )
                     {
@@ -833,12 +832,12 @@ namespace uniset
 
             case ModbusRTU::fnReadCoilStatus:
             {
-                ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, p->q_count);
+                const ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, p->q_count);
                 size_t m = 0;
 
                 for( auto i = 0; i < ret.bcnt; i++ )
                 {
-                    ModbusRTU::DataBits b(ret.data[i]);
+                    const ModbusRTU::DataBits b(ret.data[i]);
 
                     for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < p->q_count; k++, it++, m++ )
                     {
@@ -1193,10 +1192,10 @@ namespace uniset
         {
             if( p->vType == VTypes::vtUnknown )
             {
-                ModbusRTU::DataBits16 b(r->mbval);
-
                 if( p->nbit >= 0 )
                 {
+                    ModbusRTU::DataBits16 b(r->mbval);
+
                     if( save )
                     {
                         if( r->mb_initOK )

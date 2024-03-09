@@ -441,7 +441,7 @@ namespace uniset
         final(); // после этого вызова возможно данный объект будет разрушен!
     }
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,
+    mbErrCode ModbusTCPSession::readCoilStatus( const ReadCoilMessage& query,
             ReadCoilRetMessage& reply )
     {
         if( !slReadCoil )
@@ -451,7 +451,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::readInputStatus( ReadInputStatusMessage& query,
+    mbErrCode ModbusTCPSession::readInputStatus( const ReadInputStatusMessage& query,
             ReadInputStatusRetMessage& reply )
     {
         if( !slReadInputStatus )
@@ -462,7 +462,7 @@ namespace uniset
 
     // -------------------------------------------------------------------------
 
-    mbErrCode ModbusTCPSession::readOutputRegisters( ReadOutputMessage& query,
+    mbErrCode ModbusTCPSession::readOutputRegisters( const ReadOutputMessage& query,
             ReadOutputRetMessage& reply )
     {
         if( !slReadOutputs )
@@ -472,7 +472,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::readInputRegisters( ReadInputMessage& query,
+    mbErrCode ModbusTCPSession::readInputRegisters( const ReadInputMessage& query,
             ReadInputRetMessage& reply )
     {
         if( !slReadInputs )
@@ -482,7 +482,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::forceMultipleCoils( ForceCoilsMessage& query,
+    mbErrCode ModbusTCPSession::forceMultipleCoils( const ForceCoilsMessage& query,
             ForceCoilsRetMessage& reply )
     {
         if( !slForceCoils )
@@ -493,7 +493,7 @@ namespace uniset
 
     // -------------------------------------------------------------------------
 
-    mbErrCode ModbusTCPSession::writeOutputRegisters( WriteOutputMessage& query,
+    mbErrCode ModbusTCPSession::writeOutputRegisters( const WriteOutputMessage& query,
             WriteOutputRetMessage& reply )
     {
         if( !slWriteOutputs )
@@ -503,7 +503,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::diagnostics( DiagnosticMessage& query,
+    mbErrCode ModbusTCPSession::diagnostics( const DiagnosticMessage& query,
             DiagnosticRetMessage& reply )
     {
         if( !slDiagnostics )
@@ -512,7 +512,7 @@ namespace uniset
         return slDiagnostics(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusTCPSession::read4314( ModbusRTU::MEIMessageRDI& query,
+    ModbusRTU::mbErrCode ModbusTCPSession::read4314( const ModbusRTU::MEIMessageRDI& query,
             ModbusRTU::MEIMessageRetRDI& reply )
     {
         if( !slMEIRDI )
@@ -521,7 +521,7 @@ namespace uniset
         return slMEIRDI(query, reply);
     }
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::forceSingleCoil( ForceSingleCoilMessage& query,
+    mbErrCode ModbusTCPSession::forceSingleCoil( const ForceSingleCoilMessage& query,
             ForceSingleCoilRetMessage& reply )
     {
         if( !slForceSingleCoil )
@@ -531,7 +531,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::writeOutputSingleRegister( WriteSingleOutputMessage& query,
+    mbErrCode ModbusTCPSession::writeOutputSingleRegister( const WriteSingleOutputMessage& query,
             WriteSingleOutputRetMessage& reply )
     {
         if( !slWriteSingleOutputs )
@@ -541,7 +541,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusTCPSession::journalCommand( JournalCommandMessage& query,
+    mbErrCode ModbusTCPSession::journalCommand( const JournalCommandMessage& query,
             JournalCommandRetMessage& reply )
     {
         if( !slJournalCommand )
@@ -550,7 +550,7 @@ namespace uniset
         return slJournalCommand(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusTCPSession::setDateTime( ModbusRTU::SetDateTimeMessage& query,
+    ModbusRTU::mbErrCode ModbusTCPSession::setDateTime( const ModbusRTU::SetDateTimeMessage& query,
             ModbusRTU::SetDateTimeRetMessage& reply )
     {
         if( !slSetDateTime )
@@ -559,7 +559,7 @@ namespace uniset
         return slSetDateTime(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusTCPSession::remoteService( ModbusRTU::RemoteServiceMessage& query,
+    ModbusRTU::mbErrCode ModbusTCPSession::remoteService( const ModbusRTU::RemoteServiceMessage& query,
             ModbusRTU::RemoteServiceRetMessage& reply )
     {
         if( !slRemoteService )
@@ -568,7 +568,7 @@ namespace uniset
         return slRemoteService(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusTCPSession::fileTransfer( ModbusRTU::FileTransferMessage& query,
+    ModbusRTU::mbErrCode ModbusTCPSession::fileTransfer( const ModbusRTU::FileTransferMessage& query,
             ModbusRTU::FileTransferRetMessage& reply )
     {
         if( !slFileTransfer )

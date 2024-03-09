@@ -38,7 +38,7 @@ namespace uniset
 
     }
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::readCoilStatus( ReadCoilMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::readCoilStatus( const ReadCoilMessage& query,
             ReadCoilRetMessage& reply )
     {
         if( !slReadCoil )
@@ -48,7 +48,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::readInputStatus( ReadInputStatusMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::readInputStatus( const ReadInputStatusMessage& query,
             ReadInputStatusRetMessage& reply )
     {
         if( !slReadInputStatus )
@@ -59,7 +59,7 @@ namespace uniset
 
     // -------------------------------------------------------------------------
 
-    mbErrCode ModbusRTUSlaveSlot::readOutputRegisters( ReadOutputMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::readOutputRegisters( const ReadOutputMessage& query,
             ReadOutputRetMessage& reply )
     {
         if( !slReadOutputs )
@@ -69,7 +69,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::readInputRegisters( ReadInputMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::readInputRegisters( const ReadInputMessage& query,
             ReadInputRetMessage& reply )
     {
         if( !slReadInputs )
@@ -79,7 +79,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::forceMultipleCoils( ForceCoilsMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::forceMultipleCoils( const ForceCoilsMessage& query,
             ForceCoilsRetMessage& reply )
     {
         if( !slForceCoils )
@@ -90,7 +90,7 @@ namespace uniset
 
     // -------------------------------------------------------------------------
 
-    mbErrCode ModbusRTUSlaveSlot::writeOutputRegisters( WriteOutputMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::writeOutputRegisters( const WriteOutputMessage& query,
             WriteOutputRetMessage& reply )
     {
         if( !slWriteOutputs )
@@ -100,7 +100,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::diagnostics( DiagnosticMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::diagnostics( const DiagnosticMessage& query,
             DiagnosticRetMessage& reply )
     {
         if( !slDiagnostics )
@@ -109,7 +109,7 @@ namespace uniset
         return slDiagnostics(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::read4314( ModbusRTU::MEIMessageRDI& query,
+    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::read4314( const ModbusRTU::MEIMessageRDI& query,
             ModbusRTU::MEIMessageRetRDI& reply )
     {
         if( !slMEIRDI )
@@ -118,7 +118,7 @@ namespace uniset
         return slMEIRDI(query, reply);
     }
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::forceSingleCoil( ForceSingleCoilMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::forceSingleCoil( const ForceSingleCoilMessage& query,
             ForceSingleCoilRetMessage& reply )
     {
         if( !slForceSingleCoil )
@@ -128,7 +128,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::writeOutputSingleRegister( WriteSingleOutputMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::writeOutputSingleRegister( const WriteSingleOutputMessage& query,
             WriteSingleOutputRetMessage& reply )
     {
         if( !slWriteSingleOutputs )
@@ -138,7 +138,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    mbErrCode ModbusRTUSlaveSlot::journalCommand( JournalCommandMessage& query,
+    mbErrCode ModbusRTUSlaveSlot::journalCommand( const JournalCommandMessage& query,
             JournalCommandRetMessage& reply )
     {
         if( !slJournalCommand )
@@ -147,7 +147,7 @@ namespace uniset
         return slJournalCommand(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::setDateTime( ModbusRTU::SetDateTimeMessage& query,
+    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::setDateTime( const ModbusRTU::SetDateTimeMessage& query,
             ModbusRTU::SetDateTimeRetMessage& reply )
     {
         if( !slSetDateTime )
@@ -156,7 +156,7 @@ namespace uniset
         return slSetDateTime(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::remoteService( ModbusRTU::RemoteServiceMessage& query,
+    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::remoteService( const ModbusRTU::RemoteServiceMessage& query,
             ModbusRTU::RemoteServiceRetMessage& reply )
     {
         if( !slRemoteService )
@@ -165,7 +165,7 @@ namespace uniset
         return slRemoteService(query, reply);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::fileTransfer( ModbusRTU::FileTransferMessage& query,
+    ModbusRTU::mbErrCode ModbusRTUSlaveSlot::fileTransfer( const ModbusRTU::FileTransferMessage& query,
             ModbusRTU::FileTransferRetMessage& reply )
     {
         if( !slFileTransfer )

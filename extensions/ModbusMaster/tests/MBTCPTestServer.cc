@@ -104,7 +104,7 @@ void MBTCPTestServer::sigterm( int signo )
         sslot->terminate();
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( const ReadCoilMessage& query,
         ReadCoilRetMessage& reply )
 {
     if( disabled )
@@ -140,7 +140,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
     return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( const ReadInputStatusMessage& query,
         ReadInputStatusRetMessage& reply )
 {
     if( disabled )
@@ -175,7 +175,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
     return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
+mbErrCode MBTCPTestServer::readInputRegisters( const ReadInputMessage& query,
         ReadInputRetMessage& reply )
 {
     if( disabled )
@@ -211,7 +211,7 @@ mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
-    ModbusRTU::ReadOutputMessage& query, ModbusRTU::ReadOutputRetMessage& reply )
+    const ModbusRTU::ReadOutputMessage& query, ModbusRTU::ReadOutputRetMessage& reply )
 {
     if( disabled )
         return ModbusRTU::erTimeOut;
@@ -242,7 +242,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
 }
 
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::forceMultipleCoils( const ModbusRTU::ForceCoilsMessage& query,
         ModbusRTU::ForceCoilsRetMessage& reply )
 {
     if( disabled )
@@ -257,7 +257,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::forceMultipleCoils( ModbusRTU::ForceCoilsM
     return ret;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( const ModbusRTU::WriteOutputMessage& query,
         ModbusRTU::WriteOutputRetMessage& reply )
 {
     if( disabled )
@@ -285,7 +285,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutp
 }
 
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( const ModbusRTU::WriteSingleOutputMessage& query,
         ModbusRTU::WriteSingleOutputRetMessage& reply )
 {
     if( disabled )
@@ -300,7 +300,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( ModbusRTU::Writ
     return ret;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( const ModbusRTU::ForceSingleCoilMessage& query,
         ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
     if( disabled )
@@ -317,7 +317,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( ModbusRTU::ForceSingleCoi
 }
 
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::journalCommand( ModbusRTU::JournalCommandMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::journalCommand( const ModbusRTU::JournalCommandMessage& query,
         ModbusRTU::JournalCommandRetMessage& reply )
 {
     if( disabled )
@@ -357,7 +357,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::journalCommand( ModbusRTU::JournalCommandM
     return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::setDateTime( ModbusRTU::SetDateTimeMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::setDateTime( const ModbusRTU::SetDateTimeMessage& query,
         ModbusRTU::SetDateTimeRetMessage& reply )
 {
     if( disabled )
@@ -372,14 +372,14 @@ ModbusRTU::mbErrCode MBTCPTestServer::setDateTime( ModbusRTU::SetDateTimeMessage
     return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::remoteService( ModbusRTU::RemoteServiceMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::remoteService( const ModbusRTU::RemoteServiceMessage& query,
         ModbusRTU::RemoteServiceRetMessage& reply )
 {
     cerr << "(remoteService): " << query << endl;
     return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::fileTransfer( ModbusRTU::FileTransferMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::fileTransfer( const ModbusRTU::FileTransferMessage& query,
         ModbusRTU::FileTransferRetMessage& reply )
 {
     if( verbose )
@@ -460,7 +460,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::fileTransfer( ModbusRTU::FileTransferMessa
 
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( ModbusRTU::DiagnosticMessage& query,
+ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( const ModbusRTU::DiagnosticMessage& query,
         ModbusRTU::DiagnosticRetMessage& reply )
 {
     if( disabled )
@@ -502,7 +502,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( ModbusRTU::DiagnosticMessage&
     return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPTestServer::read4314( ModbusRTU::MEIMessageRDI& query,
+ModbusRTU::mbErrCode MBTCPTestServer::read4314( const ModbusRTU::MEIMessageRDI& query,
         ModbusRTU::MEIMessageRetRDI& reply )
 {
     if( disabled )

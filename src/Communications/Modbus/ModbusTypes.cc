@@ -1319,7 +1319,7 @@ namespace uniset
         return mm;
     }
     // -------------------------------------------------------------------------
-    size_t ReadInputRetMessage::szData()
+    size_t ReadInputRetMessage::szData() const
     {
         // фактическое число данных + контрольная сумма
         return sizeof(bcnt) + count * sizeof(ModbusData) + szCRC;
@@ -1384,7 +1384,7 @@ namespace uniset
         return true;
     }
     // -------------------------------------------------------------------------
-    bool ForceCoilsMessage::getData( uint8_t dnum, DataBits& d )
+    bool ForceCoilsMessage::getData( uint8_t dnum, DataBits& d ) const
     {
         if( dnum < bcnt )
         {
@@ -1925,7 +1925,7 @@ namespace uniset
 #ifdef DEBUG
             cerr << "(ForceSingleCoil): BAD format!" << endl;
 #endif
-            // Если собщение некорректно
+            // Если сообщение некорректно
             // чистим сообщение (в безопасные значения)
             data = 0;
         }
@@ -2104,7 +2104,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    bool WriteSingleOutputMessage::checkFormat()
+    bool WriteSingleOutputMessage::checkFormat() const
     {
         // return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
         return ( (func == fnWriteOutputSingleRegister) );

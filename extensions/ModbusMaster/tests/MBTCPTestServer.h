@@ -134,57 +134,57 @@ class MBTCPTestServer
         void sigterm( int signo );
 
         /*! обработка 0x01 */
-        uniset::ModbusRTU::mbErrCode readCoilStatus( uniset::ModbusRTU::ReadCoilMessage& query,
+        uniset::ModbusRTU::mbErrCode readCoilStatus( const uniset::ModbusRTU::ReadCoilMessage& query,
                 uniset::ModbusRTU::ReadCoilRetMessage& reply );
         /*! обработка 0x02 */
-        uniset::ModbusRTU::mbErrCode readInputStatus( uniset::ModbusRTU::ReadInputStatusMessage& query,
+        uniset::ModbusRTU::mbErrCode readInputStatus( const uniset::ModbusRTU::ReadInputStatusMessage& query,
                 uniset::ModbusRTU::ReadInputStatusRetMessage& reply );
 
         /*! обработка 0x03 */
-        uniset::ModbusRTU::mbErrCode readOutputRegisters( uniset::ModbusRTU::ReadOutputMessage& query,
+        uniset::ModbusRTU::mbErrCode readOutputRegisters( const uniset::ModbusRTU::ReadOutputMessage& query,
                 uniset::ModbusRTU::ReadOutputRetMessage& reply );
 
         /*! обработка 0x04 */
-        uniset::ModbusRTU::mbErrCode readInputRegisters( uniset::ModbusRTU::ReadInputMessage& query,
+        uniset::ModbusRTU::mbErrCode readInputRegisters( const uniset::ModbusRTU::ReadInputMessage& query,
                 uniset::ModbusRTU::ReadInputRetMessage& reply );
 
         /*! обработка 0x05 */
-        uniset::ModbusRTU::mbErrCode forceSingleCoil( uniset::ModbusRTU::ForceSingleCoilMessage& query,
+        uniset::ModbusRTU::mbErrCode forceSingleCoil( const uniset::ModbusRTU::ForceSingleCoilMessage& query,
                 uniset::ModbusRTU::ForceSingleCoilRetMessage& reply );
 
         /*! обработка 0x0F */
-        uniset::ModbusRTU::mbErrCode forceMultipleCoils( uniset::ModbusRTU::ForceCoilsMessage& query,
+        uniset::ModbusRTU::mbErrCode forceMultipleCoils( const uniset::ModbusRTU::ForceCoilsMessage& query,
                 uniset::ModbusRTU::ForceCoilsRetMessage& reply );
 
 
         /*! обработка 0x10 */
-        uniset::ModbusRTU::mbErrCode writeOutputRegisters( uniset::ModbusRTU::WriteOutputMessage& query,
+        uniset::ModbusRTU::mbErrCode writeOutputRegisters( const uniset::ModbusRTU::WriteOutputMessage& query,
                 uniset::ModbusRTU::WriteOutputRetMessage& reply );
 
         /*! обработка 0x06 */
-        uniset::ModbusRTU::mbErrCode writeOutputSingleRegister( uniset::ModbusRTU::WriteSingleOutputMessage& query,
+        uniset::ModbusRTU::mbErrCode writeOutputSingleRegister( const uniset::ModbusRTU::WriteSingleOutputMessage& query,
                 uniset::ModbusRTU::WriteSingleOutputRetMessage& reply );
 
 
-        uniset::ModbusRTU::mbErrCode diagnostics( uniset::ModbusRTU::DiagnosticMessage& query,
+        uniset::ModbusRTU::mbErrCode diagnostics( const uniset::ModbusRTU::DiagnosticMessage& query,
                 uniset::ModbusRTU::DiagnosticRetMessage& reply );
 
-        uniset::ModbusRTU::mbErrCode read4314( uniset::ModbusRTU::MEIMessageRDI& query,
+        uniset::ModbusRTU::mbErrCode read4314( const uniset::ModbusRTU::MEIMessageRDI& query,
                                                uniset::ModbusRTU::MEIMessageRetRDI& reply );
 
         /*! обработка запросов на чтение ошибок */
-        uniset::ModbusRTU::mbErrCode journalCommand( uniset::ModbusRTU::JournalCommandMessage& query,
+        uniset::ModbusRTU::mbErrCode journalCommand( const uniset::ModbusRTU::JournalCommandMessage& query,
                 uniset::ModbusRTU::JournalCommandRetMessage& reply );
 
         /*! обработка запроса на установку времени */
-        uniset::ModbusRTU::mbErrCode setDateTime( uniset::ModbusRTU::SetDateTimeMessage& query,
+        uniset::ModbusRTU::mbErrCode setDateTime( const uniset::ModbusRTU::SetDateTimeMessage& query,
                 uniset::ModbusRTU::SetDateTimeRetMessage& reply );
 
         /*! обработка запроса удалённого сервиса */
-        uniset::ModbusRTU::mbErrCode remoteService( uniset::ModbusRTU::RemoteServiceMessage& query,
+        uniset::ModbusRTU::mbErrCode remoteService( const uniset::ModbusRTU::RemoteServiceMessage& query,
                 uniset::ModbusRTU::RemoteServiceRetMessage& reply );
 
-        uniset::ModbusRTU::mbErrCode fileTransfer( uniset::ModbusRTU::FileTransferMessage& query,
+        uniset::ModbusRTU::mbErrCode fileTransfer( const uniset::ModbusRTU::FileTransferMessage& query,
                 uniset::ModbusRTU::FileTransferRetMessage& reply );
 
 

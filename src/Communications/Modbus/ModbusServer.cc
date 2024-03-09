@@ -145,7 +145,7 @@ namespace uniset
     {
         if( buf.func() == fnReadCoilStatus )
         {
-            ReadCoilMessage mRead(buf);
+            const ReadCoilMessage mRead(buf);
             ReadCoilRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
             mbErrCode res = readCoilStatus( mRead, reply );
@@ -179,7 +179,7 @@ namespace uniset
         }
         else if( buf.func() == fnReadInputStatus )
         {
-            ReadInputStatusMessage mRead(buf);
+            const ReadInputStatusMessage mRead(buf);
             ReadInputStatusRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
             mbErrCode res = readInputStatus( mRead, reply );
@@ -213,7 +213,7 @@ namespace uniset
         }
         else if( buf.func() == fnReadOutputRegisters )
         {
-            ReadOutputMessage mRead(buf);
+            const ReadOutputMessage mRead(buf);
             ReadOutputRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
             mbErrCode res = readOutputRegisters( mRead, reply );
@@ -247,7 +247,7 @@ namespace uniset
         }
         else if( buf.func() == fnReadInputRegisters )
         {
-            ReadInputMessage mRead(buf);
+            const ReadInputMessage mRead(buf);
             ReadInputRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
             mbErrCode res = readInputRegisters( mRead, reply );
@@ -281,7 +281,7 @@ namespace uniset
         }
         else if( buf.func() == fnForceMultipleCoils )
         {
-            ForceCoilsMessage mWrite(buf);
+            const ForceCoilsMessage mWrite(buf);
             ForceCoilsRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
@@ -316,7 +316,7 @@ namespace uniset
         }
         else if( buf.func() == fnWriteOutputRegisters )
         {
-            WriteOutputMessage mWrite(buf);
+            const WriteOutputMessage mWrite(buf);
             WriteOutputRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
@@ -351,7 +351,7 @@ namespace uniset
         }
         else if( buf.func() == fnDiagnostics )
         {
-            DiagnosticMessage mDiag(buf);
+            const DiagnosticMessage mDiag(buf);
             DiagnosticRetMessage reply(buf.pduhead.addr, (DiagnosticsSubFunction)mDiag.subf );
             mbErrCode res = diagnostics( mDiag, reply );
 
@@ -383,7 +383,7 @@ namespace uniset
         }
         else if( buf.func() == fnMEI )
         {
-            MEIMessageRDI mRDI(buf);
+            const MEIMessageRDI mRDI(buf);
             MEIMessageRetRDI reply( buf.pduhead.addr, mRDI.devID, 0, 0, mRDI.objID );
 
             mbErrCode res = read4314( mRDI, reply );
@@ -416,7 +416,7 @@ namespace uniset
         }
         else if( buf.func() == fnForceSingleCoil )
         {
-            ForceSingleCoilMessage mWrite(buf);
+            const ForceSingleCoilMessage mWrite(buf);
             ForceSingleCoilRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
@@ -451,7 +451,7 @@ namespace uniset
         }
         else if( buf.func() == fnWriteOutputSingleRegister )
         {
-            WriteSingleOutputMessage mWrite(buf);
+            const WriteSingleOutputMessage mWrite(buf);
             WriteSingleOutputRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
@@ -486,7 +486,7 @@ namespace uniset
         }
         else if( buf.func() == fnJournalCommand )
         {
-            JournalCommandMessage mJournal(buf);
+            const JournalCommandMessage mJournal(buf);
             JournalCommandRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
             mbErrCode res = journalCommand( mJournal, reply );
@@ -520,7 +520,7 @@ namespace uniset
         }
         else if( buf.func() == fnSetDateTime )
         {
-            SetDateTimeMessage mSet(buf);
+            const SetDateTimeMessage mSet(buf);
             SetDateTimeRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
             mbErrCode res = setDateTime( mSet, reply );
@@ -554,7 +554,7 @@ namespace uniset
         }
         else if( buf.func() == fnRemoteService )
         {
-            RemoteServiceMessage query(buf);
+            const RemoteServiceMessage query(buf);
             RemoteServiceRetMessage reply(buf.pduhead.addr);
             // вызываем обработчик..
             mbErrCode res = remoteService( query, reply );
@@ -588,7 +588,7 @@ namespace uniset
         }
         else if( buf.func() == fnFileTransfer )
         {
-            FileTransferMessage query(buf);
+            const FileTransferMessage query(buf);
             FileTransferRetMessage reply(buf.pduhead.addr);
             // вызываем обработчик..
             mbErrCode res = fileTransfer( query, reply );
@@ -844,7 +844,7 @@ namespace uniset
             // получаем остальное...
             if( rbuf.func() == fnReadCoilStatus )
             {
-                ReadCoilMessage mRead(rbuf);
+                const ReadCoilMessage mRead(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x01): recv buf: " << rbuf << endl;
@@ -874,7 +874,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnReadInputStatus )
             {
-                ReadInputStatusMessage mRead(rbuf);
+                const ReadInputStatusMessage mRead(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(r0x02): recv buf: " << rbuf << endl;
@@ -904,7 +904,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnReadOutputRegisters )
             {
-                ReadOutputMessage mRead(rbuf);
+                const ReadOutputMessage mRead(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x03): recv buf: " << rbuf << endl;
@@ -934,7 +934,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnReadInputRegisters )
             {
-                ReadInputMessage mRead(rbuf);
+                const ReadInputMessage mRead(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x04): recv buf: " << rbuf << endl;
@@ -993,7 +993,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                ForceCoilsMessage mWrite(rbuf);
+                const ForceCoilsMessage mWrite(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x0F): recv buf: " << rbuf << endl;
@@ -1063,7 +1063,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                WriteOutputMessage mWrite(rbuf);
+                const WriteOutputMessage mWrite(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x10): recv buf: " << rbuf << endl;
@@ -1133,7 +1133,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                ForceSingleCoilMessage mWrite(rbuf);
+                const ForceSingleCoilMessage mWrite(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x05): recv buf: " << rbuf << endl;
@@ -1203,7 +1203,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                WriteSingleOutputMessage mWrite(rbuf);
+                const WriteSingleOutputMessage mWrite(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x06): recv buf: " << rbuf << endl;
@@ -1273,7 +1273,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                DiagnosticMessage mDiag(rbuf);
+                const DiagnosticMessage mDiag(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x08): recv buf: " << rbuf << endl;
@@ -1329,7 +1329,7 @@ namespace uniset
                     rbuf.dlen = bcnt - szModbusHeader;
                 }
 
-                MEIMessageRDI mRDI(rbuf);
+                const MEIMessageRDI mRDI(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x2B/0x0E): recv buf: " << rbuf << endl;
@@ -1361,7 +1361,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnJournalCommand )
             {
-                JournalCommandMessage mRead(rbuf);
+                const JournalCommandMessage mRead(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x65): recv buf: " << rbuf << endl;
@@ -1392,7 +1392,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnSetDateTime )
             {
-                SetDateTimeMessage mSet(rbuf);
+                const SetDateTimeMessage mSet(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x50): recv buf: " << rbuf << endl;
@@ -1459,7 +1459,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                RemoteServiceMessage mRServ(rbuf);
+                const RemoteServiceMessage mRServ(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x53): recv buf: " << rbuf << endl;
@@ -1491,7 +1491,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnFileTransfer )
             {
-                FileTransferMessage mFT(rbuf);
+                const FileTransferMessage mFT(rbuf);
 
                 if( dlog->is_level9() )
                     dlog->level9() << "(0x66): recv buf: " << rbuf << endl;
@@ -1630,7 +1630,7 @@ namespace uniset
     }
     // -------------------------------------------------------------------------
     ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
-            ModbusRTU::FileTransferMessage& query,
+            const ModbusRTU::FileTransferMessage& query,
             ModbusRTU::FileTransferRetMessage& reply,
             std::shared_ptr<DebugStream> dlog )
     {
@@ -1747,7 +1747,7 @@ namespace uniset
         msleep(msec);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessage& query,
+    ModbusRTU::mbErrCode ModbusServer::replySetDateTime( const ModbusRTU::SetDateTimeMessage& query,
             ModbusRTU::SetDateTimeRetMessage& reply,
             std::shared_ptr<DebugStream> dlog )
     {
