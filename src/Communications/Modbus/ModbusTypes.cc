@@ -323,6 +323,18 @@ namespace uniset
         return *this;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC ErrorRetMessage::getCrc( const ModbusMessage& m )
+    {
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[1]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ErrorRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
+    }
+    // -------------------------------------------------------------------------
     void ErrorRetMessage::init( const ModbusMessage& m )
     {
         memset(this, 0, sizeof(*this));
@@ -409,6 +421,28 @@ namespace uniset
 
         mm.dlen = szData();
         return mm;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadCoilMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadCoilStatus );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadCoilMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadCoilStatus );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     ReadCoilMessage::ReadCoilMessage( const ModbusMessage& m )
@@ -749,6 +783,23 @@ namespace uniset
         return mm;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC ReadCoilRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadCoilStatus );
+
+        ModbusCRC crc;
+
+        // data[0] - bcnt
+        memcpy(&crc, &(m.data[m.data[0] + 1]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadCoilRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadCoilStatus );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + 1 + m.data[0] );
+    }
+    // -------------------------------------------------------------------------
     std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilRetMessage& m )
     {
         return mbPrintMessage(os, (ModbusByte*)(&m), szModbusHeader + m.szData() );
@@ -793,6 +844,28 @@ namespace uniset
 
         mm.dlen = szData();
         return mm;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputStatusMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputStatus );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputStatusMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputStatus );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     ReadInputStatusMessage::ReadInputStatusMessage( const ModbusMessage& m )
@@ -882,6 +955,23 @@ namespace uniset
         return sizeof(bcnt) + bcnt + szCRC;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC ReadInputStatusRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputStatus );
+
+        ModbusCRC crc;
+
+        // data[0] - bcnt
+        memcpy(&crc, &(m.data[m.data[0] + 1]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputStatusRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputStatus );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + 1 + m.data[0] );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage ReadInputStatusRetMessage::transport_msg()
     {
         ModbusMessage mm;
@@ -956,6 +1046,28 @@ namespace uniset
         mm.dlen = szData();
 
         return mm;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadOutputMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadOutputRegisters );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadOutputMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadOutputRegisters );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     ReadOutputMessage::ReadOutputMessage( const ModbusMessage& m )
@@ -1069,6 +1181,23 @@ namespace uniset
         bcnt    = 0;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC ReadOutputRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadOutputRegisters );
+
+        ModbusCRC crc;
+
+        // data[0] - bcnt
+        memcpy(&crc, &(m.data[m.data[0] + 1]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadOutputRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadOutputRegisters );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + 1 + m.data[0] );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage ReadOutputRetMessage::transport_msg()
     {
         ModbusMessage mm;
@@ -1172,6 +1301,28 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputRegisters );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputRegisters );
+
+        if( m.dlen < szData() )
+            return 0;
+
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     void ReadInputMessage::init( const ModbusMessage& m )
@@ -1279,6 +1430,23 @@ namespace uniset
         memset(data, 0, sizeof(data));
         count    = 0;
         bcnt    = 0;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputRegisters );
+
+        ModbusCRC crc;
+
+        // data[0] - bcnt
+        memcpy(&crc, &(m.data[m.data[0] + 1]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadInputRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadInputRegisters );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + 1 + m.data[0] );
     }
     // -------------------------------------------------------------------------
     ModbusMessage ReadInputRetMessage::transport_msg()
@@ -1403,6 +1571,21 @@ namespace uniset
         bcnt    = 0;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC ForceCoilsMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceMultipleCoils );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceCoilsMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceMultipleCoils );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage ForceCoilsMessage::transport_msg()
     {
         assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
@@ -1467,7 +1650,7 @@ namespace uniset
         quant = SWAPSHORT(quant);
 
         // потом проверяем
-        if( !checkFormat() )
+        if( !checkFormat(m) )
         {
 #ifdef DEBUG
             cerr << "(ForceCoilsMessage): BAD format!" << endl;
@@ -1487,9 +1670,9 @@ namespace uniset
         memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
     }
     // -------------------------------------------------------------------------
-    bool ForceCoilsMessage::checkFormat() const
+    bool ForceCoilsMessage::checkFormat( const ModbusMessage& m )
     {
-        return ( func == fnForceMultipleCoils );
+        return ( m.pduhead.func == fnForceMultipleCoils );
     }
     // -------------------------------------------------------------------------
     size_t ForceCoilsMessage::szData() const
@@ -1502,8 +1685,7 @@ namespace uniset
         if( m.dlen == 0 )
             return 0;
 
-        ForceCoilsMessage wm(m);
-        return wm.bcnt;
+        return (size_t)m.data[4]; // start | quant | nbytes
     }
     // -------------------------------------------------------------------------
     std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
@@ -1537,6 +1719,21 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceCoilsRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceMultipleCoils );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceCoilsRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceMultipleCoils );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     void ForceCoilsRetMessage::init( const ModbusMessage& m )
@@ -1638,6 +1835,21 @@ namespace uniset
         bcnt    = 0;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC WriteOutputMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputRegisters );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC WriteOutputMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputRegisters );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage WriteOutputMessage::transport_msg()
     {
         assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
@@ -1709,7 +1921,7 @@ namespace uniset
         quant = SWAPSHORT(quant);
 
         // потом проверяем
-        if( !checkFormat() )
+        if( !checkFormat(m) )
         {
 #ifdef DEBUG
             cerr << "(WriteOutputMessage): BAD format!" << endl;
@@ -1734,10 +1946,13 @@ namespace uniset
             data[i] = SWAPSHORT(data[i]);
     }
     // -------------------------------------------------------------------------
-    bool WriteOutputMessage::checkFormat() const
+    bool WriteOutputMessage::checkFormat( const ModbusMessage& m )
     {
-        // return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
-        return ( (bcnt == (quant * sizeof(ModbusData))) && (func == fnWriteOutputRegisters) );
+        auto bcnt = m.data[4]; // start|quant|bcnt
+        ModbusRTU::ModbusData quant;
+        memcpy(&quant, &(m.data[2]), sizeof(quant));
+        quant = SWAPSHORT(quant);
+        return ( (bcnt == (quant * sizeof(ModbusData))) && (m.pduhead.func == fnWriteOutputRegisters) );
     }
     // -------------------------------------------------------------------------
     size_t WriteOutputMessage::szData() const
@@ -1750,16 +1965,7 @@ namespace uniset
         if( m.dlen == 0 )
             return 0;
 
-        // копируем только часть заголовка возвращаем count
-        // считается, что в ModbusMessage необходимая часть уже получена...
-        //    memcpy(&m,&wm,szModbusHeader+szHead());
-
-        WriteOutputMessage wm(m); // может просто смотреть m.data[0] ?!
-
-        //#warning Может ли быть адрес нулевым или отрицательным?!
-        //    assert( wm.start > 0 ); // ???
-
-        return (int)(wm.bcnt);
+        return (size_t)m.data[4]; // start | quant | nbytes
     }
     // -------------------------------------------------------------------------
     std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
@@ -1816,6 +2022,21 @@ namespace uniset
 
         // копируем CRC (последний элемент). Без переворачивания...
         memcpy(&crc, &(m.data[ind]), szCRC);
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC WriteOutputRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputRegisters );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC WriteOutputRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputRegisters );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     WriteOutputRetMessage::WriteOutputRetMessage( ModbusAddr _from,
@@ -1875,6 +2096,21 @@ namespace uniset
         func = fnForceSingleCoil;
         data = cmd ? 0xFF00 : 0x0000;
     }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceSingleCoilMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceSingleCoil );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceSingleCoilMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceSingleCoil );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
+    }
     // --------------------------------------------------------------------------------
     ModbusMessage ForceSingleCoilMessage::transport_msg()
     {
@@ -1920,7 +2156,7 @@ namespace uniset
         data     = SWAPSHORT(data);
 
         // потом проверяем
-        if( !checkFormat() )
+        if( !checkFormat(m) )
         {
 #ifdef DEBUG
             cerr << "(ForceSingleCoil): BAD format!" << endl;
@@ -1932,12 +2168,12 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    bool ForceSingleCoilMessage::checkFormat() const
+    bool ForceSingleCoilMessage::checkFormat( const ModbusMessage& m )
     {
-        return (func == fnForceSingleCoil);
+        return (m.pduhead.func == fnForceSingleCoil);
     }
     // -------------------------------------------------------------------------
-    size_t ForceSingleCoilMessage::szData() const
+    size_t ForceSingleCoilMessage::szData()
     {
         return szHead() + sizeof(ModbusData) + szCRC;
     }
@@ -1972,6 +2208,21 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceSingleCoilRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceSingleCoil );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ForceSingleCoilRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnForceSingleCoil );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     void ForceSingleCoilRetMessage::init( const ModbusMessage& m )
@@ -2049,6 +2300,21 @@ namespace uniset
         func = fnWriteOutputSingleRegister;
     }
     // --------------------------------------------------------------------------------
+    ModbusCRC WriteSingleOutputMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputSingleRegister );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC WriteSingleOutputMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputSingleRegister );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage WriteSingleOutputMessage::transport_msg()
     {
         assert(sizeof(ModbusMessage) >= sizeof(WriteSingleOutputMessage));
@@ -2092,7 +2358,7 @@ namespace uniset
         data     = SWAPSHORT(data);
 
         // потом проверяем
-        if( !checkFormat() )
+        if( !checkFormat(m) )
         {
 #ifdef DEBUG
             cerr << "(WriteSingleOutputMessage): BAD format!" << endl;
@@ -2104,13 +2370,13 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    bool WriteSingleOutputMessage::checkFormat() const
+    bool WriteSingleOutputMessage::checkFormat( const ModbusMessage& m )
     {
         // return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
-        return ( (func == fnWriteOutputSingleRegister) );
+        return ( m.pduhead.func == fnWriteOutputSingleRegister );
     }
     // -------------------------------------------------------------------------
-    size_t WriteSingleOutputMessage::szData() const
+    size_t WriteSingleOutputMessage::szData()
     {
         return szHead() + sizeof(ModbusData) + szCRC;
     }
@@ -2150,6 +2416,21 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC WriteSingleOutputRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputSingleRegister );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC WriteSingleOutputRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnWriteOutputSingleRegister );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     void WriteSingleOutputRetMessage::init( const ModbusMessage& m )
@@ -2281,6 +2562,21 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC DiagnosticMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnDiagnostics );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC DiagnosticMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnDiagnostics );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     void DiagnosticMessage::init( const ModbusMessage& m )
@@ -2469,6 +2765,21 @@ namespace uniset
     {
         addr = a;
         func = fnMEI;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC MEIMessageRDI::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnMEI );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC MEIMessageRDI::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnMEI );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     ModbusMessage MEIMessageRDI::transport_msg()
@@ -2693,6 +3004,21 @@ namespace uniset
         bcnt = 0;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC MEIMessageRetRDI::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnMEI );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC MEIMessageRetRDI::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnMEI );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage MEIMessageRetRDI::transport_msg()
     {
         ModbusMessage mm;
@@ -2804,6 +3130,21 @@ namespace uniset
         return *this;
     }
     // -------------------------------------------------------------------------
+    ModbusCRC JournalCommandMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnJournalCommand );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC JournalCommandMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnJournalCommand );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
+    }
+    // -------------------------------------------------------------------------
     std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandMessage& m )
     {
         return os << "num=" << (int)m.num << " cmd=" << (int)m.cmd;
@@ -2851,6 +3192,21 @@ namespace uniset
         memset(data, 0, sizeof(data));
         count    = 0;
         bcnt    = 0;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC JournalCommandRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnJournalCommand );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC JournalCommandRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnJournalCommand );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     ModbusMessage JournalCommandRetMessage::transport_msg()
@@ -3084,8 +3440,9 @@ namespace uniset
         return os << (*m);
     }
     // -------------------------------------------------------------------------
-    bool SetDateTimeMessage::checkFormat() const
+    bool SetDateTimeMessage::checkFormat( const ModbusMessage& m )
     {
+        auto dt = SetDateTimeMessage(m);
         /*
             // Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа
             return     ( hour>=0 && hour<=23 ) &&
@@ -3096,19 +3453,34 @@ namespace uniset
                     ( year>=0 && year<=99 ) &&
                     ( century>=19 && century<=20 );
         */
-        return     ( hour <= 23 ) &&
-                   ( min <= 59 ) &&
-                   ( sec <= 59 ) &&
-                   ( day >= 1 && day <= 31 ) &&
-                   ( mon >= 1 && mon <= 12 ) &&
-                   ( year <= 99 ) &&
-                   ( century >= 19 && century <= 20 );
+        return     ( dt.hour <= 23 ) &&
+                   ( dt.min <= 59 ) &&
+                   ( dt.sec <= 59 ) &&
+                   ( dt.day >= 1 && dt.day <= 31 ) &&
+                   ( dt.mon >= 1 && dt.mon <= 12 ) &&
+                   ( dt.year <= 99 ) &&
+                   ( dt.century >= 19 && dt.century <= 20 );
     }
     // -------------------------------------------------------------------------
     SetDateTimeMessage::SetDateTimeMessage( ModbusAddr a )
     {
         addr = a;
         func = fnSetDateTime;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC SetDateTimeMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnSetDateTime );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC SetDateTimeMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnSetDateTime );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
     }
     // -------------------------------------------------------------------------
     ModbusMessage SetDateTimeMessage::transport_msg()
@@ -3186,6 +3558,21 @@ namespace uniset
         reply = query;
     }
     // -----------------------------------------------------------------------
+    ModbusCRC SetDateTimeRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnSetDateTime );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC SetDateTimeRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnSetDateTime );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
+    }
+    // -------------------------------------------------------------------------
     ModbusMessage SetDateTimeRetMessage::transport_msg()
     {
         ModbusMessage mm;
@@ -3223,6 +3610,21 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -----------------------------------------------------------------------
+    ModbusCRC RemoteServiceMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnRemoteService );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC RemoteServiceMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnRemoteService );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     void RemoteServiceMessage::init( const ModbusMessage& m )
@@ -3327,6 +3729,21 @@ namespace uniset
         mm.dlen = ind;
         return mm;
     }
+    // -----------------------------------------------------------------------
+    ModbusCRC RemoteServiceRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnRemoteService );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC RemoteServiceRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnRemoteService );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
+    }
     // -------------------------------------------------------------------------
     ReadFileRecordMessage::ReadFileRecordMessage( const ModbusMessage& m )
     {
@@ -3342,6 +3759,21 @@ namespace uniset
     bool ReadFileRecordMessage::checkFormat() const
     {
         return ( bcnt >= 0x07 && bcnt <= 0xF5 );
+    }
+    // -----------------------------------------------------------------------
+    ModbusCRC ReadFileRecordMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadFileRecord );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC ReadFileRecordMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnReadFileRecord );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -------------------------------------------------------------------------
     void ReadFileRecordMessage::init( const ModbusMessage& m )
@@ -3431,6 +3863,21 @@ namespace uniset
         mm.dlen = szData();
         return mm;
     }
+    // -----------------------------------------------------------------------
+    ModbusCRC FileTransferMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnFileTransfer );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[szData() - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC FileTransferMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnFileTransfer );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + szData() - szCRC );
+    }
     // -------------------------------------------------------------------------
     FileTransferMessage::FileTransferMessage( const ModbusMessage& m )
     {
@@ -3480,6 +3927,21 @@ namespace uniset
     {
         init(m);
         return *this;
+    }
+    // -----------------------------------------------------------------------
+    ModbusCRC FileTransferRetMessage::getCrc( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnFileTransfer );
+
+        ModbusCRC crc;
+        memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    ModbusCRC FileTransferRetMessage::calcCRC( const ModbusMessage& m )
+    {
+        assert( m.pduhead.func == fnFileTransfer );
+        return checkCRC( (ModbusByte*)(&m.pduhead), szModbusHeader + m.dlen - szCRC );
     }
     // -----------------------------------------------------------------------
     void FileTransferRetMessage::init( const ModbusMessage& m )

@@ -332,3 +332,116 @@ TEST_CASE("ReadInputStatusRetMessage", "[modbus][input status message]" )
     REQUIRE_THROWS_AS(ModbusRTU::ReadInputStatusRetMessage(buf), ModbusRTU::mbException); // erPacketTooLong
 }
 // ---------------------------------------------------------------
+TEST_CASE("Modbus messages CRC calculation", "[modbus][crc]" )
+{
+    using namespace ModbusRTU;
+
+    ErrorRetMessage m0r(1,2,33);
+    auto msg0r= m0r.transport_msg();
+    REQUIRE( ErrorRetMessage::getCrc(msg0r) == ErrorRetMessage::calcCRC(msg0r) );
+
+    ReadInputMessage m1(1,100,5);
+    auto msg1 = m1.transport_msg();
+    REQUIRE( ReadInputMessage::getCrc(msg1) == ReadInputMessage::calcCRC(msg1) );
+
+    ReadInputRetMessage m1r(msg1);
+    auto msg1r = m1r.transport_msg();
+    REQUIRE( ReadInputRetMessage::getCrc(msg1r) == ReadInputRetMessage::calcCRC(msg1r) );
+
+    ReadOutputMessage m2(1,100,5);
+    auto msg2 = m2.transport_msg();
+    REQUIRE( ReadOutputMessage::getCrc(msg2) == ReadOutputMessage::calcCRC(msg2) );
+
+    ReadOutputRetMessage m2r(msg2);
+    auto msg2r = m2r.transport_msg();
+    REQUIRE( ReadOutputRetMessage::getCrc(msg2r) == ReadOutputRetMessage::calcCRC(msg2r) );
+
+    ReadCoilMessage m3(1,100,5);
+    auto msg3 = m3.transport_msg();
+    REQUIRE( ReadCoilMessage::getCrc(msg3) == ReadCoilMessage::calcCRC(msg3) );
+
+    ReadCoilRetMessage m3r(msg3);
+    auto msg3r = m3r.transport_msg();
+    REQUIRE( ReadCoilRetMessage::getCrc(msg3r) == ReadCoilRetMessage::calcCRC(msg3r) );
+
+    ReadInputStatusMessage m4(1,100,5);
+    auto msg4 = m4.transport_msg();
+    REQUIRE( ReadInputStatusMessage::getCrc(msg4) == ReadInputStatusMessage::calcCRC(msg4) );
+
+    ReadInputStatusRetMessage m4r(msg4);
+    auto msg4r = m4r.transport_msg();
+    REQUIRE( ReadInputStatusRetMessage::getCrc(msg4r) == ReadInputStatusRetMessage::calcCRC(msg4r) );
+
+    ForceCoilsMessage m5(1,100);
+    auto msg5 = m5.transport_msg();
+    REQUIRE( ForceCoilsMessage::getCrc(msg5) == ForceCoilsMessage::calcCRC(msg5) );
+
+    ForceCoilsRetMessage m5r(msg5);
+    auto msg5r = m5r.transport_msg();
+    REQUIRE( ForceCoilsRetMessage::getCrc(msg5r) == ForceCoilsRetMessage::calcCRC(msg5r) );
+
+    WriteOutputMessage m6(1,100);
+    auto msg6 = m6.transport_msg();
+    REQUIRE( WriteOutputMessage::getCrc(msg6) == WriteOutputMessage::calcCRC(msg6) );
+
+    WriteOutputRetMessage m6r(msg6);
+    auto msg6r = m6r.transport_msg();
+    REQUIRE( WriteOutputRetMessage::getCrc(msg6r) == WriteOutputRetMessage::calcCRC(msg6r) );
+
+    ForceSingleCoilMessage m7(1,100, true);
+    auto msg7 = m7.transport_msg();
+    REQUIRE( ForceSingleCoilMessage::getCrc(msg7) == ForceSingleCoilMessage::calcCRC(msg7) );
+
+    ForceSingleCoilRetMessage m7r(msg7);
+    auto msg7r = m7r.transport_msg();
+    REQUIRE( ForceSingleCoilRetMessage::getCrc(msg7r) == ForceSingleCoilRetMessage::calcCRC(msg7r) );
+
+    WriteSingleOutputMessage m8(1,100, 2);
+    auto msg8 = m8.transport_msg();
+    REQUIRE( WriteSingleOutputMessage::getCrc(msg8) == WriteSingleOutputMessage::calcCRC(msg8) );
+
+    WriteSingleOutputRetMessage m8r(msg8);
+    auto msg8r = m8r.transport_msg();
+    REQUIRE( WriteSingleOutputRetMessage::getCrc(msg8r) == WriteSingleOutputRetMessage::calcCRC(msg8r) );
+
+    DiagnosticMessage m9(1,DiagnosticsSubFunction{}, 2);
+    auto msg9= m9.transport_msg();
+    REQUIRE( DiagnosticMessage::getCrc(msg9) == DiagnosticMessage::calcCRC(msg9) );
+
+    DiagnosticRetMessage m9r(1, DiagnosticsSubFunction{}, 2);
+    auto msg9r= m9r.transport_msg();
+    REQUIRE( DiagnosticRetMessage::getCrc(msg9r) == DiagnosticRetMessage::calcCRC(msg9r) );
+
+    MEIMessageRDI m10(1,1, 2);
+    auto msg10= m10.transport_msg();
+    REQUIRE( MEIMessageRDI::getCrc(msg10) == MEIMessageRDI::calcCRC(msg10) );
+
+    MEIMessageRetRDI m10r(1,2,3,4,5);
+    auto msg10r= m10r.transport_msg();
+    REQUIRE( MEIMessageRetRDI::getCrc(msg10r) == MEIMessageRetRDI::calcCRC(msg10r) );
+
+    JournalCommandRetMessage m11r(1);
+    auto msg11r= m11r.transport_msg();
+    REQUIRE( JournalCommandRetMessage::getCrc(msg11r) == JournalCommandRetMessage::calcCRC(msg11r) );
+
+    SetDateTimeMessage m12(1);
+    auto msg12= m12.transport_msg();
+    REQUIRE( SetDateTimeMessage::getCrc(msg12) == SetDateTimeMessage::calcCRC(msg12) );
+
+    SetDateTimeRetMessage m12r(1);
+    auto msg12r= m12r.transport_msg();
+    REQUIRE( SetDateTimeRetMessage::getCrc(msg12r) == SetDateTimeRetMessage::calcCRC(msg12r) );
+
+    RemoteServiceRetMessage m13r(1);
+    auto msg13r= m13r.transport_msg();
+    REQUIRE( RemoteServiceRetMessage::getCrc(msg13r) == RemoteServiceRetMessage::calcCRC(msg13r) );
+
+    FileTransferMessage m14(1,1,2);
+    auto msg14= m14.transport_msg();
+    REQUIRE( FileTransferMessage::getCrc(msg14) == FileTransferMessage::calcCRC(msg14) );
+
+    FileTransferRetMessage m14r(1);
+    auto msg14r= m14r.transport_msg();
+    REQUIRE( FileTransferRetMessage::getCrc(msg14r) == FileTransferRetMessage::calcCRC(msg14r) );
+}
+// ---------------------------------------------------------------

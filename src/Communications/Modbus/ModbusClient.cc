@@ -673,7 +673,7 @@ namespace uniset
                 if( crcNoCheckit )
                     szDataLen -= szCRC;
 
-                // Мы получили только предварительный загловок
+                // Мы получили только предварительный заголовок
                 // Теперь необходимо дополучить данные
                 // (c позиции rlen, т.к. часть уже получили)
                 int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szDataLen);
@@ -698,7 +698,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                ReadCoilRetMessage mRead(rbuf);
+                auto mcrc = ReadCoilRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x01)(fnReadCoilStatus): recv buf: " << rbuf << endl;
@@ -707,16 +707,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRead.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x01)(fnReadCoilStatus): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRead.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -758,7 +755,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                ReadInputStatusRetMessage mRead(rbuf);
+                auto mcrc = ReadInputStatusRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x02)(fnReadInputStatus): recv buf: " << rbuf << endl;
@@ -767,16 +764,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRead.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(recv:fnReadInputStatus): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRead.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -818,7 +812,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                ReadInputRetMessage mRead(rbuf);
+                auto mcrc = ReadInputRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(recv)(fnReadInputRegisters): recv buf: " << rbuf << endl;
@@ -827,16 +821,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRead.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(recv:fnReadInputRegisters): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRead.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -878,7 +869,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                ReadOutputRetMessage mRead(rbuf);
+                auto mcrc = ReadOutputRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(recv)(fnReadOutputRegisters): recv buf: " << rbuf << endl;
@@ -887,16 +878,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRead.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(recv:fnReadOutputRegisters): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRead.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -909,7 +897,7 @@ namespace uniset
             else if( rbuf.func() == fnForceMultipleCoils )
             {
                 rbuf.dlen = bcnt - szModbusHeader;
-                ForceCoilsRetMessage mWrite(rbuf);
+                auto mcrc = ForceCoilsRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x0F): recv buf: " << rbuf << endl;
@@ -918,16 +906,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mWrite.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x0F): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mWrite.crc);
+                        << " msg.crc=" << dat2str(mcrc);
                     dlog->warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
@@ -937,7 +922,7 @@ namespace uniset
             else if( rbuf.func() == fnWriteOutputRegisters )
             {
                 rbuf.dlen = bcnt - szModbusHeader;
-                WriteOutputRetMessage mWrite(rbuf);
+                auto mcrc = WriteOutputRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x10): recv buf: " << rbuf << endl;
@@ -946,16 +931,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mWrite.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x10): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mWrite.crc);
+                        << " msg.crc=" << dat2str(mcrc);
                     dlog->warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
@@ -964,7 +946,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnWriteOutputSingleRegister )
             {
-                WriteSingleOutputRetMessage mWrite(rbuf);
+                auto mcrc = WriteSingleOutputRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x06): recv buf: " << rbuf << endl;
@@ -973,16 +955,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mWrite.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x06): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mWrite.crc);
+                        << " msg.crc=" << dat2str(mcrc);
                     dlog->warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
@@ -991,7 +970,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnForceSingleCoil )
             {
-                ForceSingleCoilRetMessage mWrite(rbuf);
+                auto mcrc = ForceSingleCoilRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x05): recv buf: " << rbuf << endl;
@@ -1000,16 +979,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mWrite.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x05): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mWrite.crc);
+                        << " msg.crc=" << dat2str(mcrc);
                     dlog->warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
@@ -1048,7 +1024,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                DiagnosticRetMessage mDiag(rbuf);
+                auto mcrc = DiagnosticRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(recv)(fnDiagnostics): recv buf: " << rbuf << endl;
@@ -1057,16 +1033,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mDiag.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(recv:fnDiagnostics): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mDiag.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -1174,19 +1147,16 @@ namespace uniset
                 if( dlog->is_info() )
                     dlog->info() << "(recv)(fnMEI): recv buf: " << rbuf << endl;
 
-                MEIMessageRetRDI mRDI(rbuf);
+                auto mcrc = MEIMessageRetRDI::getCrc(rbuf);
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRDI.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(recv:fnMEI): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRDI.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -1198,7 +1168,7 @@ namespace uniset
             }
             else if( rbuf.func() == fnSetDateTime )
             {
-                SetDateTimeRetMessage mSet(rbuf);
+                auto mcrc = SetDateTimeRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x50): recv buf: " << rbuf << endl;
@@ -1209,11 +1179,11 @@ namespace uniset
                     // от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
                     ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                    if( tcrc != mSet.crc )
+                    if( tcrc != mcrc )
                     {
                         ostringstream err;
                         err << "(0x50): bad crc. calc.crc=" << dat2str(tcrc)
-                            << " msg.crc=" << dat2str(mSet.crc);
+                            << " msg.crc=" << dat2str(mcrc);
 
                         if( dlog->is_warn() )
                             dlog->warn() << err.str() << endl;
@@ -1222,7 +1192,7 @@ namespace uniset
                     }
                 }
 
-                if( !mSet.checkFormat() )
+                if( !SetDateTimeRetMessage::checkFormat(rbuf) )
                 {
                     if( dlog->is_warn() )
                         dlog->warn() << "(0x50): некорректные значения..." << endl;
@@ -1264,7 +1234,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.dlen = bcnt - szModbusHeader;
 
-                FileTransferRetMessage mFT(rbuf);
+                auto mcrc = FileTransferRetMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x66): recv buf: " << rbuf << endl;
@@ -1273,16 +1243,13 @@ namespace uniset
                     return erNoError;
 
                 // Проверяем контрольную сумму
-                // от начала(включая заголовок)
-                // и до конца (исключив последний элемент содержащий CRC)
-                // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mFT.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x66): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mFT.crc);
+                        << " msg.crc=" << dat2str(mcrc);
 
                     if( dlog->is_warn() )
                         dlog->warn() << err.str() << endl;
@@ -1296,7 +1263,7 @@ namespace uniset
 #if 0
             else if( rbuf.func() == fnJournalCommand )
             {
-                JournalCommandMessage mRead(rbuf);
+                auto mcrc = JournalCommandMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x65): recv buf: " << rbuf << endl;
@@ -1309,11 +1276,11 @@ namespace uniset
                 // ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf.pduhead),sizeof(ReadOutputMessage)-szCRC);
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRead.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x65): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRead.crc);
+                        << " msg.crc=" << dat2str(mcrc);
                     dlog->warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
@@ -1348,7 +1315,7 @@ namespace uniset
                 bcnt += rlen1;
                 rbuf.len = bcnt - szModbusHeader;
 
-                RemoteServiceMessage mRServ(rbuf);
+                auto mcrc = RemoteServiceMessage::getCrc(rbuf);
 
                 if( dlog->is_info() )
                     dlog->info() << "(0x53): recv buf: " << rbuf << endl;
@@ -1362,11 +1329,11 @@ namespace uniset
                 // int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
                 ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
-                if( tcrc != mRServ.crc )
+                if( tcrc != mcrc )
                 {
                     ostringstream err;
                     err << "(0x53): bad crc. calc.crc=" << dat2str(tcrc)
-                        << " msg.crc=" << dat2str(mRServ.crc);
+                        << " msg.crc=" << dat2str(mcrc);
                     dlog->warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
