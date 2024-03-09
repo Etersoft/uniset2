@@ -251,8 +251,7 @@ namespace uniset
             {
                 if( res < erInternalErrorCode )
                 {
-                    ErrorRetMessage em( buf.addr(), buf.func(), res );
-                    buf = em.transport_msg();
+                    ErrorRetMessage::make_to( buf.addr(), buf.func(), res, buf );
                     send(buf);
                     printProcessingTime();
                 }
@@ -411,7 +410,7 @@ namespace uniset
     // -------------------------------------------------------------------------
     void ModbusTCPSession::cleanInputStream()
     {
-        unsigned char tmpbuf[100];
+        unsigned char tmpbuf[128];
         size_t ret = 0;
 
         do

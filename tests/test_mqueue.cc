@@ -48,7 +48,7 @@ static bool pushMessage( UMessageQueue& mq, long id )
 {
     SensorMessage sm(id, id);
     sm.consumer = id; // чтобы хоть как-то идентифицировать сообщений, используем поле consumer
-    TransportMessage tm( std::move(sm.transport_msg()) );
+    TransportMessage tm( sm.transport_msg() );
     auto vm = make_shared<VoidMessage>(tm);
     return mq.push(vm);
 }

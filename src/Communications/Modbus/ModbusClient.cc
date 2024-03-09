@@ -60,8 +60,7 @@ namespace uniset
     ReadCoilRetMessage ModbusClient::read01( ModbusAddr addr,
             ModbusData start, ModbusData count )
     {
-        ReadCoilMessage msg(addr, start, count);
-        qbuf = msg.transport_msg();
+        ReadCoilMessage::make_to(addr, start, count, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -80,8 +79,7 @@ namespace uniset
     ReadInputStatusRetMessage ModbusClient::read02( ModbusAddr addr,
             ModbusData start, ModbusData count )
     {
-        ReadInputStatusMessage msg(addr, start, count);
-        qbuf = msg.transport_msg();
+        ReadInputStatusMessage::make_to(addr, start, count, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -101,9 +99,7 @@ namespace uniset
     ReadOutputRetMessage ModbusClient::read03( ModbusAddr addr,
             ModbusData start, ModbusData count )
     {
-        ReadOutputMessage msg(addr, start, count);
-        qbuf = msg.transport_msg();
-
+        ReadOutputMessage::make_to(addr, start, count, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -122,8 +118,7 @@ namespace uniset
     ReadInputRetMessage ModbusClient::read04( ModbusAddr addr,
             ModbusData start, ModbusData count )
     {
-        ReadInputMessage msg(addr, start, count);
-        qbuf = msg.transport_msg();
+        ReadInputMessage::make_to(addr, start, count, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -142,9 +137,7 @@ namespace uniset
     ForceSingleCoilRetMessage ModbusClient::write05( ModbusAddr addr,
             ModbusData start, bool cmd )
     {
-        ForceSingleCoilMessage msg(addr, start, cmd);
-        qbuf = msg.transport_msg();
-
+        ForceSingleCoilMessage::make_to(addr, start, cmd, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -167,9 +160,7 @@ namespace uniset
     WriteSingleOutputRetMessage ModbusClient::write06( ModbusAddr addr,
             ModbusData start, ModbusData data )
     {
-        WriteSingleOutputMessage msg(addr, start, data);
-        qbuf = msg.transport_msg();
-
+        WriteSingleOutputMessage::make_to(addr, start, data, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -188,9 +179,9 @@ namespace uniset
         throw mbException(res);
     }
     // --------------------------------------------------------------------------------
-    ForceCoilsRetMessage ModbusClient::write0F( ForceCoilsMessage& msg )
+    ForceCoilsRetMessage ModbusClient::write0F( const ForceCoilsMessage& msg )
     {
-        qbuf = msg.transport_msg();
+        msg.transport_msg_to(qbuf);
         mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -210,9 +201,9 @@ namespace uniset
     }
     // --------------------------------------------------------------------------------
 
-    WriteOutputRetMessage ModbusClient::write10( WriteOutputMessage& msg )
+    WriteOutputRetMessage ModbusClient::write10( const WriteOutputMessage& msg )
     {
-        qbuf = msg.transport_msg();
+        msg.transport_msg_to(qbuf);
         mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -232,11 +223,11 @@ namespace uniset
     }
     // --------------------------------------------------------------------------------
     DiagnosticRetMessage ModbusClient::diag08( ModbusAddr addr,
-            DiagnosticsSubFunction subfunc,
+            const DiagnosticsSubFunction subfunc,
             ModbusRTU::ModbusData dat )
     {
-        DiagnosticMessage msg(addr, subfunc, dat);
-        qbuf = msg.transport_msg();
+        const DiagnosticMessage msg(addr, subfunc, dat);
+        msg.transport_msg_to(qbuf);
         mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
@@ -253,12 +244,11 @@ namespace uniset
     }
     // --------------------------------------------------------------------------------
     ModbusRTU::MEIMessageRetRDI ModbusClient::read4314( ModbusRTU::ModbusAddr addr,
-            ModbusRTU::ModbusByte devID,
+            const ModbusRTU::ModbusByte devID,
             ModbusRTU::ModbusByte objID )
     {
-        MEIMessageRDI msg(addr, devID, objID);
-        qbuf = msg.transport_msg();
-        mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
+        MEIMessageRDI::make_to(addr, devID, objID, qbuf);
+        mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
         if( res == erNoError )
         {
@@ -288,7 +278,7 @@ namespace uniset
         msg.mon     = mon;
         msg.year     = year;
         msg.century = century;
-        qbuf = msg.transport_msg();
+        msg.transport_msg_to(qbuf);
 
         mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
@@ -392,9 +382,7 @@ namespace uniset
             ModbusData idFile, ModbusData numpack,
             timeout_t part_timeout_msec )
     {
-        FileTransferMessage msg(addr, idFile, numpack);
-        qbuf = msg.transport_msg();
-
+        FileTransferMessage::make_to(addr, idFile, numpack, qbuf);
         mbErrCode res = query(addr, qbuf, qreply, part_timeout_msec);
 
         if( res == erNoError )
@@ -408,7 +396,6 @@ namespace uniset
     {
         if( timeout == UniSetTimer::WaitUpTime )
             timeout = 15 * 60 * 1000 * 1000; // используем просто большое время (15 минут). Переведя его в наносекунды.
-
 
         setChannelTimeout(timeout);
         PassiveTimer tmAbort(timeout);
