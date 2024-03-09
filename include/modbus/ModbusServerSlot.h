@@ -17,59 +17,59 @@ namespace uniset
             virtual ~ModbusServerSlot();
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::ReadCoilMessage&,
+                    const ModbusRTU::ReadCoilMessage&,
                     ModbusRTU::ReadCoilRetMessage&> ReadCoilSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::ReadInputStatusMessage&,
+                    const ModbusRTU::ReadInputStatusMessage&,
                     ModbusRTU::ReadInputStatusRetMessage&> ReadInputStatusSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::ReadOutputMessage&,
+                    const ModbusRTU::ReadOutputMessage&,
                     ModbusRTU::ReadOutputRetMessage&> ReadOutputSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::ReadInputMessage&,
+                    const ModbusRTU::ReadInputMessage&,
                     ModbusRTU::ReadInputRetMessage&> ReadInputSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::ForceSingleCoilMessage&,
+                    const ModbusRTU::ForceSingleCoilMessage&,
                     ModbusRTU::ForceSingleCoilRetMessage&> ForceSingleCoilSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::WriteSingleOutputMessage&,
+                    const ModbusRTU::WriteSingleOutputMessage&,
                     ModbusRTU::WriteSingleOutputRetMessage&> WriteSingleOutputSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::ForceCoilsMessage&,
+                    const ModbusRTU::ForceCoilsMessage&,
                     ModbusRTU::ForceCoilsRetMessage&> ForceCoilsSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::WriteOutputMessage&,
+                    const ModbusRTU::WriteOutputMessage&,
                     ModbusRTU::WriteOutputRetMessage&> WriteOutputSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::DiagnosticMessage&,
+                    const ModbusRTU::DiagnosticMessage&,
                     ModbusRTU::DiagnosticRetMessage&> DiagnosticsSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::MEIMessageRDI&,
+                    const ModbusRTU::MEIMessageRDI&,
                     ModbusRTU::MEIMessageRetRDI&> MEIRDISlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::JournalCommandMessage&,
+                    const ModbusRTU::JournalCommandMessage&,
                     ModbusRTU::JournalCommandRetMessage&> JournalCommandSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::SetDateTimeMessage&,
+                    const ModbusRTU::SetDateTimeMessage&,
                     ModbusRTU::SetDateTimeRetMessage&> SetDateTimeSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::RemoteServiceMessage&,
+                    const ModbusRTU::RemoteServiceMessage&,
                     ModbusRTU::RemoteServiceRetMessage&> RemoteServiceSlot;
 
             typedef sigc::slot<ModbusRTU::mbErrCode,
-                    ModbusRTU::FileTransferMessage&,
+                    const ModbusRTU::FileTransferMessage&,
                     ModbusRTU::FileTransferRetMessage&> FileTransferSlot;
 
             /*! подключение обработчика 'получения данных' 0x01 */

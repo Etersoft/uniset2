@@ -105,7 +105,7 @@ namespace uniset
             /*! Вспомогательная функция реализующая обработку запроса на установку времени.
                 Основана на использовании gettimeofday и settimeofday.
             */
-            static ModbusRTU::mbErrCode replySetDateTime( ModbusRTU::SetDateTimeMessage& query,
+            static ModbusRTU::mbErrCode replySetDateTime( const ModbusRTU::SetDateTimeMessage& query,
                     ModbusRTU::SetDateTimeRetMessage& reply,
                     std::shared_ptr<DebugStream> dlog = nullptr );
 
@@ -116,7 +116,7 @@ namespace uniset
                 \param reply - ответ
             */
             static ModbusRTU::mbErrCode replyFileTransfer( const std::string& fname,
-                    ModbusRTU::FileTransferMessage& query,
+                    const ModbusRTU::FileTransferMessage& query,
                     ModbusRTU::FileTransferRetMessage& reply,
                     std::shared_ptr<DebugStream> dlog = nullptr );
 
@@ -147,14 +147,14 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
+            virtual ModbusRTU::mbErrCode readCoilStatus( const ModbusRTU::ReadCoilMessage& query,
                     ModbusRTU::ReadCoilRetMessage& reply ) = 0;
             /*! Обработка запроса на чтение данных (0x02).
                 \param query - запрос
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
+            virtual ModbusRTU::mbErrCode readInputStatus( const ModbusRTU::ReadInputStatusMessage& query,
                     ModbusRTU::ReadInputStatusRetMessage& reply ) = 0;
 
             /*! Обработка запроса на чтение данных (0x03).
@@ -162,7 +162,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
+            virtual ModbusRTU::mbErrCode readOutputRegisters( const ModbusRTU::ReadOutputMessage& query,
                     ModbusRTU::ReadOutputRetMessage& reply ) = 0;
 
             /*! Обработка запроса на чтение данных (0x04).
@@ -170,7 +170,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
+            virtual ModbusRTU::mbErrCode readInputRegisters( const ModbusRTU::ReadInputMessage& query,
                     ModbusRTU::ReadInputRetMessage& reply ) = 0;
 
             /*! Обработка запроса на запись данных (0x05).
@@ -178,7 +178,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+            virtual ModbusRTU::mbErrCode forceSingleCoil( const ModbusRTU::ForceSingleCoilMessage& query,
                     ModbusRTU::ForceSingleCoilRetMessage& reply ) = 0;
 
 
@@ -187,7 +187,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+            virtual ModbusRTU::mbErrCode writeOutputSingleRegister( const ModbusRTU::WriteSingleOutputMessage& query,
                     ModbusRTU::WriteSingleOutputRetMessage& reply ) = 0;
 
             /*! Обработка запроса на запись данных (0x0F).
@@ -195,7 +195,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+            virtual ModbusRTU::mbErrCode forceMultipleCoils( const ModbusRTU::ForceCoilsMessage& query,
                     ModbusRTU::ForceCoilsRetMessage& reply ) = 0;
 
             /*! Обработка запроса на запись данных (0x10).
@@ -203,7 +203,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+            virtual ModbusRTU::mbErrCode writeOutputRegisters( const ModbusRTU::WriteOutputMessage& query,
                     ModbusRTU::WriteOutputRetMessage& reply ) = 0;
 
 
@@ -212,7 +212,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+            virtual ModbusRTU::mbErrCode diagnostics( const ModbusRTU::DiagnosticMessage& query,
                     ModbusRTU::DiagnosticRetMessage& reply ) = 0;
 
             /*! Обработка запроса 43(0x2B).
@@ -220,7 +220,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+            virtual ModbusRTU::mbErrCode read4314( const ModbusRTU::MEIMessageRDI& query,
                                                    ModbusRTU::MEIMessageRetRDI& reply ) = 0;
 
 
@@ -229,7 +229,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
+            virtual ModbusRTU::mbErrCode journalCommand( const ModbusRTU::JournalCommandMessage& query,
                     ModbusRTU::JournalCommandRetMessage& reply ) = 0;
 
 
@@ -238,7 +238,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
+            virtual ModbusRTU::mbErrCode setDateTime( const ModbusRTU::SetDateTimeMessage& query,
                     ModbusRTU::SetDateTimeRetMessage& reply ) = 0;
 
 
@@ -247,7 +247,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
+            virtual ModbusRTU::mbErrCode remoteService( const ModbusRTU::RemoteServiceMessage& query,
                     ModbusRTU::RemoteServiceRetMessage& reply ) = 0;
 
 
@@ -256,7 +256,7 @@ namespace uniset
                 \param reply - ответ. Заполняется в обработчике.
                 \return Результат обработки
             */
-            virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
+            virtual ModbusRTU::mbErrCode fileTransfer( const ModbusRTU::FileTransferMessage& query,
                     ModbusRTU::FileTransferRetMessage& reply ) = 0;
 
             /*! get next data block from channel or recv buffer

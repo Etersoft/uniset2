@@ -44,7 +44,7 @@ class TestProc:
 
         std::shared_ptr<uniset::ModbusTCPServerSlot> mbslave;
         /*! обработка 0x06 */
-        uniset::ModbusRTU::mbErrCode writeOutputSingleRegister( uniset::ModbusRTU::WriteSingleOutputMessage& query,
+        uniset::ModbusRTU::mbErrCode writeOutputSingleRegister( const uniset::ModbusRTU::WriteSingleOutputMessage& query,
                 uniset::ModbusRTU::WriteSingleOutputRetMessage& reply );
 
         std::shared_ptr< uniset::ThreadCreator<TestProc> > mbthr;

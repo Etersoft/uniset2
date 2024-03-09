@@ -404,35 +404,35 @@ namespace uniset
         protected:
 
             /*! обработка 0x01 */
-            ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
+            ModbusRTU::mbErrCode readCoilStatus( const ModbusRTU::ReadCoilMessage& query,
                                                  ModbusRTU::ReadCoilRetMessage& reply );
             /*! обработка 0x02 */
-            ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
+            ModbusRTU::mbErrCode readInputStatus( const ModbusRTU::ReadInputStatusMessage& query,
                                                   ModbusRTU::ReadInputStatusRetMessage& reply );
 
             /*! обработка 0x03 */
-            ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
+            ModbusRTU::mbErrCode readOutputRegisters( const ModbusRTU::ReadOutputMessage& query,
                     ModbusRTU::ReadOutputRetMessage& reply );
 
             /*! обработка 0x04 */
-            ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
+            ModbusRTU::mbErrCode readInputRegisters( const ModbusRTU::ReadInputMessage& query,
                     ModbusRTU::ReadInputRetMessage& reply );
 
             /*! обработка 0x05 */
-            ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+            ModbusRTU::mbErrCode forceSingleCoil( const ModbusRTU::ForceSingleCoilMessage& query,
                                                   ModbusRTU::ForceSingleCoilRetMessage& reply );
 
             /*! обработка 0x0F */
-            ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+            ModbusRTU::mbErrCode forceMultipleCoils( const ModbusRTU::ForceCoilsMessage& query,
                     ModbusRTU::ForceCoilsRetMessage& reply );
 
 
             /*! обработка 0x10 */
-            ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+            ModbusRTU::mbErrCode writeOutputRegisters( const ModbusRTU::WriteOutputMessage& query,
                     ModbusRTU::WriteOutputRetMessage& reply );
 
             /*! обработка 0x06 */
-            ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+            ModbusRTU::mbErrCode writeOutputSingleRegister( const ModbusRTU::WriteSingleOutputMessage& query,
                     ModbusRTU::WriteSingleOutputRetMessage& reply );
 
             /*! обработка запросов на чтение ошибок */
@@ -440,20 +440,20 @@ namespace uniset
             //                                                            ModbusRTU::JournalCommandRetMessage& reply );
 
             /*! обработка запроса на установку времени */
-            ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
+            ModbusRTU::mbErrCode setDateTime( const ModbusRTU::SetDateTimeMessage& query,
                                               ModbusRTU::SetDateTimeRetMessage& reply );
 
             /*! обработка запроса удалённого сервиса */
-            ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
+            ModbusRTU::mbErrCode remoteService( const ModbusRTU::RemoteServiceMessage& query,
                                                 ModbusRTU::RemoteServiceRetMessage& reply );
 
-            ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
+            ModbusRTU::mbErrCode fileTransfer( const ModbusRTU::FileTransferMessage& query,
                                                ModbusRTU::FileTransferRetMessage& reply );
 
-            ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+            ModbusRTU::mbErrCode diagnostics( const ModbusRTU::DiagnosticMessage& query,
                                               ModbusRTU::DiagnosticRetMessage& reply );
 
-            ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+            ModbusRTU::mbErrCode read4314( const ModbusRTU::MEIMessageRDI& query,
                                            ModbusRTU::MEIMessageRetRDI& reply );
 
             // т.к. в функциях (much_real_read,nuch_real_write) расчёт на отсортированность IOMap
@@ -514,19 +514,19 @@ namespace uniset
             bool check_item( UniXML::iterator& it );
 
             ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn = 0 );
-            ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regK, ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn = 0  );
+            ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regK, const ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn = 0  );
             ModbusRTU::mbErrCode real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn = 0 );
             ModbusRTU::mbErrCode much_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0 );
-            ModbusRTU::mbErrCode much_write(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0 );
+            ModbusRTU::mbErrCode much_write(RegMap& rmap, const ModbusRTU::ModbusData reg, const ModbusRTU::ModbusData* dat, size_t count, const int fn = 0 );
             ModbusRTU::mbErrCode bits_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::BitsBuffer* dat, size_t count, const int fn = 0 );
 
             ModbusRTU::mbErrCode real_read_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData& val );
             ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
             ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
 
-            ModbusRTU::mbErrCode real_write_it(RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, size_t& i, size_t count );
+            ModbusRTU::mbErrCode real_write_it(RegMap& rmap, RegMap::iterator& it, const ModbusRTU::ModbusData* dat, size_t& i, size_t count );
             ModbusRTU::mbErrCode real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val );
-            ModbusRTU::mbErrCode real_write_prop(IOProperty* p, ModbusRTU::ModbusData* dat, size_t& i, size_t count );
+            ModbusRTU::mbErrCode real_write_prop(IOProperty* p, const ModbusRTU::ModbusData* dat, size_t& i, size_t count );
 
 #ifndef DISABLE_REST_API
             // http api

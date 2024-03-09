@@ -1695,7 +1695,7 @@ namespace uniset
         return os;
     }
     // -----------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
+    ModbusRTU::mbErrCode MBSlave::readOutputRegisters( const ModbusRTU::ReadOutputMessage& query,
             ModbusRTU::ReadOutputRetMessage& reply )
     {
         mbinfo << myname << "(readOutputRegisters): " << query << endl;
@@ -1727,7 +1727,7 @@ namespace uniset
             return ret;
         }
 
-        // Фомирование ответа:
+        // Формирование ответа:
         ModbusRTU::mbErrCode ret = much_read(regmap->second, query.start, buf, query.count, query.func);
 
         if( ret == ModbusRTU::erNoError )
@@ -1740,7 +1740,7 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+    ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( const ModbusRTU::WriteOutputMessage& query,
             ModbusRTU::WriteOutputRetMessage& reply )
     {
         mbinfo << myname << "(writeOutputRegisters): " << query << endl;
@@ -1763,7 +1763,7 @@ namespace uniset
         return ret;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+    ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( const ModbusRTU::WriteSingleOutputMessage& query,
             ModbusRTU::WriteSingleOutputRetMessage& reply )
     {
         mbinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
@@ -1785,7 +1785,7 @@ namespace uniset
         return ret;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::much_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
+    ModbusRTU::mbErrCode MBSlave::much_write( RegMap& rmap, const ModbusRTU::ModbusData reg, const ModbusRTU::ModbusData* dat,
             size_t count, const int fn )
     {
         mbinfo << myname << "(much_write): write mbID="
@@ -1797,7 +1797,7 @@ namespace uniset
         int mbfunc = checkMBFunc ? fn : default_mbfunc;
         ModbusRTU::RegID regID = genRegID(reg, mbfunc);
 
-        // ищем регистр.. "пропуская дырки"..
+        // ищем регистр пропуская "дыры"
         // ведь запросить могут начиная с "несуществующего регистра"
         for( ; i < count; i++ )
         {
@@ -1854,7 +1854,7 @@ namespace uniset
         return real_write(rmap, reg, dat, i, 1, fn);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::real_write(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn )
+    ModbusRTU::mbErrCode MBSlave::real_write(RegMap& rmap, const ModbusRTU::ModbusData reg, const ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn )
     {
         ModbusRTU::ModbusData mbval = dat[i];
 
@@ -1869,7 +1869,7 @@ namespace uniset
         return real_write_it(rmap, it, dat, i, count);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::real_write_it(RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, size_t& i, size_t count )
+    ModbusRTU::mbErrCode MBSlave::real_write_it(RegMap& rmap, RegMap::iterator& it, const ModbusRTU::ModbusData* dat, size_t& i, size_t count )
     {
         if( it == rmap.end() )
             return ModbusRTU::erBadDataAddress;
@@ -1908,7 +1908,7 @@ namespace uniset
         return ModbusRTU::erNoError;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, size_t& i, size_t count )
+    ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, const ModbusRTU::ModbusData* dat, size_t& i, size_t count )
     {
         ModbusRTU::ModbusData mbval = dat[i];
 
@@ -2549,7 +2549,7 @@ namespace uniset
     }
     // -------------------------------------------------------------------------
 
-    mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMessage& reply )
+    mbErrCode MBSlave::readInputRegisters( const ReadInputMessage& query, ReadInputRetMessage& reply )
     {
         mbinfo << myname << "(readInputRegisters): " << query << endl;
 
@@ -2580,7 +2580,7 @@ namespace uniset
             return ret;
         }
 
-        // Фомирование ответа:
+        // Формирование ответа:
         ModbusRTU::mbErrCode ret = much_read(regmap->second, query.start, buf, query.count, query.func);
 
         if( ret == ModbusRTU::erNoError )
@@ -2592,20 +2592,20 @@ namespace uniset
         return ret;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query,
+    ModbusRTU::mbErrCode MBSlave::setDateTime( const ModbusRTU::SetDateTimeMessage& query,
             ModbusRTU::SetDateTimeRetMessage& reply )
     {
         return ModbusServer::replySetDateTime(query, reply, mblog);
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& query,
+    ModbusRTU::mbErrCode MBSlave::remoteService( const ModbusRTU::RemoteServiceMessage& query,
             ModbusRTU::RemoteServiceRetMessage& reply )
     {
         //    cerr << "(remoteService): " << query << endl;
         return ModbusRTU::erOperationFailed;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& query,
+    ModbusRTU::mbErrCode MBSlave::fileTransfer( const ModbusRTU::FileTransferMessage& query,
             ModbusRTU::FileTransferRetMessage& reply )
     {
         mbinfo << myname << "(fileTransfer): " << query << endl;
@@ -2619,7 +2619,7 @@ namespace uniset
         return ModbusServer::replyFileTransfer( fname, query, reply, mblog );
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
+    ModbusRTU::mbErrCode MBSlave::readCoilStatus( const ReadCoilMessage& query,
             ReadCoilRetMessage& reply )
     {
         mbinfo << myname << "(readCoilStatus): " << query << endl;
@@ -2688,7 +2688,7 @@ namespace uniset
         return ModbusRTU::erTimeOut;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
+    ModbusRTU::mbErrCode MBSlave::readInputStatus( const ReadInputStatusMessage& query,
             ReadInputStatusRetMessage& reply )
     {
         mbinfo << myname << "(readInputStatus): " << query << endl;
@@ -2757,7 +2757,7 @@ namespace uniset
         return ModbusRTU::erTimeOut;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+    ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( const ModbusRTU::ForceCoilsMessage& query,
             ModbusRTU::ForceCoilsRetMessage& reply )
     {
         mbinfo << myname << "(forceMultipleCoils): " << query << endl;
@@ -2794,7 +2794,7 @@ namespace uniset
         return ret;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+    ModbusRTU::mbErrCode MBSlave::forceSingleCoil( const ModbusRTU::ForceSingleCoilMessage& query,
             ModbusRTU::ForceSingleCoilRetMessage& reply )
     {
         mbinfo << myname << "(forceSingleCoil): " << query << endl;
@@ -2816,7 +2816,7 @@ namespace uniset
         return ret;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
+    ModbusRTU::mbErrCode MBSlave::diagnostics( const ModbusRTU::DiagnosticMessage& query,
             ModbusRTU::DiagnosticRetMessage& reply )
     {
         auto mbserver = dynamic_pointer_cast<ModbusServer>(mbslot);
@@ -2864,7 +2864,7 @@ namespace uniset
         return ModbusRTU::erOperationFailed;
     }
     // -------------------------------------------------------------------------
-    ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
+    ModbusRTU::mbErrCode MBSlave::read4314( const ModbusRTU::MEIMessageRDI& query,
                                             ModbusRTU::MEIMessageRetRDI& reply )
     {
         mbinfo << "(read4314): " << query << endl;
