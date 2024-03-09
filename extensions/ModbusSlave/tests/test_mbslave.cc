@@ -41,25 +41,37 @@ static void InitTest()
     }
 }
 // -----------------------------------------------------------------------------
-#if 0
 TEST_CASE("(0x01): read coil status", "[modbus][mbslave][mbtcpslave]")
 {
     InitTest();
     // read 1 bit
     {
         ModbusRTU::ReadCoilRetMessage ret(slaveaddr);
-        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1000, 1) );
+        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1, 1) );
         ModbusRTU::DataBits b(ret.data[0]);
         REQUIRE( b[0] == 1 );
     }
     // read 3 bit
     {
         ModbusRTU::ReadCoilRetMessage ret(slaveaddr);
-        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1000, 3) );
+        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1, 3) );
         ModbusRTU::DataBits b(ret.data[0]);
         REQUIRE( b[0] == 1 );
         REQUIRE( b[1] == 1 );
         REQUIRE( b[2] == 0 );
+    }
+
+    // a lot of registers
+    {
+        ModbusRTU::ReadCoilRetMessage ret(slaveaddr);
+        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1, ModbusRTU::MAXPDULEN*ModbusRTU::BitsPerByte) );
+        REQUIRE( (int)ret.bcnt == (int)ModbusRTU::MAXPDULEN );
+    }
+
+    // error "too long"
+    {
+        ModbusRTU::ReadCoilRetMessage ret(slaveaddr);
+        REQUIRE_THROWS_AS( ret = mb->read01(slaveaddr, 1, 4096), ModbusRTU::mbException );
     }
 }
 
@@ -69,21 +81,33 @@ TEST_CASE("(0x02): read input status", "[modbus][mbslave][mbtcpslave]")
     SECTION("read 1 bit")
     {
         ModbusRTU::ReadInputStatusRetMessage ret(slaveaddr);
-        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1000, 1) );
+        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1, 1) );
         ModbusRTU::DataBits b(ret.data[0]);
         REQUIRE( b[0] == 1 );
     }
     SECTION("read 3 bit")
     {
         ModbusRTU::ReadInputStatusRetMessage ret(slaveaddr);
-        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1000, 3) );
+        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1, 3) );
         ModbusRTU::DataBits b(ret.data[0]);
         REQUIRE( b[0] == 1 );
         REQUIRE( b[1] == 1 );
         REQUIRE( b[2] == 0 );
     }
+
+    // a lot of registers
+    {
+        ModbusRTU::ReadInputStatusRetMessage ret(slaveaddr);
+        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1, ModbusRTU::MAXPDULEN*ModbusRTU::BitsPerByte) );
+        REQUIRE( (int)ret.bcnt == (int)ModbusRTU::MAXPDULEN );
+    }
+
+    // error "too long"
+    {
+        ModbusRTU::ReadInputStatusRetMessage ret(slaveaddr);
+        REQUIRE_THROWS_AS( ret = mb->read02(slaveaddr, 1, 4096), ModbusRTU::mbException );
+    }
 }
-#endif
 
 TEST_CASE("Function (0x03): 'read register outputs or memories or read word outputs or memories'", "[modbus][mbslave][mbtcpslave]")
 {
