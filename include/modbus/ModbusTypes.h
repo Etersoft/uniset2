@@ -270,6 +270,8 @@ namespace uniset
             ErrorRetMessage( const ModbusMessage& m );
             ErrorRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             // ------- to master -------
             ErrorRetMessage( ModbusAddr _from, ModbusByte _func, ModbusByte ecode );
@@ -429,6 +431,8 @@ namespace uniset
             ReadCoilMessage( const ModbusMessage& m );
             ReadCoilMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             inline static size_t szData()
@@ -451,6 +455,8 @@ namespace uniset
             ReadCoilRetMessage( const ModbusMessage& m );
             ReadCoilRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
@@ -496,6 +502,8 @@ namespace uniset
             ReadInputStatusMessage& operator=( const ModbusMessage& m );
 
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             inline static size_t szData()
@@ -517,6 +525,8 @@ namespace uniset
             ReadInputStatusRetMessage( const ModbusMessage& m );
             ReadInputStatusRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
@@ -561,6 +571,8 @@ namespace uniset
             ReadOutputMessage( const ModbusMessage& m );
             ReadOutputMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             inline static size_t szData()
@@ -584,6 +596,9 @@ namespace uniset
             ReadOutputRetMessage( const ModbusMessage& m );
             ReadOutputRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
+
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
             */
@@ -649,6 +664,8 @@ namespace uniset
             ReadInputMessage( const ModbusMessage& m );
             ReadInputMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             inline static size_t szData()
@@ -673,6 +690,9 @@ namespace uniset
             ReadInputRetMessage( const ModbusMessage& m );
             ReadInputRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
+
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
             */
@@ -774,6 +794,8 @@ namespace uniset
             ForceCoilsMessage( const ModbusMessage& m );
             ForceCoilsMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
@@ -790,10 +812,8 @@ namespace uniset
             /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
             static size_t getDataLen( const ModbusMessage& m );
 
-            /*! проверка корректности данных
-                что quant и bcnt - совпадают...
-            */
-            bool checkFormat() const;
+            /*! проверка корректности данных */
+            static bool checkFormat( const ModbusMessage& m );
 
         } __attribute__((packed));
 
@@ -812,6 +832,8 @@ namespace uniset
             ForceCoilsRetMessage( const ModbusMessage& m );
             ForceCoilsRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             // ------- to master -------
             /*!
@@ -867,6 +889,8 @@ namespace uniset
             WriteOutputMessage( const ModbusMessage& m );
             WriteOutputMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
@@ -883,10 +907,8 @@ namespace uniset
             /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
             static size_t getDataLen( const ModbusMessage& m );
 
-            /*! проверка корректности данных
-                что quant и bcnt - совпадают...
-            */
-            bool checkFormat() const;
+            /*! проверка корректности данных */
+            static bool checkFormat( const ModbusMessage& m );
 
         } __attribute__((packed));
 
@@ -905,6 +927,8 @@ namespace uniset
             WriteOutputRetMessage( const ModbusMessage& m );
             WriteOutputRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
             ModbusCRC crc = { 0 };
 
             // ------- to master -------
@@ -956,9 +980,11 @@ namespace uniset
             ForceSingleCoilMessage( const ModbusMessage& m );
             ForceSingleCoilMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
-            size_t szData() const;
+            static size_t szData();
 
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
@@ -973,10 +999,8 @@ namespace uniset
             */
             static size_t getDataLen( const ModbusMessage& m );
 
-            /*! проверка корректности данных
-                что quant и bcnt - совпадают...
-            */
-            bool checkFormat() const;
+            /*! проверка корректности данных */
+            static bool checkFormat( const ModbusMessage& m );
         } __attribute__((packed));
 
 
@@ -1002,6 +1026,8 @@ namespace uniset
             ForceSingleCoilRetMessage( const ModbusMessage& m );
             ForceSingleCoilRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             // ------- to master -------
             /*!
@@ -1047,9 +1073,11 @@ namespace uniset
             WriteSingleOutputMessage( const ModbusMessage& m );
             WriteSingleOutputMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
-            size_t szData() const;
+            static size_t szData();
 
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
@@ -1065,7 +1093,7 @@ namespace uniset
             static size_t getDataLen( const ModbusMessage& m );
 
             /*! проверка корректности данных */
-            bool checkFormat() const;
+            static bool checkFormat( const ModbusMessage& m );
         } __attribute__((packed));
 
 
@@ -1086,6 +1114,8 @@ namespace uniset
             WriteSingleOutputRetMessage( const ModbusMessage& m );
             WriteSingleOutputRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             // ------- to master -------
             /*!
@@ -1123,6 +1153,9 @@ namespace uniset
             DiagnosticMessage( const ModbusMessage& m );
             DiagnosticMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
+
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
             */
@@ -1201,6 +1234,8 @@ namespace uniset
             MEIMessageRDI( const ModbusMessage& m );
             MEIMessageRDI& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер предварительного заголовка
              * (после основного до фактических данных)
@@ -1256,6 +1291,8 @@ namespace uniset
             MEIMessageRetRDI( const ModbusMessage& m );
             MEIMessageRetRDI& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             // предварительная инициализации, только заголовочной части, без данных
             void pre_init( const ModbusMessage& m );
@@ -1315,11 +1352,13 @@ namespace uniset
             // -------------
             JournalCommandMessage( const ModbusMessage& m );
             JournalCommandMessage& operator=( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             inline static size_t szData()
             {
-                return sizeof(ModbusByte) * 4 + szCRC;
+                return sizeof(ModbusData) * 2 + szCRC;
             }
 
         } __attribute__((packed));
@@ -1361,6 +1400,9 @@ namespace uniset
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
+
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! преобразование для посылки в сеть */
             ModbusMessage transport_msg();
@@ -1415,8 +1457,10 @@ namespace uniset
             SetDateTimeMessage( const ModbusMessage& m );
             SetDateTimeMessage& operator=( const ModbusMessage& m );
             SetDateTimeMessage();
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
-            bool checkFormat() const;
+            static bool checkFormat( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             inline static size_t szData()
@@ -1439,6 +1483,8 @@ namespace uniset
             SetDateTimeRetMessage( const ModbusMessage& m );
             SetDateTimeRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             // ------- to master -------
             SetDateTimeRetMessage( ModbusAddr _from );
@@ -1464,6 +1510,8 @@ namespace uniset
             RemoteServiceMessage( const ModbusMessage& m );
             RemoteServiceMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
@@ -1513,6 +1561,9 @@ namespace uniset
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
 
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
+
             /*! преобразование для посылки в сеть */
             ModbusMessage transport_msg();
 
@@ -1544,6 +1595,8 @@ namespace uniset
             ReadFileRecordMessage( const ModbusMessage& m );
             ReadFileRecordMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             size_t szData() const;
@@ -1581,10 +1634,13 @@ namespace uniset
             FileTransferMessage( ModbusAddr addr, ModbusData numfile, ModbusData numpacket );
             ModbusMessage transport_msg();     /*!< преобразование для посылки в сеть */
 
+
             // ------- from master -------
             FileTransferMessage( const ModbusMessage& m );
             FileTransferMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
 
             /*! размер данных(после заголовка) у данного типа сообщения */
             static inline size_t szData()
@@ -1617,6 +1673,9 @@ namespace uniset
             FileTransferRetMessage( const ModbusMessage& m );
             FileTransferRetMessage& operator=( const ModbusMessage& m );
             void init( const ModbusMessage& m );
+            static ModbusCRC getCrc( const ModbusMessage& m );
+            static ModbusCRC calcCRC( const ModbusMessage& m );
+
             ModbusCRC crc = { 0 };
             static size_t szHead()
             {
