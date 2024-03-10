@@ -148,124 +148,124 @@ namespace uniset
             const ReadCoilMessage mRead(buf);
             ReadCoilRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
-            mbErrCode res = readCoilStatus( mRead, reply );
+            mbErrCode err = readCoilStatus( mRead, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x01): err reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x01): err reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnReadInputStatus )
         {
             const ReadInputStatusMessage mRead(buf);
             ReadInputStatusRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
-            mbErrCode res = readInputStatus( mRead, reply );
+            mbErrCode err = readInputStatus( mRead, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x02): err reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x02): err reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnReadOutputRegisters )
         {
             const ReadOutputMessage mRead(buf);
             ReadOutputRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
-            mbErrCode res = readOutputRegisters( mRead, reply );
+            mbErrCode err = readOutputRegisters( mRead, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x03): err reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x03): err reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnReadInputRegisters )
         {
             const ReadInputMessage mRead(buf);
             ReadInputRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
-            mbErrCode res = readInputRegisters( mRead, reply );
+            mbErrCode err = readInputRegisters( mRead, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x04): err reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x04): err reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mRead.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mRead.addr, mRead.func, res, buf );
+                    ErrorRetMessage::make_to( mRead.addr, mRead.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnForceMultipleCoils )
         {
@@ -273,30 +273,30 @@ namespace uniset
             ForceCoilsRetMessage reply(buf.pduhead.addr);
 
             // вызываем обработчик..
-            mbErrCode res = forceMultipleCoils( mWrite, reply );
+            mbErrCode err = forceMultipleCoils( mWrite, reply );
 
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x0F): err reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x0F): err reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             // --------------------------------
             printProcessingTime();
-            return res;
+            return err;
         }
         else if( buf.func() == fnWriteOutputRegisters )
         {
@@ -304,90 +304,90 @@ namespace uniset
             WriteOutputRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
-            mbErrCode res = writeOutputRegisters( mWrite, reply );
+            mbErrCode err = writeOutputRegisters( mWrite, reply );
 
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x10): err reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x10): err reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnDiagnostics )
         {
             const DiagnosticMessage mDiag(buf);
             DiagnosticRetMessage reply(buf.pduhead.addr, (DiagnosticsSubFunction)mDiag.subf );
-            mbErrCode res = diagnostics( mDiag, reply );
+            mbErrCode err = diagnostics( mDiag, reply );
 
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x08): reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x08): reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mDiag.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mDiag.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mDiag.addr, mDiag.func, res, buf );
+                    ErrorRetMessage::make_to( mDiag.addr, mDiag.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnMEI )
         {
             const MEIMessageRDI mRDI(buf);
             MEIMessageRetRDI reply( buf.pduhead.addr, mRDI.devID, 0, 0, mRDI.objID );
 
-            mbErrCode res = read4314( mRDI, reply );
+            mbErrCode err = read4314( mRDI, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x2B/0x0E): reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x2B/0x0E): reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mRDI.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mRDI.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mRDI.addr, mRDI.func, res, buf );
+                    ErrorRetMessage::make_to( mRDI.addr, mRDI.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnForceSingleCoil )
         {
@@ -395,31 +395,31 @@ namespace uniset
             ForceSingleCoilRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
-            mbErrCode res = forceSingleCoil( mWrite, reply );
+            mbErrCode err = forceSingleCoil( mWrite, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x05): reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x05): reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnWriteOutputSingleRegister )
         {
@@ -427,155 +427,155 @@ namespace uniset
             WriteSingleOutputRetMessage reply(buf.pduhead.addr); // addr?
 
             // вызываем обработчик..
-            mbErrCode res = writeOutputSingleRegister( mWrite, reply );
+            mbErrCode err = writeOutputSingleRegister( mWrite, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x06): reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x06): reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mWrite.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, res, buf );
+                    ErrorRetMessage::make_to( mWrite.addr, mWrite.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnJournalCommand )
         {
             const JournalCommandMessage mJournal(buf);
             JournalCommandRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
-            mbErrCode res = journalCommand( mJournal, reply );
+            mbErrCode err = journalCommand( mJournal, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x65): reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x65): reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mJournal.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mJournal.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mJournal.addr, mJournal.func, res, buf );
+                    ErrorRetMessage::make_to( mJournal.addr, mJournal.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnSetDateTime )
         {
             const SetDateTimeMessage mSet(buf);
             SetDateTimeRetMessage reply(buf.pduhead.addr); // addr?
             // вызываем обработчик..
-            mbErrCode res = setDateTime( mSet, reply );
+            mbErrCode err = setDateTime( mSet, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x50): reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x50): reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && mSet.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && mSet.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( mSet.addr, mSet.func, res, buf );
+                    ErrorRetMessage::make_to( mSet.addr, mSet.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnRemoteService )
         {
             const RemoteServiceMessage query(buf);
             RemoteServiceRetMessage reply(buf.pduhead.addr);
             // вызываем обработчик..
-            mbErrCode res = remoteService( query, reply );
+            mbErrCode err = remoteService( query, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x53): error reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x53): error reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && query.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && query.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( query.addr, query.func, res, buf );
+                    ErrorRetMessage::make_to( query.addr, query.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
         else if( buf.func() == fnFileTransfer )
         {
             const FileTransferMessage query(buf);
             FileTransferRetMessage reply(buf.pduhead.addr);
             // вызываем обработчик..
-            mbErrCode res = fileTransfer( query, reply );
+            mbErrCode err = fileTransfer( query, reply );
 
             // в случае ошибок ответа не посылаем
-            if( res != erNoError )
+            if( err != erNoError )
             {
-                dlog->warn() << "(0x66): error reply: " << mbErr2Str(res) << endl;
+                dlog->warn() << "(0x66): error reply: " << mbErr2Str(err) << endl;
 
                 // Если ошибка подразумевает посылку ответа с сообщением об ошибке
                 // то посылаем
                 // если адрес запроса является broadcast-овым, то ответ тоже не посылается
-                if( res < erInternalErrorCode && query.addr != BroadcastAddr )
+                if( err < erInternalErrorCode && query.addr != BroadcastAddr )
                 {
-                    ErrorRetMessage::make_to( query.addr, query.func, res, buf );
+                    ErrorRetMessage::make_to( query.addr, query.func, err, buf );
                     return send(buf);
                 }
 
-                return res;
+                return err;
             }
 
-            // отвечаем (используя тот же буфер, который будет очищен)
+            // отвечаем (используя тот же буфер, который будет перезаписан)
             reply.transport_msg_to(buf);
-            res = send(buf);
+            err = send(buf);
             printProcessingTime();
             // --------------------------------
-            return res;
+            return err;
         }
 
         ErrorRetMessage::make_to( buf.addr(), buf.func(), erUnExpectedPacketType, buf );
