@@ -349,31 +349,29 @@ namespace uniset
         shm->initIterator(itHeartBeat);
         shm->initIterator(itExchangeMode);
 
-        for( auto it1 = mbconf->devices.begin(); it1 != mbconf->devices.end(); ++it1 )
+        for( auto&& it1 : mbconf->devices )
         {
-            auto d = it1->second;
+            auto d = it1.second;
             shm->initIterator(d->resp_it);
             shm->initIterator(d->mode_it);
 
             for( auto&& m : d->pollmap )
             {
-                auto& regmap = m.second;
-
-                for( auto it = regmap->begin(); it != regmap->end(); ++it )
+                for( auto&& it : (*m.second) )
                 {
-                    for( auto it2 = it->second->slst.begin(); it2 != it->second->slst.end(); ++it2 )
+                    for( auto&& it2 : it.second->slst )
                     {
-                        shm->initIterator(it2->ioit);
-                        shm->initIterator(it2->t_ait);
+                        shm->initIterator(it2.ioit);
+                        shm->initIterator(it2.t_ait);
                     }
                 }
             }
         }
 
-        for( auto t = mbconf->thrlist.begin(); t != mbconf->thrlist.end(); ++t )
+        for( auto&& t : mbconf->thrlist )
         {
-            shm->initIterator(t->ioit);
-            shm->initIterator(t->t_ait);
+            shm->initIterator(t.ioit);
+            shm->initIterator(t.t_ait);
         }
     }
     // -----------------------------------------------------------------------------
@@ -385,23 +383,21 @@ namespace uniset
 
             for( auto&& m : d->pollmap )
             {
-                auto regmap = m.second;
-
-                for( auto it = regmap->begin(); it != regmap->end(); ++it )
+                for( auto&& it :  (*m.second) )
                 {
-                    for( auto it2 = it->second->slst.begin(); it2 != it->second->slst.end(); ++it2 )
+                    for( auto&& it2 : it.second->slst )
                     {
-                        it2->value = shm->localGetValue(it2->ioit, it2->si.id);
+                        it2.value = shm->localGetValue(it2.ioit, it2.si.id);
                     }
 
-                    it->second->sm_initOK = true;
+                    it.second->sm_initOK = true;
                 }
             }
         }
 
-        for( auto t = mbconf->thrlist.begin(); t != mbconf->thrlist.end(); ++t )
+        for( auto&& t : mbconf->thrlist )
         {
-            t->value = shm->localGetValue(t->ioit, t->si.id);
+            t.value = shm->localGetValue(t.ioit, t.si.id);
         }
     }
     // -----------------------------------------------------------------------------

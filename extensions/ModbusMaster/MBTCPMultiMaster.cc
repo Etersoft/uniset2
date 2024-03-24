@@ -627,14 +627,14 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
             continue;
 
         // идём по списку опрашиваемых регистров
-        for( auto p = d.second->pollmap.begin(); p != d.second->pollmap.end(); ++p )
+        for( const auto& p : d.second->pollmap )
         {
-            for( auto r = p->second->begin(); r != p->second->end(); ++r )
+            for( const auto& r : *p.second )
             {
-                if( ModbusRTU::isReadFunction(r->second->mbfunc) )
+                if( ModbusRTU::isReadFunction(r.second->mbfunc) )
                 {
-                    checkFunc = r->second->mbfunc;
-                    checkReg = r->second->mbreg;
+                    checkFunc = r.second->mbfunc;
+                    checkReg = r.second->mbreg;
                     break;
                 }
             }

@@ -656,7 +656,7 @@ void IONotifyController::send( ConsumerListInfo& lst, const uniset::SensorMessag
 
 	uniset_rwmutex_wrlock l(lst.mut);
 
-	for( ConsumerList::iterator li = lst.clst.begin(); li != lst.clst.end(); ++li )
+	for( auto li = lst.clst.begin(); li != lst.clst.end(); ++li )
 	{
 		if( ci )
 		{
