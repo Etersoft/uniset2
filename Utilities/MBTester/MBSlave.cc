@@ -429,7 +429,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( const ModbusRTU::FileTransferMessage
     return ModbusRTU::erOperationFailed;
 
 #if 0
-    FileList::iterator it = flist.find(query.numfile);
+    auto it = flist.find(query.numfile);
 
     if( it == flist.end() )
         return ModbusRTU::erBadDataValue;

@@ -96,16 +96,15 @@ void SViewer::readSection( const string& section, const string& secRoot )
 
 	if( !lst.empty() )
 	{
-		for ( ListObjectName::const_iterator li = lst.begin(); li != lst.end(); ++li)
+		for ( const auto& li: lst )
 		{
-			readSection((*li), curSection);
+			readSection(li, curSection);
 		}
 	}
 	else
 	{
 		const string secName(curSection);
 		ListObjectName lstObj;
-		ListObjectName::const_iterator li;
 
 		try
 		{
@@ -128,12 +127,11 @@ void SViewer::readSection( const string& section, const string& secRoot )
 
 		if ( !lstObj.empty() )
 		{
-			for ( li = lstObj.begin(); li != lstObj.end(); ++li )
+			for ( const auto& li: lstObj )
 			{
 				try
 				{
-					const string ob(*li);
-					const string fname(curSection + "/" + ob);
+					const string fname = curSection + "/" + li;
 					ObjectId id = uniset_conf()->oind->getIdByName( fname );
 
 					if( id == DefaultObjectId )

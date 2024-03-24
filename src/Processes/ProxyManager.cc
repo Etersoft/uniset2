@@ -117,11 +117,11 @@ bool ProxyManager::activateObject()
 // -------------------------------------------------------------------------
 bool ProxyManager::deactivateObject()
 {
-	for( PObjectMap::const_iterator it = omap.begin(); it != omap.end(); ++it )
+	for( const auto& it:  omap  )
 	{
 		try
 		{
-			ui->unregister(it->first);
+			ui->unregister(it.first);
 		}
 		catch( const uniset::Exception& ex )
 		{

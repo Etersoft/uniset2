@@ -256,15 +256,15 @@ int main( int argc, char** argv )
 
                 cout << "\r" << " i = " << val << "     " << flush;
 
-                for(std::list<ExtInfo>::iterator it = sensors.begin(); it != sensors.end(); ++it )
+                for( const auto& it: sensors )
                 {
                     try
                     {
-                        ui.setValue(it->si, val, DefaultObjectId);
+                        ui.setValue(it.si, val, DefaultObjectId);
                     }
                     catch( const uniset::Exception& ex )
                     {
-                        cerr << endl << "save id=" << it->fname << " " << ex << endl;
+                        cerr << endl << "save id=" << it.fname << " " << ex << endl;
                     }
                 }
             }

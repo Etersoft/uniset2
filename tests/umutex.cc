@@ -6,7 +6,7 @@
 #include "UniSetTypes.h"
 
 using namespace std;
-using namespace uniset;
+using namespace uniset2;
 
 uniset_mutex m;
 uniset_rwmutex m_rw;
@@ -301,7 +301,7 @@ int main( int argc, const char** argv )
         int max = 10;
 
         if( argc > 1 )
-            max = uniset::uni_atoi(argv[1]);
+            max = uniset2::uni_atoi(argv[1]);
 
 #if 1
         typedef std::vector<MyClass*> TVec;
@@ -322,16 +322,16 @@ int main( int argc, const char** argv )
 
         cout << "TEST MUTEX LOCK RESULT: " << endl;
 
-        for( TVec::iterator it = tvec.begin(); it != tvec.end(); it++ )
+        for( const auto& it: tvec )
         {
-            int c = (*it)->lock_count();
-            (*it)->terminate();
+            int c = it->lock_count();
+            it->terminate();
 
-            if( (*it)->get()->isRunning() )
-                (*it)->get()->join();
+            if( it->get()->isRunning() )
+                it->get()->join();
 
             //(*it)->get()->stop();
-            cout << (*it)->name() << ": locked counter: " << (c / 10) << " " << ( c != 0 ? "OK" : "FAIL" ) << endl;
+            cout << it->name() << ": locked counter: " << (c / 10) << " " << ( c != 0 ? "OK" : "FAIL" ) << endl;
         }
 
 #endif
@@ -369,15 +369,15 @@ int main( int argc, const char** argv )
 
         cout << "TEST RWMUTEX LOCK RESULT: " << endl;
 
-        for( TSpinVec::iterator it = tsvec.begin(); it != tsvec.end(); it++ )
+        for( const auto& it: tsvec )
         {
-            int c = (*it)->lock_count();
-            (*it)->terminate();
+            int c = it->lock_count();
+            it->terminate();
 
-            if( (*it)->get()->isRunning() )
-                (*it)->get()->join();
+            if( it->get()->isRunning() )
+                it->get()->join();
 
-            cout << (*it)->name() << ": locked counter: " << (c / 10) << " " << ( c != 0 ? "OK" : "FAIL" ) << endl;
+            cout << it->name() << ": locked counter: " << (c / 10) << " " << ( c != 0 ? "OK" : "FAIL" ) << endl;
         }
 
 #endif
