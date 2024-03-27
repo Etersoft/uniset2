@@ -124,101 +124,19 @@ namespace uniset
             }
 
             if( findArgParam("--" + prefix + "-enable-subscription", conf->getArgc(), conf->getArgv()) != -1 )
-                enaSub = true;
+                enableSubscription = true;
             else
-                enaSub = conf->getArgInt(it.getProp("enableSubscription"), "0");
+                enableSubscription = conf->getArgInt(it.getProp("enableSubscription"), "0");
+
+            publishingInterval = atof(conf->getArgParam("--" + prefix + "-publishing-interval", it.getProp("publishingInterval")).c_str());
+            samplingInterval = atof(conf->getArgParam("--" + prefix + "-sampling-interval", it.getProp("samplingInterval")).c_str());
+            timeoutIterate = uniset_conf()->getArgPInt("--" + prefix + "-timeout-iterate", it.getProp("timeoutIterate"), 0);
 
             //Подписка для opcua по флагу
-            if(enaSub)
+            if(enableSubscription)
             {
                 opclog3 << myname << " Create subscription for channel " << i + 1 << endl;
-
-                (*channels[i].client)()->onSessionActivated([this, i]
-                {
-                    opcua::log(*(*channels[i].client)(), opcua::LogLevel::Info, opcua::LogCategory::Client, "Session activated!");
-
-                    auto sub = (*channels[i].client)()->createSubscription();
-
-                    // Modify and delete the subscription via the returned Subscription<T> object
-                    opcua::SubscriptionParameters subscriptionParameters{};
-                    subscriptionParameters.publishingInterval = 0.0;
-                    sub.setSubscriptionParameters(subscriptionParameters);
-                    sub.setPublishingMode(true);
-
-                    unsigned short j = 0;
-
-                    for( const auto& it : iolist )
-                    {
-                        if(it->stype != UniversalIO::AI && it->stype != UniversalIO::DI)
-                            continue;
-
-                        if( it->ignore )
-                            continue;
-
-                        opclog3 << myname << " [" << ++j << "] Add monitoring item " << it->attrName.c_str() << endl;
-                        auto t_start = std::chrono::steady_clock::now();
-
-                        // Create a monitored item within the subscription for data change notifications
-                        try
-                        {
-
-                            auto mon = sub.subscribeDataChange(
-                                           UA_NODEID(it->attrName.c_str()),
-                                           opcua::AttributeId::Value,  // monitored attribute
-                                           [&, i](const auto & item, const opcua::DataValue & value)
-                            {
-                                opclog5 << myname << "[" << it.use_count() << "] item: " << item.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
-                                it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].status = value.getStatus();
-
-                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_INT32]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Int32*) value.getValue().data());
-                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_UINT32]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_UInt32*) value.getValue().data());
-
-                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_INT64]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Int64*) value.getValue().data());
-                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_UINT64]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_UInt64*) value.getValue().data());
-                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = (bool)(*(UA_Boolean*) value.getValue().data() ? 1 : 0);
-
-                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_INT16]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Int16*) value.getValue().data());
-                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_UINT16]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_UInt16*) value.getValue().data());
-
-                                if(value.getValue().isType(&UA_TYPES[UA_TYPES_BYTE]))
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = int32_t(*(UA_Byte*) value.getValue().data());
-                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_FLOAT]))
-                                {
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].type = OPCUAClient::VarType::Float;
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = (float)(*(UA_Float*) value.getValue().data());
-                                }
-                                else if(value.getValue().isType(&UA_TYPES[UA_TYPES_DOUBLE]))
-                                {
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].type = OPCUAClient::VarType::Float;
-                                    it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex].value = (float)(*(UA_Double*) value.getValue().data());
-                                }
-
-                            }
-                                       );
-
-                            // Modify and delete the monitored item via the returned MonitoredItem<T> object
-                            opcua::MonitoringParameters monitoringParameters{};
-                            monitoringParameters.samplingInterval = -1.0;
-                            mon.setMonitoringParameters(monitoringParameters);
-                            mon.setMonitoringMode(opcua::MonitoringMode::Reporting);
-
-                            auto t_end = std::chrono::steady_clock::now();
-                            opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
-                                    << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
-                        }
-                        catch(const std::exception& ex)
-                        {
-                            opcwarn << myname << " Error while subscribe data change for " << it->attrName.c_str() << " : " << ex.what() << endl;
-                        }
-                    }
-                });
+                createSubscription(i);
             }
         }
 
@@ -520,7 +438,10 @@ namespace uniset
                     msleep(reconnectPause);
                     continue;
                 }
-
+                
+                //if(first init == false)
+                ch->client->rethrowException();
+                
                 auto t_start = std::chrono::steady_clock::now();
 
                 ch->status = true;
@@ -561,6 +482,10 @@ namespace uniset
             catch( const uniset::Exception& ex )
             {
                 opclog3 << myname << "(channel" << ch->num << "Thread): " << ex << endl;
+            }
+            catch( std::exception& ex )
+            {
+                opcwarn << myname << "(channel" << ch->num << "Thread): " << ex.what() << endl;
             }
             catch(...)
             {
@@ -611,14 +536,23 @@ namespace uniset
         }
 
         auto t_end = std::chrono::steady_clock::now();
-        opclog8 << myname << "(WR channelExchange): " << setw(10) << setprecision(7) << std::fixed
+        opclog8 << myname << "(channelExchange): write time " << setw(10) << setprecision(7) << std::fixed
                 << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
         t_start = std::chrono::steady_clock::now();
 
         if( exchangeMode != emWriteOnly )
         {
-            if(enaSub)
-                (*ch->client)()->runIterate(100);
+            if(enableSubscription)
+            {   
+                try
+                {
+                    ch->client->runIterate(timeoutIterate);//!TODO настройка, перейти на другой вызов
+                }
+                catch(...)
+                {
+
+                }
+            }
             else
             {
                 for( auto&& v : ch->readValues )
@@ -650,7 +584,7 @@ namespace uniset
         }
 
         t_end = std::chrono::steady_clock::now();
-        opclog8 << myname << "(RD channelExchange): " << setw(10) << setprecision(7) << std::fixed
+        opclog8 << myname << "(channelExchange): read time " << setw(10) << setprecision(7) << std::fixed
                 << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
     }
     // --------------------------------------------------------------------------------
@@ -1204,6 +1138,15 @@ namespace uniset
     {
         if( !gr )
             return nullWriteValue;
+
+        return gr->ids[grNumber][grIndex];
+    }
+    // ------------------------------------------------------------------------------------------
+    static const UA_ReadValueId nullReadValueId = UA_ReadValueId{};
+    const UA_ReadValueId& OPCUAExchange::OPCAttribute::RdValue::ref()
+    {
+        if( !gr )
+            return nullReadValueId;
 
         return gr->ids[grNumber][grIndex];
     }
@@ -1923,6 +1866,182 @@ namespace uniset
         }
 
         return true;
+    }
+    // -----------------------------------------------------------------------------
+    void OPCUAExchange::createSubscription(int nchannel)
+    {
+        if(channels[nchannel].client == nullptr)
+            return;
+
+        channels[nchannel].client->onSessionActivated([this, i=nchannel]
+        {
+            opclog3 << myname << " Session activated " << endl;
+
+            auto sub = channels[i].client->createSubscription();
+
+            // Modify and delete the subscription via the returned Subscription<T> object
+            opcua::SubscriptionParameters subscriptionParameters{};
+            subscriptionParameters.publishingInterval = publishingInterval;
+            sub.setSubscriptionParameters(subscriptionParameters);
+            sub.setPublishingMode(true);
+
+            std::vector<UA_ReadValueId> items;
+            std::vector<uniset::DataChangeCallback> callbacks;
+
+            for( const auto& it : iolist )
+            {
+                if(it->stype != UniversalIO::AI && it->stype != UniversalIO::DI)
+                    continue;
+
+                if( it->ignore )
+                    continue;
+
+                items.push_back(it->rval[i].ref());
+                
+                callbacks.emplace_back(
+                    [&, i](const auto& item, const opcua::DataValue& value)
+                    {
+                        //cerr<<"HERE 5 isnull="<<item.getNodeId().isNull()<<endl;
+                        opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
+                                        
+                        auto &result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
+                        auto data = value.getValue();
+                        
+                        result.status = value.getStatus();
+
+                        if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
+                            result.value = int32_t(*(UA_Int32*) data.data());
+                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
+                            result.value = int32_t(*(UA_UInt32*) data.data());
+
+                        if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
+                            result.value = int32_t(*(UA_Int64*) data.data());
+                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
+                            result.value = int32_t(*(UA_UInt64*) data.data());
+                        else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
+                            result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
+
+                        if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
+                            result.value = int32_t(*(UA_Int16*) data.data());
+                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
+                            result.value = int32_t(*(UA_UInt16*) data.data());
+
+                        if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
+                            result.value = int32_t(*(UA_Byte*) data.data());
+                        else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
+                        {
+                            result.type = OPCUAClient::VarType::Float;
+                            result.value = (float)(*(UA_Float*) data.data());
+                        }
+                        else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
+                        {
+                            result.type = OPCUAClient::VarType::Float;
+                            result.value = (float)(*(UA_Double*) data.data());
+                        }
+                    });
+
+#if 0
+                // Create a monitored item within the subscription for data change notifications
+                try
+                {
+                    auto mon = sub.subscribeDataChange(
+                                    UA_NODEID(it->attrName.c_str()),
+                                    opcua::AttributeId::Value,  // monitored attribute
+                                    [&, i](const auto & item, const opcua::DataValue & value)
+                                    {
+                                        opclog5 << myname << "item: " << item.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
+                                        
+                                        auto &result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
+                                        auto data = value.getValue();
+                                        
+                                        result.status = value.getStatus();
+
+                                        if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
+                                            result.value = int32_t(*(UA_Int32*) data.data());
+                                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
+                                            result.value = int32_t(*(UA_UInt32*) data.data());
+
+                                        if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
+                                            result.value = int32_t(*(UA_Int64*) data.data());
+                                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
+                                            result.value = int32_t(*(UA_UInt64*) data.data());
+                                        else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
+                                            result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
+
+                                        if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
+                                            result.value = int32_t(*(UA_Int16*) data.data());
+                                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
+                                            result.value = int32_t(*(UA_UInt16*) data.data());
+
+                                        if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
+                                            result.value = int32_t(*(UA_Byte*) data.data());
+                                        else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
+                                        {
+                                            result.type = OPCUAClient::VarType::Float;
+                                            result.value = (float)(*(UA_Float*) data.data());
+                                        }
+                                        else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
+                                        {
+                                            result.type = OPCUAClient::VarType::Float;
+                                            result.value = (float)(*(UA_Double*) data.data());
+                                        }
+                                    }
+                                );
+
+                    // Modify and delete the monitored item via the returned MonitoredItem<T> object
+                    opcua::MonitoringParameters monitoringParameters{};
+                    monitoringParameters.samplingInterval = samplingInterval;
+                    mon.setMonitoringParameters(monitoringParameters);
+                    mon.setMonitoringMode(opcua::MonitoringMode::Reporting);
+
+                    auto t_end = std::chrono::steady_clock::now();
+                    opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
+                            << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+                }
+                catch(const std::exception& ex)
+                {
+                    opcwarn << myname << " Error while subscribe data change for " << it->attrName.c_str() << " : " << ex.what() << endl;
+                    //!TODO throw???? Настраивается падать или не падать в процессе запуска....
+                }
+#endif
+            }
+            // Create a monitored item within the subscription for data change notifications
+            try
+            {
+                opclog3 << myname << " Create monitoring items : " << items.size() << endl;
+                auto t_start = std::chrono::steady_clock::now();
+                auto result = channels[i].client->subscribeDataChanges(sub,items,callbacks);
+
+                // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
+                // количестве что и в запросе.
+                opcua::MonitoringParameters monitoringParameters{};
+                monitoringParameters.samplingInterval = samplingInterval;
+                
+                for(auto &&rit : result)
+                {
+                    uint32_t monId = rit.getMonitoredItemId();
+                    if(monId)
+                    {
+                        rit.setMonitoringParameters(monitoringParameters);
+                        rit.setMonitoringMode(opcua::MonitoringMode::Reporting);
+                    }
+                    else
+                    {
+                        opcwarn << "error monitoredItemId, 0" << endl;
+                    }
+                }
+
+                auto t_end = std::chrono::steady_clock::now();
+                opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
+                        << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+            }
+            catch(const std::exception& ex)
+            {
+                opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
+                throw;
+                //!TODO throw???? Настраивается падать или не падать в процессе запуска....
+            }
+        });
     }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset

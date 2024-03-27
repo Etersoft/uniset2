@@ -226,6 +226,11 @@ namespace uniset
                     float getF();
                     bool statusOk();
                     UA_StatusCode status();
+                    const UA_ReadValueId& ref();
+                    // Subscription
+                    uint32_t subscriptionId{0U};
+                    uint32_t monitoredItemId{0U};
+                    bool subscriptionState{false};//TODO! Сделать флаг состояния датчика : подписка, опрос, отключен, ошибка.... и т.п.
                 };
                 RdValue rval[numChannels];
 
@@ -296,6 +301,7 @@ namespace uniset
             bool waitSM();
             bool tryConnect(Channel* ch);
             void initOutputs();
+            void createSubscription(int nchannel);
 
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
             timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
@@ -348,7 +354,10 @@ namespace uniset
             bool force_out = { false };        /*!< флаг, включающий принудительное чтение/запись датчиков в SM */
             bool writeToAllChannels = { false }; /*!< флаг, включающий запись во все каналы, по умолчанию только в активный */
             timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
-            bool enaSub = {false};
+            bool enableSubscription = {false};
+            double publishingInterval = { 0.0 };
+            double samplingInterval = { -1.0 };
+            uint16_t timeoutIterate = {100};
 
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };

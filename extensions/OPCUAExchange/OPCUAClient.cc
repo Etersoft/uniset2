@@ -21,9 +21,37 @@
 #include <chrono>
 
 #include <open62541/client_highlevel.h>
+#include <open62541/client_subscriptions.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/types_generated_handling.h>
+
+#include "open62541pp/open62541pp.h"
+
 #include "OPCUAClient.h"
+
+namespace uniset
+{
+    static void dataChangeNotificationCallback(
+        [[maybe_unused]] UA_Client* client,
+        uint32_t subId,
+        [[maybe_unused]] void* subContext,
+        uint32_t monId,
+        void* monContext,
+        UA_DataValue* value
+    ) noexcept {
+        if (monContext == nullptr) {
+            return;
+        }
+        auto* monitoredItem = static_cast<uniset::MonitoredItem*>(monContext);
+        if(monitoredItem == nullptr)
+            return;
+        auto& callback = monitoredItem->dataChangeCallback;
+        if (callback) {
+            callback(subId, monId, opcua::asWrapper<opcua::DataValue>(*value));
+        }
+    }
+}// end of namespace uniset
+
 // -----------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
@@ -277,5 +305,77 @@ UA_ReadValueId OPCUAClient::makeReadValue32( const std::string& name )
     rv.attributeId = UA_ATTRIBUTEID_VALUE;
     rv.nodeId = UA_NODEID(name.c_str());
     return rv;
+}
+// -----------------------------------------------------------------------------
+std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChanges(
+    opcua::Subscription<opcua::Client> &sub,
+    std::vector<UA_ReadValueId>& attrs,
+    std::vector<uniset::DataChangeCallback>& dataChangeCallbacks
+) {
+    std::vector<opcua::MonitoredItem<opcua::Client>> ret;
+    auto connection_ = sub.getConnection();
+    auto subscriptionId_ = sub.getSubscriptionId();
+    auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
+    std::vector<std::unique_ptr<uniset::MonitoredItem>> monItems;
+    size_t attr_size = attrs.size();
+
+    std::vector<UA_MonitoredItemCreateRequest> items(attr_size);
+    std::vector<UA_Client_DataChangeNotificationCallback> callbacks(attr_size);
+    std::vector<UA_Client_DeleteMonitoredItemCallback> deleteCallbacks(attr_size);
+    std::vector<void *> contexts(attr_size);
+
+    for( size_t i = 0 ; i < attr_size ; i++ )
+    {
+        /* monitor the server state */
+        items.emplace_back(UA_MonitoredItemCreateRequest_default(attrs[i].nodeId));
+        callbacks.emplace_back(dataChangeNotificationCallback);
+        
+        auto context = std::make_unique<uniset::MonitoredItem>();//MonitoredItem местная структура!!!!!!
+        context->itemToMonitor = opcua::ReadValueId(attrs[i]);
+        context->dataChangeCallback = exceptionCatcher.wrapCallback(
+                                                        [this, callback = std::move(dataChangeCallbacks[i])](
+                                                            uint32_t subId, uint32_t monId, const opcua::DataValue& value
+                                                        ) {
+                                                            std::cerr<<"here4 sub="<<subId<<", mon="<<monId<<" ,size="<<this->monitoredItems.size()<<std::endl;
+                                                            auto it = this->monitoredItems.find({subId, monId});
+                                                            if (it == this->monitoredItems.end()) {
+                                                                cerr<<"NOT FOUND"<<endl;
+                                                                throw opcua::BadStatus(UA_STATUSCODE_BADMONITOREDITEMIDINVALID);
+                                                            }
+                                                            callback(*(it->second.get()), value);
+                                                        });
+        contexts.emplace_back(context.get());
+        deleteCallbacks.emplace_back(nullptr);
+
+        monItems.emplace_back(std::move(context));
+    }
+
+    UA_CreateMonitoredItemsRequest createRequest;
+    UA_CreateMonitoredItemsRequest_init(&createRequest);
+    createRequest.subscriptionId = subscriptionId_;
+    createRequest.timestampsToReturn = UA_TIMESTAMPSTORETURN_BOTH;
+    createRequest.itemsToCreate = items.data();
+    createRequest.itemsToCreateSize = attr_size;
+
+    using createResponse = opcua::TypeWrapper<UA_CreateMonitoredItemsResponse, UA_TYPES_CREATEMONITOREDITEMSRESPONSE>;
+    const createResponse response =
+       UA_Client_MonitoredItems_createDataChanges(client.handle(), createRequest, contexts.data(),
+                                                   callbacks.data(), deleteCallbacks.data());
+    for(size_t i=0;i<response->resultsSize;i++)
+    {
+        opcua::throwIfBad(response->results[i].statusCode);
+
+        if(response->results[i].statusCode == UA_STATUSCODE_GOOD)
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                    "Good Monitoring for attr = '%-16.*s' with id = 'monId %u'",
+                    (int)attrs[i].nodeId.identifier.string.length,
+                    attrs[i].nodeId.identifier.string.data,
+                    response->results[i].monitoredItemId);
+
+        monitoredItems.insert_or_assign({subscriptionId_, response->results[i].monitoredItemId}, std::move(monItems[i]));
+        ret.emplace_back(connection_, subscriptionId_, response->results[i].monitoredItemId);
+    }
+
+    return ret;
 }
 // -----------------------------------------------------------------------------
