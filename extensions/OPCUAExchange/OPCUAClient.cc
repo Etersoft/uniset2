@@ -106,7 +106,7 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     }
     catch(const std::exception& ex)
     {
-        cerr << addr << " (exception) " << ex.what() << endl;
+        //cerr << addr << " (exception) " << ex.what() << endl;
         opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
         return false;
     }
@@ -313,16 +313,15 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
     std::vector<uniset::DataChangeCallback>& dataChangeCallbacks
 ) {
     std::vector<opcua::MonitoredItem<opcua::Client>> ret;
-    auto connection_ = sub.getConnection();
     auto subscriptionId_ = sub.getSubscriptionId();
     auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
     std::vector<std::unique_ptr<uniset::MonitoredItem>> monItems;
     size_t attr_size = attrs.size();
 
-    std::vector<UA_MonitoredItemCreateRequest> items(attr_size);
-    std::vector<UA_Client_DataChangeNotificationCallback> callbacks(attr_size);
-    std::vector<UA_Client_DeleteMonitoredItemCallback> deleteCallbacks(attr_size);
-    std::vector<void *> contexts(attr_size);
+    std::vector<UA_MonitoredItemCreateRequest> items;
+    std::vector<UA_Client_DataChangeNotificationCallback> callbacks;
+    std::vector<UA_Client_DeleteMonitoredItemCallback> deleteCallbacks;
+    std::vector<void *> contexts;
 
     for( size_t i = 0 ; i < attr_size ; i++ )
     {
@@ -330,16 +329,15 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
         items.emplace_back(UA_MonitoredItemCreateRequest_default(attrs[i].nodeId));
         callbacks.emplace_back(dataChangeNotificationCallback);
         
-        auto context = std::make_unique<uniset::MonitoredItem>();//MonitoredItem местная структура!!!!!!
+        auto context = std::make_unique<uniset::MonitoredItem>();
         context->itemToMonitor = opcua::ReadValueId(attrs[i]);
         context->dataChangeCallback = exceptionCatcher.wrapCallback(
                                                         [this, callback = std::move(dataChangeCallbacks[i])](
                                                             uint32_t subId, uint32_t monId, const opcua::DataValue& value
                                                         ) {
-                                                            std::cerr<<"here4 sub="<<subId<<", mon="<<monId<<" ,size="<<this->monitoredItems.size()<<std::endl;
                                                             auto it = this->monitoredItems.find({subId, monId});
                                                             if (it == this->monitoredItems.end()) {
-                                                                cerr<<"NOT FOUND"<<endl;
+                                                                //cerr<<"NOT FOUND MonId"<<endl;
                                                                 throw opcua::BadStatus(UA_STATUSCODE_BADMONITOREDITEMIDINVALID);
                                                             }
                                                             callback(*(it->second.get()), value);
@@ -372,8 +370,10 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
                     attrs[i].nodeId.identifier.string.data,
                     response->results[i].monitoredItemId);
 
+        // Созраняем список обработчиков для отслеживаемых элементов
         monitoredItems.insert_or_assign({subscriptionId_, response->results[i].monitoredItemId}, std::move(monItems[i]));
-        ret.emplace_back(connection_, subscriptionId_, response->results[i].monitoredItemId);
+        // Возвращаем список opcua::MonitoredItem<opcua::Client> для удобства настройки параметров
+        ret.emplace_back(sub.getConnection(), subscriptionId_, response->results[i].monitoredItemId);
     }
 
     return ret;

@@ -34,20 +34,10 @@ namespace uniset
     struct MonitoredItem {
         opcua::ReadValueId itemToMonitor;
         opcua::services::DataChangeNotificationCallback dataChangeCallback;
-        #if 0
-        opcua::services::EventNotificationCallback eventCallback;
-        opcua::services::DeleteMonitoredItemCallback deleteCallback;
-        #endif
     };
 
     using DataChangeCallback =
     std::function<void(const uniset::MonitoredItem& item, const opcua::DataValue& value)>;
-
-    #if 0
-    struct Subscription {
-        opcua::services::DeleteSubscriptionCallback deleteCallback;
-    };
-    #endif
 
     // -----------------------------------------------------------------------------
     /*! Интерфейс для работы с OPC UA */
@@ -138,9 +128,7 @@ namespace uniset
             using SubId = uint32_t;
             using MonId = uint32_t;
             using SubMonId = std::pair<uint32_t, uint32_t>;
-            #if 0
-            std::unordered_map<SubId, std::unique_ptr<uniset::Subscription>> subscriptions;
-            #endif
+
             std::map<SubMonId, std::unique_ptr<uniset::MonitoredItem>> monitoredItems;
 
         private:

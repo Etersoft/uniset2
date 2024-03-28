@@ -1901,7 +1901,6 @@ namespace uniset
                 callbacks.emplace_back(
                     [&, i](const auto& item, const opcua::DataValue& value)
                     {
-                        //cerr<<"HERE 5 isnull="<<item.getNodeId().isNull()<<endl;
                         opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
                                         
                         auto &result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
@@ -2013,11 +2012,12 @@ namespace uniset
                 auto result = channels[i].client->subscribeDataChanges(sub,items,callbacks);
 
                 // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
-                // количестве что и в запросе.
+                // количестве что и в запросе. Если не удалось подписаться на датчик будет исключение
+                // брошено в subscribeDataChanges.
                 opcua::MonitoringParameters monitoringParameters{};
                 monitoringParameters.samplingInterval = samplingInterval;
                 
-                for(auto &&rit : result)
+                for(auto &rit : result)
                 {
                     uint32_t monId = rit.getMonitoredItemId();
                     if(monId)
@@ -2027,6 +2027,7 @@ namespace uniset
                     }
                     else
                     {
+                        // Не должны здесь оказаться т.к. все элементы должны быть с подпиской.
                         opcwarn << "error monitoredItemId, 0" << endl;
                     }
                 }
@@ -2037,9 +2038,9 @@ namespace uniset
             }
             catch(const std::exception& ex)
             {
+                // Бросается исключение, а в основном цикле channelThread проверяем на наличие в exceptionCatcher и ретранслируем.
                 opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
                 throw;
-                //!TODO throw???? Настраивается падать или не падать в процессе запуска....
             }
         });
     }
