@@ -143,7 +143,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
         catch( const std::regex_error& e )
         {
             ostringstream err;
-            err << myname << "(init): 'filter-value-re' regular expression error: " << e.what();
+            err << myname << "(init): '--" + argprefix + "filter-value-re' regular expression error: " << e.what();
             throw uniset::SystemError(err.str());
         }
     }
@@ -462,7 +462,11 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         return true;
     }
 
-    auto vnode = node->node.addVariable(opcua::NodeId(0, sname), sname);
+    // s=xxx or ns=xxx
+    if( sname[1] != '=' && sname[2] != '=' )
+        sname = "s=" + sname;
+
+    auto vnode = node->node.addVariable(UA_NODEID(sname.c_str()), sname);
     vnode.writeDataType(opctype);
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ);
 

@@ -28,6 +28,7 @@ OPCUATestServer::OPCUATestServer( const std::string& _addr, uint16_t port ):
     auto opcConfig = UA_Server_getConfig(server->handle());
     opcConfig->maxSubscriptions = 10;
     opcConfig->maxSessions = 10;
+    opcConfig->maxSessionTimeout = 5000;
     opcConfig->logger = UA_Log_Stdout_withLevel( UA_LOGLEVEL_ERROR );
 
     auto uroot = server->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
@@ -45,6 +46,13 @@ OPCUATestServer::OPCUATestServer( const std::string& _addr, uint16_t port ):
 // -------------------------------------------------------------------------
 OPCUATestServer::~OPCUATestServer()
 {
+}
+// -------------------------------------------------------------------------
+void OPCUATestServer::setRWLimits(unsigned int rlim, unsigned int wlim)
+{
+    auto opcConfig = UA_Server_getConfig(server->handle());
+    opcConfig->maxNodesPerRead = rlim;
+    opcConfig->maxNodesPerWrite = wlim;
 }
 // -------------------------------------------------------------------------
 void OPCUATestServer::setI32( int num, int32_t val )

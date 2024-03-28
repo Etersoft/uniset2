@@ -1,7 +1,7 @@
 if HAVE_TESTS
 if ENABLE_OPCUA
 
-noinst_PROGRAMS = run_test_opcua_exchange
+noinst_PROGRAMS = run_test_opcua_exchange run_test_opcua_thr
 
 run_test_opcua_exchange_SOURCES = run_test_opcua_exchange.cc test_opcua_exchange.cc OPCUATestServer.cc
 run_test_opcua_exchange_LDADD = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
@@ -9,6 +9,15 @@ run_test_opcua_exchange_LDADD = $(top_builddir)/lib/libUniSet2.la $(top_builddir
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(POCO_LIBS) $(OPEN62541_LIBS) $(OPEN62541PP_LIBS)
 run_test_opcua_exchange_CPPFLAGS = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
+	-I$(top_builddir)/extensions/OPCUAExchange \
+	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS) $(OPEN62541_CFLAGS) $(OPEN62541PP_CFLAGS)
+
+run_test_opcua_thr_SOURCES = run_test_opcua_exchange.cc test_opcua_thr.cc OPCUATestServer.cc
+run_test_opcua_thr_LDADD = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(top_builddir)/extensions/OPCUAExchange/libUniSet2OPCUAExchange.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	$(SIGC_LIBS) $(POCO_LIBS) $(OPEN62541_LIBS) $(OPEN62541PP_LIBS)
+run_test_opcua_thr_CPPFLAGS = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/OPCUAExchange \
 	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS) $(OPEN62541_CFLAGS) $(OPEN62541PP_CFLAGS)
 

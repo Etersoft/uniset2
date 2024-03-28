@@ -19,12 +19,27 @@
 // -----------------------------------------------------------------------------
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <map>
 #include <variant>
+
+#include "open62541pp/open62541pp.h"
+#include "open62541pp/detail/ExceptionCatcher.h"
+
 #include <open62541/client_config_default.h>
 #include "Exceptions.h"
 //--------------------------------------------------------------------------
 namespace uniset
 {
+    struct MonitoredItem
+    {
+        opcua::ReadValueId itemToMonitor;
+        opcua::services::DataChangeNotificationCallback dataChangeCallback;
+    };
+
+    using DataChangeCallback =
+        std::function<void(const uniset::MonitoredItem& item, const opcua::DataValue& value)>;
+
     // -----------------------------------------------------------------------------
     /*! Интерфейс для работы с OPC UA */
     class OPCUAClient
@@ -35,6 +50,7 @@ namespace uniset
 
             bool connect( const std::string& addr );
             bool connect( const std::string& addr, const std::string& user, const std::string& pass );
+            void disconnect() noexcept;
 
             // supported types (other types are converted to these if possible)
             enum class VarType : int
@@ -69,7 +85,7 @@ namespace uniset
                 }
             };
 
-            using ErrorCode = int;
+            using ErrorCode = unsigned int;
 
             ErrorCode read( std::vector<UA_ReadValueId>& attrs, std::vector<ResultVar>& result );
             ErrorCode write32( std::vector<UA_WriteValue>& values );
@@ -79,10 +95,48 @@ namespace uniset
             static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val );
             static UA_ReadValueId makeReadValue32( const std::string& name );
 
+            void onSessionActivated(opcua::StateCallback callback)
+            {
+                auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
+                client.onSessionActivated(exceptionCatcher.wrapCallback(std::move(callback)));
+            }
+
+            void runIterate(uint16_t timeoutMilliseconds)
+            {
+                client.runIterate(timeoutMilliseconds);
+            }
+
+            opcua::Subscription<opcua::Client> createSubscription()
+            {
+                return client.createSubscription();
+            }
+
+            void rethrowException()
+            {
+                auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
+                exceptionCatcher.rethrow(); // Работает только один раз, после повторной отправки удаляется!
+            }
+
+            std::vector<opcua::MonitoredItem<opcua::Client>> subscribeDataChanges(
+                        opcua::Subscription<opcua::Client>& sub,
+                        std::vector<UA_ReadValueId>& attrs,
+                        std::vector<uniset::DataChangeCallback>& callbacks);
+
+            inline size_t getSubscriptionSize()
+            {
+                return monitoredItems.size();
+            }
+
         protected:
-            UA_Client* client = { nullptr };
+
+            opcua::Client client;
             UA_Variant* val = { nullptr };
-            UA_SessionState ss;
+
+            using SubId = uint32_t;
+            using MonId = uint32_t;
+            using SubMonId = std::pair<uint32_t, uint32_t>;
+
+            std::map<SubMonId, std::unique_ptr<uniset::MonitoredItem>> monitoredItems;
 
         private:
     };

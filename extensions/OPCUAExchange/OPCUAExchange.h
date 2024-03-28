@@ -89,6 +89,14 @@ namespace uniset
      - \b updatetime - msec, Период цикла обновления данных в SM
      - \b reconnectPause - msec, Пауза между попытками переподключения к серверу, в случае отсутсвия связи
      - \b writeToAllChannels [0,1] - Включение режима записи по всем каналам. По умолчанию датчики пишутся только в активном канале обмена.
+     - \b enableSubscription [0,1] - Включение опроса сервера по подписке.
+     - \b maxNodesPerRead N - Максимальное количество элементов в одном запросе на чтение. Если не задано, то читается все одним запросом.
+     - \b maxNodesPerWrite N - Максимальное количество элементов в одном запросе на запись. Если не задано, то пишется все одним запросом.
+     - \b publishingInterval N(миллисекунды) - Циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
+     - \b samplingInterval N(миллисекунды) - Интервал выборки, с которой сервер должен выполнять выборку из своего базового источника на предмет изменения
+     данных. Отрицательное значение означает использовать значение по-умолчанию заданное общим параметром подписки "publishingInterval".
+     "0" используется при подписке на события(не используется сейчас). По-умолчанию значение "-1".
+     - \b timeoutIterate N(миллисекунды) - Время в течении которого прослушивается сеть в ожидании сообщения.
 
     См. так же help \a uniset2-opcua-exchange -h
 
@@ -141,6 +149,18 @@ namespace uniset
 
      Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
      - \b --prefix-exchange-mode-id либо в конф. файле параметром \b exchangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
+
+     Обновление датчиков в режиме подписки(происходит не опрос всех датчиков обмена, а работа по подписке)
+     - \b --prefix-enable-subscription включение опроса сервера по подписке.
+     Параметры для работы с подпиской:
+     - \b --prefix-publishing-interval N(миллисекунды) - циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
+     - \b --prefix-sampling-interval N(миллисекунды) - интервал выборки.
+     - \b --prefix-timeout-iterate N(миллисекунды) - время в течении которого прослушивается сеть в ожидании сообщения..
+
+     Задание ограничения для клиента на количество элементов в одном запросе чтения/записи. Сам параметр находится на сервере и нужно его заранее узнать.
+     Пока это делается не автоматически, а в ручную через параметры.
+     - \b --prefix-maxNodesPerRead максимальное количество элементов в одном запросе на чтение.
+     - \b --prefix-maxNodesPerWrite максимальное количество элементов в одном запросе на запись.
     */
     // ---------------------------------------------------------------------
     /*! Процесс опроса OPC UA сервера */
@@ -148,7 +168,9 @@ namespace uniset
         public UniSetObject
     {
         public:
-            OPCUAExchange( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, const std::string& prefix = "opcua" );
+            OPCUAExchange( uniset::ObjectId id, xmlNode* cnode,
+                           uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr,
+                           const std::string& _prefix = "opcua" );
             virtual ~OPCUAExchange();
 
             static std::shared_ptr<OPCUAExchange> init_opcuaexchange(int argc, const char* const* argv,
@@ -173,12 +195,12 @@ namespace uniset
             static const size_t numChannels = 2;
             struct ReadGroup
             {
-                std::vector<OPCUAClient::ResultVar> results;
-                std::vector<UA_ReadValueId> ids;
+                std::vector<std::vector<OPCUAClient::ResultVar>> results;
+                std::vector<std::vector<UA_ReadValueId>> ids;
             };
             struct WriteGroup
             {
-                std::vector<UA_WriteValue> ids;
+                std::vector<std::vector<UA_WriteValue>> ids;
             };
             /*! Информация о входе/выходе */
             struct OPCAttribute:
@@ -209,18 +231,25 @@ namespace uniset
                 struct RdValue
                 {
                     std::shared_ptr<ReadGroup> gr;
-                    size_t grIndex = {0};
+                    size_t grIndex = {0};  // индекс в запросе (номер в запросе)
+                    size_t grNumber = {0}; // Номер группы запроса в общем списке
                     int32_t get();
                     float getF();
                     bool statusOk();
                     UA_StatusCode status();
+                    const UA_ReadValueId& ref();
+                    // Subscription
+                    uint32_t subscriptionId{0U};
+                    uint32_t monitoredItemId{0U};
+                    bool subscriptionState{false};//TODO! Сделать флаг состояния датчика : подписка, опрос, отключен, ошибка.... и т.п.
                 };
                 RdValue rval[numChannels];
 
                 struct WrValue
                 {
                     std::shared_ptr<WriteGroup> gr;
-                    size_t grIndex = {0};
+                    size_t grIndex = {0};  // индекс в запросе (номер в запросе)
+                    size_t grNumber = {0}; // Номер группы запроса в общем списке
                     bool set( int32_t val );
                     bool setF( float val );
                     bool statusOk();
@@ -244,6 +273,11 @@ namespace uniset
                 emSkipExchange = 4, /*!< отключить обмен */
                 emLastNumber
             };
+
+            typedef std::list<IOBase> ThresholdList;
+            // т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
+            // и отдельно его проверяем потом
+            ThresholdList thrlist;
 
         protected:
 
@@ -278,6 +312,7 @@ namespace uniset
             bool waitSM();
             bool tryConnect(Channel* ch);
             void initOutputs();
+            void createSubscription(int nchannel);
 
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
             timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
@@ -286,6 +321,8 @@ namespace uniset
             typedef std::vector< std::shared_ptr<OPCAttribute> > IOList;
             IOList iolist;    /*!< список входов/выходов */
             size_t maxItem = { 0 };
+            size_t maxReadItems = { 0 };
+            size_t maxWriteItems = { 0 };
 
             struct Channel
             {
@@ -316,8 +353,8 @@ namespace uniset
             std::optional<std::regex> s_fvalue_re;
 
             std::shared_ptr<SMInterface> shm;
-            std::string prefix;
             std::string prop_prefix;
+            const std::string argprefix;
 
             PassiveTimer ptHeartBeat;
             uniset::ObjectId sidHeartBeat;
@@ -328,10 +365,16 @@ namespace uniset
             bool force_out = { false };        /*!< флаг, включающий принудительное чтение/запись датчиков в SM */
             bool writeToAllChannels = { false }; /*!< флаг, включающий запись во все каналы, по умолчанию только в активный */
             timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
+            bool enableSubscription = {false};
+            double publishingInterval = { 0.0 };
+            double samplingInterval = { -1.0 };
+            uint16_t timeoutIterate = {100};
+            std::atomic_bool subscription_ok = {false};
 
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };
             std::atomic_bool readconf_ok = { false };
+
             int activateTimeout;
             uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
             uniset::ObjectId sidRespond = {uniset::DefaultObjectId };

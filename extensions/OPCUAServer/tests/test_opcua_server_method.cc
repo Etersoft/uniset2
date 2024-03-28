@@ -49,11 +49,11 @@ TEST_CASE("[OPCUAServer]: call", "[opcuaserver]")
     REQUIRE( opcuaCallFloat(nodeId, "LocalhostNode", "FAI_S", 37.83) == UA_STATUSCODE_GOOD );
     msleep(pause_msec);
     REQUIRE( ui->getValue(3) == 3783 );
-    
+
     REQUIRE_FALSE( opcuaCallInt32(nodeId, "LocalhostNode", "FAI_S", 54) == UA_STATUSCODE_GOOD );
     REQUIRE( ui->getValue(3) == 3783 );
     REQUIRE_FALSE( opcuaCallFloat(nodeId, "LocalhostNode", "DI_S", 37.83) == UA_STATUSCODE_GOOD );
-    REQUIRE( ui->getValue(2) == 1 );   
+    REQUIRE( ui->getValue(2) == 1 );
     REQUIRE_FALSE( opcuaCallBool(nodeId, "LocalhostNode", "AI_S", true) == UA_STATUSCODE_GOOD );
     REQUIRE( ui->getValue(1) == 77 );
 }
