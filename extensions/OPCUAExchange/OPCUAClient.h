@@ -31,13 +31,14 @@
 //--------------------------------------------------------------------------
 namespace uniset
 {
-    struct MonitoredItem {
+    struct MonitoredItem
+    {
         opcua::ReadValueId itemToMonitor;
         opcua::services::DataChangeNotificationCallback dataChangeCallback;
     };
 
     using DataChangeCallback =
-    std::function<void(const uniset::MonitoredItem& item, const opcua::DataValue& value)>;
+        std::function<void(const uniset::MonitoredItem& item, const opcua::DataValue& value)>;
 
     // -----------------------------------------------------------------------------
     /*! Интерфейс для работы с OPC UA */
@@ -93,7 +94,7 @@ namespace uniset
             ErrorCode write( const UA_WriteValue& val );
             static UA_WriteValue makeWriteValue32( const std::string& name, int32_t val );
             static UA_ReadValueId makeReadValue32( const std::string& name );
-            
+
             void onSessionActivated(opcua::StateCallback callback)
             {
                 auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
@@ -105,7 +106,8 @@ namespace uniset
                 client.runIterate(timeoutMilliseconds);
             }
 
-            opcua::Subscription<opcua::Client> createSubscription() {
+            opcua::Subscription<opcua::Client> createSubscription()
+            {
                 return client.createSubscription();
             }
 
@@ -116,9 +118,14 @@ namespace uniset
             }
 
             std::vector<opcua::MonitoredItem<opcua::Client>> subscribeDataChanges(
-                    opcua::Subscription<opcua::Client> &sub,
-                    std::vector<UA_ReadValueId>& attrs,
-                    std::vector<uniset::DataChangeCallback>& callbacks);
+                        opcua::Subscription<opcua::Client>& sub,
+                        std::vector<UA_ReadValueId>& attrs,
+                        std::vector<uniset::DataChangeCallback>& callbacks);
+
+            inline size_t getSubscriptionSize()
+            {
+                return monitoredItems.size();
+            }
 
         protected:
 

@@ -38,15 +38,22 @@ namespace uniset
         uint32_t monId,
         void* monContext,
         UA_DataValue* value
-    ) noexcept {
-        if (monContext == nullptr) {
+    ) noexcept
+    {
+        if (monContext == nullptr)
+        {
             return;
         }
+
         auto* monitoredItem = static_cast<uniset::MonitoredItem*>(monContext);
+
         if(monitoredItem == nullptr)
             return;
+
         auto& callback = monitoredItem->dataChangeCallback;
-        if (callback) {
+
+        if (callback)
+        {
             callback(subId, monId, opcua::asWrapper<opcua::DataValue>(*value));
         }
     }
@@ -308,10 +315,11 @@ UA_ReadValueId OPCUAClient::makeReadValue32( const std::string& name )
 }
 // -----------------------------------------------------------------------------
 std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChanges(
-    opcua::Subscription<opcua::Client> &sub,
-    std::vector<UA_ReadValueId>& attrs,
-    std::vector<uniset::DataChangeCallback>& dataChangeCallbacks
-) {
+            opcua::Subscription<opcua::Client>& sub,
+            std::vector<UA_ReadValueId>& attrs,
+            std::vector<uniset::DataChangeCallback>& dataChangeCallbacks
+        )
+{
     std::vector<opcua::MonitoredItem<opcua::Client>> ret;
     auto subscriptionId_ = sub.getSubscriptionId();
     auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
@@ -321,27 +329,31 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
     std::vector<UA_MonitoredItemCreateRequest> items;
     std::vector<UA_Client_DataChangeNotificationCallback> callbacks;
     std::vector<UA_Client_DeleteMonitoredItemCallback> deleteCallbacks;
-    std::vector<void *> contexts;
+    std::vector<void*> contexts;
 
     for( size_t i = 0 ; i < attr_size ; i++ )
     {
         /* monitor the server state */
         items.emplace_back(UA_MonitoredItemCreateRequest_default(attrs[i].nodeId));
         callbacks.emplace_back(dataChangeNotificationCallback);
-        
+
         auto context = std::make_unique<uniset::MonitoredItem>();
         context->itemToMonitor = opcua::ReadValueId(attrs[i]);
         context->dataChangeCallback = exceptionCatcher.wrapCallback(
-                                                        [this, callback = std::move(dataChangeCallbacks[i])](
-                                                            uint32_t subId, uint32_t monId, const opcua::DataValue& value
-                                                        ) {
-                                                            auto it = this->monitoredItems.find({subId, monId});
-                                                            if (it == this->monitoredItems.end()) {
-                                                                //cerr<<"NOT FOUND MonId"<<endl;
-                                                                throw opcua::BadStatus(UA_STATUSCODE_BADMONITOREDITEMIDINVALID);
-                                                            }
-                                                            callback(*(it->second.get()), value);
-                                                        });
+                                          [this, callback = std::move(dataChangeCallbacks[i])](
+                                              uint32_t subId, uint32_t monId, const opcua::DataValue & value
+                                          )
+        {
+            auto it = this->monitoredItems.find({subId, monId});
+
+            if (it == this->monitoredItems.end())
+            {
+                //cerr<<"NOT FOUND MonId"<<endl;
+                throw opcua::BadStatus(UA_STATUSCODE_BADMONITOREDITEMIDINVALID);
+            }
+
+            callback(*(it->second.get()), value);
+        });
         contexts.emplace_back(context.get());
         deleteCallbacks.emplace_back(nullptr);
 
@@ -357,18 +369,19 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
 
     using createResponse = opcua::TypeWrapper<UA_CreateMonitoredItemsResponse, UA_TYPES_CREATEMONITOREDITEMSRESPONSE>;
     const createResponse response =
-       UA_Client_MonitoredItems_createDataChanges(client.handle(), createRequest, contexts.data(),
-                                                   callbacks.data(), deleteCallbacks.data());
-    for(size_t i=0;i<response->resultsSize;i++)
+        UA_Client_MonitoredItems_createDataChanges(client.handle(), createRequest, contexts.data(),
+                callbacks.data(), deleteCallbacks.data());
+
+    for(size_t i = 0; i < response->resultsSize; i++)
     {
         opcua::throwIfBad(response->results[i].statusCode);
 
         if(response->results[i].statusCode == UA_STATUSCODE_GOOD)
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                    "Good Monitoring for attr = '%-16.*s' with id = 'monId %u'",
-                    (int)attrs[i].nodeId.identifier.string.length,
-                    attrs[i].nodeId.identifier.string.data,
-                    response->results[i].monitoredItemId);
+                        "Good Monitoring for attr = '%-16.*s' with id = 'monId %u'",
+                        (int)attrs[i].nodeId.identifier.string.length,
+                        attrs[i].nodeId.identifier.string.data,
+                        response->results[i].monitoredItemId);
 
         // Созраняем список обработчиков для отслеживаемых элементов
         monitoredItems.insert_or_assign({subscriptionId_, response->results[i].monitoredItemId}, std::move(monItems[i]));

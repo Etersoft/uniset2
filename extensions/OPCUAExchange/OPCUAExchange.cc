@@ -57,25 +57,21 @@ namespace uniset
         return val;
     }
     // -----------------------------------------------------------------------------
-    OPCUAExchange::OPCUAExchange(uniset::ObjectId id, uniset::ObjectId icID,
-                                 const std::shared_ptr<SharedMemory>& ic, const std::string& prefix_ ):
+    OPCUAExchange::OPCUAExchange(uniset::ObjectId id, xmlNode* cnode, uniset::ObjectId icID,
+                                 const std::shared_ptr<SharedMemory>& ic, const std::string& _prefix ):
         UniSetObject(id),
+        confnode(cnode),
         iolist(50),
-        prefix(prefix_)
+        argprefix( (_prefix.empty() ? myname + "-" : _prefix + "-") )
     {
         auto conf = uniset_conf();
 
-        string cname = conf->getArgParam("--" + prefix + "-confnode", myname);
-        confnode = conf->getNode(cname);
-
-        if( confnode == NULL )
-            throw SystemError("Not found conf-node " + cname + " for " + myname);
-
         prop_prefix = "";
+        vmonit(argprefix);
 
         opclog = make_shared<DebugStream>();
         opclog->setLogName(myname);
-        conf->initLogStream(opclog, prefix + "-log");
+        conf->initLogStream(opclog, argprefix + "log");
 
         loga = make_shared<LogAgregator>(myname + "-loga");
         loga->add(opclog);
@@ -85,16 +81,30 @@ namespace uniset
         UniXML::iterator it(confnode);
 
         logserv = make_shared<LogServer>(loga);
-        logserv->init( prefix + "-logserver", confnode );
+        logserv->init( argprefix + "logserver", confnode );
 
-        if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+        if( findArgParam("--" + argprefix + "run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
         {
-            logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
-            logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
+            logserv_host = conf->getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "localhost");
+            logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
         }
 
         if( ic )
             ic->logAgregator()->add(loga);
+
+        if( findArgParam("--" + argprefix + "enable-subscription", conf->getArgc(), conf->getArgv()) != -1 )
+            enableSubscription = true;
+        else
+            enableSubscription = conf->getArgInt(it.getProp("enableSubscription"), "0");
+
+        publishingInterval = atof(conf->getArgParam("--" + argprefix + "publishing-interval", it.getProp("publishingInterval")).c_str());
+        samplingInterval = atof(conf->getArgParam("--" + argprefix + "sampling-interval", it.getProp("samplingInterval")).c_str());
+        timeoutIterate = uniset_conf()->getArgPInt("--" + argprefix + "timeout-iterate", it.getProp("timeoutIterate"), 0);
+
+        vmonit(enableSubscription);
+        vmonit(publishingInterval);
+        vmonit(samplingInterval);
+        vmonit(timeoutIterate);
 
         for( size_t i = 0; i < numChannels; i++ )
         {
@@ -103,12 +113,12 @@ namespace uniset
             channels[i].client = make_shared<OPCUAClient>();
             const std::string num = std::to_string(i + 1);
             const std::string defAddr = (i == 0 ? "opc.tcp://localhost:4840" : "");
-            channels[i].addr = conf->getArg2Param("--" + prefix + "-addr" + num, it.getProp("addr" + num), defAddr);
-            channels[i].user = conf->getArg2Param("--" + prefix + "-user" + num, it.getProp("user" + num), "");
-            channels[i].pass = conf->getArg2Param("--" + prefix + "-pass" + num, it.getProp("pass" + num), "");
+            channels[i].addr = conf->getArg2Param("--" + argprefix + "addr" + num, it.getProp("addr" + num), defAddr);
+            channels[i].user = conf->getArg2Param("--" + argprefix + "user" + num, it.getProp("user" + num), "");
+            channels[i].pass = conf->getArg2Param("--" + argprefix + "pass" + num, it.getProp("pass" + num), "");
             channels[i].trStatus.change(true);
 
-            string tmp = conf->getArg2Param("--" + prefix + "-respond" + num, it.getProp("respond" + num + "_s"), "");
+            string tmp = conf->getArg2Param("--" + argprefix + "respond" + num, it.getProp("respond" + num + "_s"), "");
 
             if( !tmp.empty() )
             {
@@ -122,15 +132,6 @@ namespace uniset
                     throw SystemError(err.str());
                 }
             }
-
-            if( findArgParam("--" + prefix + "-enable-subscription", conf->getArgc(), conf->getArgv()) != -1 )
-                enableSubscription = true;
-            else
-                enableSubscription = conf->getArgInt(it.getProp("enableSubscription"), "0");
-
-            publishingInterval = atof(conf->getArgParam("--" + prefix + "-publishing-interval", it.getProp("publishingInterval")).c_str());
-            samplingInterval = atof(conf->getArgParam("--" + prefix + "-sampling-interval", it.getProp("samplingInterval")).c_str());
-            timeoutIterate = uniset_conf()->getArgPInt("--" + prefix + "-timeout-iterate", it.getProp("timeoutIterate"), 0);
 
             //Подписка для opcua по флагу
             if(enableSubscription)
@@ -148,7 +149,7 @@ namespace uniset
             throw SystemError(err.str());
         }
 
-        string tmp = conf->getArg2Param("--" + prefix + "-respond", it.getProp("respond_s"), "");
+        string tmp = conf->getArg2Param("--" + argprefix + "respond", it.getProp("respond_s"), "");
 
         if( !tmp.empty() )
         {
@@ -163,24 +164,24 @@ namespace uniset
             }
         }
 
-        polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), polltime);
+        polltime = conf->getArgPInt("--" + argprefix + "polltime", it.getProp("polltime"), polltime);
         vmonit(polltime);
 
-        updatetime = conf->getArgPInt("--" + prefix + "-updatetime", it.getProp("updateTime"), updatetime);
+        updatetime = conf->getArgPInt("--" + argprefix + "updatetime", it.getProp("updateTime"), updatetime);
         vmonit(updatetime);
 
-        auto timeout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
+        auto timeout = conf->getArgPInt("--" + argprefix + "timeout", it.getProp("timeout"), 5000);
 
         for( size_t i = 0; i < numChannels; i++ )
             channels[i].ptTimeout.setTiming(timeout);
 
-        reconnectPause = conf->getArgPInt("--" + prefix + "-reconnectPause", it.getProp("reconnectPause"), reconnectPause);
+        reconnectPause = conf->getArgPInt("--" + argprefix + "reconnectPause", it.getProp("reconnectPause"), reconnectPause);
         vmonit(reconnectPause);
 
-        force         = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
-        force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("forceOut"));
+        force         = conf->getArgInt("--" + argprefix + "force", it.getProp("force"));
+        force_out     = conf->getArgInt("--" + argprefix + "force-out", it.getProp("forceOut"));
 
-        if( findArgParam("--" + prefix + "-write-to-all-channels", conf->getArgc(), conf->getArgv()) != -1 )
+        if( findArgParam("--" + argprefix + "write-to-all-channels", conf->getArgc(), conf->getArgv()) != -1 )
             writeToAllChannels = true;
         else
             writeToAllChannels = conf->getArgInt(it.getProp("writeToAllChannels"), "0");
@@ -188,8 +189,8 @@ namespace uniset
         vmonit(force);
         vmonit(force_out);
 
-        filtersize = conf->getArgPInt("--" + prefix + "-filtersize", it.getProp("filterSize"), 1);
-        filterT = atof(conf->getArgParam("--" + prefix + "-filterT", it.getProp("filterT")).c_str());
+        filtersize = conf->getArgPInt("--" + argprefix + "filtersize", it.getProp("filterSize"), 1);
+        filterT = atof(conf->getArgParam("--" + argprefix + "filterT", it.getProp("filterT")).c_str());
 
         vmonit(filtersize);
         vmonit(filterT);
@@ -197,9 +198,9 @@ namespace uniset
         shm = make_shared<SMInterface>(icID, ui, getId(), ic);
 
         // определяем фильтр
-        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
-        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
-        auto regexp_fvalue = conf->getArg2Param("--" + prefix + "-filter-value-re", it.getProp("filterValueRE"));
+        s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"));
+        s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"));
+        auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "filter-value-re", it.getProp("filterValueRE"));
 
         if( !regexp_fvalue.empty() )
         {
@@ -211,7 +212,7 @@ namespace uniset
             catch (const std::regex_error& e)
             {
                 ostringstream err;
-                err << myname << "(init): '--" + prefix + "-filter-value-re' regular expression error: " << e.what();
+                err << myname << "(init): '--" + argprefix + "filter-value-re' regular expression error: " << e.what();
                 throw uniset::SystemError(err.str());
             }
         }
@@ -222,7 +223,7 @@ namespace uniset
         opcinfo << myname << "(init): read s_field='" << s_field
                 << "' s_fvalue='" << s_fvalue << "'" << endl;
 
-        int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
+        int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout", it.getProp("ready_timeout"));
 
         if( sm_tout == 0 )
             smReadyTimeout = conf->getNCReadyTimeout();
@@ -233,13 +234,13 @@ namespace uniset
 
         vmonit(smReadyTimeout);
 
-        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-test-sid", it.getProp2("smTestSID", "TestMode_S"));
+        string sm_ready_sid = conf->getArgParam("--" + argprefix + "sm-test-sid", it.getProp2("smTestSID", "TestMode_S"));
         sidTestSMReady = conf->getSensorID(sm_ready_sid);
 
         if( sidTestSMReady == DefaultObjectId )
         {
             opcwarn << myname
-                    << "(init): Unknown ID for sm-test-sid (--" << prefix << "-sm-test-id)..." << endl;
+                    << "(init): Unknown ID for sm-test-sid (--" << argprefix << "sm-test-id)..." << endl;
         }
         else
             opcinfo << myname << "(init): sm-test-sid: " << sm_ready_sid << endl;
@@ -247,7 +248,7 @@ namespace uniset
         vmonit(sidTestSMReady);
 
         // -----------------------
-        string emode = conf->getArgParam("--" + prefix + "-exchange-mode-id", it.getProp("exchangeModeID"));
+        string emode = conf->getArgParam("--" + argprefix + "exchange-mode-id", it.getProp("exchangeModeID"));
 
         if( !emode.empty() )
         {
@@ -262,14 +263,14 @@ namespace uniset
             }
 
             // Режим обмена по-умолчанию при старте процесса
-            auto default_emode = conf->getArgInt("--" + prefix + "-default-exchange-mode", it.getProp("defaultExchangeMode"));
+            auto default_emode = conf->getArgInt("--" + argprefix + "default-exchange-mode", it.getProp("defaultExchangeMode"));
 
             if( default_emode > 0 && default_emode < emLastNumber )
                 exchangeMode = default_emode;
         }
 
         // -----------------------
-        string heart = conf->getArgParam("--" + prefix + "-heartbeat-id", it.getProp("heartbeat_id"));
+        string heart = conf->getArgParam("--" + argprefix + "heartbeat-id", it.getProp("heartbeat_id"));
 
         if( !heart.empty() )
         {
@@ -290,15 +291,18 @@ namespace uniset
             else
                 ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-            maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max", it.getProp("heartbeat_max"), 10);
+            maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max", it.getProp("heartbeat_max"), 10);
         }
 
-        activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 25000);
+        activateTimeout    = conf->getArgPInt("--" + argprefix + "activate-timeout", 25000);
 
         vmonit(activateTimeout);
 
-        maxReadItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerRead", it.getProp("maxNodesPerRead"), 0);
-        maxWriteItems = uniset_conf()->getArgPInt("--" + prefix + "-maxNodesPerWrite", it.getProp("maxNodesPerWrite"), 0);
+        maxReadItems = uniset_conf()->getArgPInt("--" + argprefix + "maxNodesPerRead", it.getProp("maxNodesPerRead"), 0);
+        maxWriteItems = uniset_conf()->getArgPInt("--" + argprefix + "maxNodesPerWrite", it.getProp("maxNodesPerWrite"), 0);
+
+        vmonit(maxReadItems);
+        vmonit(maxWriteItems);
 
         if( !shm->isLocalwork() ) // ic
         {
@@ -390,7 +394,7 @@ namespace uniset
 
         opcinfo << myname << "(prepare): iolist size = " << iolist.size() << endl;
 
-        bool skip_iout = uniset_conf()->getArgInt("--" + prefix + "-skip-init-output");
+        bool skip_iout = uniset_conf()->getArgInt("--" + argprefix + "skip-init-output");
 
         if( !skip_iout && tryConnect(&channels[0]) )
             initOutputs();
@@ -438,10 +442,10 @@ namespace uniset
                     msleep(reconnectPause);
                     continue;
                 }
-                
-                //if(first init == false)
-                ch->client->rethrowException();
-                
+
+                if(enableSubscription && !subscription_ok)
+                    ch->client->rethrowException();
+
                 auto t_start = std::chrono::steady_clock::now();
 
                 ch->status = true;
@@ -543,14 +547,15 @@ namespace uniset
         if( exchangeMode != emWriteOnly )
         {
             if(enableSubscription)
-            {   
+            {
                 try
                 {
-                    ch->client->runIterate(timeoutIterate);//!TODO настройка, перейти на другой вызов
+                    if(subscription_ok)
+                        ch->client->runIterate(timeoutIterate);
                 }
                 catch(...)
                 {
-
+                    opcwarn << myname << "Exception while runIterate!" << endl;
                 }
             }
             else
@@ -1449,8 +1454,17 @@ namespace uniset
             return nullptr;
         }
 
+        string confname = conf->getArgParam("--" + prefix + "-confnode", name);
+        xmlNode* cnode = conf->getNode(confname);
+
+        if( !cnode )
+        {
+            cerr << "(opcua-exchange): " << name << "(init): Not found <" + confname + ">" << endl;
+            return nullptr;
+        }
+
         dinfo << "(opcua-exchange): name = " << name << "(" << ID << ")" << endl;
-        return make_shared<OPCUAExchange>(ID, icID, ic, prefix);
+        return make_shared<OPCUAExchange>(ID, cnode, icID, ic, prefix);
     }
     // -----------------------------------------------------------------------------
     void OPCUAExchange::help_print( int argc, const char* const* argv )
@@ -1544,22 +1558,29 @@ namespace uniset
             }
         }
 
-        for( const auto& v : channels[0].readValues )
+        if(enableSubscription)
         {
-            if(v.second->ids.size() == 1)      // Одним запросом опрос происходит
-                inf << "read attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids[0].size() << endl;
-            else if(v.second->ids.size() > 1) // Опрос разбит на несколько запросов из-за ограничений сервера
+            inf << "subscription items size - " << channels[0].client->getSubscriptionSize() << endl;
+        }
+        else
+        {
+            for( const auto& v : channels[0].readValues )
             {
-                inf << "read attributes[tick " << setw(2) << (int) v.first << "]:";
-                int sum = 0;
-
-                for(const auto& vv : v.second->ids)
+                if(v.second->ids.size() == 1)      // Одним запросом опрос происходит
+                    inf << "read attributes[tick " << setw(2) << (int) v.first << "]: " << v.second->ids[0].size() << endl;
+                else if(v.second->ids.size() > 1) // Опрос разбит на несколько запросов из-за ограничений сервера
                 {
-                    sum += vv.size();
-                    inf << " " << vv.size();
-                }
+                    inf << "read attributes[tick " << setw(2) << (int) v.first << "]:";
+                    int sum = 0;
 
-                inf << " - " << sum << endl;
+                    for(const auto& vv : v.second->ids)
+                    {
+                        sum += vv.size();
+                        inf << " " << vv.size();
+                    }
+
+                    inf << " - " << sum << endl;
+                }
             }
         }
 
@@ -1873,9 +1894,10 @@ namespace uniset
         if(channels[nchannel].client == nullptr)
             return;
 
-        channels[nchannel].client->onSessionActivated([this, i=nchannel]
+        channels[nchannel].client->onSessionActivated([this, i = nchannel]
         {
             opclog3 << myname << " Session activated " << endl;
+            subscription_ok = false;
 
             auto sub = channels[i].client->createSubscription();
 
@@ -1886,6 +1908,7 @@ namespace uniset
             sub.setPublishingMode(true);
 
             std::vector<UA_ReadValueId> items;
+            IOList rdlist;
             std::vector<uniset::DataChangeCallback> callbacks;
 
             for( const auto& it : iolist )
@@ -1897,133 +1920,78 @@ namespace uniset
                     continue;
 
                 items.push_back(it->rval[i].ref());
-                
+                rdlist.push_back(it);// Копирование std::shared_ptr
+
                 callbacks.emplace_back(
-                    [&, i](const auto& item, const opcua::DataValue& value)
+                    [&, i](const auto & item, const opcua::DataValue & value)
+                {
+                    opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
+
+                    auto& result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
+                    auto data = value.getValue();
+
+                    result.status = value.getStatus();
+
+                    if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
+                        result.value = int32_t(*(UA_Int32*) data.data());
+                    else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
+                        result.value = int32_t(*(UA_UInt32*) data.data());
+
+                    if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
+                        result.value = int32_t(*(UA_Int64*) data.data());
+                    else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
+                        result.value = int32_t(*(UA_UInt64*) data.data());
+                    else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
+                        result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
+
+                    if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
+                        result.value = int32_t(*(UA_Int16*) data.data());
+                    else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
+                        result.value = int32_t(*(UA_UInt16*) data.data());
+
+                    if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
+                        result.value = int32_t(*(UA_Byte*) data.data());
+                    else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
                     {
-                        opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
-                                        
-                        auto &result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
-                        auto data = value.getValue();
-                        
-                        result.status = value.getStatus();
-
-                        if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
-                            result.value = int32_t(*(UA_Int32*) data.data());
-                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
-                            result.value = int32_t(*(UA_UInt32*) data.data());
-
-                        if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
-                            result.value = int32_t(*(UA_Int64*) data.data());
-                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
-                            result.value = int32_t(*(UA_UInt64*) data.data());
-                        else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
-                            result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
-
-                        if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
-                            result.value = int32_t(*(UA_Int16*) data.data());
-                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
-                            result.value = int32_t(*(UA_UInt16*) data.data());
-
-                        if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
-                            result.value = int32_t(*(UA_Byte*) data.data());
-                        else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
-                        {
-                            result.type = OPCUAClient::VarType::Float;
-                            result.value = (float)(*(UA_Float*) data.data());
-                        }
-                        else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
-                        {
-                            result.type = OPCUAClient::VarType::Float;
-                            result.value = (float)(*(UA_Double*) data.data());
-                        }
-                    });
-
-#if 0
-                // Create a monitored item within the subscription for data change notifications
-                try
-                {
-                    auto mon = sub.subscribeDataChange(
-                                    UA_NODEID(it->attrName.c_str()),
-                                    opcua::AttributeId::Value,  // monitored attribute
-                                    [&, i](const auto & item, const opcua::DataValue & value)
-                                    {
-                                        opclog5 << myname << "item: " << item.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
-                                        
-                                        auto &result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
-                                        auto data = value.getValue();
-                                        
-                                        result.status = value.getStatus();
-
-                                        if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
-                                            result.value = int32_t(*(UA_Int32*) data.data());
-                                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
-                                            result.value = int32_t(*(UA_UInt32*) data.data());
-
-                                        if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
-                                            result.value = int32_t(*(UA_Int64*) data.data());
-                                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
-                                            result.value = int32_t(*(UA_UInt64*) data.data());
-                                        else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
-                                            result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
-
-                                        if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
-                                            result.value = int32_t(*(UA_Int16*) data.data());
-                                        else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
-                                            result.value = int32_t(*(UA_UInt16*) data.data());
-
-                                        if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
-                                            result.value = int32_t(*(UA_Byte*) data.data());
-                                        else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
-                                        {
-                                            result.type = OPCUAClient::VarType::Float;
-                                            result.value = (float)(*(UA_Float*) data.data());
-                                        }
-                                        else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
-                                        {
-                                            result.type = OPCUAClient::VarType::Float;
-                                            result.value = (float)(*(UA_Double*) data.data());
-                                        }
-                                    }
-                                );
-
-                    // Modify and delete the monitored item via the returned MonitoredItem<T> object
-                    opcua::MonitoringParameters monitoringParameters{};
-                    monitoringParameters.samplingInterval = samplingInterval;
-                    mon.setMonitoringParameters(monitoringParameters);
-                    mon.setMonitoringMode(opcua::MonitoringMode::Reporting);
-
-                    auto t_end = std::chrono::steady_clock::now();
-                    opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
-                            << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
-                }
-                catch(const std::exception& ex)
-                {
-                    opcwarn << myname << " Error while subscribe data change for " << it->attrName.c_str() << " : " << ex.what() << endl;
-                    //!TODO throw???? Настраивается падать или не падать в процессе запуска....
-                }
-#endif
+                        result.type = OPCUAClient::VarType::Float;
+                        result.value = (float)(*(UA_Float*) data.data());
+                    }
+                    else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
+                    {
+                        result.type = OPCUAClient::VarType::Float;
+                        result.value = (float)(*(UA_Double*) data.data());
+                    }
+                });
             }
+
             // Create a monitored item within the subscription for data change notifications
             try
             {
                 opclog3 << myname << " Create monitoring items : " << items.size() << endl;
                 auto t_start = std::chrono::steady_clock::now();
-                auto result = channels[i].client->subscribeDataChanges(sub,items,callbacks);
+                auto result = channels[i].client->subscribeDataChanges(sub, items, callbacks);
 
                 // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
                 // количестве что и в запросе. Если не удалось подписаться на датчик будет исключение
                 // брошено в subscribeDataChanges.
                 opcua::MonitoringParameters monitoringParameters{};
                 monitoringParameters.samplingInterval = samplingInterval;
-                
-                for(auto &rit : result)
+
+                //for(auto &rit : result)
+                assert(result.size() == rdlist.size());
+
+                for(size_t j = 0; j < result.size(); j++)
                 {
-                    uint32_t monId = rit.getMonitoredItemId();
+                    uint32_t monId = result[j].getMonitoredItemId();
+
                     if(monId)
                     {
-                        rit.setMonitoringParameters(monitoringParameters);
-                        rit.setMonitoringMode(opcua::MonitoringMode::Reporting);
+                        result[j].setMonitoringParameters(monitoringParameters);
+                        result[j].setMonitoringMode(opcua::MonitoringMode::Reporting);
+
+                        rdlist[j]->rval[i].subscriptionId = result[j].getSubscriptionId();
+                        rdlist[j]->rval[i].monitoredItemId = monId;
+                        rdlist[j]->rval[i].subscriptionState = true;
                     }
                     else
                     {
@@ -2042,6 +2010,12 @@ namespace uniset
                 opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
                 throw;
             }
+            catch(...)
+            {
+                cerr << "unexpected exception" << endl;
+            }
+
+            subscription_ok = true;
         });
     }
     // -----------------------------------------------------------------------------

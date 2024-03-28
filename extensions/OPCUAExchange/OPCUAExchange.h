@@ -92,6 +92,11 @@ namespace uniset
      - \b enableSubscription [0,1] - Включение опроса сервера по подписке.
      - \b maxNodesPerRead N - Максимальное количество элементов в одном запросе на чтение. Если не задано, то читается все одним запросом.
      - \b maxNodesPerWrite N - Максимальное количество элементов в одном запросе на запись. Если не задано, то пишется все одним запросом.
+     - \b publishingInterval N(миллисекунды) - Циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
+     - \b samplingInterval N(миллисекунды) - Интервал выборки, с которой сервер должен выполнять выборку из своего базового источника на предмет изменения
+     данных. Отрицательное значение означает использовать значение по-умолчанию заданное общим параметром подписки "publishingInterval".
+     "0" используется при подписке на события(не используется сейчас). По-умолчанию значение "-1".
+     - \b timeoutIterate N(миллисекунды) - Время в течении которого прослушивается сеть в ожидании сообщения.
 
     См. так же help \a uniset2-opcua-exchange -h
 
@@ -147,6 +152,10 @@ namespace uniset
 
      Обновление датчиков в режиме подписки(происходит не опрос всех датчиков обмена, а работа по подписке)
      - \b --prefix-enable-subscription включение опроса сервера по подписке.
+     Параметры для работы с подпиской:
+     - \b --prefix-publishing-interval N(миллисекунды) - циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
+     - \b --prefix-sampling-interval N(миллисекунды) - интервал выборки.
+     - \b --prefix-timeout-iterate N(миллисекунды) - время в течении которого прослушивается сеть в ожидании сообщения..
 
      Задание ограничения для клиента на количество элементов в одном запросе чтения/записи. Сам параметр находится на сервере и нужно его заранее узнать.
      Пока это делается не автоматически, а в ручную через параметры.
@@ -159,7 +168,9 @@ namespace uniset
         public UniSetObject
     {
         public:
-            OPCUAExchange( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, const std::string& prefix = "opcua" );
+            OPCUAExchange( uniset::ObjectId id, xmlNode* cnode,
+                           uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr,
+                           const std::string& _prefix = "opcua" );
             virtual ~OPCUAExchange();
 
             static std::shared_ptr<OPCUAExchange> init_opcuaexchange(int argc, const char* const* argv,
@@ -342,8 +353,8 @@ namespace uniset
             std::optional<std::regex> s_fvalue_re;
 
             std::shared_ptr<SMInterface> shm;
-            std::string prefix;
             std::string prop_prefix;
+            const std::string argprefix;
 
             PassiveTimer ptHeartBeat;
             uniset::ObjectId sidHeartBeat;
@@ -358,6 +369,7 @@ namespace uniset
             double publishingInterval = { 0.0 };
             double samplingInterval = { -1.0 };
             uint16_t timeoutIterate = {100};
+            std::atomic_bool subscription_ok = {false};
 
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };
