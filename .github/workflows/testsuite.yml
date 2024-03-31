@@ -43,6 +43,7 @@ jobs:
         run: |
             export GCC_USE_CCACHE=1
             export ALLOW_ROOT_USER=1
+            echo "%_topdir %homedir/RPM" >> ~/.rpmmacros
             jmake
       - name: testsuite
         run: |
