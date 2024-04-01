@@ -14,3 +14,15 @@ AT_SETUP([OPCUAExchange tests (limits)])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAExchange/tests run_test_opcua_limits.sh],[0],[ignore],[ignore])
 AT_CLEANUP
 
+AT_SETUP([OPCUAExchange subscription tests (with SM)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAExchange/tests run_test_opcua_exchange_sub.sh],[0],[ignore],[ignore])
+AT_CLEANUP
+
+AT_SETUP([OPCUAExchange subscription tests (separately)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAExchange/tests run_test_opcua_exchange_separately_sub.sh],[0],[ignore],[ignore])
+AT_CLEANUP
+
+AT_SETUP([OPCUAExchange subscription tests (thresholds)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAExchange/tests run_test_opcua_thr_sub.sh],[0],[ignore],[ignore])
+AT_CLEANUP
+
