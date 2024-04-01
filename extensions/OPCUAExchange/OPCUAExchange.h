@@ -89,6 +89,14 @@ namespace uniset
      - \b updatetime - msec, Период цикла обновления данных в SM
      - \b reconnectPause - msec, Пауза между попытками переподключения к серверу, в случае отсутсвия связи
      - \b writeToAllChannels [0,1] - Включение режима записи по всем каналам. По умолчанию датчики пишутся только в активном канале обмена.
+     - \b enableSubscription [0,1] - Включение опроса сервера по подписке.
+     - \b maxNodesPerRead N - Максимальное количество элементов в одном запросе на чтение. Если не задано, то читается все одним запросом.
+     - \b maxNodesPerWrite N - Максимальное количество элементов в одном запросе на запись. Если не задано, то пишется все одним запросом.
+     - \b publishingInterval N(миллисекунды) - Циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
+     - \b samplingInterval N(миллисекунды) - Интервал выборки, с которой сервер должен выполнять выборку из своего базового источника на предмет изменения
+     данных. Отрицательное значение означает использовать значение по-умолчанию заданное общим параметром подписки "publishingInterval".
+     "0" используется при подписке на события(не используется сейчас). По-умолчанию значение "-1".
+     - \b timeoutIterate N(миллисекунды) - Время в течении которого прослушивается сеть в ожидании сообщения.
 
     См. так же help \a uniset2-opcua-exchange -h
 
@@ -141,6 +149,30 @@ namespace uniset
 
      Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
      - \b --prefix-exchange-mode-id либо в конф. файле параметром \b exchangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
+
+     Обновление датчиков в режиме подписки(происходит не опрос всех датчиков обмена, а работа по подписке)
+     - \b --prefix-enable-subscription включение опроса сервера по подписке.
+     Параметры для работы с подпиской:
+     - \b --prefix-publishing-interval N(миллисекунды) - циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
+     - \b --prefix-sampling-interval N(миллисекунды) - интервал выборки.
+     - \b --prefix-timeout-iterate N(миллисекунды) - время в течении которого прослушивается сеть в ожидании сообщения..
+
+     Задание ограничения для клиента на количество элементов в одном запросе чтения/записи. Сам параметр находится на сервере и нужно его заранее узнать.
+     Пока это делается не автоматически, а в ручную через параметры.
+     - \b --prefix-maxNodesPerRead максимальное количество элементов в одном запросе на чтение.
+     - \b --prefix-maxNodesPerWrite максимальное количество элементов в одном запросе на запись.
+
+     Поведение процесса при ошибке в OPCUA при работе по подписке!
+     - \b --prefix-stop-on-error N - где N[0,1,2],
+     При возникновении исключения(ошибки) при запросе к серверу в момент инициализации подписки на элементы(в общем или какого-то одного элемента)
+     можно выбрать как действовать процессу в этой ситуации, задав определенное значение параметру.
+     Эти значения:
+     0 - по-умолчанию, ничего не делать процесс продолжит работать как есть. Если в запросе были элементы с неправильным идентификатором, то на них клиент просто
+     не подпишется.
+     1 - завершение работы только в момент первичной инициализации т.е. когда первый раз запускаемся, то ожидаем что все элементы правильно указаны.
+     2 - завершение работы при любой ошибке т.е. если в первый раз подписка прошла успешно и происходит переподключение к серверу с ошибками, то завершаем работу.
+     либо параметром в настроечной секции.
+     - \b stopOnError N - где N[0,1,2]
     */
     // ---------------------------------------------------------------------
     /*! Процесс опроса OPC UA сервера */
@@ -148,7 +180,9 @@ namespace uniset
         public UniSetObject
     {
         public:
-            OPCUAExchange( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, const std::string& prefix = "opcua" );
+            OPCUAExchange( uniset::ObjectId id, xmlNode* cnode,
+                           uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr,
+                           const std::string& _prefix = "opcua" );
             virtual ~OPCUAExchange();
 
             static std::shared_ptr<OPCUAExchange> init_opcuaexchange(int argc, const char* const* argv,
@@ -215,6 +249,11 @@ namespace uniset
                     float getF();
                     bool statusOk();
                     UA_StatusCode status();
+                    const UA_ReadValueId& ref();
+                    // Subscription
+                    uint32_t subscriptionId = {0U};
+                    uint32_t monitoredItemId = {0U};
+                    bool subscriptionState = {false};
                 };
                 RdValue rval[numChannels];
 
@@ -245,6 +284,15 @@ namespace uniset
                 emSkipSaveToSM = 3, /*!< не писать данные в SM (при этом работают и read и write функции) */
                 emSkipExchange = 4, /*!< отключить обмен */
                 emLastNumber
+            };
+
+            /*! Режимы остановки при ошибке */
+            enum StopMode
+            {
+                smNone = 0,         /*!< Не останавливать процесс (по-умолчанию) */
+                smFirstOnly = 1,    /*!< Остановка только по ошибке при инициализации */
+                smAny = 2,          /*!< Остановка при любой ошибке чтения/инициализации */
+                smLastNumber
             };
 
             typedef std::list<IOBase> ThresholdList;
@@ -285,6 +333,7 @@ namespace uniset
             bool waitSM();
             bool tryConnect(Channel* ch);
             void initOutputs();
+            void createSubscription(int nchannel);
 
             xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
             timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
@@ -325,18 +374,25 @@ namespace uniset
             std::optional<std::regex> s_fvalue_re;
 
             std::shared_ptr<SMInterface> shm;
-            std::string prefix;
             std::string prop_prefix;
+            const std::string argprefix;
 
             PassiveTimer ptHeartBeat;
             uniset::ObjectId sidHeartBeat;
             int maxHeartBeat = { 10 };
             IOController::IOStateList::iterator itHeartBeat;
 
-            bool force = { false };            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
-            bool force_out = { false };        /*!< флаг, включающий принудительное чтение/запись датчиков в SM */
-            bool writeToAllChannels = { false }; /*!< флаг, включающий запись во все каналы, по умолчанию только в активный */
-            timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
+            bool force = { false };                     /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
+            bool force_out = { false };                 /*!< флаг, включающий принудительное чтение/запись датчиков в SM */
+            bool writeToAllChannels = { false };        /*!< флаг, включающий запись во все каналы, по умолчанию только в активный */
+            timeout_t smReadyTimeout = { 15000 };       /*!< время ожидания готовности SM к работе, мсек */
+            bool enableSubscription = {false};
+            double publishingInterval = { 0.0 };
+            double samplingInterval = { -1.0 };
+            uint16_t timeoutIterate = {100};
+            uint16_t stopOnError = {0U};                /*!< параметр, для выбора поведения процесса при ошибке в OPCUA */
+            uint32_t connectCount = {0U};               /*!< Считаем количество успешных подключений к серверу */
+            std::atomic_bool subscription_ok = {false};
 
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };
