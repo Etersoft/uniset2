@@ -7,11 +7,11 @@ int main()
     opcua::Server server;
     server.setApplicationName("open62541pp server example");
 
-    server.setLogger([](auto level, auto category, auto msg)
+    server.setLogger([](opcua::LogLevel level, opcua::LogCategory category, auto msg)
     {
         std::cout
-                << "[" << opcua::getLogLevelName(level) << "] "
-                << "[" << opcua::getLogCategoryName(category) << "] "
+                << "[" << (int)level << "] "
+                << "[" << (int)category << "] "
                 << msg << std::endl;
     });
 

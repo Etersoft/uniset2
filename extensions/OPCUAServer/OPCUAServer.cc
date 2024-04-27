@@ -77,8 +77,8 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcServer->setLogger([this](auto level, auto category, auto msg)
     {
         mylog->level5() << myname
-                        << "[" << opcua::getLogLevelName(level) << "] "
-                        << "[" << opcua::getLogCategoryName(category) << "] "
+                        << "[" << getLogLevelName(level) << "] "
+                        << "[" << getLogCategoryName(category) << "] "
                         << msg << std::endl;
     });
 
