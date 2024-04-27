@@ -100,7 +100,7 @@ namespace uniset
 
             void onSessionActivated(opcua::StateCallback callback)
             {
-                auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
+                auto& exceptionCatcher = opcua::detail::getContext(client).exceptionCatcher;
                 client.onSessionActivated(exceptionCatcher.wrapCallback(std::move(callback)));
             }
 
@@ -116,7 +116,7 @@ namespace uniset
 
             void rethrowException()
             {
-                auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
+                auto& exceptionCatcher = opcua::detail::getContext(client).exceptionCatcher;
                 exceptionCatcher.rethrow(); // Работает только один раз, после повторной отправки удаляется!
             }
 

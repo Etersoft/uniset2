@@ -336,8 +336,8 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
         )
 {
     std::vector<opcua::MonitoredItem<opcua::Client>> ret;
-    auto subscriptionId_ = sub.getSubscriptionId();
-    auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
+    auto subscriptionId_ = sub.subscriptionId();
+    auto& exceptionCatcher = opcua::detail::getContext(client).exceptionCatcher;
     std::vector<std::unique_ptr<uniset::MonitoredItem>> monItems;
     size_t attr_size = attrs.size();
 
@@ -402,8 +402,8 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
            Поэтому contexts здесь хранит все элементы пока не получим ответ на запрос.
            В самом клиенте также создается элемент UA_Client_MonitoredItem только при успешной подписке.
            В нем сохраняется raw указатель на элемент contexts, но за существование и удаление отвечает
-           OPCUAClient!Поэтому он должен гарантировать существование monitoredItems пока выполняется runIterate
-           и существует клиент opcua::Client. Возможность отписки здесь не реализована, так что удаление из 
+           OPCUAClient! Поэтому он должен гарантировать существование monitoredItems пока выполняется runIterate
+           и существует клиент opcua::Client. Возможность отписки здесь не реализована, так что удаление из
            monitoredItems происходит только при удалении подписки, при этом вызывается специальный delete_callback.
            И так же если возможность привязать пользователю OPCUAClient дополнительный обработчик вызова delete_callback.
         */
@@ -438,7 +438,7 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
                         (int)attrs[i].nodeId.identifier.string.length,
                         attrs[i].nodeId.identifier.string.data,
                         response->results[i].monitoredItemId);
-            // Созраняем список обработчиков для отслеживаемых элементов
+            // Сохраняем список обработчиков для отслеживаемых элементов
             monitoredItems.insert_or_assign({subscriptionId_, response->results[i].monitoredItemId}, std::move(monItems[i]));
         }
         else
@@ -449,7 +449,7 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
                         UA_StatusCode_name(code));
 
         // Возвращаем список opcua::MonitoredItem<opcua::Client> для удобства настройки параметров
-        ret.emplace_back(sub.getConnection(), subscriptionId_, response->results[i].monitoredItemId);
+        ret.emplace_back(sub.connection(), subscriptionId_, response->results[i].monitoredItemId);
     }
 
     return ret;
