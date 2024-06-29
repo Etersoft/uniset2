@@ -12,6 +12,7 @@ static int help( int argc, char** argv );
 static int do_dict_sensors( int argc, char** argv );
 static int do_dict_nodes( int argc, char** argv );
 static int do_dict_objects( int argc, char** argv );
+static int do_dict_messages( int argc, char** argv );
 // --------------------------------------------------------------------------
 struct FileDefer
 {
@@ -41,6 +42,9 @@ int main(int argc, char** argv)
     if( findArgParam("--generate-dict-objects", argc, argv) != -1 )
         return do_dict_objects(argc, argv);
 
+    if( findArgParam("--generate-dict-messages", argc, argv) != -1 )
+        return do_dict_messages(argc, argv);
+
     cerr << "unknown command. Use -h for help" << endl;
     return -1;
 }
@@ -53,6 +57,7 @@ int help( int argc, char** argv )
     cout << "--generate-dict-sensors - Generate dict-sensors data (csv)" << endl;
     cout << "--generate-dict-nodes - Generate dict-nodes data (csv)" << endl;
     cout << "--generate-dict-objects - Generate dict-objects data (csv)" << endl;
+    cout << "--generate-dict-messages - Generate dict-messages data (csv)" << endl;
     cout << endl;
     return 0;
 }
@@ -215,7 +220,56 @@ int do_dict_objects( int argc, char** argv )
                 << endl;
     }
 
+    return 0;
+}
+// --------------------------------------------------------------------------
+int do_dict_messages( int argc, char** argv )
+{
+    auto conf = uniset_init( argc, argv );
+
+    auto outfilename = conf->getArgParam("--generate-dict-messages", "dict-messages.csv");
+
+    xmlNode* mnode = conf->findNode(conf->getConfXML()->getFirstNode(), "messages");
+
+    if( !mnode )
+    {
+        cerr << "(do_dict_messages): Not found section <messages>" << endl;
+        return 1;
+    }
+
+    UniXML::iterator it(mnode);
+
+    if( !it.goChildren() )
+    {
+        cerr << "(do_dict_messages): <messages> section is empty?!" << endl;
+        return 1;
+    }
+
+    ofstream outfile(outfilename.c_str(), ios::out | ios::trunc);
+
+    if( !outfile.is_open() )
+    {
+        cerr << "(do_dict_messages): can't create file '" << outfilename << "'" << endl;
+        return 1;
+    }
+
+    FileDefer d(outfile);
+
+    //    outfile << "cityhash64, name, iotype, textname, default" << endl;
+    for( ; it; it++ )
+    {
+        auto name = it.getProp("sensorname");
+        auto value = it.getProp("value");
+        outfile << uniset::hash32(name+value)
+                << ",\"" << name << "\""
+                << ",\"" << value << "\""
+                << ",\"" << it.getProp("message") << "\""
+                << ",\"" << it.getProp("mtype") << "\""
+                << ",\"" << it.getProp("mgroup") << "\""
+                << ",\"" << it.getProp("mcode") << "\""
+                << "," << it.getIntProp("default")
+                << endl;
+    }
 
     return 0;
 }
-
