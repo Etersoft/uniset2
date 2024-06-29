@@ -146,6 +146,7 @@ if [ "$cmd" = "dict-gen" ]; then
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-objects ${outdir}/dict-objects.csv || rm -f ${outdir}/dict-objects.csv
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-sensors ${outdir}/dict-sensors.csv || rm -f ${outdir}/dict-sensors.csv
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-nodes ${outdir}/dict-nodes.csv || rm -f ${outdir}/dict-nodes.csv
+	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-messages ${outdir}/dict-messages.csv || rm -f ${outdir}/dict-messages.csv
 	exit 0
 fi
 
