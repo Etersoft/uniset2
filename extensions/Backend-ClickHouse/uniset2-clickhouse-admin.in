@@ -105,15 +105,6 @@ if [ "$cmd" == "size" ]; then
 fi
 
 if [ "$cmd" == "create" ]; then
-  if [ -d "${src_datadir}/init.d" ]; then
-      flist=$(find "${src_datadir}/init.d" -type f -name '*.sql')
-      for f in ${flist}; do
-         echo "apply $f.."
-         clickhouse-client ${EXTRA} -m -n <"${f}" || exit 1
-      done
-  fi
-
-  # create main_history if not exists
   fname=$(mktemp)
   sed "s/uniset/$dbname/g;s/main_history/$tablename/g;" <"${src_datadir}/tables.sql" > ${fname} && clickhouse-client ${EXTRA} -m -n <${fname}
   RET=$?
@@ -139,13 +130,13 @@ if [ "$cmd" = "desc" ]; then
 fi
 
 confile="$1"
-[ -z "$confile" ] && [ -a "./configure.xml" ] && confile="./configure.xml"
 [ -n "$confile" ] || print_usage
 
 if [ "$cmd" = "dict-gen" ]; then
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-objects ${outdir}/dict-objects.csv || rm -f ${outdir}/dict-objects.csv
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-sensors ${outdir}/dict-sensors.csv || rm -f ${outdir}/dict-sensors.csv
 	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-nodes ${outdir}/dict-nodes.csv || rm -f ${outdir}/dict-nodes.csv
+	${bindir}/@PACKAGE@-clickhouse-helper --confile ${confile} --generate-dict-messages ${outdir}/dict-messages.csv || rm -f ${outdir}/dict-messages.csv
 	exit 0
 fi
 
