@@ -10,7 +10,7 @@
 using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
-static string addr  = "opc.tcp://localhost:44999";
+static string addr  = "opc.tcp://127.0.0.1:44999";
 static std::shared_ptr<UInterface> ui;
 static uint16_t nodeId = 0;
 static int pause_msec = 200;
