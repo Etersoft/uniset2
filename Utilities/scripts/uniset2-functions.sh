@@ -94,9 +94,9 @@ function runOmniNames()
 	RETVAL=1
 	omniTest=0
 	if [ $std = 1 ]; then
-		omniTest=$(ps ax | grep -q $OMNINAME | grep -v grep | grep -v $0 | wc -l);
+		omniTest=$(ps ax | grep -q $OMNINAME | grep -v 'grep' | grep -v $0 | wc -l);
 	else
-		omniTest=$(ps aux | grep -q $OMNINAME | grep $USER  | grep -v grep | grep -v $0 | wc -l);
+		omniTest=$(ps aux | grep -q $OMNINAME | grep "$USER"  | grep -v 'grep' | grep -v $0 | wc -l);
 	fi
 
 	if [ $omniTest \> 0 ];
