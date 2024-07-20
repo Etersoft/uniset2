@@ -2073,7 +2073,6 @@ namespace uniset
                 if( mbconf->devices.empty() )
                 {
                     mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl << flush;
-                    //                  std::terminate();
                     uterminate();
                     return;
                 }
@@ -2256,7 +2255,6 @@ namespace uniset
                 << activateTimeout << " мсек";
 
             mbcrit << err.str() << endl << flush;
-            //          std::terminate();  // прерываем (перезапускаем) процесс...
             uterminate();
             return;
         }

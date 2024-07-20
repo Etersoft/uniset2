@@ -101,8 +101,6 @@ void SMonitor::sysCommand( const SystemMessage* sm )
 				catch( const uniset::Exception& ex )
 				{
 					cerr << myname << ":(askSensor): " << ex << endl;
-					//					raise(SIGTERM);
-					//std::terminate();
 					uterminate();
 				}
 				catch(...)

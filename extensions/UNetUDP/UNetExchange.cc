@@ -401,11 +401,7 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
             if( !waitSMReady() )
             {
                 if( !cancelled )
-                {
-                    //                  std::terminate();
-                    uterminate();
-                }
-
+                   uterminate();
                 return;
             }
 

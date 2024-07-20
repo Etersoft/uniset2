@@ -590,7 +590,6 @@ namespace uniset
         if( vaddr.empty() )
         {
             mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl << flush;
-            //std::terminate();
             uterminate();
             return;
         }
@@ -630,7 +629,6 @@ namespace uniset
         if( !tcpserver )
         {
             mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl << flush;
-            //          std::terminate();
             uterminate();
             return;
         }
@@ -655,7 +653,6 @@ namespace uniset
         if( vaddr.empty() )
         {
             mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl << flush;
-            //          std::terminate();
             uterminate();
             return;
         }
@@ -697,7 +694,6 @@ namespace uniset
                            << tcpserver->getInetAddress()
                            << ":" << tcpserver->getInetPort() << " err: not active.."
                            << endl << flush;
-                    //                  std::terminate();
                     uterminate();
                     return;
                 }
@@ -957,7 +953,6 @@ namespace uniset
                 if( iomap.empty() )
                 {
                     mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl << flush;
-                    //                  std::terminate();
                     uterminate();
                     return;
                 }

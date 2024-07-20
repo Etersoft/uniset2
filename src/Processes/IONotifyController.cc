@@ -773,7 +773,6 @@ void IONotifyController::readConf()
 		// и безопаснее "вылететь", чем запустится, т.к. часть датчиков не будет работать
 		// как ожидается.
 		ucrit << myname << "(IONotifyController::readConf): " << ex.what() << endl << flush;
-		//std::terminate(); // std::abort();
 		uterminate();
 	}
 }

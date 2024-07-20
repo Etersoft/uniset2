@@ -271,7 +271,6 @@ namespace uniset
                 if( !activated  )
                 {
                     smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl << flush;
-                    //                  std::terminate();
                     uterminate();
                     return;
                 }
@@ -919,7 +918,6 @@ namespace uniset
                 ostringstream err;
                 err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
                 smcrit << err.str() << endl << flush;
-                //              std::terminate();
                 uterminate();
                 return;
             }
@@ -936,7 +934,6 @@ namespace uniset
                 ostringstream err;
                 err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
                 smcrit << err.str() << endl << flush;
-                //std::terminate();
                 uterminate();
                 return;
             }
