@@ -419,11 +419,22 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList_sv( std::string_view str, std
 
     auto lst = uniset::split_sv(str, ',');
 
-    for( auto&& it : lst )
+    for( const auto& it : lst )
     {
-        uniset::ParamSInfo item;
+        auto p = uniset::parseSInfo_sv(it, conf);
+        if( p.si.id != uniset::DefaultObjectId )
+            res.emplace_back(std::move(p));
+    }
 
-        auto p = uniset::split_sv(it, '=');
+    return res;
+}
+// --------------------------------------------------------------------------------------
+uniset::ParamSInfo uniset::parseSInfo_sv( std::string_view str, std::shared_ptr<uniset::Configuration> conf )
+{
+        uniset::ParamSInfo item;
+        item.si.id = DefaultObjectId;
+
+        auto p = uniset::split_sv(str, '=');
         std::string_view s = "";
 
         if( p.size() == 1 )
@@ -438,8 +449,8 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList_sv( std::string_view str, std
         }
         else
         {
-            cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
-            continue;
+           item.si.id = DefaultObjectId;
+           return item;
         }
 
         item.fname = std::string(s);
@@ -472,15 +483,9 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList_sv( std::string_view str, std
                 item.si.node = conf->getNodeID(std::string(s_node));
         }
         else
-        {
-            cerr << "WARNING: parse error for '" << s << "'. IGNORE..." << endl;
-            continue;
-        }
+            item.si.id = DefaultObjectId;
 
-        res.emplace_back( std::move(item) );
-    }
-
-    return res;
+    return item;
 }
 #endif
 // --------------------------------------------------------------------------------------
@@ -490,11 +495,22 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList( const std::string& str, std:
 
     auto lst = uniset::explode_str(str, ',');
 
-    for( const auto& it : lst )
+    for( const auto& it: lst )
     {
-        uniset::ParamSInfo item;
+        auto p = uniset::parseSInfo(it, conf);
+        if( p.si.id != uniset::DefaultObjectId )
+            res.emplace_back(std::move(p));
+    }
 
-        auto p = uniset::explode_str(it, '=');
+    return res;
+}
+
+uniset::ParamSInfo uniset::parseSInfo( const std::string& str, std::shared_ptr<uniset::Configuration> conf )
+{
+        uniset::ParamSInfo item;
+        item.si.id = DefaultObjectId;
+
+        auto p = uniset::explode_str(str, '=');
         std::string s = "";
 
         if( p.size() == 1 )
@@ -509,8 +525,8 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList( const std::string& str, std:
         }
         else
         {
-            cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
-            continue;
+            item.si.id = DefaultObjectId;
+            return item;
         }
 
         item.fname = s;
@@ -543,15 +559,9 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList( const std::string& str, std:
                 item.si.node = conf->getNodeID(s_node);
         }
         else
-        {
-            cerr << "WARNING: parse error for '" << s << "'. IGNORE..." << endl;
-            continue;
-        }
+            item.si.id = DefaultObjectId;
 
-        res.emplace_back( std::move(item) );
-    }
-
-    return res;
+    return item;
 }
 // --------------------------------------------------------------------------------------
 std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::shared_ptr<Configuration> conf )

@@ -49,6 +49,7 @@ namespace uniset
         cout << "--pulsar-id            - датчик 'мигания'" << endl;
         cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
         cout << "--db-logging [1,0]     - включение или отключение логирования датчиков в БД (должен быть запущен DBServer)" << endl;
+        cout << "--http-api-disable-set [1,0] - включение или отключение функции set в HTTP API" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--sm-log-...            - log control" << endl;
@@ -150,6 +151,12 @@ namespace uniset
             smwarn << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
 
         dblogging = conf->getArgInt("--db-logging");
+
+#ifndef DISABLE_REST_API
+        disabledHttpSetApi = conf->getArgInt("--http-api-disable-set");
+        if( disabledHttpSetApi )
+            sminfo << myname << "(init): HTTP API 'set' disabled" << endl;
+#endif
 
         e_filter = conf->getArgParam("--e-filter");
         buildEventList(confnode);

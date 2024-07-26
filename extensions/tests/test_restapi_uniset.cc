@@ -134,6 +134,28 @@ static void check_get( const std::string& query )
     REQUIRE( jcal->get("precision").convert<long>() == 1 );
 }
 // -----------------------------------------------------------------------------
+static void check_set( const std::string& query )
+{
+    //  QUERY: /set?xxx=val&yyy=val2
+    //  REPLY:
+    //  {"object":
+    //    {"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+    //   "errors":[]
+    //  }
+
+    std::string s = shm->apiRequest(query);
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(json);
+
+    auto jarr = json->get("errors").extract<Poco::JSON::Array::Ptr>();
+    REQUIRE(jarr);
+
+    // success (no errors)
+    REQUIRE(jarr->empty());
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("[REST API: /get]", "[restapi][get]")
 {
     init_test();
@@ -167,23 +189,113 @@ TEST_CASE("[REST API: /get]", "[restapi][get]")
     {
         // QUERY: /get?dummy
         // Ожидаемый формат ответа:
-        //      {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
-        //          "sensors":[{"error":"Sensor not found","name":"dummy"}]}
+        //  {"ecode":500,"error":"SharedMemory(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,..."}
 
         std::string s = shm->apiRequest("/get?dummy");
+
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(s);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+        REQUIRE( json->get("ecode").convert<int>() == 500 );
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[REST API: /set]", "[restapi][set]")
+{
+    init_test();
+
+    SECTION("setByName")
+    {
+        check_set("/set?API_Sensor_AS=11&API_Sensor2_AS=11");
+        REQUIRE( shm->getValue(122) == 11 );
+        REQUIRE( shm->getValue(123) == 11 );
+    }
+
+    SECTION("setByID")
+    {
+        check_set("/set?122=12&123=12");
+        REQUIRE( shm->getValue(122) == 12 );
+        REQUIRE( shm->getValue(123) == 12 );
+    }
+
+    SECTION("setByIDWithSupplier")
+    {
+        check_set("/set?supplier=TestProc1&122=5&123=5");
+        REQUIRE( shm->getValue(122) == 5 );
+        REQUIRE( shm->getValue(123) == 5 );
+    }
+
+    SECTION("BadFormat")
+    {
+        // Запрос без параметров
+        // QUERY: /set
+        // Ожидаемый формат ответа:
+        // {"ecode":500,"error":"SharedMemory(request): 'set'. Unknown ID or Name. Use parameters: set?ID1=val1&name2=va;2&ID3=val3,..."}
+        std::string s = shm->apiRequest("/set");
         Poco::JSON::Parser parser;
         auto result = parser.parse(s);
         Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
         REQUIRE(json);
 
-        auto jarr = json->get("sensors").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE( json->get("ecode").convert<int>() == 500 );
+    }
+
+    SECTION("NotFound")
+    {
+        // QUERY: /set?dummy=5
+        // Ожидаемый формат ответа:
+        //      {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+        //          "errors":[{"error":"not found","name":"dummy"}]}
+
+        std::string s = shm->apiRequest("/set?dummy=5");
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(s);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+
+        auto jarr = json->get("errors").extract<Poco::JSON::Array::Ptr>();
         REQUIRE(jarr);
 
         Poco::JSON::Object::Ptr jret = jarr->getObject(0);
         REQUIRE(jret);
 
-        // просто проверем что 'error' не пустой..
+        // просто проверяем что 'error' не пустой..
         REQUIRE( jret->get("error").convert<std::string>().empty() == false );
+    }
+
+    SECTION("NotFound some sensor")
+    {
+        // QUERY: /set?122=10&dummy=15
+        // Ожидаемый формат ответа:
+        //      {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+        //          "errors":[{"error":"not found","name":"dummy"}]}
+
+        std::string s = shm->apiRequest("/set?122=10&dummy=15");
+
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(s);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+
+        auto jarr = json->get("errors").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(jarr);
+
+        bool found_error = false;
+
+        for( int i = 0; i < jarr->size(); i++ )
+        {
+            Poco::JSON::Object::Ptr jret = jarr->getObject(i);
+
+            if( jret->get("name").convert<std::string>() == "dummy"
+                    && jret->get("error").convert<std::string>().empty() == false )
+            {
+                found_error = true;
+                break;
+            }
+        }
+
+        REQUIRE(found_error);
     }
 }
 // -----------------------------------------------------------------------------
@@ -191,7 +303,7 @@ TEST_CASE("[REST API: /sensors]", "[restapi][sensors]")
 {
     init_test();
 
-    // QUERY: /sensors?limit1
+    // QUERY: /sensors?limit=1
     // Ожидаемый формат ответа:
     // {"count":1,
     //  "object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
