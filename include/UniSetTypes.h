@@ -210,8 +210,12 @@ namespace uniset
        Если '=' не указано, возвращается val=0
        Если @node не указано, возвращается node=DefaultObjectId */
     std::list<ParamSInfo> getSInfoList( const std::string& s, std::shared_ptr<uniset::Configuration> conf = nullptr );
+
+    /*! \return si.id = DefaultObjectId when parse error */
+    uniset::ParamSInfo parseSInfo( const std::string& s, std::shared_ptr<uniset::Configuration> conf = nullptr );
 #if __cplusplus >= 201703L
     std::list<ParamSInfo> getSInfoList_sv( std::string_view s, std::shared_ptr<uniset::Configuration> conf = nullptr );
+    uniset::ParamSInfo parseSInfo_sv( std::string_view s, std::shared_ptr<uniset::Configuration> conf = nullptr );
 #endif
     /*! Функция разбора строки вида: id1@node1,id2@node2,...
       Если @node не указано, возвращается node=DefaultObjectId */

@@ -996,7 +996,15 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 		// 'get'
 		uniset::json::help::item cmd("get", "get value for sensor");
 		cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
-		cmd.param("shortInfo", "get short information for sensors");
+		cmd.param("shortInfo", "[optional] get short information for sensors");
+		myhelp.add(cmd);
+	}
+
+	{
+		// 'set'
+		uniset::json::help::item cmd("set", "set value for sensor");
+		cmd.param("id1=val1&name2=val2&id3=val3", "set value for id1,name2,id3 sensors");
+		cmd.param("supplier", "[optional] name of the process that changes sensors (must be first in request)");
 		myhelp.add(cmd);
 	}
 
@@ -1016,6 +1024,9 @@ Poco::JSON::Object::Ptr IOController::httpRequest( const string& req, const Poco
 {
 	if( req == "get" )
 		return request_get(req, p);
+
+	if( req == "set" )
+		return request_set(req, p);
 
 	if( req == "sensors" )
 		return request_sensors(req, p);
@@ -1071,7 +1082,7 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 			{
 				Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
 				jr->set("name", s.fname);
-				jr->set("error", "Sensor not found");
+				jr->set("error", "not found");
 				jsens->add(jr);
 				continue;
 			}
@@ -1095,6 +1106,94 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 	}
 
 	return jdata;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr IOController::request_set( const string& req, const Poco::URI::QueryParameters& p )
+{
+    if( disabledHttpSetApi )
+    {
+        std::ostringstream err;
+        err << "(IHttpRequest::Request): " << req << " disabled";
+        throw uniset::SystemError(err.str());
+    }
+
+    if( p.empty() )
+    {
+        ostringstream err;
+        err << myname << "(request_set): 'set'. Unknown ID or Name. Use parameters: set?ID1=val1&name2=val2&ID3=val3&...";
+        throw uniset::SystemError(err.str());
+    }
+
+    // {
+    //	 "errors" [
+    //           { name: string, error: string },
+    //           { name: string, error: string },
+    //           ...
+    //	 ],
+    //
+    //	 "object" { mydata... }
+    //	}
+
+    Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+    auto my = httpGetMyInfo(jdata);
+    auto jerrs= uniset::json::make_child_array(jdata, "errors");
+
+    auto conf = uniset_conf();
+    uniset::ObjectId sup_id = DefaultObjectId;
+
+    bool skipFirst = false;
+    if( p[0].first == "supplier" )
+    {
+        sup_id = conf->getObjectID(p[0].second);
+        skipFirst = true;
+    }
+
+    for( const auto& p: p )
+    {
+        if( skipFirst )
+        {
+            skipFirst = false;
+            continue;
+        }
+
+#if __cplusplus >= 201703L
+        auto s = uniset::parseSInfo_sv(p.first, conf);
+        s.val = uniset::uni_atoi_sv(p.second);
+#else
+        auto s = uniset::parseSInfo(p.first, conf);
+        s.val = uniset::uni_atoi(p.second);
+#endif
+        if( s.si.id != uniset::DefaultObjectId )
+        {
+            try
+            {
+                setValue(s.si.id, s.val, sup_id );
+            }
+            catch( IOController_i::NameNotFound& ex )
+            {
+                Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+                jr->set("name", s.fname);
+                jr->set("error", string(ex.err));
+                jerrs->add(jr);
+            }
+            catch( std::exception &ex )
+            {
+                Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+                jr->set("name", s.fname);
+                jr->set("error", string(ex.what()));
+                jerrs->add(jr);
+            }
+        }
+        else
+        {
+            Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+            jr->set("name", p.first);
+            jr->set("error", "not found");
+            jerrs->add(jr);
+        }
+    }
+
+    return jdata;
 }
 // -----------------------------------------------------------------------------
 void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )

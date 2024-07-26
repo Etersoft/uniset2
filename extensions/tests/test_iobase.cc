@@ -219,7 +219,7 @@ TEST_CASE("[IOBase]: delay function", "[iobase][delay][extensions]")
         IOBase ib;
         ib.ptOnDelay.setTiming(100);
         ib.ptOffDelay.setTiming(100);
-        // Последовательная обработка 
+        // Последовательная обработка
         // срабатывание на включение..
         // set - сигнал датчика на входе.
         // 0->1

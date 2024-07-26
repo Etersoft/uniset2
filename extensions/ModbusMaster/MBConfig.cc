@@ -717,7 +717,7 @@ namespace uniset
         if( checkDuplicationRegID( rID, dev, rmap ) )
         {
             ostringstream err;
-            err << myname << "(checkDuplicationRegID): Found dublicate for RegID " << rID <<
+            err << myname << "(checkDuplicationRegID): Found duplicate for RegID " << rID <<
                 " enable crit logs for see it ";
             throw uniset::SystemError(err.str());
         }
@@ -758,7 +758,7 @@ namespace uniset
         if(bad_status)
         {
             ostringstream err;
-            err << myname << "(checkDuplicationRegID): Found dublicate for RegID " << rID2 <<
+            err << myname << "(checkDuplicationRegID): Found duplicate for RegID " << rID2 <<
                 " enable crit logs to see it ";
             throw uniset::SystemError(err.str());
         }
@@ -1248,7 +1248,7 @@ namespace uniset
 
             if( d.second->find(id) != d.second->end() )
             {
-                mbcrit << myname << "(checkDuplicationRegID): Found dublicate for RegID " << id <<
+                mbcrit << myname << "(checkDuplicationRegID): Found duplicate for RegID " << id <<
                        " mbreg " << (*d.second)[id]->mbreg << " mbfunc " << (*d.second)[id]->mbfunc <<
                        " in pollmap " << d.first << endl;
                 ret = true;

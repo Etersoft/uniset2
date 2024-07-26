@@ -567,7 +567,7 @@ TEST_CASE("[IOBase]: processingAsDI with on/offdelay", "[iobase][delay]")
     //delay: on 200ms, off 100ms
     IOBase::processingAsDI(&ib, false, shm, true);
     REQUIRE( shm->getValue(di) == 0 );
-    
+
     //0->1, 200ms on
     IOBase::processingAsDI(&ib, true, shm, true);
     REQUIRE( shm->getValue(di) == 0 );
@@ -577,7 +577,7 @@ TEST_CASE("[IOBase]: processingAsDI with on/offdelay", "[iobase][delay]")
     msleep(210);
     IOBase::processingAsDI(&ib, true, shm, true);
     REQUIRE( shm->getValue(di) == 1 );
-    
+
     //1->0, 100ms off
     IOBase::processingAsDI(&ib, false, shm, true);
     REQUIRE( shm->getValue(di) == 1 );
@@ -600,7 +600,7 @@ TEST_CASE("[IOBase]: processingAsDI with on/offdelay", "[iobase][delay]")
     msleep(100);
     IOBase::processingAsDI(&ib, false, shm, true);
     REQUIRE( shm->getValue(di) == 0 );
-    
+
     //0->1, 200ms on
     IOBase::processingAsDI(&ib, true, shm, true);
     REQUIRE( shm->getValue(di) == 0 );

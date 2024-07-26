@@ -33,7 +33,7 @@ static void pushMessage( long id, Message::Priority p )
     SensorMessage sm(id, id);
     sm.priority = p;
     sm.consumer = id; // чтобы хоть как-то идентифицировать сообщений, используем поле consumer
-    TransportMessage tm( std::move(sm.transport_msg()) );
+    TransportMessage tm( sm.transport_msg() );
     uobj->push(tm);
 }
 // --------------------------------------------------------------------------

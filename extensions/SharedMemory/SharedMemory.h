@@ -299,10 +299,14 @@ namespace uniset
     \section sec_SM_REST_API SharedMemory HTTP API
     \code
     /help    - Получение списка доступных команд
-    /- получение стандартной информации
+    /        - получение стандартной информации
     /get?id1,name2,id3,..&shortInfo  - получение значений указанных датчиков
      Не обязательные параметры:
        shortInfo - выдать короткую информацию о датчике (id,value,real_value и когда менялся)
+    /set?supplier=Name&id1=val1&name2=val2&id3=val3&...  - выставить указанные датчики
+     Не обязательные параметры:
+       supplier - имя процесса меняющего датчики (из секции <objects>), для логирования.
+                  Если параметр задаётся, то обязательно должен идти первым в запросе.
     /sensors?offset=N&limit=M- получение полной информации по списку датчиков.
      Не обязательные параметры:
        offset - начиная с,
@@ -316,7 +320,7 @@ namespace uniset
     \endcode
     */
     // -----------------------------------------------------------------------------
-    /*! Реалиазция SharedMemory */
+    /*! Реализация SharedMemory */
     class SharedMemory:
         public IONotifyController
     {
@@ -385,8 +389,8 @@ namespace uniset
                 long id = { 0 };                // ID
                 HistoryList hlst;               // history list
                 size_t size = { 0 };
-                std::string filter = { "" };    // filter field
-                uniset::ObjectId fuse_id = { uniset::DefaultObjectId };  // fuse sesnsor
+                std::string filter = { "" }; // filter field
+                uniset::ObjectId fuse_id = { uniset::DefaultObjectId };  // fuse sensor
                 bool fuse_invert = { false };
                 bool fuse_use_val = { false };
                 long fuse_val = { 0 };
