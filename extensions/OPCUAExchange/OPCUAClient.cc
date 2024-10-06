@@ -76,9 +76,75 @@ namespace uniset
 using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
+/// Get name of log level.
+constexpr std::string_view getLogLevelName(opcua::LogLevel level)
+{
+    switch (level)
+    {
+        case opcua::LogLevel::Trace:
+            return "trace";
+
+        case opcua::LogLevel::Debug:
+            return "debug";
+
+        case opcua::LogLevel::Info:
+            return "info";
+
+        case opcua::LogLevel::Warning:
+            return "warning";
+
+        case opcua::LogLevel::Error:
+            return "error";
+
+        case opcua::LogLevel::Fatal:
+            return "fatal";
+
+        default:
+            return "unknown";
+    }
+}
+
+/// Get name of log category.
+constexpr std::string_view getLogCategoryName(opcua::LogCategory category)
+{
+    switch (category)
+    {
+        case opcua::LogCategory::Network:
+            return "network";
+
+        case opcua::LogCategory::SecureChannel:
+            return "channel";
+
+        case opcua::LogCategory::Session:
+            return "session";
+
+        case opcua::LogCategory::Server:
+            return "server";
+
+        case opcua::LogCategory::Client:
+            return "client";
+
+        case opcua::LogCategory::Userland:
+            return "userland";
+
+        case opcua::LogCategory::SecurityPolicy:
+            return "securitypolicy";
+
+        default:
+            return "unknown";
+    }
+}
+// -----------------------------------------------------------------------------
+namespace opcua {
+    static auto log = [](Client& client, auto level, auto category, auto msg) {
+        std::cout << "[" << getLogLevelName(level) << "] "
+                  << "[" << getLogCategoryName(category) << "] " << msg << std::endl;
+    };
+}
+// -----------------------------------------------------------------------------
 OPCUAClient::OPCUAClient()
 {
-    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "create OPCUAClient");
+//    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "create OPCUAClient");
     val = UA_Variant_new();
 }
 // -----------------------------------------------------------------------------
@@ -122,7 +188,7 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
 
     try
     {
-        client.connect(addr.c_str(), {user, pass});
+        client.connect(addr, {user, pass});
     }
     catch(const std::exception& ex)
     {

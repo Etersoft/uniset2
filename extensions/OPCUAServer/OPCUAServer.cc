@@ -431,7 +431,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
 
         UA_StatusCode result = UA_Server_addMethodNode(opcServer->handle(),
                                *methodNodeId.handle(), //requestedNewNodeId
-                               *node->node.getNodeId().handle(),//parentNodeId
+                               *node->node.id().handle(),//parentNodeId
                                UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),//referenceTypeId
                                methodBrowseName,
                                attr,

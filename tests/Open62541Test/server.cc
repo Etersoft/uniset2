@@ -21,7 +21,6 @@ int main()
     // create node
     auto parentNode    = server.getObjectsNode();
     auto myIntegerNode = parentNode.addVariable(myIntegerNodeId, myIntegerName);
-    myIntegerNode.writeDataType(opcua::Type::Int32);
 
     // set node attributes
     myIntegerNode.writeDisplayName({"en-US", "the answer"});

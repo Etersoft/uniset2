@@ -24,7 +24,7 @@
 #include <variant>
 
 #include "open62541pp/open62541pp.h"
-#include "open62541pp/detail/ExceptionCatcher.h"
+#include "open62541pp/detail/exceptioncatcher.hpp"
 
 #include <open62541/client_config_default.h>
 #include "Exceptions.h"
