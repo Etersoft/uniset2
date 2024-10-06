@@ -2011,21 +2011,21 @@ namespace uniset
                 // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
                 // количестве что и в запросе. Если не удалось подписаться на датчик будет исключение
                 // брошено в subscribeDataChanges.
-                opcua::MonitoringParameters monitoringParameters{};
+                opcua::MonitoringParametersEx monitoringParameters{};
                 monitoringParameters.samplingInterval = samplingInterval;
 
                 assert(result.size() == rdlist.size());
 
                 for(size_t j = 0; j < result.size(); j++)
                 {
-                    uint32_t monId = result[j].getMonitoredItemId();
+                    uint32_t monId = result[j].monitoredItemId();
 
                     if(monId)
                     {
                         result[j].setMonitoringParameters(monitoringParameters);
                         result[j].setMonitoringMode(opcua::MonitoringMode::Reporting);
 
-                        rdlist[j]->rval[i].subscriptionId = result[j].getSubscriptionId();
+                        rdlist[j]->rval[i].subscriptionId = result[j].subscriptionId();
                         rdlist[j]->rval[i].monitoredItemId = monId;
                         rdlist[j]->rval[i].subscriptionState = true;
                     }
