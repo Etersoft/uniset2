@@ -23,7 +23,7 @@
 // myvar = LE_TO_H(myvar)
 // -------------------------------------------------------------------------
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-static bool HostIsBigEndian = false;
+static uint8_t HostIsBigEndian = 0;
 #define LE_TO_H(x) {}
 #define LE32_TO_H(x) {}
 #define LE16_TO_H(x) {}
@@ -40,7 +40,7 @@ static bool HostIsBigEndian = false;
 #endif
 
 #if __BYTE_ORDER == __BIG_ENDIAN
-static bool HostIsBigEndian = true;
+static uint8_t HostIsBigEndian = 1;
 #define BE_TO_H(x) {}
 #define BE32_TO_H(x) {}
 #define BE16_TO_H(x) {}
@@ -228,18 +228,9 @@ namespace uniset
         if( index >= MaxDCount )
             return false;
 
-        size_t nbyte = index / 8 * sizeof(uint8_t);
-        size_t nbit =  index % 8 * sizeof(uint8_t);
-
-        // выставляем бит
-        unsigned char d = d_dat[nbyte];
-
-        if( val )
-            d |= (1 << nbit);
-        else
-            d &= ~(1 << nbit);
-
-        d_dat[nbyte] = d;
+        uint8_t& d = d_dat[index >> 3];
+        uint8_t mask = 1 << (index & 0x7);
+        d = val ? (d | mask) : (d & ~mask);
         return true;
     }
     // -----------------------------------------------------------------------------
@@ -256,10 +247,7 @@ namespace uniset
         if( index >= MaxDCount )
             return false;
 
-        size_t nbyte = index / 8 * sizeof(uint8_t);
-        size_t nbit =  index % 8 * sizeof(uint8_t);
-
-        return ( d_dat[nbyte] & (1 << nbit) );
+        return d_dat[index >> 3] & (1 << (index & 0x7));
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::getDataID() const noexcept
@@ -276,33 +264,34 @@ namespace uniset
     // -----------------------------------------------------------------------------
     bool UDPMessage::isOk() noexcept
     {
-        return ( header.magic == UniSetUDP::UNETUDP_MAGICNUM );
+        return (header._version == UniSetUDP::UNETUDP_MAGICNUM );
     }
     // -----------------------------------------------------------------------------
     void UDPMessage::ntoh() noexcept
     {
+        if( header._be_order == HostIsBigEndian )
+            return;
+
         // byte order from packet
         uint8_t be_order = header._be_order;
 
-        if( be_order && !HostIsBigEndian )
+        if( be_order && HostIsBigEndian == 0 )
         {
-            BE32_TO_H(header.magic);
             BE_TO_H(header.num);
             BE_TO_H(header.procID);
             BE_TO_H(header.nodeID);
-            BE_TO_H(header.dcount);
-            BE_TO_H(header.acount);
+            BE16_TO_H(header.dcount);
+            BE16_TO_H(header.acount);
             BE16_TO_H(header.dcrc);
             BE16_TO_H(header.acrc);
         }
-        else if( !be_order && HostIsBigEndian )
+        else if( !be_order && HostIsBigEndian == 1 )
         {
-            LE32_TO_H(header.magic);
             LE_TO_H(header.num);
             LE_TO_H(header.procID);
             LE_TO_H(header.nodeID);
-            LE_TO_H(header.dcount);
-            LE_TO_H(header.acount);
+            LE16_TO_H(header.dcount);
+            LE16_TO_H(header.acount);
             LE16_TO_H(header.dcrc);
             LE16_TO_H(header.acrc);
         }
@@ -318,7 +307,7 @@ namespace uniset
 
         // CONVERT DATA TO HOST BYTE ORDER
         // -------------------------------
-        if( (be_order && !HostIsBigEndian) || (!be_order && HostIsBigEndian) )
+        if( be_order != HostIsBigEndian )
         {
             for( size_t n = 0; n < header.acount; n++ )
             {
@@ -368,7 +357,7 @@ namespace uniset
     }
     // -----------------------------------------------------------------------------
     UDPHeader::UDPHeader() noexcept
-        : magic(UNETUDP_MAGICNUM)
+        : _version(UNETUDP_MAGICNUM)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
         , _be_order(0)
 #elif __BYTE_ORDER == __BIG_ENDIAN

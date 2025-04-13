@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
 
                         pack.ntoh();
 
-                        if( pack.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
+                        if(pack.header._version != UniSetUDP::UNETUDP_MAGICNUM )
                         {
                             cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
                             continue;
