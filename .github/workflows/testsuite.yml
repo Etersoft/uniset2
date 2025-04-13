@@ -23,7 +23,7 @@ jobs:
             python-module-distribute iputils libclickhouse-cpp-devel libopen62541-devel libopen62541pp-devel
 
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -50,7 +50,7 @@ jobs:
             cd testsuite;
             make check
       - name: 'Upload Artifacts'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: testsuite-artifacts
