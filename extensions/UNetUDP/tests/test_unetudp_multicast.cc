@@ -113,7 +113,7 @@ static UniSetUDP::UDPMessage mreceive( unsigned int pnum = 0, timeout_t tout = 2
         if( pnum > 0 && pack.header.num >= pnum ) // -V560
             break;
 
-        REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
+        REQUIRE(pack.header._version == UniSetUDP::UNETUDP_MAGICNUM );
         ncycle--;
     }
 

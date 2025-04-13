@@ -83,7 +83,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
         if( pnum > 0 && pack.header.num >= pnum ) // -V560
             break;
 
-        REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
+        REQUIRE(pack.header._version == UniSetUDP::UNETUDP_MAGICNUM );
         ncycle--;
     }
 
@@ -124,7 +124,7 @@ TEST_CASE("[UNetUDP]: repack", "[unetudp][udp][repack]")
     pack.addAData(3, 30);
     pack.addAData(4, 40);
 
-    REQUIRE(pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM);
+    REQUIRE(pack.header._version == UniSetUDP::UNETUDP_MAGICNUM);
 
     UniSetUDP::UDPMessage pack2(pack);
     pack2.ntoh();
@@ -132,7 +132,7 @@ TEST_CASE("[UNetUDP]: repack", "[unetudp][udp][repack]")
     REQUIRE(pack2.header.nodeID == 100);
     REQUIRE(pack2.header.procID == 100);
     REQUIRE(pack2.header.num == 1);
-    REQUIRE(pack2.header.magic == UniSetUDP::UNETUDP_MAGICNUM);
+    REQUIRE(pack2.header._version == UniSetUDP::UNETUDP_MAGICNUM);
     REQUIRE(pack2.dID(0) == 1);
     REQUIRE(pack2.dValue(0) == true);
     REQUIRE(pack2.dID(1) == 2);
