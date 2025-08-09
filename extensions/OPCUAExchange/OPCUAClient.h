@@ -23,7 +23,7 @@
 #include <map>
 #include <variant>
 
-#include "open62541pp/open62541pp.h"
+#include "open62541pp/open62541pp.hpp"
 #include "open62541pp/detail/exceptioncatcher.hpp"
 
 #include <open62541/client_config_default.h>
@@ -100,7 +100,7 @@ namespace uniset
 
             void onSessionActivated(opcua::StateCallback callback)
             {
-                auto& exceptionCatcher = opcua::detail::getContext(client).exceptionCatcher;
+                auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
                 client.onSessionActivated(exceptionCatcher.wrapCallback(std::move(callback)));
             }
 
@@ -116,7 +116,7 @@ namespace uniset
 
             void rethrowException()
             {
-                auto& exceptionCatcher = opcua::detail::getContext(client).exceptionCatcher;
+                auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
                 exceptionCatcher.rethrow(); // Работает только один раз, после повторной отправки удаляется!
             }
 
