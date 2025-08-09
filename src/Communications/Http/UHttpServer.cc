@@ -83,6 +83,11 @@ namespace uniset
 		reqFactory->setCORS_allow(allow);
 	}
 	// -------------------------------------------------------------------------
+	void UHttpServer::setDefaultContentType( const std::string& ct)
+	{
+		reqFactory->setDefaultContentType(ct);
+	}
+	// -------------------------------------------------------------------------
 } // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API

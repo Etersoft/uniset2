@@ -29,9 +29,11 @@ namespace uniset
 
 	// -------------------------------------------------------------------------
 	UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry
-			, const std::string& allow )
+			, const std::string& allow
+			, const std::string& contentType)
 		: registry(_registry)
 		, httpCORS_allow(allow)
+		, httpDefaultContentType(contentType)
 	{
 		log = make_shared<DebugStream>();
 	}
@@ -43,11 +45,11 @@ namespace uniset
 		resp.set("Access-Control-Allow-Methods", "GET");
 		resp.set("Access-Control-Allow-Request-Method", "*");
 		resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
+		resp.setContentType(httpDefaultContentType);
 
 		if( !registry )
 		{
 			resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
-			resp.setContentType("text/json");
 			std::ostream& out = resp.send();
 			Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 			jdata->set("error", resp.getReasonForStatus(resp.getStatus()));
@@ -62,7 +64,6 @@ namespace uniset
 		if( req.getMethod() != "GET" )
 		{
 			resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-			resp.setContentType("text/json");
 			std::ostream& out = resp.send();
 			Poco::JSON::Object jdata;
 			jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
@@ -88,7 +89,6 @@ namespace uniset
 				|| seg[2].empty() )
 		{
 			resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-			resp.setContentType("text/json");
 			std::ostream& out = resp.send();
 			Poco::JSON::Object jdata;
 			jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
@@ -103,7 +103,6 @@ namespace uniset
 		auto qp = uri.getQueryParameters();
 
 		resp.setStatus(HTTPResponse::HTTP_OK);
-		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
 
 		try
@@ -148,7 +147,6 @@ namespace uniset
 			ostringstream err;
 			err << ex.what();
 			resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
-			resp.setContentType("text/json");
 			Poco::JSON::Object jdata;
 			jdata.set("error", err.str());
 			jdata.set("ecode", (int)resp.getStatus());
@@ -167,12 +165,17 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTPServerRequest& req )
 	{
-		return new UHttpRequestHandler(registry, httpCORS_allow);
+		return new UHttpRequestHandler(registry, httpCORS_allow, httpDefaultContentType);
 	}
 	// -------------------------------------------------------------------------
 	void UHttpRequestHandlerFactory::setCORS_allow( const std::string& allow )
 	{
 		httpCORS_allow = allow;
+	}
+    // -------------------------------------------------------------------------
+	void UHttpRequestHandlerFactory::setDefaultContentType( const std::string& ct )
+	{
+		httpDefaultContentType = ct;
 	}
 	// -------------------------------------------------------------------------
 	Poco::JSON::Object::Ptr IHttpRequest::httpRequest( const string& req, const Poco::URI::QueryParameters& p )

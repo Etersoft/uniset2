@@ -47,7 +47,8 @@ namespace uniset
      * \endcode
      * Для запуска http-сервера необходимо в аргументах командной строки указать --activator-run-httpserver
      * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
-     * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *.
+     * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *
+     * --activator-httpserver-default-content-type str - Default: "text/json; charset=UTF-8"
      *
      * \sa \ref pg_UHttpServer
      *
@@ -132,6 +133,7 @@ namespace uniset
             std::string httpHost = { "" };
             int httpPort = { 0 };
             std::string httpCORS_allow = { "*" };
+            std::string httpDefaultContentType = { "text/json; charset=UTF-8" };
 #endif
     };
     // -------------------------------------------------------------------------
