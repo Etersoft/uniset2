@@ -388,6 +388,7 @@ namespace uniset
             bool tryConnect(Channel* ch);
             void initOutputs();
             void createSubscription(int nchannel);
+            void doCreateSubscription(int nchannel);
 
             xmlNode* confnode = { nullptr }; /*!< xml-узел в настроечном файле */
             timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
@@ -414,6 +415,7 @@ namespace uniset
                 std::unordered_map<Tick, std::shared_ptr<WriteGroup>> writeValues;
                 uniset::ObjectId respond_s = { uniset::DefaultObjectId };
                 IOController::IOStateList::iterator respond_it;
+                std::atomic_bool needSubscription = { false };  // Требуется создать подписку
             };
             Channel channels[numChannels];
             uniset::Trigger noConnections;

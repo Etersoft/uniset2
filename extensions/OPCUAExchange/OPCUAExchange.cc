@@ -470,6 +470,31 @@ namespace uniset
                     continue;
                 }
 
+                // Create subscription outside callback after session activation
+                if(enableSubscription && ch->needSubscription)
+                {
+                    try
+                    {
+                        opclog3 << myname << "(channel" << ch->num << "Thread): creating subscription..." << endl;
+                        doCreateSubscription(ch->idx);
+                        ch->needSubscription = false;  // Reset after creation (variant 3)
+                        connectCount++;
+                        subscription_ok = true;
+                        opclog3 << myname << "(channel" << ch->num << "Thread): subscription created successfully" << endl;
+                    }
+                    catch(const std::exception& ex)
+                    {
+                        opcwarn << myname << "(channel" << ch->num << "Thread): subscription creation failed: " << ex.what() << endl;
+
+                        if( (stopOnError == smFirstOnly && connectCount == 0) || stopOnError == smAny )
+                        {
+                            opccrit << myname << "(channel" << ch->num << "Thread): " << ex.what() << ". Terminate!" << endl;
+                            uterminate();
+                            break;
+                        }
+                    }
+                }
+
                 if(enableSubscription)
                 {
                     try
@@ -576,9 +601,14 @@ namespace uniset
                             addError(ch->idx, "write", ret);
                         }
 
-                        if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                        // Проверяем критичные ошибки, требующие переподключения и переключения канала
+                        if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED ||
+                            ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
+                            ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
                         {
                             ch->client->disconnect();
+                            ch->needSubscription = true;  // Потребуется новая подписка при переподключении
+                            ch->status = false;  // Сигнализируем о потере соединения для переключения канала
                             return;
                         }
                     }
@@ -634,9 +664,14 @@ namespace uniset
                                 addError(ch->idx, "read", ret);
                             }
 
-                            if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
+                            // Проверяем критичные ошибки, требующие переподключения и переключения канала
+                            if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED ||
+                                ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
+                                ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
                             {
                                 ch->client->disconnect();
+                                ch->needSubscription = true;  // Потребуется новая подписка при переподключении
+                                ch->status = false;  // Сигнализируем о потере соединения для переключения канала
                                 return;
                             }
                         }
@@ -1979,6 +2014,143 @@ namespace uniset
         return true;
     }
     // -----------------------------------------------------------------------------
+    void OPCUAExchange::doCreateSubscription(int nchannel)
+    {
+        int i = nchannel;
+
+        opclog3 << myname << " doCreateSubscription for channel " << i << endl;
+        subscription_ok = false;
+
+        auto sub = channels[i].client->createSubscription();
+
+        // Modify and delete the subscription via the returned Subscription<T> object
+        opcua::SubscriptionParameters subscriptionParameters{};
+        subscriptionParameters.publishingInterval = publishingInterval;
+        sub.setSubscriptionParameters(subscriptionParameters);
+        sub.setPublishingMode(true);
+
+        std::vector<UA_ReadValueId> items;
+        IOList rdlist;
+        std::vector<uniset::DataChangeCallback> callbacks;
+        std::vector<uniset::DeleteMonitoredItemCallback> deletecallbacks;
+
+        for( const auto& it : iolist )
+        {
+            if(it->stype != UniversalIO::AI && it->stype != UniversalIO::DI)
+                continue;
+
+            if( it->ignore )
+                continue;
+
+            items.push_back(it->rval[i].ref());
+            rdlist.push_back(it);// Копирование std::shared_ptr
+
+            callbacks.emplace_back(
+                [this, i, io = it](const auto & item, const opcua::DataValue & value)
+            {
+                opclog5 << myname << "item data changed, new value: " << (*(UA_Int32*) value.value().data() ) << endl;
+
+                auto& result = io->rval[i].gr->results[io->rval[i].grNumber][io->rval[i].grIndex];
+                auto data = value.value();
+
+                result.status = value.status();
+
+                if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
+                    result.value = int32_t(*(UA_Int32*) data.data());
+                else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
+                    result.value = int32_t(*(UA_UInt32*) data.data());
+
+                if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
+                    result.value = int32_t(*(UA_Int64*) data.data());
+                else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
+                    result.value = int32_t(*(UA_UInt64*) data.data());
+                else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
+                    result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
+
+                if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
+                    result.value = int32_t(*(UA_Int16*) data.data());
+                else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
+                    result.value = int32_t(*(UA_UInt16*) data.data());
+
+                if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
+                    result.value = int32_t(*(UA_Byte*) data.data());
+                else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
+                {
+                    result.type = OPCUAClient::VarType::Float;
+                    result.value = (float)(*(UA_Float*) data.data());
+                }
+                else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
+                {
+                    result.type = OPCUAClient::VarType::Float;
+                    result.value = (float)(*(UA_Double*) data.data());
+                }
+            });
+        }
+
+        deletecallbacks.resize(items.size());
+
+        // Create a monitored item within the subscription for data change notifications
+        try
+        {
+            opclog3 << myname << " Create monitoring items : " << items.size() << endl;
+            auto t_start = std::chrono::steady_clock::now();
+
+            bool stop = false;
+
+            if((stopOnError == smFirstOnly && connectCount == 0) || stopOnError == smAny)
+                stop = true;
+
+            auto result = channels[i].client->subscribeDataChanges(sub, items, callbacks, deletecallbacks, stop);
+
+            // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
+            // количестве что и в запросе. Если не удалось подписаться на датчик будет исключение
+            // брошено в subscribeDataChanges.
+            opcua::MonitoringParametersEx monitoringParameters{};
+            monitoringParameters.samplingInterval = samplingInterval;
+
+            assert(result.size() == rdlist.size());
+
+            for(size_t j = 0; j < result.size(); j++)
+            {
+                uint32_t monId = result[j].monitoredItemId();
+
+                if(monId)
+                {
+                    result[j].setMonitoringParameters(monitoringParameters);
+                    result[j].setMonitoringMode(opcua::MonitoringMode::Reporting);
+
+                    rdlist[j]->rval[i].subscriptionId = result[j].subscriptionId();
+                    rdlist[j]->rval[i].monitoredItemId = monId;
+                    rdlist[j]->rval[i].subscriptionState = true;
+                }
+                else
+                {
+                    opcwarn << "Error subscription for item: " << rdlist[j]->attrName << endl;
+                    rdlist[j]->rval[i].subscriptionId = 0;
+                    rdlist[j]->rval[i].monitoredItemId = 0;
+                    rdlist[j]->rval[i].subscriptionState = false;
+                }
+            }
+
+            auto t_end = std::chrono::steady_clock::now();
+            opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
+                    << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+        }
+        catch(const std::exception& ex)
+        {
+            // Бросается исключение, а в основном цикле channelThread проверяем на наличие в exceptionCatcher и ретранслируем.
+            opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
+            throw;
+        }
+        catch(...)
+        {
+            cerr << "unexpected exception" << endl;
+        }
+
+        connectCount++;
+        subscription_ok = true;
+    }
+    // -----------------------------------------------------------------------------
     void OPCUAExchange::createSubscription(int nchannel)
     {
         if(channels[nchannel].client == nullptr)
@@ -1986,137 +2158,9 @@ namespace uniset
 
         channels[nchannel].client->onSessionActivated([this, i = nchannel]
         {
-            opclog3 << myname << " Session activated " << endl;
+            opclog3 << myname << " Session activated for channel " << i << endl;
+            channels[i].needSubscription = true;
             subscription_ok = false;
-
-            auto sub = channels[i].client->createSubscription();
-
-            // Modify and delete the subscription via the returned Subscription<T> object
-            opcua::SubscriptionParameters subscriptionParameters{};
-            subscriptionParameters.publishingInterval = publishingInterval;
-            sub.setSubscriptionParameters(subscriptionParameters);
-            sub.setPublishingMode(true);
-
-            std::vector<UA_ReadValueId> items;
-            IOList rdlist;
-            std::vector<uniset::DataChangeCallback> callbacks;
-            std::vector<uniset::DeleteMonitoredItemCallback> deletecallbacks;
-
-            for( const auto& it : iolist )
-            {
-                if(it->stype != UniversalIO::AI && it->stype != UniversalIO::DI)
-                    continue;
-
-                if( it->ignore )
-                    continue;
-
-                items.push_back(it->rval[i].ref());
-                rdlist.push_back(it);// Копирование std::shared_ptr
-
-                callbacks.emplace_back(
-                    [this, i, io = it](const auto & item, const opcua::DataValue & value)
-                {
-                    opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
-
-                    auto& result = io->rval[i].gr->results[io->rval[i].grNumber][io->rval[i].grIndex];
-                    auto data = value.getValue();
-
-                    result.status = value.getStatus();
-
-                    if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
-                        result.value = int32_t(*(UA_Int32*) data.data());
-                    else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
-                        result.value = int32_t(*(UA_UInt32*) data.data());
-
-                    if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
-                        result.value = int32_t(*(UA_Int64*) data.data());
-                    else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
-                        result.value = int32_t(*(UA_UInt64*) data.data());
-                    else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
-                        result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
-
-                    if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
-                        result.value = int32_t(*(UA_Int16*) data.data());
-                    else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
-                        result.value = int32_t(*(UA_UInt16*) data.data());
-
-                    if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
-                        result.value = int32_t(*(UA_Byte*) data.data());
-                    else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
-                    {
-                        result.type = OPCUAClient::VarType::Float;
-                        result.value = (float)(*(UA_Float*) data.data());
-                    }
-                    else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
-                    {
-                        result.type = OPCUAClient::VarType::Float;
-                        result.value = (float)(*(UA_Double*) data.data());
-                    }
-                });
-            }
-
-            deletecallbacks.resize(items.size());
-
-            // Create a monitored item within the subscription for data change notifications
-            try
-            {
-                opclog3 << myname << " Create monitoring items : " << items.size() << endl;
-                auto t_start = std::chrono::steady_clock::now();
-
-                bool stop = false;
-
-                if((stopOnError == smFirstOnly && connectCount == 0) || stopOnError == smAny)
-                    stop = true;
-
-                auto result = channels[i].client->subscribeDataChanges(sub, items, callbacks, deletecallbacks, stop);
-
-                // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
-                // количестве что и в запросе. Если не удалось подписаться на датчик будет исключение
-                // брошено в subscribeDataChanges.
-                opcua::MonitoringParametersEx monitoringParameters{};
-                monitoringParameters.samplingInterval = samplingInterval;
-
-                assert(result.size() == rdlist.size());
-
-                for(size_t j = 0; j < result.size(); j++)
-                {
-                    uint32_t monId = result[j].monitoredItemId();
-
-                    if(monId)
-                    {
-                        result[j].setMonitoringParameters(monitoringParameters);
-                        result[j].setMonitoringMode(opcua::MonitoringMode::Reporting);
-
-                        rdlist[j]->rval[i].subscriptionId = result[j].subscriptionId();
-                        rdlist[j]->rval[i].monitoredItemId = monId;
-                        rdlist[j]->rval[i].subscriptionState = true;
-                    }
-                    else
-                    {
-                        opcwarn << "Error subscription for item: " << rdlist[j]->attrName << endl;
-                        rdlist[j]->rval[i].subscriptionId = 0;
-                        rdlist[j]->rval[i].monitoredItemId = 0;
-                        rdlist[j]->rval[i].subscriptionState = false;
-                    }
-                }
-
-                auto t_end = std::chrono::steady_clock::now();
-                opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
-                        << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
-            }
-            catch(const std::exception& ex)
-            {
-                // Бросается исключение, а в основном цикле channelThread проверяем на наличие в exceptionCatcher и ретранслируем.
-                opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
-                throw;
-            }
-            catch(...)
-            {
-                cerr << "unexpected exception" << endl;
-            }
-
-            connectCount++;
-            subscription_ok = true;
         });
     }
     // -----------------------------------------------------------------------------

@@ -716,6 +716,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+<<<<<<< HEAD
 * Sat Nov 15 2025 Pavel Vainerman <pv@altlinux.ru> 2.42.1-alt1
 - (jscript): simitator
 - (jscript): modbus client
