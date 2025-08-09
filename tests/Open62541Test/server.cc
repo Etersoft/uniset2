@@ -28,10 +28,10 @@ int main()
     myIntegerNode.writeDescription({"en-US", "the answer"});
 
     // write value
-    myIntegerNode.writeValueScalar(42);
+    myIntegerNode.writeValue(opcua::Variant{42});
 
     // read value
-    std::cout << "The answer is: " << myIntegerNode.readValueScalar<int>() << std::endl;
+    std::cout << "The answer is: " << myIntegerNode.readValue().to<int>() << std::endl;
 
     server.run();
 

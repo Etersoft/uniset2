@@ -19,19 +19,26 @@ OPCUATestServer::OPCUATestServer( const std::string& _addr, uint16_t port ):
     if( verbose )
         cout << "(OPCUATestServer::init): addr=" << addr << ":" << port << endl;
 
-    server = unisetstd::make_unique<opcua::Server>((uint16_t)port);
-    server->setApplicationName("uniset2 OPC UA gate");
-    server->setApplicationUri("urn:uniset2.server.gate");
-    server->setProductUri("https://github.com/Etersoft/uniset2/");
-    server->setCustomHostname(addr);
+    opcua::ServerConfig opcconf((uint16_t)port);
+    opcconf.setApplicationName("uniset2 OPC UA gate");
+    opcconf.setApplicationUri("urn:uniset2.server.gate");
+    opcconf.setProductUri("https://github.com/Etersoft/uniset2/");
+//    opcconf.setCustomHostname(addr);
+    server = opcua::Server(std::move(opcconf));
 
-    auto opcConfig = UA_Server_getConfig(server->handle());
+    auto opcConfig = UA_Server_getConfig(server.handle());
     opcConfig->maxSubscriptions = 10;
     opcConfig->maxSessions = 10;
     opcConfig->maxSessionTimeout = 5000;
-    opcConfig->logger = UA_Log_Stdout_withLevel( UA_LOGLEVEL_ERROR );
 
-    auto uroot = server->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
+    // HACK (init loglevel)
+    UA_ServerConfig *sconf = UA_Server_getConfig(server.handle());
+    auto slogger = UA_Log_Stdout_new( UA_LOGLEVEL_ERROR );
+    sconf->logging = slogger;
+
+    opcua::Node parentNode{server, opcua::ObjectId::ObjectsFolder};
+
+    auto uroot = parentNode.addFolder(opcua::NodeId(0, "uniset"), "uniset");
     uroot.writeDescription({"en", "uniset i/o"});
     const auto uname = "localhost";
     auto unode = uroot.addFolder(opcua::NodeId(0, uname), uname);
@@ -50,7 +57,7 @@ OPCUATestServer::~OPCUATestServer()
 // -------------------------------------------------------------------------
 void OPCUATestServer::setRWLimits(unsigned int rlim, unsigned int wlim)
 {
-    auto opcConfig = UA_Server_getConfig(server->handle());
+    auto opcConfig = UA_Server_getConfig(server.handle());
     opcConfig->maxNodesPerRead = rlim;
     opcConfig->maxNodesPerWrite = wlim;
 }
@@ -61,13 +68,13 @@ void OPCUATestServer::setI32( int num, int32_t val )
 
     if( it != imap.end() )
     {
-        it->second->node.writeValueScalar(val);
+        it->second->node.writeValue(opcua::Variant{val});
         return;
     }
 
     auto vnode = ioNode->node.addVariable(opcua::NodeId(0, num), std::to_string(num));
     vnode.writeDataType(opcua::DataTypeId::Int32);
-    vnode.writeValueScalar(val);
+    vnode.writeValue(opcua::Variant{val});
     vnode.writeDisplayName({"en", std::to_string(num)});
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
     imap.emplace(num, unisetstd::make_unique<IONode>(vnode));
@@ -80,13 +87,13 @@ void OPCUATestServer::setF32( const std::string& varname, float val )
 
     if( it != smap.end() )
     {
-        it->second->node.writeValueScalar(val);
+        it->second->node.writeValue(opcua::Variant{val});
         return;
     }
 
     auto vnode = ioNode->node.addVariable(opcua::NodeId(0, varname), varname);
     vnode.writeDataType(opcua::DataTypeId::Float);
-    vnode.writeValueScalar(val);
+    vnode.writeValue(opcua::Variant{val});
     vnode.writeDisplayName({"en", varname});
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
     smap.emplace(varname, unisetstd::make_unique<IONode>(vnode));
@@ -109,35 +116,35 @@ void OPCUATestServer::setX( int num, int32_t val, opcua::DataTypeId type )
     switch(type)
     {
         case opcua::DataTypeId::Int32:
-            it->second->node.writeValueScalar(val);
+            it->second->node.writeValue(opcua::Variant{val});
             break;
 
         case opcua::DataTypeId::UInt32:
-            it->second->node.writeValueScalar((uint32_t) val);
+            it->second->node.writeValue(opcua::Variant{(uint32_t) val});
             break;
 
         case opcua::DataTypeId::Int16:
-            it->second->node.writeValueScalar((int16_t) val);
+            it->second->node.writeValue(opcua::Variant{(int16_t) val});
             break;
 
         case opcua::DataTypeId::UInt16:
-            it->second->node.writeValueScalar((uint16_t) val);
+            it->second->node.writeValue(opcua::Variant{(uint16_t) val});
             break;
 
         case opcua::DataTypeId::Int64:
-            it->second->node.writeValueScalar((int64_t) val);
+            it->second->node.writeValue(opcua::Variant{(int64_t) val});
             break;
 
         case opcua::DataTypeId::UInt64:
-            it->second->node.writeValueScalar((uint64_t) val);
+            it->second->node.writeValue(opcua::Variant{(uint64_t) val});
             break;
 
         case opcua::DataTypeId::Byte:
-            it->second->node.writeValueScalar((uint8_t) val);
+            it->second->node.writeValue(opcua::Variant{(uint8_t) val});
             break;
 
         default:
-            it->second->node.writeValueScalar((int32_t)val);
+            it->second->node.writeValue(opcua::Variant{(int32_t)val});
             break;
     };
 
@@ -149,7 +156,7 @@ void OPCUATestServer::setI32( const std::string& varname, int32_t val )
 
     if( it != smap.end() )
     {
-        it->second->node.writeValueScalar(val);
+        it->second->node.writeValue(opcua::Variant{val});
         return;
     }
 
@@ -157,7 +164,7 @@ void OPCUATestServer::setI32( const std::string& varname, int32_t val )
     vnode.writeDataType(opcua::DataTypeId::Int32);
     vnode.writeDisplayName({"en", varname});
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
-    vnode.writeValueScalar(val);
+    vnode.writeValue(opcua::Variant{val});
     smap[varname] = unisetstd::make_unique<IONode>(vnode);
 }
 // -------------------------------------------------------------------------
@@ -167,7 +174,7 @@ void OPCUATestServer::setBool( const std::string& varname, bool set )
 
     if( it != smap.end() )
     {
-        it->second->node.writeValueScalar(set);
+        it->second->node.writeValue(opcua::Variant{set});
         return;
     }
 
@@ -175,7 +182,7 @@ void OPCUATestServer::setBool( const std::string& varname, bool set )
     vnode.writeDataType(opcua::DataTypeId::Boolean);
     vnode.writeDisplayName({"en", varname});
     vnode.writeAccessLevel(UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE);
-    vnode.writeValueScalar(set);
+    vnode.writeValue(opcua::Variant{set});
     smap[varname] = unisetstd::make_unique<IONode>(vnode);
 }
 // -------------------------------------------------------------------------
@@ -187,25 +194,25 @@ int32_t OPCUATestServer::getX( int num, opcua::DataTypeId type )
         return 0;
 
     if( type  == opcua::DataTypeId::Int32 )
-        return (int32_t)it->second->node.readValueScalar<int32_t>();
+        return (int32_t)it->second->node.readValue().to<int32_t>();
 
     if( type  == opcua::DataTypeId::UInt32 )
-        return (int32_t)it->second->node.readValueScalar<uint32_t>();
+        return (int32_t)it->second->node.readValue().to<uint32_t>();
 
     if( type  == opcua::DataTypeId::Int16 )
-        return (int32_t)it->second->node.readValueScalar<int16_t>();
+        return (int32_t)it->second->node.readValue().to<int16_t>();
 
     if( type  == opcua::DataTypeId::UInt16 )
-        return (int32_t)it->second->node.readValueScalar<uint16_t>();
+        return (int32_t)it->second->node.readValue().to<uint16_t>();
 
     if( type  == opcua::DataTypeId::Int64 )
-        return (int32_t)it->second->node.readValueScalar<int64_t>();
+        return (int32_t)it->second->node.readValue().to<int64_t>();
 
     if( type  == opcua::DataTypeId::UInt64 )
-        return (int32_t)it->second->node.readValueScalar<uint64_t>();
+        return (int32_t)it->second->node.readValue().to<uint64_t>();
 
     if( type  == opcua::DataTypeId::Byte )
-        return (int32_t)it->second->node.readValueScalar<uint8_t>();
+        return (int32_t)it->second->node.readValue().to<uint8_t>();
 
     return 0;
 }
@@ -215,7 +222,7 @@ int32_t OPCUATestServer::getI32( const std::string& name )
     auto it = smap.find(name);
 
     if( it != smap.end() )
-        return it->second->node.readValueScalar<int32_t>();
+        return it->second->node.readValue().to<int32_t>();
 
     return 0;
 }
@@ -225,7 +232,7 @@ int32_t OPCUATestServer::getI32( int num )
     auto it = imap.find(num);
 
     if( it != imap.end() )
-        return it->second->node.readValueScalar<int32_t>();
+        return it->second->node.readValue().to<int32_t>();
 
     return 0;
 }
@@ -235,7 +242,7 @@ float OPCUATestServer::getF32( const std::string& name )
     auto it = smap.find(name);
 
     if( it != smap.end() )
-        return it->second->node.readValueScalar<float>();
+        return it->second->node.readValue().to<float>();
 
     return 0;
 }
@@ -245,14 +252,14 @@ bool OPCUATestServer::getBool( const std::string& name )
     auto it = smap.find(name);
 
     if( it != smap.end() )
-        return it->second->node.readValueScalar<bool>();
+        return it->second->node.readValue().to<bool>();
 
     return false;
 }
 // -------------------------------------------------------------------------
 bool OPCUATestServer::isRunning()
 {
-    return server->isRunning();
+    return server.isRunning();
 }
 // -------------------------------------------------------------------------
 void OPCUATestServer::start()
@@ -262,11 +269,11 @@ void OPCUATestServer::start()
 // -------------------------------------------------------------------------
 void OPCUATestServer::work()
 {
-    server->run();
+    server.run();
 }
 // -------------------------------------------------------------------------
 void OPCUATestServer::stop()
 {
-    server->stop();
+    server.stop();
 }
 // -------------------------------------------------------------------------

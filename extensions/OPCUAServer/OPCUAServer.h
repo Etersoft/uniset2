@@ -260,7 +260,7 @@ namespace uniset
             size_t methodCount = { 0 };
 
         private:
-            std::unique_ptr<opcua::Server> opcServer = { nullptr };
+            opcua::Server opcServer;
             std::unique_ptr<IONode> ioNode = { nullptr };
             std::string prefix;
             std::string propPrefix;

@@ -1954,12 +1954,12 @@ namespace uniset
                 callbacks.emplace_back(
                     [&, i](const auto & item, const opcua::DataValue & value)
                 {
-                    opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
+                    opclog5 << myname << "item: " << toString(item.itemToMonitor.nodeId()) << " - new value: " << (*(UA_Int32*) value.value().data() ) << endl;
 
                     auto& result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
-                    auto data = value.getValue();
+                    auto data = value.value();
 
-                    result.status = value.getStatus();
+                    result.status = value->status;
 
                     if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
                         result.value = int32_t(*(UA_Int32*) data.data());

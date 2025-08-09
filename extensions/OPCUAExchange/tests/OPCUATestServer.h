@@ -4,7 +4,7 @@
 #include <string>
 #include <atomic>
 #include <ostream>
-#include "open62541pp/open62541pp.h"
+#include "open62541pp/open62541pp.hpp"
 #include "ThreadCreator.h"
 // -------------------------------------------------------------------------
 /*! Реализация OPCUATestServer для тестирования */
@@ -45,7 +45,7 @@ class OPCUATestServer
             IONode( const opcua::Node<opcua::Server>& n ):  node(n) {};
         };
 
-        std::unique_ptr<opcua::Server> server;
+        opcua::Server server;
         std::unique_ptr<IONode> ioNode;
         std::string addr;
         bool verbose = {true};
