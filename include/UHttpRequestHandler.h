@@ -126,7 +126,8 @@ namespace uniset
             public Poco::Net::HTTPRequestHandler
         {
             public:
-                UHttpRequestHandler( std::shared_ptr<IHttpRequestRegistry> _registry, const std::string& httpCORS_allow = "*");
+                UHttpRequestHandler( std::shared_ptr<IHttpRequestRegistry> _registry, const std::string& httpCORS_allow = "*",
+                                                                        const std::string& contentType="text/json; charset=UTF-8");
 
                 virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
 
@@ -135,6 +136,7 @@ namespace uniset
                 std::shared_ptr<IHttpRequestRegistry> registry;
                 std::shared_ptr<DebugStream> log;
                 const std::string httpCORS_allow = { "*" };
+                std::string httpDefaultContentType = {"text/json; charset=UTF-8" };
         };
         // -------------------------------------------------------------------------
         class UHttpRequestHandlerFactory:
@@ -148,9 +150,11 @@ namespace uniset
 
                 // (CORS): Access-Control-Allow-Origin. Default: *
                 void setCORS_allow( const std::string& allow );
+                void setDefaultContentType( const std::string& ct );
             private:
                 std::shared_ptr<IHttpRequestRegistry> registry;
                 std::string httpCORS_allow = { "*" };
+                std::string httpDefaultContentType = {"text/json; charset=UTF-8" };
         };
     }
     // -------------------------------------------------------------------------

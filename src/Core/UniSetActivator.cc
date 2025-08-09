@@ -98,6 +98,7 @@ namespace uniset
             httpPort = conf->getArgInt("--activator-httpserver-port", s.str());
             ulog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
             httpCORS_allow = conf->getArgParam("--activator-httpserver-cors-allow", "*");
+            httpDefaultContentType = conf->getArgParam("--activator-httpserver-default-content-type", "text/json; charset=UTF-8");
         }
 
 #endif
@@ -165,6 +166,7 @@ namespace uniset
                 auto reg = dynamic_pointer_cast<UHttp::IHttpRequestRegistry>(shared_from_this());
                 httpserv = make_shared<UHttp::UHttpServer>(reg, httpHost, httpPort);
                 httpserv->setCORS_allow(httpCORS_allow);
+                httpserv->setDefaultContentType(httpDefaultContentType);
                 httpserv->start();
             }
             catch( std::exception& ex )

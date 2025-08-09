@@ -47,6 +47,7 @@ namespace uniset
 
                 // (CORS): Access-Control-Allow-Origin. Default: *
                 void setCORS_allow( const std::string& CORS_allow );
+                void setDefaultContentType( const std::string& ct);
             protected:
                 UHttpServer();
 
