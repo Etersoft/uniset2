@@ -22,7 +22,7 @@
 #include <regex>
 #include <optional>
 #include <unordered_map>
-#include "open62541pp/open62541pp.h"
+#include "open62541pp/open62541pp.hpp"
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"

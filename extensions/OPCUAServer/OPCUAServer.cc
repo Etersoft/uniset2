@@ -24,7 +24,6 @@ extern "C" {
 #include <cmath>
 #include <iomanip>
 #include <sstream>
-#include "open62541pp/ErrorHandling.h"
 #include "Exceptions.h"
 #include "OPCUAServer.h"
 #include "unisetstd.h"
@@ -65,22 +64,24 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     auto description = it.getProp2("description", browseName);
     propPrefix = conf->getArgParam("--" + argprefix + "prop-prefix", it.getProp("propPrefix"));
 
-    opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
-    opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
-    opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
-    opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
+    opcua::ServerConfig opcconf((uint16_t)port);
+    opcconf.setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
+    opcconf.setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
+    opcconf.setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
+    opcconf.setLogger([this](auto level, auto category, auto msg)
+                         {
+                             mylog->level5() << myname
+                                             << "[" << getLogLevelName(level) << "] "
+                                             << "[" << getLogCategoryName(category) << "] "
+                                             << msg << std::endl;
+                         });
+
+    opcServer = std::make_unique<opcua::Server>( std::move(opcconf) );
     namePrefix = it.getProp2("namePrefix", "");
     updateTime_msec = conf->getArgPInt("--" + argprefix + "updatetime", it.getProp("updateTime"), (int)updateTime_msec);
     vmonit(updateTime_msec);
     myinfo << myname << "(init): OPC UA server " << ip << ":" << port << " updatePause=" << updateTime_msec << endl;
 
-    opcServer->setLogger([this](auto level, auto category, auto msg)
-    {
-        mylog->level5() << myname
-                        << "[" << getLogLevelName(level) << "] "
-                        << "[" << getLogCategoryName(category) << "] "
-                        << msg << std::endl;
-    });
 
     auto opcConfig = UA_Server_getConfig(opcServer->handle());
     opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
@@ -97,6 +98,17 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
            << " maxSecurityTokenLifetime=" << opcConfig->maxSecurityTokenLifetime
            << endl;
 
+    // warning: escape unique_ptr
+    opcua::Node parentNode{*opcServer.get(), opcua::ObjectId::ObjectsFolder};
+
+    auto uroot = parentNode.addFolder(opcua::NodeId(0, "uniset"), "uniset");
+    uroot.writeDescription({"en", "uniset i/o"});
+
+    ioNode = std::make_unique<IONode>(std::move(uroot.addFolder(opcua::NodeId(0, browseName), browseName)));
+    ioNode->node.writeDescription({"ru-RU", description});
+    ioNode->node.writeDisplayName({"en", browseName});
+//    opcServer->setCustomHostname(ip);
+
     UA_LogLevel loglevel = UA_LOGLEVEL_ERROR;
 
     if( mylog->is_warn() )
@@ -108,15 +120,11 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     if( mylog->is_level9() )
         loglevel = UA_LOGLEVEL_DEBUG;
 
-    opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
-
-    auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
-    uroot.writeDescription({"en", "uniset i/o"});
-
-    ioNode = unisetstd::make_unique<IONode>(uroot.addFolder(opcua::NodeId(0, browseName), browseName));
-    ioNode->node.writeDescription({"ru-RU", description});
-    ioNode->node.writeDisplayName({"en", browseName});
-    opcServer->setCustomHostname(ip);
+    // HACK (init loglevel)
+    UA_ServerConfig *sconf = UA_Server_getConfig(opcServer->handle());
+    auto slogger = UA_Log_Stdout_new( loglevel );
+    slogger->clear = sconf->logging->clear;
+    sconf->logging = slogger;
 
     /* Инициализация каталога */
     UniXML::iterator tit = conf->findNode(cnode, "folders");
@@ -401,7 +409,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         attr.displayName = UA_LOCALIZEDTEXT_ALLOC(displayNameLang.c_str(), displayName.c_str());
         attr.executable = true;
 
-        UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.getNamespaceIndex(), sname.c_str());
+        UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex(), sname.c_str());
 
         UA_Argument inputArguments;
         UA_Argument_init(&inputArguments);
