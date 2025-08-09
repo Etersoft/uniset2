@@ -1003,7 +1003,23 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 	{
 		// 'set'
 		uniset::json::help::item cmd("set", "set value for sensor");
-		cmd.param("id1=val1&name2=val2&id3=val3", "set value for id1,name2,id3 sensors");
+		cmd.param("id1=val1&name2=val2&id3=val3", "set value for sensors id1,name2,id3");
+		cmd.param("supplier", "[optional] name of the process that changes sensors (must be first in request)");
+		myhelp.add(cmd);
+	}
+
+	{
+		// 'freeze'
+		uniset::json::help::item cmd("freeze", "freeze value for sensor");
+		cmd.param("id1=val1&name2=val2&id3=val3", "freeze value for sensors id1,name2,id3");
+		cmd.param("supplier", "[optional] name of the process that changes sensors (must be first in request)");
+		myhelp.add(cmd);
+	}
+
+	{
+		// 'unfreeze'
+		uniset::json::help::item cmd("unfreeze", "unfreeze value for sensor");
+		cmd.param("id1&name2&id3", "unfreeze value for sensors id1,name2,id3");
 		cmd.param("supplier", "[optional] name of the process that changes sensors (must be first in request)");
 		myhelp.add(cmd);
 	}
@@ -1027,6 +1043,12 @@ Poco::JSON::Object::Ptr IOController::httpRequest( const string& req, const Poco
 
 	if( req == "set" )
 		return request_set(req, p);
+
+	if( req == "freeze" )
+		return request_freeze(req, p, true);
+
+	if( req == "unfreeze" )
+		return request_freeze(req, p, false);
 
 	if( req == "sensors" )
 		return request_sensors(req, p);
@@ -1168,6 +1190,94 @@ Poco::JSON::Object::Ptr IOController::request_set( const string& req, const Poco
             try
             {
                 setValue(s.si.id, s.val, sup_id );
+            }
+            catch( IOController_i::NameNotFound& ex )
+            {
+                Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+                jr->set("name", s.fname);
+                jr->set("error", string(ex.err));
+                jerrs->add(jr);
+            }
+            catch( std::exception &ex )
+            {
+                Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+                jr->set("name", s.fname);
+                jr->set("error", string(ex.what()));
+                jerrs->add(jr);
+            }
+        }
+        else
+        {
+            Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+            jr->set("name", p.first);
+            jr->set("error", "not found");
+            jerrs->add(jr);
+        }
+    }
+
+    return jdata;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr IOController::request_freeze( const string& req, const Poco::URI::QueryParameters& p, bool set )
+{
+    if( disabledHttpFreezeApi )
+    {
+        std::ostringstream err;
+        err << "(IHttpRequest::Request): " << req << " disabled";
+        throw uniset::SystemError(err.str());
+    }
+
+    if( p.empty() )
+    {
+        ostringstream err;
+        err << myname << "(request_set): 'freeze/unfreeze'. Unknown ID or Name. Use parameters: freeze?ID1=val1&name2=val2&ID3=val3&...";
+        throw uniset::SystemError(err.str());
+    }
+
+    // {
+    //	 "errors" [
+    //           { name: string, error: string },
+    //           { name: string, error: string },
+    //           ...
+    //	 ],
+    //
+    //	 "object" { mydata... }
+    //	}
+
+    Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+    auto my = httpGetMyInfo(jdata);
+    auto jerrs= uniset::json::make_child_array(jdata, "errors");
+
+    auto conf = uniset_conf();
+    uniset::ObjectId sup_id = DefaultObjectId;
+
+    bool skipFirst = false;
+    if( p[0].first == "supplier" )
+    {
+        sup_id = conf->getObjectID(p[0].second);
+        skipFirst = true;
+    }
+
+    for( const auto& p: p )
+    {
+        if( skipFirst )
+        {
+            skipFirst = false;
+            continue;
+        }
+
+#if __cplusplus >= 201703L
+        auto s = uniset::parseSInfo_sv(p.first, conf);
+        s.val = uniset::uni_atoi_sv(p.second);
+#else
+        auto s = uniset::parseSInfo(p.first, conf);
+        s.val = uniset::uni_atoi(p.second);
+#endif
+        if( s.si.id != uniset::DefaultObjectId )
+        {
+            try
+            {
+                freezeValue(s.si.id, set, s.val, sup_id );
             }
             catch( IOController_i::NameNotFound& ex )
             {

@@ -202,9 +202,11 @@ namespace uniset
             // http API
             virtual Poco::JSON::Object::Ptr request_get( const std::string& req, const Poco::URI::QueryParameters& p );
             virtual Poco::JSON::Object::Ptr request_set( const std::string& req, const Poco::URI::QueryParameters& p );
+            virtual Poco::JSON::Object::Ptr request_freeze( const std::string& req, const Poco::URI::QueryParameters& p, bool set );
             virtual Poco::JSON::Object::Ptr request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
             void getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo = false );
             bool disabledHttpSetApi = { false }; /*!< отключить API "set", для невозможности устанавливать датчики через HTTP API */
+            bool disabledHttpFreezeApi = { false };/*!< отключить API "freeze/unfreeze", для невозможности управлять через HTTP API */
 #endif
 
             // переопределяем для добавления вызова регистрации датчиков

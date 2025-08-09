@@ -156,6 +156,28 @@ static void check_set( const std::string& query )
     REQUIRE(jarr->empty());
 }
 // -----------------------------------------------------------------------------
+static void check_freeze( const std::string& query )
+{
+    //  QUERY: /freeze?xxx=val&yyy=val2
+    //  REPLY:
+    //  {"object":
+    //    {"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+    //   "errors":[]
+    //  }
+
+    std::string s = shm->apiRequest(query);
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(json);
+
+    auto jarr = json->get("errors").extract<Poco::JSON::Array::Ptr>();
+    REQUIRE(jarr);
+
+    // success (no errors)
+    REQUIRE(jarr->empty());
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("[REST API: /get]", "[restapi][get]")
 {
     init_test();
@@ -288,7 +310,7 @@ TEST_CASE("[REST API: /set]", "[restapi][set]")
             Poco::JSON::Object::Ptr jret = jarr->getObject(i);
 
             if( jret->get("name").convert<std::string>() == "dummy"
-                    && jret->get("error").convert<std::string>().empty() == false )
+                    && !jret->get("error").convert<std::string>().empty() )
             {
                 found_error = true;
                 break;
@@ -296,6 +318,140 @@ TEST_CASE("[REST API: /set]", "[restapi][set]")
         }
 
         REQUIRE(found_error);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[REST API: /freeze|unfreeze]", "[restapi][freeze]")
+{
+    init_test();
+
+    SECTION("freeze/unfreeze ByName")
+    {
+        check_freeze("/freeze?API_Sensor_AS=12&API_Sensor2_AS=12");
+        REQUIRE( shm->getValue(122) == 12 );
+        REQUIRE( shm->getValue(123) == 12 );
+
+        shm->setValue(122, 14);
+        shm->setValue(123, 14);
+
+        REQUIRE( shm->getValue(122) == 12 );
+        REQUIRE( shm->getValue(123) == 12 );
+
+        check_freeze("/unfreeze?API_Sensor_AS&API_Sensor2_AS");
+        REQUIRE( shm->getValue(122) == 14 );
+        REQUIRE( shm->getValue(123) == 14 );
+
+    }
+
+    SECTION("freeze/unfreeze ByID")
+    {
+        check_freeze("/freeze?122=12&123=12");
+        REQUIRE( shm->getValue(122) == 12 );
+        REQUIRE( shm->getValue(123) == 12 );
+
+        shm->setValue(122, 14);
+        shm->setValue(123, 14);
+
+        REQUIRE( shm->getValue(122) == 12 );
+        REQUIRE( shm->getValue(123) == 12 );
+
+        check_freeze("/unfreeze?122&123");
+        REQUIRE( shm->getValue(122) == 14 );
+        REQUIRE( shm->getValue(123) == 14 );
+    }
+
+    SECTION("freeze/unfreeze ByIDWithSupplier")
+    {
+        check_freeze("/freeze?supplier=TestProc1&122=5&123=5");
+        REQUIRE( shm->getValue(122) == 5 );
+        REQUIRE( shm->getValue(123) == 5 );
+
+        shm->setValue(122, 14);
+        shm->setValue(123, 14);
+
+        REQUIRE( shm->getValue(122) == 5 );
+        REQUIRE( shm->getValue(123) == 5 );
+
+        check_freeze("/unfreeze?supplier=TestProc1&122&123");
+        REQUIRE( shm->getValue(122) == 14 );
+        REQUIRE( shm->getValue(123) == 14 );
+    }
+
+    SECTION("BadFormat")
+    {
+        // Запрос без параметров
+        // QUERY: /set
+        // Ожидаемый формат ответа:
+        // {"ecode":500,"error":"SharedMemory(request): 'freeze/unfreeze'. Unknown ID or Name. Use parameters: freeze?ID1=val1&name2=va;2&ID3=val3,..."}
+        std::string s = shm->apiRequest("/freeze");
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(s);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+
+        REQUIRE( json->get("ecode").convert<int>() == 500 );
+    }
+
+    SECTION("NotFound")
+    {
+        // QUERY: /freeze?dummy=5
+        // Ожидаемый формат ответа:
+        //      {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+        //          "errors":[{"error":"not found","name":"dummy"}]}
+
+        std::string s = shm->apiRequest("/freeze?dummy=5");
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(s);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+
+        auto jarr = json->get("errors").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(jarr);
+
+        Poco::JSON::Object::Ptr jret = jarr->getObject(0);
+        REQUIRE(jret);
+
+        // просто проверяем что 'error' не пустой..
+        REQUIRE( jret->get("error").convert<std::string>().empty() == false );
+    }
+
+    SECTION("NotFound some sensor")
+    {
+        // QUERY: /freeze?122=10&dummy=15
+        // Ожидаемый формат ответа:
+        //      {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+        //          "errors":[{"error":"not found","name":"dummy"}]}
+
+        std::string s = shm->apiRequest("/freeze?122=10&dummy=15");
+
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(s);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+
+        auto jarr = json->get("errors").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(jarr);
+
+        bool found_error = false;
+
+        for( int i = 0; i < jarr->size(); i++ )
+        {
+            Poco::JSON::Object::Ptr jret = jarr->getObject(i);
+
+            if( jret->get("name").convert<std::string>() == "dummy"
+                && !jret->get("error").convert<std::string>().empty() )
+            {
+                found_error = true;
+                break;
+            }
+        }
+
+        REQUIRE(found_error);
+
+        s = shm->apiRequest("/unfreeze?122");
+        result = parser.parse(s);
+        json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
     }
 }
 // -----------------------------------------------------------------------------
