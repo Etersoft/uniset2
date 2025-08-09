@@ -22,7 +22,7 @@
 #include <regex>
 #include <optional>
 #include <unordered_map>
-#include "open62541pp/open62541pp.h"
+#include "open62541pp/open62541pp.hpp"
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
@@ -286,7 +286,7 @@ namespace uniset
             size_t methodCount = { 0 };
 
         private:
-            std::unique_ptr<opcua::Server> opcServer = { nullptr };
+            opcua::Server opcServer;
             std::unique_ptr<IONode> ioNode = { nullptr };
             std::string prefix;
             std::string propPrefix;

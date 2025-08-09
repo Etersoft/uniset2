@@ -25,7 +25,7 @@
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/types_generated_handling.h>
 
-#include <open62541pp/open62541pp.h>
+#include <open62541pp/open62541pp.hpp>
 
 #include "OPCUAClient.h"
 
@@ -161,14 +161,14 @@ bool OPCUAClient::connect( const std::string& addr )
     UA_SessionState sessionState{};
     UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
 
-    if(sessionState == UA_SESSIONSTATE_ACTIVATED)
+    if( sessionState == UA_SESSIONSTATE_ACTIVATED )
         return true;
 
     try
     {
         client.connect(addr.c_str());
     }
-    catch(const std::exception& ex)
+    catch( const std::exception& ex )
     {
         //cerr << addr << " (exception) "<< ex.what()<<endl;
         opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
@@ -185,14 +185,17 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     UA_SessionState sessionState{};
     UA_Client_getState(client.handle(), nullptr, &sessionState, nullptr);
 
-    if(sessionState == UA_SESSIONSTATE_ACTIVATED)
+    if( sessionState == UA_SESSIONSTATE_ACTIVATED )
         return true;
 
     try
     {
-        client.connect(addr, {user, pass});
+        if( !user.empty() )
+           client.config().setUserIdentityToken(opcua::UserNameIdentityToken{user, pass});
+
+        client.connect(addr);
     }
-    catch(const std::exception& ex)
+    catch( const std::exception& ex )
     {
         //cerr << addr << " (exception) " << ex.what() << endl;
         opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
@@ -405,7 +408,7 @@ std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChang
 {
     std::vector<opcua::MonitoredItem<opcua::Client>> ret;
     auto subscriptionId_ = sub.subscriptionId();
-    auto& exceptionCatcher = opcua::detail::getContext(client).exceptionCatcher;
+    auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
     std::vector<std::unique_ptr<uniset::MonitoredItem>> monItems;
     size_t attr_size = attrs.size();
 

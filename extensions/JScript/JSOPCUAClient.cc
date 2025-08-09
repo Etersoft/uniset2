@@ -80,7 +80,12 @@ bool JSOPCUAClient::connect(const std::string& endpoint, const std::string& user
 
     try
     {
-        client.connect(endpoint, {user, passwd});
+        if( !user.empty() && !passwd.empty() )
+        {
+            opcua::UserNameIdentityToken token(user, passwd);
+            client.config().setUserIdentityToken(token);
+        }
+        client.connect(endpoint);
     }
     catch( const std::exception& ex )
     {

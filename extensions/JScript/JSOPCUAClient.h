@@ -24,7 +24,8 @@
 
 #include <open62541/client_highlevel.h>
 #include <open62541/types_generated_handling.h>
-#include <open62541pp/open62541pp.h>
+#include <open62541pp/open62541pp.hpp>
+#include <open62541pp/ua/types.hpp>
 
 #include "DebugStream.h"
 

@@ -10,8 +10,9 @@
 #include <thread>
 #include <atomic>
 #include <functional>
+#include <optional>
 
-#include "open62541pp/open62541pp.h"
+#include "open62541pp/open62541pp.hpp"
 // --------------------------------------------------------------------------
 static const char* kEndpointUrl = "opc.tcp://127.0.0.1:15480";
 static const char* kNodeInt = "TestInt";
@@ -55,8 +56,7 @@ class OPCUATestServer
         std::string host;
         uint16_t port;
         std::unique_ptr<opcua::Server> server;
-        opcua::Node<opcua::Server> rootFolder;
-        opcua::Node<opcua::Server> ioNode;
+        std::optional<opcua::Node<opcua::Server>> ioNode;
         mutable std::unordered_map<std::string, std::unique_ptr<NodeEntry>> nodes;
         std::thread worker;
         std::atomic_bool running { false };

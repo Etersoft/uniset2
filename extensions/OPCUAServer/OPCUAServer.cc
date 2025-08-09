@@ -24,7 +24,6 @@ extern "C" {
 #include <cmath>
 #include <iomanip>
 #include <sstream>
-#include "open62541pp/ErrorHandling.h"
 #include "Exceptions.h"
 #include "OPCUAServer.h"
 #include "unisetstd.h"
@@ -44,6 +43,8 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 
     return s3;
 }
+// -----------------------------------------------------------------------------
+static const int namespaceIndex = 0;
 // -----------------------------------------------------------------------------
 OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                          const string& _prefix ):
@@ -76,24 +77,25 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     auto description = it.getProp2("description", browseName);
     propPrefix = conf->getArgParam("--" + argprefix + "prop-prefix", it.getProp("propPrefix"));
 
-    opcServer = unisetstd::make_unique<opcua::Server>((uint16_t)port);
-    opcServer->setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
-    opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
-    opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
+    opcua::ServerConfig opcconf((uint16_t)port);
+    opcconf.setApplicationName(it.getProp2("appName", "Uniset2 OPC UA Server"));
+    opcconf.setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
+    opcconf.setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
+    opcconf.setLogger([this](auto level, auto category, auto msg)
+                         {
+                             mylog->level5() << myname
+                                             << "[" << getLogLevelName(level) << "] "
+                                             << "[" << getLogCategoryName(category) << "] "
+                                             << msg << std::endl;
+                         });
+
+    opcServer = opcua::Server{ std::move(opcconf) };
     namePrefix = it.getProp2("namePrefix", "");
     updateTime_msec = conf->getArgPInt("--" + argprefix + "updatetime", it.getProp("updateTime"), (int)updateTime_msec);
     vmonit(updateTime_msec);
     myinfo << myname << "(init): OPC UA server " << ip << ":" << port << " updatePause=" << updateTime_msec << endl;
 
-    opcServer->setLogger([this](auto level, auto category, auto msg)
-    {
-        mylog->level5() << myname
-                        << "[" << getLogLevelName(level) << "] "
-                        << "[" << getLogCategoryName(category) << "] "
-                        << msg << std::endl;
-    });
-
-    auto opcConfig = UA_Server_getConfig(opcServer->handle());
+    auto opcConfig = UA_Server_getConfig(opcServer.handle());
     opcConfig->maxSubscriptions = conf->getArgPInt("--" + argprefix + "maxSubscriptions", it.getProp("maxSubscriptions"), (int)opcConfig->maxSubscriptions);
     opcConfig->maxSessions = conf->getArgPInt("--" + argprefix + "maxSessions", it.getProp("maxSessions"), (int)opcConfig->maxSessions);
     opcConfig->maxSecureChannels = conf->getArgPInt("--" + argprefix + "maxSecureChannels", it.getProp("maxSecureChannels"), (int)opcConfig->maxSessions);
@@ -119,20 +121,24 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     if( mylog->is_level9() )
         loglevel = UA_LOGLEVEL_DEBUG;
 
-    opcConfig->logger = UA_Log_Stdout_withLevel( loglevel );
+    // HACK (init loglevel)
+    UA_ServerConfig *sconf = UA_Server_getConfig(opcServer.handle());
+    auto slogger = UA_Log_Stdout_new( loglevel );
+    sconf->logging = slogger;
 
-    auto uroot = opcServer->getRootNode().addFolder(opcua::NodeId(0, "uniset"), "uniset");
+    auto parentNode = opcua::Node{opcServer, opcua::ObjectId::ObjectsFolder};
+    auto uroot = parentNode.addFolder(opcua::NodeId(namespaceIndex, "uniset"), "uniset");
     uroot.writeDescription({"en", "uniset i/o"});
 
-    ioNode = unisetstd::make_unique<IONode>(uroot.addFolder(opcua::NodeId(0, browseName), browseName));
+    ioNode = std::make_unique<IONode>(std::move(uroot.addFolder(opcua::NodeId(namespaceIndex, browseName), browseName)));
     ioNode->node.writeDescription({"ru-RU", description});
     ioNode->node.writeDisplayName({"en", browseName});
-    opcServer->setCustomHostname(ip);
+//    opcServer->setCustomHostname(ip);
 
     /* Инициализация каталога */
     UniXML::iterator tit = conf->findNode(cnode, "folders");
 
-    if(tit)
+    if( tit )
         initFolderMap(tit, "", ioNode);
 
     serverThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::serverLoop);
@@ -181,6 +187,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
         if( sz > 0 )
             setMaxSizeOfMessageQueue(sz);
     }
+
 }
 // -----------------------------------------------------------------------------
 OPCUAServer::~OPCUAServer()
@@ -209,12 +216,12 @@ void OPCUAServer::initFolderMap( uniset::UniXML::iterator it, const std::string&
 
         auto folder_name = cname;
 
-        if(!parent_name.empty())
+        if( !parent_name.empty() )
             folder_name = parent_name + "." + folder_name;
 
         try
         {
-            auto ioNode = unisetstd::make_unique<IONode>(parent->node.addFolder(opcua::NodeId(0, folder_name), cname));
+            auto ioNode = unisetstd::make_unique<IONode>(parent->node.addFolder(opcua::NodeId(namespaceIndex, folder_name), cname));
             ioNode->node.writeDescription({"en-US", desc});
 
             UniXML::iterator tit = it;
@@ -223,7 +230,7 @@ void OPCUAServer::initFolderMap( uniset::UniXML::iterator it, const std::string&
             myinfo << myname << "(initFolderMap): add new folder=" << folder_name << "(" << desc << ")" << endl;
             foldermap.emplace(folder_name, std::move(ioNode));
         }
-        catch(const opcua::BadStatus& status)
+        catch( const opcua::BadStatus& status )
         {
             ostringstream err;
             err << myname << ": catch <" << status.what() << "> on " << folder_name << endl;
@@ -376,7 +383,7 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     }
     else
     {
-        myinfo << myname << "(initVariable): opcua_folder not found.Using root folder for sensor " << sname << endl;
+        myinfo << myname << "(initVariable): opcua_folder not found. Using root folder for sensor " << sname << endl;
         node = ioNode.get();
     }
 
@@ -405,14 +412,14 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
         }
 
         //Инициализация метода
-        opcua::NodeId methodNodeId = opcua::NodeId(0, sname);
+        opcua::NodeId methodNodeId = opcua::NodeId(namespaceIndex, sname);
 
         UA_MethodAttributes attr = UA_MethodAttributes_default;
         attr.description = UA_LOCALIZEDTEXT_ALLOC(descLang.c_str(), desc.c_str());
         attr.displayName = UA_LOCALIZEDTEXT_ALLOC(displayNameLang.c_str(), displayName.c_str());
         attr.executable = true;
 
-        UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.getNamespaceIndex(), sname.c_str());
+        UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex(), sname.c_str());
 
         UA_Argument inputArguments;
         UA_Argument_init(&inputArguments);
@@ -440,10 +447,10 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
             }
         }
 
-        UA_StatusCode result = UA_Server_addMethodNode(opcServer->handle(),
+        UA_StatusCode result = UA_Server_addMethodNode(opcServer.handle(),
                                *methodNodeId.handle(), //requestedNewNodeId
                                *node->node.id().handle(),//parentNodeId
-                               UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),//referenceTypeId
+                               UA_NODEID_NUMERIC(namespaceIndex, UA_NS0ID_HASCOMPONENT),//referenceTypeId
                                methodBrowseName,
                                attr,
                                &UA_setValueMethod,
@@ -493,15 +500,15 @@ bool OPCUAServer::initVariable( UniXML::iterator& it )
     if( opctype == opcua::DataTypeId::Boolean )
     {
         bool set = defVal ? true : false;
-        vnode.writeValueScalar(set);
+        vnode.writeValue(opcua::Variant{set});
     }
     else if( opctype == opcua::DataTypeId::Float )
     {
         float v = defVal;
-        vnode.writeValueScalar(v);
+        vnode.writeValue(opcua::Variant{v});
     }
     else
-        vnode.writeValueScalar(defVal);
+        vnode.writeValue(opcua::Variant{defVal});
 
     auto i = variables.emplace(sid, vnode);
     i.first->second.stype = iotype;
@@ -559,12 +566,12 @@ void OPCUAServer::sysCommand( const uniset::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void OPCUAServer::serverLoopTerminate()
 {
-    opcServer->stop();
+    opcServer.stop();
 }
 // -----------------------------------------------------------------------------
 void OPCUAServer::serverLoop()
 {
-    if( opcServer == nullptr )
+    if( opcServer.isRunning() )
         return;
 
     PassiveTimer ptAct(activateTimeout);
@@ -579,7 +586,7 @@ void OPCUAServer::serverLoop()
         mywarn << myname << "(serverLoop): first update [FAILED]..." << endl;
 
     myinfo << myname << "(serverLoop): started..." << endl;
-    opcServer->run();
+    opcServer.run();
     myinfo << myname << "(serverLoop): terminated..." << endl;
 }
 // -----------------------------------------------------------------------------
@@ -587,8 +594,8 @@ bool OPCUAServer::deactivateObject()
 {
     activated = false;
 
-    if( opcServer )
-        opcServer->stop();
+    if( opcServer.isRunning() )
+        opcServer.stop();
 
     if( updateThread )
     {
@@ -811,20 +818,20 @@ void OPCUAServer::update()
             {
                 if( it->second.stype == UniversalIO::DO )
                 {
-                    it->second.state = shm->localGetValue(it->second.it, it->first) ? true : false;
+                    it->second.state = shm->localGetValue(it->second.it, it->first) != 0;
                     it->second.value = getBits(it->second.state ? 1 : 0, it->second.mask, it->second.offset);
                 }
                 else if( it->second.stype == UniversalIO::AO )
                 {
                     it->second.value = getBits(shm->localGetValue(it->second.it, it->first), it->second.mask, it->second.offset);
-                    it->second.state = it->second.value ? true : false;
+                    it->second.state = it->second.value != 0;
                 }
             }
 
             if( it->second.stype == UniversalIO::DO )
             {
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                it->second.node.writeValueScalar(it->second.state);
+                it->second.node.writeValue(opcua::Variant{it->second.state});
             }
             else if( it->second.stype == UniversalIO::AO )
             {
@@ -832,18 +839,18 @@ void OPCUAServer::update()
                 {
                     uniset::uniset_rwmutex_rlock lock(it->second.vmut);
                     float fval = (float)it->second.value / pow(10.0, it->second.precision);
-                    it->second.node.writeValueScalar( fval );
+                    it->second.node.writeValue(opcua::Variant{ fval} );
                 }
                 else
                 {
                     uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                    it->second.node.writeValueScalar(it->second.value);
+                    it->second.node.writeValue(opcua::Variant{it->second.value});
                 }
             }
             else if( it->second.stype == UniversalIO::DI )
             {
                 uniset::uniset_rwmutex_rlock lock(it->second.vmut);
-                auto set = it->second.node.readValueScalar<bool>();
+                auto set = it->second.node.readValue().to<bool>();
                 auto val = getBits(set ? 1 : 0, it->second.mask, it->second.offset);
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " set=" << set
@@ -857,9 +864,9 @@ void OPCUAServer::update()
                 DefaultValueType val = 0;
 
                 if( it->second.vtype == opcua::DataTypeId::Float )
-                    val = lroundf( it->second.node.readValueScalar<float>() * pow(10.0, it->second.precision) );
+                    val = lroundf( it->second.node.readValue().to<float>() * pow(10.0, it->second.precision) );
                 else
-                    val = getBits(it->second.node.readValueScalar<DefaultValueType>(), it->second.mask, it->second.offset);
+                    val = getBits(it->second.node.readValue().to<DefaultValueType>(), it->second.mask, it->second.offset);
 
                 mylog6 << this->myname << "(updateLoop): sid=" << it->first
                        << " value=" << val
@@ -1175,7 +1182,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
     st->set("extensionType", "OPCUAServer");
     st->set("LogServer", buildLogServerInfo());
 
-    auto opcConfig = UA_Server_getConfig(opcServer->handle());
+    auto opcConfig = UA_Server_getConfig(opcServer.handle());
 
     // endpoints
     {
