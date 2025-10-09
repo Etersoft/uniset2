@@ -323,6 +323,8 @@ namespace uniset
             int httpPort = { 0 };
             std::string httpCORS_allow = { "*" };
             std::string httpReplyAddr = { "" };
+            std::string httpJsonContentType = {"text/json; charset=UTF-8" };
+            std::string httpHtmlContentType = {"text/html; charset=UTF-8" };
 
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
