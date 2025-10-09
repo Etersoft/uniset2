@@ -100,7 +100,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
     maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
 
-    string tformat = uniset::getArg2Param("--" + prefix + "db-timestamp-format", argc, argv, it.getProp("dbTeimastampFormat"), "localtime");
+    string tformat = uniset::getArg2Param("--" + prefix + "db-timestamp-format", argc, argv, it.getProp("dbTimestampFormat"), "localtime");
 
     if( tformat == "localtime" || tformat == "utc" )
         tmsFormat = tformat;
@@ -157,7 +157,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
         if( l->name.empty()  )
         {
             ostringstream err;
-            err << name << "(init): Unknown name for logserver..";
+            err << name << "(init): Unknown name for logserver.";
             dbcrit << err.str() << endl;
             throw uniset::SystemError(err.str());
         }
@@ -245,6 +245,9 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
     httpCORS_allow = uniset::getArgParam("--" + prefix + "httpserver-cors-allow", argc, argv, httpCORS_allow);
     httpReplyAddr = uniset::getArgParam("--" + prefix + "httpserver-reply-addr", argc, argv, "");
+    auto httpDefaultCharset =  uniset::getArgParam("--" + prefix + "httpserver-charset", argc, argv, "UTF-8");
+    httpHtmlContentType = "text/html; charset=" + httpDefaultCharset;
+    httpJsonContentType = "text/json; charset=" + httpDefaultCharset;
 
     dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
@@ -254,7 +257,6 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     fgColor = uniset::getArg2Param("--" + prefix + "fg-color", argc, argv, it.getProp("fgColor"), fgColor);
     fgColorTitle = uniset::getArg2Param("--" + prefix + "fg-color-title", argc, argv, it.getProp("fgColorTitle"), fgColorTitle);
     bgColorTitle = uniset::getArg2Param("--" + prefix + "bg-color-title", argc, argv, it.getProp("bgColorTitle"), bgColorTitle);
-
 
     try
     {
@@ -503,6 +505,7 @@ void LogDB::help_print()
     cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
     cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
     cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << "--prefix-httpserver-charset charset         - ContentType charset. Default: 'UTF-8'" << endl;
     cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
 }
 // -----------------------------------------------------------------------------
@@ -868,10 +871,10 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
     std::ostream& out = resp.send();
 
-    resp.setContentType("text/json");
     resp.set("Access-Control-Allow-Methods", "GET");
     resp.set("Access-Control-Allow-Request-Method", "*");
     resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
+    resp.setContentType(httpJsonContentType);
 
     try
     {
@@ -978,7 +981,7 @@ Poco::JSON::Object::Ptr LogDB::respError( Poco::Net::HTTPServerResponse& resp,
         const string& message )
 {
     resp.setStatus(estatus);
-    resp.setContentType("text/json");
+    resp.setContentType(httpJsonContentType);
     Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
     jdata->set("error", resp.getReasonForStatus(resp.getStatus()));
     jdata->set("ecode", (int)resp.getStatus());
@@ -1225,7 +1228,7 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
     {
 
         resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        resp.setContentType("text/html");
+        resp.setContentType(httpHtmlContentType);
         resp.setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
         resp.setContentLength(0);
         std::ostream& err = resp.send();
@@ -1240,7 +1243,7 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
         if( wsocks.size() >= maxwsocks )
         {
             resp.setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
-            resp.setContentType("text/html");
+            resp.setContentType(httpHtmlContentType);
             resp.setStatusAndReason(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
             resp.setContentLength(0);
             std::ostream& err = resp.send();
@@ -1289,7 +1292,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
     if( !log )
     {
         resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        resp->setContentType("text/html");
+        resp->setContentType(httpHtmlContentType);
         resp->setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
         std::ostream& err = resp->send();
         err << "Not found '" << logname << "'";
@@ -1575,12 +1578,12 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
     using Poco::Net::HTTPResponse;
 
     resp.setChunkedTransferEncoding(true);
-    resp.setContentType("text/html");
+    resp.setContentType(httpHtmlContentType);
 
     ostr << "<html>" << endl;
     ostr << "<head>" << endl;
     ostr << "<title>" << myname << ": log servers list</title>" << endl;
-    ostr << "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">" << endl;
+    ostr << "<meta http-equiv=\"Content-Type\" content=\"" << httpHtmlContentType << "\">" << endl;
     ostr << "</head>" << endl;
     ostr << "<body>" << endl;
     ostr << "<h1>servers:</h1>" << endl;
@@ -1606,7 +1609,8 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
                                       const std::string& logname )
 {
     resp.setChunkedTransferEncoding(true);
-    resp.setContentType("text/html");
+    resp.setContentType(httpHtmlContentType);
+
 
     // code base on example from
     // https://github.com/pocoproject/poco/blob/developNet/samples/WebSocketServer/src/WebSocketServer.cpp
@@ -1614,7 +1618,7 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
     ostr << "<html>" << endl;
     ostr << "<head>" << endl;
     ostr << "<title>" << myname << " log '" << logname << "'</title>" << endl;
-    ostr << "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">" << endl;
+    ostr << "<meta http-equiv=\"Content-Type\" content=\"" << httpHtmlContentType << "\">" << endl;
     ostr << "<script type=\"text/javascript\">" << endl;
     ostr << "logscrollStopped = false;" << endl;
     ostr << "" << endl;
