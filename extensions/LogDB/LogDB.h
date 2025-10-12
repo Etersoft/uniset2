@@ -115,6 +115,7 @@ namespace uniset
       По умолчанию: минут
 
     /count?logname           - Получить текущее количество записей
+    /download                - Загрузить файл БД. По умолчанию выключено (см. httpEnabledDownload)
     \endcode
 
 
@@ -234,12 +235,16 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGetList( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpGetLogs( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpGetCount( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpDownload( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                     Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                            Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpWebSocketSet( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                     Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
+
+            bool supportsGzip( Poco::Net::HTTPServerRequest& request );
+
             // формирование условия where для строки XX[m|h|d|M]
             // XX m - минут, h-часов, d-дней, M - месяцев
             static std::string qLast( const std::string& p );
@@ -253,6 +258,7 @@ namespace uniset
 #endif
             std::string myname;
             std::unique_ptr<SQLiteInterface> db;
+            std::string dbfile;
 
             std::string tmsFormat = { "localtime" }; /*!< формат возвращаемого времени */
 
@@ -346,11 +352,13 @@ namespace uniset
             std::string httpReplyAddr = { "" };
             std::string httpJsonContentType = {"text/json; charset=UTF-8" };
             std::string httpHtmlContentType = {"text/html; charset=UTF-8" };
+            std::string utf8Code = "UTF-8";
 
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
             size_t wsMaxSend = { 200 };
-            bool httpEnabledLogControl = {false };
+            bool httpEnabledLogControl = { false };
+            bool httpEnabledDownload = { false };
 
             std::string fgColor = { "#c4c4c4" };
             std::string bgColor = { "#111111" };
