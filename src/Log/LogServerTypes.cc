@@ -86,57 +86,12 @@ namespace uniset
     // -------------------------------------------------------------------------
     std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Command cmd )
     {
-        switch( cmd )
-        {
-            case LogServerTypes::cmdSetLevel:
-                return os << "cmdSetLevel";
-
-            case LogServerTypes::cmdAddLevel:
-                return os << "cmdAddLevel";
-
-            case LogServerTypes::cmdDelLevel:
-                return os << "cmdDelLevel";
-
-            case LogServerTypes::cmdSetVerbosity:
-                return os << "cmdSetVerbosity";
-
-            case LogServerTypes::cmdRotate:
-                return os << "cmdRotate";
-
-            case LogServerTypes::cmdOffLogFile:
-                return os << "cmdOffLogFile";
-
-            case LogServerTypes::cmdOnLogFile:
-                return os << "cmdOnLogFile";
-
-            case LogServerTypes::cmdList:
-                return os << "cmdList";
-
-            case LogServerTypes::cmdFilterMode:
-                return os << "cmdFilterMode";
-
-            case LogServerTypes::cmdSaveLogLevel:
-                return os << "cmdSaveLogLevel";
-
-            case LogServerTypes::cmdRestoreLogLevel:
-                return os << "cmdRestoreLogLevel";
-
-            case LogServerTypes::cmdViewDefaultLogLevel:
-                return os << "cmdViewRestoreLogLevel";
-
-            case LogServerTypes::cmdNOP:
-                return os << "No command(NOP)";
-
-            default:
-                return os << "Unknown";
-        }
-
-        return os;
+       return os << std::to_string(cmd);
     }
     // -------------------------------------------------------------------------
     std::ostream& LogServerTypes::operator<<(std::ostream& os, const LogServerTypes::lsMessage& m )
     {
-        return os << " magic=" << m.magic << " cmd=" << m.cmd << " data=" << m.data;
+        return os << "magic=" << m.magic << " cmd=" << (LogServerTypes::Command)m.cmd << " data=" << m.data;
     }
     // -------------------------------------------------------------------------
     void LogServerTypes::lsMessage::setLogName( const std::string& name )
@@ -182,23 +137,23 @@ namespace uniset
 
             if( c == "-s" || c == "--set" )
             {
-                LogServerTypes::Command cmd = LogServerTypes::cmdSetLevel;
-                vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+                LogServerTypes::Command lcmd = LogServerTypes::cmdSetLevel;
+                vcmd.emplace_back(lcmd, (uint32_t)Debug::value(arg1), filter);
             }
             else if( c == "-a" || c == "--add" )
             {
-                LogServerTypes::Command cmd = LogServerTypes::cmdAddLevel;
-                vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+                LogServerTypes::Command lcmd = LogServerTypes::cmdAddLevel;
+                vcmd.emplace_back(lcmd, (uint32_t)Debug::value(arg1), filter);
             }
             else if( c == "-d" || c == "--del" )
             {
-                LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
-                vcmd.emplace_back(cmd, (uint32_t)Debug::value(arg1), filter);
+                LogServerTypes::Command lcmd = LogServerTypes::cmdDelLevel;
+                vcmd.emplace_back(lcmd, (uint32_t)Debug::value(arg1), filter);
             }
             else if( c == "-q" || c == "--set-verbosity" )
             {
-                LogServerTypes::Command cmd = LogServerTypes::cmdSetVerbosity;
-                vcmd.emplace_back(cmd, (uint32_t)Debug::value(arg1), filter);
+                LogServerTypes::Command lcmd = LogServerTypes::cmdSetVerbosity;
+                vcmd.emplace_back(lcmd, (uint32_t)Debug::value(arg1), filter);
             }
         }
 
@@ -209,3 +164,55 @@ namespace uniset
 
     // -------------------------------------------------------------------------
 } // end of namespace uniset
+// -----------------------------------------------------------------------------
+namespace std
+{
+    std::string to_string( const uniset::LogServerTypes::Command& cmd )
+    {
+        switch( cmd )
+        {
+            case uniset::LogServerTypes::cmdSetLevel:
+                return "cmdSetLevel";
+
+            case uniset::LogServerTypes::cmdAddLevel:
+                return "cmdAddLevel";
+
+            case uniset::LogServerTypes::cmdDelLevel:
+                return "cmdDelLevel";
+
+            case uniset::LogServerTypes::cmdSetVerbosity:
+                return "cmdSetVerbosity";
+
+            case uniset::LogServerTypes::cmdRotate:
+                return "cmdRotate";
+
+            case uniset::LogServerTypes::cmdOffLogFile:
+                return "cmdOffLogFile";
+
+            case uniset::LogServerTypes::cmdOnLogFile:
+                return "cmdOnLogFile";
+
+            case uniset::LogServerTypes::cmdList:
+                return "cmdList";
+
+            case uniset::LogServerTypes::cmdFilterMode:
+                return "cmdFilterMode";
+
+            case uniset::LogServerTypes::cmdSaveLogLevel:
+                return "cmdSaveLogLevel";
+
+            case uniset::LogServerTypes::cmdRestoreLogLevel:
+                return "cmdRestoreLogLevel";
+
+            case uniset::LogServerTypes::cmdViewDefaultLogLevel:
+                return "cmdViewRestoreLogLevel";
+
+            case uniset::LogServerTypes::cmdNOP:
+                return "No command(NOP)";
+
+            default:
+                return "Unknown";
+        }
+    }
+}
+// -----------------------------------------------------------------------------
