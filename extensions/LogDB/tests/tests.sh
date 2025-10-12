@@ -6,10 +6,12 @@ RET=0
 LOGSERVER_PID=
 LOGDB_PID=
 dbfile="logdb-tests.db"
+downloadfile="download.db.gz"
 http_host="localhost"
 http_port=8888
 
-function atexit()
+# shellcheck disable=SC2317
+atexit()
 {
 	trap - EXIT
 
@@ -21,26 +23,27 @@ function atexit()
 
     sleep 2
 
-	[ -a "$dbfile" ] && rm -f $dbfile*
+	[ -e "$dbfile" ] && rm -f $dbfile*
+	[ -e "$downloadfile" ] && rm -f $downloadfile
 
 	exit $RET
 }
 
 trap atexit EXIT
 
-function create_test_db()
+create_test_db()
 {
 	./uniset2-logdb-adm create -f $dbfile
 }
 
-function logdb_run_logserver()
+logdb_run_logserver()
 {
 	./uniset2-test-logserver -i localhost -p 3333 -d 500 1>/dev/null 2>/dev/null &
 	LOGSERVER_PID=$!
 	return $?
 }
 
-function logdb_run()
+logdb_run()
 {
 	./uniset2-logdb --logdb-single-confile logdb-tests-conf.xml \
 	--logdb-dbfile $dbfile \
@@ -48,18 +51,19 @@ function logdb_run()
 	--logdb-httpserver-host $http_host \
 	--logdb-httpserver-port $http_port \
 	--logdb-ls-check-connection-sec 1 \
-	--logdb-db-max-records 20000 &
+	--logdb-db-max-records 20000 \
+	--logdb-httpserver-download-enable &
 
 	LOGDB_PID=$!
 	return $?
 }
 
-function logdb_error()
+logdb_error()
 {
 	printf "%20s: ERROR: %s\n" "$1" "$2"
 }
 # ------------------------------------------------------------------------------------------
-function logdb_test_count()
+logdb_test_count()
 {
 	CNT=$( echo 'SELECT count(*) from logs;' | sqlite3 $dbfile )
 
@@ -69,16 +73,16 @@ function logdb_test_count()
 	return 1
 }
 
-function logdb_test_http_count()
+logdb_test_http_count()
 {
-	REQ=$( curl -s --request GET "http://$http_host:$http_port/api/v01/logdb/count" )
+	REQ=$( curl -s --request GET "http://$http_host:$http_port/api/v01/logdb/count?logserver1" )
 	echo $REQ | grep -q '"count":' && return 0
 
 	logdb_error "test_http_count" "get count of records fail"
 	return 1
 }
 
-function logdb_test_http_list()
+logdb_test_http_list()
 {
 	REQ=$( curl -s --request GET "http://$http_host:$http_port/api/v01/logdb/list" )
 	echo $REQ | grep -q 'logserver1' && return 0
@@ -89,15 +93,24 @@ function logdb_test_http_list()
 
 # see config
 LOGFILE="/tmp/uniset-test.log"
-function logdb_test_logfile()
+logdb_test_logfile()
 {
 	test -f $LOGFILE && return 0
 
 	logdb_error "test_logfile" "not found logfile: $LOGFILE"
 	return 1
 }
+
+logdb_test_http_download()
+{
+	REQ=$( curl -s -o $downloadfile --request GET "http://$http_host:$http_port/api/v01/logdb/download" )
+	[ -e "$downloadfile" ] && return 0
+
+	logdb_error "test_http_download" "not found file: $downloadfile"
+	return 1
+}
 # ------------------------------------------------------------------------------------------
-function logdb_run_all_tests()
+logdb_run_all_tests()
 {
    rm -f $LOGFILE
    
@@ -111,6 +124,7 @@ function logdb_run_all_tests()
    logdb_test_http_count || RET=1
    logdb_test_http_list || RET=1
    logdb_test_logfile || RET 1
+   logdb_test_http_download || RET 1
    
    # ==== finished ===
    rm -f $LOGFILE

@@ -21,10 +21,15 @@
 #include <sstream>
 #include <iomanip>
 #include <unistd.h>
+#include <fstream>
 
 #include "unisetstd.h"
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/WebSocket.h>
+#include <Poco/StreamCopier.h>
+#include <Poco/DeflatingStream.h>
+#include <Poco/File.h>
+#include <Poco/Path.h>
 #include "ujson.h"
 #include "LogDB.h"
 #include "Configuration.h"
@@ -212,7 +217,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
     if( !dbDisabled )
     {
-        const std::string dbfile = uniset::getArgParam("--" + prefix + "dbfile", argc, argv, it.getProp("dbfile"));
+        dbfile = uniset::getArgParam("--" + prefix + "dbfile", argc, argv, it.getProp("dbfile"));
 
         if( dbfile.empty() )
         {
@@ -252,6 +257,14 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
     if( httpEnabledLogControl )
         dblog1 << myname << "(init): enabled log control via http api" << endl;
+
+    if( !dbDisabled )
+    {
+        httpEnabledDownload = (uniset::findArgParam("--" + prefix + "httpserver-download-enable", argc, argv) != -1);
+
+        if( httpEnabledDownload )
+            dbinfo << myname << "(init): enabled download API.." << endl;
+    }
 
     dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
@@ -913,8 +926,6 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 {
     using Poco::Net::HTTPResponse;
 
-    std::ostream& out = resp.send();
-
     resp.set("Access-Control-Allow-Methods", "GET");
     resp.set("Access-Control-Allow-Request-Method", "*");
     resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
@@ -925,6 +936,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
         // В этой версии API поддерживается только GET
         if( req.getMethod() != "GET" )
         {
+            std::ostream& out = resp.send();
             auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, "method must be 'GET'");
             jdata->stringify(out);
             out.flush();
@@ -943,6 +955,8 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
         // http://[xxxx:port]/ws/
         if( seg.size() > 0 && seg[0] == "ws" )
         {
+            std::ostream& out = resp.send();
+
             if( seg.size() > 2 )
             {
                 if( seg[1] == "connect" )
@@ -979,6 +993,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
                 || seg[2].empty()
                 || seg[2] != "logdb")
         {
+            std::ostream& out = resp.send();
             ostringstream err;
             err << "Bad request structure. Must be /api/" << uniset::UHttp::UHTTP_API_VERSION << "/logdb/xxx";
             auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, err.str());
@@ -989,6 +1004,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
         if( !db )
         {
+            std::ostream& out = resp.send();
             ostringstream err;
             err << "Working with the database is disabled";
             auto jdata = respError(resp, HTTPResponse::HTTP_SERVICE_UNAVAILABLE, err.str());
@@ -999,6 +1015,14 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
         resp.setStatus(HTTPResponse::HTTP_OK);
         string cmd = seg[3];
+
+        if( cmd == "download" )
+        {
+            httpDownload(req, resp, qp);
+            return;
+        }
+
+        std::ostream& out = resp.send();
 
         if( cmd == "help" )
         {
@@ -1023,16 +1047,20 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
         else
         {
             auto json = httpGetRequest(resp, cmd, qp);
-            json->stringify(out);
+
+            if( json )
+                json->stringify(out);
         }
+
+        out.flush();
     }
     catch( std::exception& ex )
     {
+        std::ostream& out = resp.send();
         auto jdata = respError(resp, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, ex.what());
         jdata->stringify(out);
+        out.flush();
     }
-
-    out.flush();
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr LogDB::respError( Poco::Net::HTTPServerResponse& resp,
@@ -1048,7 +1076,9 @@ Poco::JSON::Object::Ptr LogDB::respError( Poco::Net::HTTPServerResponse& resp,
     return jdata;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpGetRequest( Poco::Net::HTTPServerResponse& resp, const string& cmd, const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr LogDB::httpGetRequest( Poco::Net::HTTPServerResponse& resp,
+        const string& cmd,
+        const Poco::URI::QueryParameters& p )
 {
     if( cmd == "list" )
         return httpGetList(resp, p);
@@ -1204,6 +1234,100 @@ Poco::JSON::Object::Ptr LogDB::httpGetCount( Poco::Net::HTTPServerResponse& resp
     jdata->set("name", params[0].first);
     jdata->set("count", count);
     return jdata;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr LogDB::httpDownload( Poco::Net::HTTPServerRequest& req,
+        Poco::Net::HTTPServerResponse& resp,
+        const Poco::URI::QueryParameters& p )
+{
+    if( !httpEnabledDownload )
+    {
+        dbwarn << "(httpDownload): db download disabled" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE, "API download disabled");
+    }
+
+    dblog3 << "(httpDownload): download database '" << dbfile << "'" << endl;
+
+    Poco::File pfile(dbfile);
+
+    if( !pfile.exists() || !pfile.isFile() )
+    {
+        dbwarn << "(httpDownload): Can't open file '" << dbfile << "'" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, "Can't open dbfile");
+    }
+
+    std::ifstream sfile(dbfile, std::ios::binary);
+
+    if( !sfile.is_open() )
+    {
+        dbwarn << "(httpDownload): Can't open ifstream for file '" << dbfile << "'" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, "Can't open dbfile");
+    }
+
+    // Проверяем поддержку gzip клиентом
+    bool useGzip = supportsGzip(req);
+
+    auto path = Poco::Path(pfile.path());
+    std::string fname = path.getFileName();
+
+    if( useGzip )
+        fname += ".gz";
+
+    std::string utf8Name;
+    Poco::URI::encode(fname, utf8Name, utf8Code);
+
+    const std::string contentDisposition =
+        "attachment; filename=\"" + fname + "\"; " +
+        "filename*=UTF-8''" + utf8Name;
+
+    resp.set("Content-Disposition", contentDisposition);
+
+    resp.setContentType("application/octet-stream");
+
+    if( useGzip )
+    {
+        resp.setContentType("application/gzip");
+        resp.set("Content-Encoding", "gzip");
+        resp.setChunkedTransferEncoding(true);
+    }
+    else
+        resp.setContentLength(pfile.getSize());
+
+    try
+    {
+        if( useGzip )
+        {
+            Poco::DeflatingOutputStream gzipStream(resp.send(), Poco::DeflatingStreamBuf::STREAM_GZIP);
+            Poco::StreamCopier::copyStream(sfile, gzipStream);
+            gzipStream.close();
+        }
+        else
+        {
+            // Отправляем без сжатия
+            Poco::StreamCopier::copyStream(sfile, resp.send());
+        }
+
+        sfile.close();
+    }
+    catch( const Poco::Exception& exc )
+    {
+        sfile.close();
+        dbwarn << "Error sending file: " << exc.displayText() << std::endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, "Can't send dbfile");
+    }
+
+    return nullptr;
+}
+// -----------------------------------------------------------------------------
+bool LogDB::supportsGzip( Poco::Net::HTTPServerRequest& request )
+{
+    if (request.has("Accept-Encoding"))
+    {
+        std::string acceptEncoding = request.get("Accept-Encoding");
+        return acceptEncoding.find("gzip") != std::string::npos;
+    }
+
+    return false;
 }
 // -----------------------------------------------------------------------------
 string LogDB::qLast( const string& p )
