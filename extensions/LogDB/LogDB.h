@@ -112,26 +112,35 @@ namespace uniset
       from='YYYY-MM-DD'      - 'с' указанной даты
       to='YYYY-MM-DD'        - 'по' указанную дату
       last=XX[m|h|d|M]       - за последние XX m-минут, h-часов, d-дней, M-месяцев
-       По умолчанию: минут
+      По умолчанию: минут
 
-    /count?logname                   - Получить текущее количество записей
+    /count?logname           - Получить текущее количество записей
     \endcode
 
 
     \section sec_LogDB_WEBSOCK LogDB: Поддержка web socket
 
-     В LogDB встроена возможность просмотра логов в реальном времени, через websocket.
-     Список лог-серверов доступен по адресу:
-     \code
-     ws://host:port/logdb/ws/
-     \endcode
-     Прямое подключение к websocket-у доступно по адресу:
-     \code
-     ws://host:port/logdb/ws/logname
-     \endcode
-     Где \a logname - это имя логсервера от которого мы хотим получать логи (см. \ref sec_LogDB_Conf).
+    В LogDB встроена возможность просмотра логов в реальном времени, через websocket.
+    Список лог-серверов доступен по адресу:
+    \code
+    http://host:port/ws/
+    \endcode
+    Прямое подключение к websocket-у доступно по адресу:
+    \code
+    ws://host:port/ws/connect/logname?set=info,warn,crit,-level2
+    \endcode
+    Где \a logname - это имя логсервера от которого мы хотим получать логи (см. \ref sec_LogDB_Conf).
+    \a set - позволяет установить желаемый уровень логов (не обязательный параметр)
 
     Количество создаваемых websocket-ов можно ограничить при помощи параметр maxWebsockets (--prefix-ws-max).
+
+    Управлять уровнем логов можно через API
+    \code
+      http://host:port/ws/logname?set=info,warn,crit,-level2
+      set=loglevel - Установить loglevel для logname. Разрешение на управление должно быть включено (см. httpEnabledLogControl)
+      'loglevel'   - задание в формате команды. Пример: info,warn,+level1,-level2
+    \endcode
+
 
     \section sec_LogDB_LOGFILE LogDB: Файлы логов
     Несмотря на то, что все логи сохраняются в БД, их так же можно писать в файлы.
@@ -221,13 +230,16 @@ namespace uniset
 
 #ifndef DISABLE_REST_API
             Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
-            Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpGetList( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpGetLogs( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpGetCount( const Poco::URI::QueryParameters& p );
-            void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
-            void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const std::string& logname );
-
+            Poco::JSON::Object::Ptr httpGetRequest( Poco::Net::HTTPServerResponse& resp, const std::string& cmd, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpGetList( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpGetLogs( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpGetCount( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
+                                    Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
+                                           Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpWebSocketSet( std::ostream& out, Poco::Net::HTTPServerRequest& req,
+                    Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
             // формирование условия where для строки XX[m|h|d|M]
             // XX m - минут, h-часов, d-дней, M - месяцев
             static std::string qLast( const std::string& p );
@@ -235,7 +247,8 @@ namespace uniset
             // преобразование в дату 'YYYY-MM-DD' из строки 'YYYYMMDD' или 'YYYY/MM/DD'
             static std::string qDate(const std::string& p, const char sep = '-');
 
-            std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp, const std::string& logname );
+            std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp,
+                    const std::string& logname, const Poco::URI::QueryParameters& p );
             void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
 #endif
             std::string myname;
@@ -271,6 +284,7 @@ namespace uniset
                     std::string ip;
                     int port = { 0 };
                     std::string cmd;
+                    std::string usercmd;
                     std::string peername;
                     std::string description;
 
@@ -283,15 +297,16 @@ namespace uniset
                     void check( ev::timer& t, int revents );
                     void event( ev::io& watcher, int revents );
                     void read( ev::io& watcher );
+                    void oncommand( ev::async& watcher, int revents );
                     void write( ev::io& io );
                     void close();
 
                     typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
                     ReadSignal signal_on_read();
 
-
                     void setCheckConnectionTime( double sec );
                     void setReadBufSize( size_t sz );
+                    void setCommand( const std::string& cmd );
 
                 protected:
                     void ioprepare();
@@ -301,6 +316,7 @@ namespace uniset
                     ReadSignal sigRead;
                     ev::io io;
                     ev::timer iocheck;
+                    ev::async iocmd;
 
                     double checkConnection_sec = { 5.0 };
 
@@ -312,10 +328,15 @@ namespace uniset
 
                     // буфер для посылаемых данных (write buffer)
                     std::queue<UTCPCore::Buffer*> wbuf;
+
+                    // очередь команд для посылки
+                    std::vector<UTCPCore::Buffer*> cmdbuf;
+                    uniset::uniset_rwmutex cmdmut;
             };
 
             std::vector< std::shared_ptr<Log> > logservers;
             std::shared_ptr<DebugStream> dblog;
+
 
 #ifndef DISABLE_REST_API
             std::shared_ptr<Poco::Net::HTTPServer> httpserv;
@@ -329,6 +350,7 @@ namespace uniset
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
             size_t wsMaxSend = { 200 };
+            bool httpEnabledLogControl = {false };
 
             std::string fgColor = { "#c4c4c4" };
             std::string bgColor = { "#111111" };
@@ -360,11 +382,9 @@ namespace uniset
 
                     void send( ev::timer& t, int revents );
                     void ping( ev::timer& t, int revents );
-
                     void add( Log* log, const std::string& txt );
 
                     void term();
-
                     void waitCompletion();
 
                     // настройка
@@ -395,7 +415,9 @@ namespace uniset
 
                     // очередь данных на посылку..
                     std::queue<UTCPCore::Buffer*> wbuf;
-                    size_t maxsize; // рассчитывается сходя из max_send (см. конструктор)
+                    size_t maxsize; // рассчитывается  исходя из max_send (см. конструктор)
+
+                    std::shared_ptr<Log> log;
             };
 
             class LogWebSocketGuard
@@ -407,6 +429,7 @@ namespace uniset
 
                     ~LogWebSocketGuard()
                     {
+                        ws->term();
                         logdb->delWebSocket(ws);
                     }
 
@@ -421,7 +444,6 @@ namespace uniset
             std::list<std::shared_ptr<LogWebSocket>> wsocks;
             uniset::uniset_rwmutex wsocksMutex;
             size_t maxwsocks = { 50 }; // максимальное количество websocket-ов
-
 
             class LogDBRequestHandlerFactory:
                 public Poco::Net::HTTPRequestHandlerFactory

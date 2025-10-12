@@ -70,7 +70,6 @@ namespace uniset
             bool isAcive() const noexcept;
 
             std::string name() const noexcept;
-
             std::string getShortInfo() noexcept;
 
 #ifndef DISABLE_REST_API

@@ -236,7 +236,7 @@ namespace uniset
             return;
         }
 
-        if (revents & EV_READ)
+        if( revents & EV_READ )
         {
             try
             {
@@ -245,7 +245,7 @@ namespace uniset
             catch(...) {}
         }
 
-        if (revents & EV_WRITE)
+        if( revents & EV_WRITE )
         {
             try
             {
@@ -286,7 +286,7 @@ namespace uniset
 
             if( logbuf.empty() )
             {
-                io.set(EV_NONE);
+                io.set(EV_READ);
                 checkConnectionTimer.start( checkConnectionTime ); // restart timer
                 return;
             }
@@ -295,7 +295,10 @@ namespace uniset
         }
 
         if( !buffer )
+        {
+            io.set(EV_READ);
             return;
+        }
 
         ssize_t ret = ::write(watcher.fd, buffer->dpos(), buffer->nbytes());
 
@@ -341,7 +344,7 @@ namespace uniset
 
             if( logbuf.empty() )
             {
-                io.set(EV_NONE);
+                io.set(EV_READ);
                 checkConnectionTimer.start( checkConnectionTime ); // restart timer
                 return;
             }

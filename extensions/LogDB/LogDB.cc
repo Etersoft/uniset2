@@ -96,7 +96,6 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
             dblog->level(Debug::value(loglevels));
     }
 
-
     qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
     maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
 
@@ -117,7 +116,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     if( numOverflow == 0 )
         numOverflow = maxdbRecords;
 
-    dbinfo << myname << "(init) maxdbRecords=" << maxdbRecords << " numOverflow=" << numOverflow << endl;
+    dbinfo << myname << "(init): maxdbRecords=" << maxdbRecords << " numOverflow=" << numOverflow << endl;
 
     flushBufferTimer.set<LogDB, &LogDB::onCheckBuffer>(this);
     wsactivate.set<LogDB, &LogDB::onActivate>(this);
@@ -248,6 +247,11 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     auto httpDefaultCharset =  uniset::getArgParam("--" + prefix + "httpserver-charset", argc, argv, "UTF-8");
     httpHtmlContentType = "text/html; charset=" + httpDefaultCharset;
     httpJsonContentType = "text/json; charset=" + httpDefaultCharset;
+
+    httpEnabledLogControl = (uniset::findArgParam("--" + prefix + "httpserver-logcontrol-enable", argc, argv) != -1 );
+
+    if( httpEnabledLogControl )
+        dblog1 << myname << "(init): enabled log control via http api" << endl;
 
     dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
@@ -554,7 +558,7 @@ void LogDB::evprepare()
 // -----------------------------------------------------------------------------
 void LogDB::onCheckBuffer(ev::timer& t, int revents)
 {
-    if (EV_ERROR & revents)
+    if( EV_ERROR & revents )
     {
         dbcrit << myname << "(LogDB::onCheckBuffer): invalid event" << endl;
         return;
@@ -595,11 +599,13 @@ void LogDB::Log::set( ev::dynamic_loop& loop )
     iocheck.set(loop);
     iocheck.set<LogDB::Log, &LogDB::Log::check>(this);
     iocheck.start(0, checkConnection_sec);
+    iocmd.set(loop);
+    iocmd.start();
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::check( ev::timer& t, int revents )
 {
-    if (EV_ERROR & revents)
+    if( EV_ERROR & revents)
         return;
 
     if( isConnected() )
@@ -663,19 +669,13 @@ void LogDB::Log::ioprepare()
     io.set<LogDB::Log, &LogDB::Log::event>(this);
     io.start(tcp->getSocket(), ev::READ);
     text.reserve(reservsize);
+    iocmd.set<LogDB::Log, &LogDB::Log::oncommand>(this);
 
     // первый раз при подключении надо послать команды
-
-    //! \todo Пока закрываем глаза на не оптимальность, того, что парсим строку каждый раз
-    auto cmdlist = LogServerTypes::getCommands(cmd);
-
-    if( !cmdlist.empty() )
-    {
-        for( const auto& msg : cmdlist )
-            wbuf.emplace(new UTCPCore::Buffer((unsigned char*)&msg, sizeof(msg)));
-
-        io.set(ev::WRITE);
-    }
+    if( !usercmd.empty() )
+        setCommand(usercmd);
+    else
+        setCommand(cmd);
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::event( ev::io& watcher, int revents )
@@ -707,6 +707,44 @@ void LogDB::Log::setCheckConnectionTime( double sec )
 void LogDB::Log::setReadBufSize( size_t sz )
 {
     buf.resize(sz);
+}
+// -----------------------------------------------------------------------------
+void LogDB::Log::setCommand( const std::string& c )
+{
+    //! \todo Пока закрываем глаза на не оптимальность того, что парсим строку каждый раз
+    auto cmdlist = LogServerTypes::getCommands(c);
+
+    if( cmdlist.empty() )
+        return;
+
+    uniset::uniset_rwmutex_wrlock lock(cmdmut);
+
+    for( const auto& msg : cmdlist )
+    {
+        dblog3 << name << ": command: " << msg << endl;
+        cmdbuf.push_back(new UTCPCore::Buffer((unsigned char*) &msg, sizeof(msg)));
+    }
+
+    iocmd.send();
+}
+// -----------------------------------------------------------------------------
+void LogDB::Log::oncommand( ev::async& watcher, int revents )
+{
+    if( EV_ERROR & revents )
+    {
+        dbcrit << name << "(oncommand): invalid event" << endl;
+        return;
+    }
+
+    uniset::uniset_rwmutex_wrlock lock(cmdmut);
+
+    for( const auto& msg : cmdbuf )
+    {
+        wbuf.push(msg);
+    }
+
+    cmdbuf.clear();
+    io.set(EV_WRITE);
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::read( ev::io& watcher )
@@ -767,7 +805,10 @@ void LogDB::Log::write( ev::io& io )
     buffer = wbuf.front();
 
     if( !buffer )
+    {
+        io.set(EV_READ);
         return;
+    }
 
     ssize_t ret = ::write(io.fd, buffer->dpos(), buffer->nbytes());
 
@@ -804,6 +845,9 @@ void LogDB::Log::close()
 {
     tcp->disconnect();
     //tcp = nullptr;
+    io.stop();
+    iocheck.stop();
+    iocmd.stop();
 }
 // -----------------------------------------------------------------------------
 std::string LogDB::qEscapeString( const string& txt )
@@ -893,20 +937,36 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
         std::vector<std::string> seg;
         uri.getPathSegments(seg);
+        auto qp = uri.getQueryParameters();
 
         // проверка подключения к страничке со списком websocket-ов
-        // http://[xxxx:port]/logdb/ws/
-        if( seg.size() > 1 && seg[0] == "logdb" && seg[1] == "ws" )
+        // http://[xxxx:port]/ws/
+        if( seg.size() > 0 && seg[0] == "ws" )
         {
-            // подключение..
             if( seg.size() > 2 )
             {
-                httpWebSocketConnectPage(out, req, resp, seg[2]);
+                if( seg[1] == "connect" )
+                {
+                    httpWebSocketConnectPage(out, req, resp, seg[2], qp);
+                    return;
+                }
+
+                auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, "Unknown path '" + seg[1]  + "'");
+                jdata->stringify(out);
+                out.flush();
+                return;
+            }
+
+            if( seg.size() > 1 )
+            {
+                auto jdata = httpWebSocketSet(out, req, resp, seg[1], qp);
+                jdata->stringify(out);
+                out.flush();
                 return;
             }
 
             // default page
-            httpWebSocketPage(out, req, resp);
+            httpWebSocketPage(out, req, resp, qp);
             out.flush();
             return;
         }
@@ -937,8 +997,6 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
             return;
         }
 
-        auto qp = uri.getQueryParameters();
-
         resp.setStatus(HTTPResponse::HTTP_OK);
         string cmd = seg[3];
 
@@ -949,6 +1007,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
             myhelp.emplace(item("help", "this help"));
             myhelp.emplace(item("list", "list of logs"));
             myhelp.emplace(item("count?logname", "count of logs for logname"));
+            myhelp.emplace(item("set?logname=level1,level2&logname2=level3,warn", "setup logs for lognames"));
 
             item l("logs", "read logs");
             l.param("from='YYYY-MM-DD'", "From date");
@@ -963,7 +1022,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
         }
         else
         {
-            auto json = httpGetRequest(cmd, qp);
+            auto json = httpGetRequest(resp, cmd, qp);
             json->stringify(out);
         }
     }
@@ -989,29 +1048,28 @@ Poco::JSON::Object::Ptr LogDB::respError( Poco::Net::HTTPServerResponse& resp,
     return jdata;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpGetRequest( const string& cmd, const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr LogDB::httpGetRequest( Poco::Net::HTTPServerResponse& resp, const string& cmd, const Poco::URI::QueryParameters& p )
 {
     if( cmd == "list" )
-        return httpGetList(p);
+        return httpGetList(resp, p);
 
     if( cmd == "logs" )
-        return httpGetLogs(p);
+        return httpGetLogs(resp, p);
 
     if( cmd == "count" )
-        return httpGetCount(p);
+        return httpGetCount(resp, p);
 
-    ostringstream err;
-    err << "Unknown command '" << cmd << "'";
-    throw uniset::SystemError(err.str());
+    return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown command '"  + cmd + "'");
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpGetList( const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr LogDB::httpGetList( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p )
 {
     if( !db )
     {
         ostringstream err;
         err << "DB unavailable..";
         throw uniset::SystemError(err.str());
+
     }
 
     Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
@@ -1064,18 +1122,17 @@ Poco::JSON::Object::Ptr LogDB::httpGetList( const Poco::URI::QueryParameters& p 
     return jdata;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& params )
+Poco::JSON::Object::Ptr LogDB::httpGetLogs( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& params )
 {
     Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 
     if( params.empty() || params[0].first.empty() )
     {
-        ostringstream err;
-        err << "BAD REQUEST: unknown logname";
-        throw uniset::SystemError(err.str());
+        dblog3 << "(httpGetLogs): empty logname" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown logname");
     }
 
-    std::string logname = params[0].first;
+    const auto& logname = params[0].first;
 
     size_t offset = 0;
     size_t limit = 0;
@@ -1133,17 +1190,18 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
     return jdata;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpGetCount( const Poco::URI::QueryParameters& params )
+Poco::JSON::Object::Ptr LogDB::httpGetCount( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& params )
 {
+    if( params.empty() || params[0].first.empty() )
+    {
+        dblog3 << "(httpGetCount): empty logname" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown logname");
+    }
+
     Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 
-    std::string logname;
-
-    if( !params.empty() )
-        logname = params[0].first;
-
-    size_t count = getCountOfRecords(logname);
-    jdata->set("name", logname);
+    size_t count = getCountOfRecords(params[0].first);
+    jdata->set("name", params[0].first);
     jdata->set("count", count);
     return jdata;
 }
@@ -1219,11 +1277,12 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
     Poco::URI uri(req.getURI());
 
     uri.getPathSegments(seg);
+    auto qp = uri.getQueryParameters();
 
-    // example: http://host:port/logdb/ws/logname
+    // example: http://host:port/ws/connect/logname
     if( seg.size() < 3
-            || seg[0] != "logdb"
-            || seg[1] != "ws"
+            || seg[0] != "ws"
+            || seg[1] != "connect"
             || seg[2].empty())
     {
 
@@ -1232,7 +1291,7 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
         resp.setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
         resp.setContentLength(0);
         std::ostream& err = resp.send();
-        err << "Bad request. Must be:  http://host:port/logdb/ws/logname";
+        err << "Bad request. Must be ws://host:port/ws/connect/logname";
         err.flush();
         return;
     }
@@ -1253,7 +1312,7 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
         }
     }
 
-    auto ws = newWebSocket(&req, &resp, seg[2]);
+    auto ws = newWebSocket(&req, &resp, seg[2], qp);
 
     if( !ws )
         return;
@@ -1263,7 +1322,7 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
     dblog3 << myname << "(onWebSocketSession): start session for " << req.clientAddress().toString() << endl;
 
     // т.к. вся работа происходит в eventloop
-    // то здесь просто ждём..
+    // то здесь просто ждём.
     ws->waitCompletion();
 
     dblog3 << myname << "(onWebSocketSession): finish session for " << req.clientAddress().toString() << endl;
@@ -1271,7 +1330,8 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
 // -----------------------------------------------------------------------------
 std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerRequest* req,
         Poco::Net::HTTPServerResponse* resp,
-        const std::string& logname )
+        const std::string& logname,
+        const Poco::URI::QueryParameters& params )
 {
     using Poco::Net::WebSocket;
     using Poco::Net::WebSocketException;
@@ -1300,6 +1360,23 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
         return nullptr;
     }
 
+    for( const auto& p : params )
+    {
+        if( p.first == "set" )
+        {
+            if( p.second.empty() )
+                break;
+
+            if( log->usercmd.empty() )
+                log->usercmd = "-s " + p.second;
+            else
+            {
+                dbwarn << log->peername << ": Ignored set log level '" << p.second << "' because already set in other connection" << endl;
+            }
+
+            break;
+        }
+    }
 
     std::shared_ptr<LogWebSocket> ws;
 
@@ -1326,8 +1403,7 @@ void LogDB::delWebSocket( std::shared_ptr<LogWebSocket>& ws )
     {
         if( (*it).get() == ws.get() )
         {
-            dblog3 << myname << ": delete websocket "
-                   << endl;
+            dblog3 << myname << ": delete websocket " << endl;
             wsocks.erase(it);
             return;
         }
@@ -1339,8 +1415,8 @@ LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest* _req,
                                   std::shared_ptr<Log>& _log ):
     Poco::Net::WebSocket(*_req, *_resp),
     req(_req),
-    resp(_resp)
-    //  log(_log)
+    resp(_resp),
+    log(_log)
 {
     setBlocking(false);
 
@@ -1368,6 +1444,9 @@ LogDB::LogWebSocket::~LogWebSocket()
         delete wbuf.front();
         wbuf.pop();
     }
+
+    if( log )
+        log->usercmd = "";
 }
 // -----------------------------------------------------------------------------
 bool LogDB::LogWebSocket::isActive()
@@ -1382,6 +1461,9 @@ void LogDB::LogWebSocket::set( ev::dynamic_loop& loop )
 
     iosend.start(0, send_sec);
     ioping.start(ping_sec, ping_sec);
+
+    if( !log->usercmd.empty() )
+        log->setCommand(log->usercmd);
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::send( ev::timer& t, int revents )
@@ -1540,6 +1622,9 @@ void LogDB::LogWebSocket::term()
     if( cancelled )
         return;
 
+    if( log && !log->usercmd.empty() )
+        log->usercmd = "";
+
     cancelled = true;
     con.disconnect();
     ioping.stop();
@@ -1573,7 +1658,9 @@ void LogDB::LogWebSocket::setMaxSendCount( size_t val )
         maxsend = val;
 }
 // -----------------------------------------------------------------------------
-void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
+void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req,
+                               Poco::Net::HTTPServerResponse& resp,
+                               const Poco::URI::QueryParameters& p )
 {
     using Poco::Net::HTTPResponse;
 
@@ -1593,7 +1680,7 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
     {
         ostr << "  <li><a target='_blank' href=\"http://"
              << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr )
-             << "/logdb/ws/" << l->name << "\">"
+             << "/ws/connect/" << l->name << "\">"
              << l->name << "</a>  &#8211; "
              << "<i>" << l->description << "</i></li>"
              << endl;
@@ -1603,14 +1690,72 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
     ostr << "</body>" << endl;
 }
 // -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr LogDB::httpWebSocketSet( std::ostream& out, Poco::Net::HTTPServerRequest& req,
+        Poco::Net::HTTPServerResponse& resp,
+        const std::string& logname,
+        const Poco::URI::QueryParameters& params )
+{
+    if( !httpEnabledLogControl )
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE, "Command 'set' disabled for this server");
+
+    if( params.size() < 1 || params[0].second.empty() )
+    {
+        dblog3 << "(httpWebSocketSet): Unknown params for logname '" << logname << "'" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown params for '" + logname + "'");
+    }
+
+    const auto& cmd = params[0].second;
+
+    Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+    jdata->set("name", logname);
+    bool found = false;
+
+    for( auto& ls : logservers )
+    {
+        if( ls->name != logname )
+            continue;
+
+        dblog3 << "(httpWebSocketSet): logname '" << logname << "' send command: " << cmd << endl;
+        ls->setCommand("-s " + cmd );
+        jdata->set("cmd", cmd );
+        found = true;
+        break;
+    }
+
+    if( !found )
+    {
+        dblog3 << "(httpWebSocketSet): not found logname '" << logname << "'" << endl;
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_NOT_FOUND, "Not found '" + logname + "'");
+    }
+
+    return jdata;
+}
+// -----------------------------------------------------------------------------
 void LogDB::httpWebSocketConnectPage( ostream& ostr,
                                       Poco::Net::HTTPServerRequest& req,
                                       Poco::Net::HTTPServerResponse& resp,
-                                      const std::string& logname )
+                                      const std::string& logname,
+                                      const Poco::URI::QueryParameters& params )
 {
     resp.setChunkedTransferEncoding(true);
     resp.setContentType(httpHtmlContentType);
 
+    std::string qparams = "";
+
+    for( const auto& p : params )
+    {
+        if( p.first == "set" )
+        {
+            if( !httpEnabledLogControl )
+            {
+                dbwarn << "(httpWebSocketConnectPage): Ignored set log level command. 'Set' - disabled for this server" << endl;
+            }
+            else
+                qparams = p.second;
+
+            break;
+        }
+    }
 
     // code base on example from
     // https://github.com/pocoproject/poco/blob/developNet/samples/WebSocketServer/src/WebSocketServer.cpp
@@ -1642,7 +1787,12 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
     ostr << "  if (\"WebSocket\" in window)" << endl;
     ostr << "  {" << endl;
     ostr << "    // LogScrollTimer = setInterval(LogAutoScroll,800);" << endl;
-    ostr << "    var ws = new WebSocket(\"ws://" << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr ) << "/logdb/ws/\" + logname);" << endl;
+    ostr << "    var ws = new WebSocket(\"ws://"
+         << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr )
+         << "/ws/connect/\" + logname"
+         << ( !qparams.empty() ? "+ \"?set=" + qparams + "\"" : "" )
+         << ");"
+         << endl;
     ostr << "    var l = document.getElementById('logname');" << endl;
     ostr << "    l.innerHTML = logname" << endl;
     ostr << "    ws.onmessage = function(evt)" << endl;
