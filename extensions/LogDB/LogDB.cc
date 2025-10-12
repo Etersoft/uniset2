@@ -955,16 +955,18 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
         // http://[xxxx:port]/ws/
         if( seg.size() > 0 && seg[0] == "ws" )
         {
-            std::ostream& out = resp.send();
-
             if( seg.size() > 2 )
             {
                 if( seg[1] == "connect" )
                 {
+                    resp.setContentType(httpHtmlContentType);
+                    std::ostream& out = resp.send();
                     httpWebSocketConnectPage(out, req, resp, seg[2], qp);
+                    out.flush();
                     return;
                 }
 
+                std::ostream& out = resp.send();
                 auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, "Unknown path '" + seg[1]  + "'");
                 jdata->stringify(out);
                 out.flush();
@@ -973,6 +975,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
             if( seg.size() > 1 )
             {
+                std::ostream& out = resp.send();
                 auto jdata = httpWebSocketSet(out, req, resp, seg[1], qp);
                 jdata->stringify(out);
                 out.flush();
@@ -980,6 +983,8 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
             }
 
             // default page
+            resp.setContentType(httpHtmlContentType);
+            std::ostream& out = resp.send();
             httpWebSocketPage(out, req, resp, qp);
             out.flush();
             return;
@@ -1788,7 +1793,7 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
 {
     using Poco::Net::HTTPResponse;
 
-    resp.setChunkedTransferEncoding(true);
+    //    resp.setChunkedTransferEncoding(true);
     resp.setContentType(httpHtmlContentType);
 
     ostr << "<html>" << endl;
