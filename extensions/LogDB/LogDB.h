@@ -51,6 +51,7 @@ namespace uniset
       - \ref sec_LogDB_Conf
       - \ref sec_LogDB_DB
       - \ref sec_LogDB_REST
+      - \ref sec_LogDB_CONTROL
       - \ref sec_LogDB_WEBSOCK
       - \ref sec_LogDB_DETAIL
       - \ref sec_LogDB_ADMIN
@@ -118,6 +119,11 @@ namespace uniset
     /download                - Загрузить файл БД. По умолчанию выключено (см. httpEnabledDownload)
     \endcode
 
+    \section sec_LogDB_CONTROL LogDB: CONTROL API
+    CONTROL API доступен по пути: api/version/logcontrol/...  (текущая версия v01)
+    \code
+      /logcontrol/logname?set=info,warn,crit  - Включить уровень логов для logname
+    \endcode
 
     \section sec_LogDB_WEBSOCK LogDB: Поддержка web socket
 
@@ -236,12 +242,12 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGetLogs( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpGetCount( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDownload( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpLogControlSet(std::ostream& out, Poco::Net::HTTPServerRequest& req,
+                    Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& params );
             void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                     Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                            Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpWebSocketSet( std::ostream& out, Poco::Net::HTTPServerRequest& req,
-                    Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
 
             bool supportsGzip( Poco::Net::HTTPServerRequest& request );
 

@@ -12,7 +12,8 @@ downloadfile="download.db.gz"
 http_host="localhost"
 http_port=8888
 LOGFILE="/tmp/uniset-test.log"
-ws_url="http://$http_host:$http_port/ws/connect/logserver1"
+WS_URL="http://$http_host:$http_port/ws/connect/logserver1"
+
 # WS_KEY=$(openssl rand -base64 16 | tr -d '\n')
 WS_KEY="67+diN4x1mlKAw9fNm4vFQ=="
 
@@ -76,7 +77,8 @@ logdb_run() {
 		--logdb-httpserver-port $http_port \
 		--logdb-ls-check-connection-sec 1 \
 		--logdb-db-max-records 20000 \
-		--logdb-httpserver-download-enable &
+		--logdb-httpserver-download-enable \
+		--logdb-httpserver-logcontrol-enable &
 
 	LOGDB_PID=$!
 
@@ -92,7 +94,7 @@ logdb_run() {
 }
 
 logdb_error() {
-	printf "%20s: ERROR: %s\n" "$1" "$2" >&2
+	printf "✗ %20s: ERROR: %s\n" "$1" "$2" >&2
 }
 
 # ------------------------------------------------------------------------------------------
@@ -134,7 +136,7 @@ logdb_test_http_count() {
 	fi
 
 	if echo "$REQ" | grep -q '"count":'; then
-		echo "✓ HTTP /count API test passed"
+		echo "✓ HTTP API /count test passed"
 		return 0
 	fi
 
@@ -149,11 +151,33 @@ logdb_test_http_list() {
 	fi
 
 	if echo "$REQ" | grep -q 'logserver1'; then
-		echo "✓ HTTP /list API test passed"
+		echo "✓ HTTP API /list test passed"
 		return 0
 	fi
 
 	logdb_error "test_http_list" "get list must contain 'logserver1'. Response: $REQ"
+	return 1
+}
+
+logdb_test_http_set() {
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?set=crit"); then
+		logdb_error "test_http_set" "curl request failed"
+		return 1
+	fi
+
+	sleep 10
+
+	REQ=$(echo 'SELECT text from logs order by id desc limit 3;' | sqlite3 "$dbfile" 2>/dev/null)
+	CNT=$(echo "$REQ" | grep -o -w "CRIT" | wc -l 2>/dev/null || echo "0")
+
+	if [ "$CNT" -ge 3 ]; then
+		echo "✓ HTTP API /set test passed"
+		return 0
+	fi
+
+	logdb_error "test_http_set" "Not enough CRIT messages found: $CNT (expected at least 3)"
+	echo "Raw output (first 3 lines):"
+	echo "$REQ" | head -3
 	return 1
 }
 
@@ -174,7 +198,7 @@ logdb_test_http_download() {
 	fi
 
 	if [ -s "$downloadfile" ]; then # Проверяем что файл не пустой
-		echo "✓ HTTP /download test passed: file downloaded successfully ($(wc -c <"$downloadfile") bytes)"
+		echo "✓ HTTP API /download test passed: file downloaded successfully ($(wc -c <"$downloadfile") bytes)"
 		return 0
 	fi
 
@@ -195,7 +219,7 @@ logdb_test_websocket_handshake() {
 		-H "Sec-WebSocket-Version: 13" \
 		-H "Sec-WebSocket-Key: $WS_KEY" \
 		--max-time 10 \
-		"$ws_url" 2>/dev/null)
+		"$WS_URL" 2>/dev/null)
 
 	# Проверяем успешный ответ
 	if echo "$RESPONSE" | grep -q "101 Switching Protocols"; then
@@ -215,6 +239,11 @@ logdb_test_websocket_data() {
 	local info_count=0
 	local output_file="/tmp/websocket_output.txt"
 
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?set=info"); then
+		logdb_error "test_websocket_data" "curl request failed"
+		return 1
+	fi
+
 	# Запускаем curl в фоне для получения данных
 	curl -i -N -s \
 		-H "Connection: Upgrade" \
@@ -222,12 +251,12 @@ logdb_test_websocket_data() {
 		-H "Sec-WebSocket-Version: 13" \
 		-H "Sec-WebSocket-Key: $WS_KEY" \
 		--max-time $timeout \
-		"$ws_url" >"$output_file" 2>&1 &
+		"$WS_URL" >"$output_file" 2>&1 &
 
 	local curl_pid=$!
 
 	# Даем время на установление соединения и получение данных
-	sleep 8
+	sleep 5
 
 	# Проверяем, что процесс еще работает
 	if ! kill -0 $curl_pid 2>/dev/null; then
@@ -265,7 +294,7 @@ logdb_test_websocket_data() {
 # Простой тест доступности WebSocket endpoint
 logdb_test_websocket_endpoint() {
 	# Просто проверяем, что endpoint отвечает
-	if curl -s -I --max-time 10 "$ws_url" >/dev/null 2>&1; then
+	if curl -s -I --max-time 10 "$WS_URL" >/dev/null 2>&1; then
 		echo "✓ WebSocket endpoint is accessible"
 		return 0
 	else
@@ -300,16 +329,17 @@ logdb_run_all_tests() {
 		return 1
 	fi
 
-	sleep 2
+	sleep 4
 
 	# =========== TESTS ============
 	echo "Running tests..."
 
 	logdb_test_count || RET=1
+	logdb_test_logfile || RET=1
 	logdb_test_http_count || RET=1
 	logdb_test_http_list || RET=1
-	logdb_test_logfile || RET=1
 	logdb_test_http_download || RET=1
+	logdb_test_http_set || RET=1
 
 	# WebSocket тесты
 	echo ""
