@@ -973,15 +973,6 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
                 return;
             }
 
-            if( seg.size() > 1 )
-            {
-                std::ostream& out = resp.send();
-                auto jdata = httpWebSocketSet(out, req, resp, seg[1], qp);
-                jdata->stringify(out);
-                out.flush();
-                return;
-            }
-
             // default page
             resp.setContentType(httpHtmlContentType);
             std::ostream& out = resp.send();
@@ -990,6 +981,20 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
             return;
         }
 
+        // example: http://host:port/api/version/logcontrol/..
+        if( seg.size() >= 4
+                && seg[0] == "api"
+                && seg[1] == uniset::UHttp::UHTTP_API_VERSION
+                && seg[2] == "logcontrol" )
+        {
+            resp.setStatus(HTTPResponse::HTTP_OK);
+            std::ostream& out = resp.send();
+
+            auto jdata = httpLogControlSet(out, req, resp, seg[3], qp);
+            jdata->stringify(out);
+            out.flush();
+            return;
+        }
 
         // example: http://host:port/api/version/logdb/..
         if( seg.size() < 4
@@ -1819,17 +1824,18 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
     ostr << "</body>" << endl;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpWebSocketSet( std::ostream& out, Poco::Net::HTTPServerRequest& req,
+Poco::JSON::Object::Ptr LogDB::httpLogControlSet(std::ostream& out, Poco::Net::HTTPServerRequest& req,
         Poco::Net::HTTPServerResponse& resp,
         const std::string& logname,
         const Poco::URI::QueryParameters& params )
 {
     if( !httpEnabledLogControl )
-        return respError(resp, Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE, "Command 'set' disabled for this server");
+        return respError(resp, Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE,
+                         "Command 'set' disabled for this server");
 
     if( params.size() < 1 || params[0].second.empty() )
     {
-        dblog3 << "(httpWebSocketSet): Unknown params for logname '" << logname << "'" << endl;
+        dblog3 << "(httpLogControlSet): Unknown params for logname '" << logname << "'" << endl;
         return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown params for '" + logname + "'");
     }
 
@@ -1841,19 +1847,19 @@ Poco::JSON::Object::Ptr LogDB::httpWebSocketSet( std::ostream& out, Poco::Net::H
 
     for( auto& ls : logservers )
     {
-        if( ls->name != logname )
+        if (ls->name != logname)
             continue;
 
-        dblog3 << "(httpWebSocketSet): logname '" << logname << "' send command: " << cmd << endl;
-        ls->setCommand("-s " + cmd );
-        jdata->set("cmd", cmd );
+        dblog3 << "(httpLogControlSet): logname '" << logname << "' send command: " << cmd << endl;
+        ls->setCommand("-s " + cmd);
+        jdata->set("cmd", cmd);
         found = true;
         break;
     }
 
-    if( !found )
+    if (!found)
     {
-        dblog3 << "(httpWebSocketSet): not found logname '" << logname << "'" << endl;
+        dblog3 << "(httpLogControlSet): not found logname '" << logname << "'" << endl;
         return respError(resp, Poco::Net::HTTPResponse::HTTP_NOT_FOUND, "Not found '" + logname + "'");
     }
 
