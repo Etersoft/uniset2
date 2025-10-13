@@ -159,7 +159,7 @@ logdb_test_http_list() {
 	return 1
 }
 
-logdb_test_http_set() {
+logdb_test_http_logcontrol_set() {
 	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?set=crit"); then
 		logdb_error "test_http_set" "curl request failed"
 		return 1
@@ -171,13 +171,50 @@ logdb_test_http_set() {
 	CNT=$(echo "$REQ" | grep -o -w "CRIT" | wc -l 2>/dev/null || echo "0")
 
 	if [ "$CNT" -ge 3 ]; then
-		echo "✓ HTTP API /set test passed"
+		echo "✓ HTTP API /logcontol/set test passed"
 		return 0
 	fi
 
 	logdb_error "test_http_set" "Not enough CRIT messages found: $CNT (expected at least 3)"
 	echo "Raw output (first 3 lines):"
 	echo "$REQ" | head -3
+	return 1
+}
+
+logdb_test_http_logcontrol_reset() {
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?reset"); then
+		logdb_error "test_http_reset" "curl request failed"
+		return 1
+	fi
+
+	sleep 5
+
+	REQ=$(echo 'SELECT text from logs order by id desc limit 3;' | sqlite3 "$dbfile" 2>/dev/null)
+	CNT=$(echo "$REQ" | grep -o -w "init" | wc -l 2>/dev/null || echo "0")
+
+	if [ "$CNT" -ge 3 ]; then
+		echo "✓ HTTP API /logcontol/reset test passed"
+		return 0
+	fi
+
+	logdb_error "test_http_reset" "Not enough CRIT messages found: $CNT (expected at least 3)"
+	echo "Raw output (first 3 lines):"
+	echo "$REQ" | head -3
+	return 1
+}
+
+logdb_test_http_logcontrol_get() {
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?get"); then
+		logdb_error "test_http_get" "curl request failed"
+		return 1
+	fi
+
+	if echo "$REQ" | grep 'cmd' | grep -q 'init'; then
+		echo "✓ HTTP API /logcontol/get test passed"
+		return 0
+	fi
+
+	logdb_error "test_http_get" "Request failed. REQ: $REQ"
 	return 1
 }
 
@@ -339,7 +376,9 @@ logdb_run_all_tests() {
 	logdb_test_http_count || RET=1
 	logdb_test_http_list || RET=1
 	logdb_test_http_download || RET=1
-	logdb_test_http_set || RET=1
+	logdb_test_http_logcontrol_set || RET=1
+	logdb_test_http_logcontrol_reset || RET=1
+	logdb_test_http_logcontrol_get || RET=1
 
 	# WebSocket тесты
 	echo ""

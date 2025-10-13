@@ -524,6 +524,8 @@ void LogDB::help_print()
     cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
     cout << "--prefix-httpserver-charset charset         - ContentType charset. Default: 'UTF-8'" << endl;
     cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
+    cout << "--prefix-httpserver-logcontrol-enable       - Включить API для управления логами через HTTP" << endl;
+    cout << "--prefix-httpserver-download-enable         - Включить возможность скачать файл БД через HTTP" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -729,6 +731,8 @@ void LogDB::Log::setCommand( const std::string& c )
 
     if( cmdlist.empty() )
         return;
+
+    lastcmd = c;
 
     uniset::uniset_rwmutex_wrlock lock(cmdmut);
 
@@ -990,7 +994,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
             resp.setStatus(HTTPResponse::HTTP_OK);
             std::ostream& out = resp.send();
 
-            auto jdata = httpLogControlSet(out, req, resp, seg[3], qp);
+            auto jdata = httpLogControl(out, req, resp, seg[3], qp);
             jdata->stringify(out);
             out.flush();
             return;
@@ -1824,21 +1828,22 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
     ostr << "</body>" << endl;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr LogDB::httpLogControlSet(std::ostream& out, Poco::Net::HTTPServerRequest& req,
+Poco::JSON::Object::Ptr LogDB::httpLogControl( std::ostream& out, Poco::Net::HTTPServerRequest& req,
         Poco::Net::HTTPServerResponse& resp,
         const std::string& logname,
         const Poco::URI::QueryParameters& params )
 {
     if( !httpEnabledLogControl )
         return respError(resp, Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE,
-                         "Command 'set' disabled for this server");
+                         "logcontrol API disabled for this server");
 
-    if( params.size() < 1 || params[0].second.empty() )
+    if( params.size() < 1 )
     {
-        dblog3 << "(httpLogControlSet): Unknown params for logname '" << logname << "'" << endl;
+        dblog3 << "(httpLogControl): Unknown params for logname '" << logname << "'" << endl;
         return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown params for '" + logname + "'");
     }
 
+    const auto& api = params[0].first;
     const auto& cmd = params[0].second;
 
     Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
@@ -1847,19 +1852,37 @@ Poco::JSON::Object::Ptr LogDB::httpLogControlSet(std::ostream& out, Poco::Net::H
 
     for( auto& ls : logservers )
     {
-        if (ls->name != logname)
+        if( ls->name != logname )
             continue;
 
-        dblog3 << "(httpLogControlSet): logname '" << logname << "' send command: " << cmd << endl;
-        ls->setCommand("-s " + cmd);
+        dblog3 << "(httpLogControl): logname '" << logname << "' API '" << api << "' command: " << cmd << endl;
         jdata->set("cmd", cmd);
+
+        if( api == "set" )
+        {
+            if( params[0].second.empty() )
+            {
+                dblog3 << "(httpLogControl): Unknown params for logname '" << logname << "' API 'set'" << endl;
+                return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown params for '" + logname + "'");
+            }
+
+            ls->setCommand("-s " + cmd);
+        }
+        else if( api == "reset" )
+        {
+            dblog3 << "(httpLogControl): logname '" << logname << "' API 'reset' command: " << ls->cmd << endl;
+            ls->setCommand(ls->cmd);
+        }
+        else if( api == "get" )
+            jdata->set("cmd", ls->lastcmd);
+
         found = true;
         break;
     }
 
-    if (!found)
+    if( !found )
     {
-        dblog3 << "(httpLogControlSet): not found logname '" << logname << "'" << endl;
+        dblog3 << "(httpLogControl): not found logname '" << logname << "'" << endl;
         return respError(resp, Poco::Net::HTTPResponse::HTTP_NOT_FOUND, "Not found '" + logname + "'");
     }
 

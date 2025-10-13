@@ -121,8 +121,12 @@ namespace uniset
 
     \section sec_LogDB_CONTROL LogDB: CONTROL API
     CONTROL API доступен по пути: api/version/logcontrol/...  (текущая версия v01)
+
+    По умолчанию отключено (см httpEnabledLogControl)
     \code
       /logcontrol/logname?set=info,warn,crit  - Включить уровень логов для logname
+      /logcontrol/logname?reset               - Вернуть логи к настройкам по умолчанию (из конфига)
+      /logcontrol/logname?get                 - Получить текущие выставленные настройки
     \endcode
 
     \section sec_LogDB_WEBSOCK LogDB: Поддержка web socket
@@ -242,8 +246,9 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGetLogs( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpGetCount( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDownload( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpLogControlSet(std::ostream& out, Poco::Net::HTTPServerRequest& req,
-                    Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& params );
+            Poco::JSON::Object::Ptr httpLogControl(std::ostream& out, Poco::Net::HTTPServerRequest& req,
+                                                   Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& params );
+
             void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                     Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
@@ -297,6 +302,7 @@ namespace uniset
                     int port = { 0 };
                     std::string cmd;
                     std::string usercmd;
+                    std::string lastcmd;
                     std::string peername;
                     std::string description;
 
