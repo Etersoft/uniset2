@@ -459,6 +459,41 @@ fi
 AM_CONDITIONAL(DISABLE_UWEBSOCKETGATE, test ${uwebsocket} = false)
 AM_CONDITIONAL(ENABLE_UWEBSOCKETGATE, test ${uwebsocket} = true)
 
+
+#check quickjs
+AC_MSG_CHECKING([jscript build])
+jscript=true
+AC_ARG_ENABLE(js, AC_HELP_STRING([--disable-js], [disable JavaScript engine]),
+[ if test $enableval = yes; then jscript=true; else jscript=false; fi],[ jscript=true; ])
+
+if test ${jscript} = true; then
+	AC_MSG_RESULT([enabled])
+	AC_CHECK_HEADER(quickjs/quickjs.h)
+	AC_ARG_WITH([quickjs],
+	[AS_HELP_STRING([--with-quickjs=/usr/lib64/quickjs],
+	[Path for libquickjs.a])],
+		[QUICKJS_PATH="$withval"],
+		[QUICKJS_PATH="/usr/lib64/quickjs"]
+	)
+	SAVED_LDFLAGS="$LDFLAGS"
+	LDFLAGS="$LDFLAGS -L$QUICKJS_PATH"
+	AC_CHECK_LIB([quickjs], [JS_NewRuntime],
+		[QUICKJS_LIBS="-L$QUICKJS_PATH -lquickjs"],
+		[AC_MSG_ERROR([libquickjs not found in $QUICKJS_PATH])]
+	)
+	LDFLAGS="$SAVED_LDFLAGS"
+	QUICKJS_LIBS="${QUICKJS_PATH}/libquickjs.a"
+	QUICKJS_CFLAGS="-Iquickjs"
+	AC_SUBST(QUICKJS_LIBS)
+	AC_SUBST(QUICKJS_CFLAGS)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_JSCRIPT, test ${jscript} = false)
+AM_CONDITIONAL(ENABLE_JSCRIPT, test ${jscript} = true)
+
+
 COV_LIBS=
 COV_CFLAGS=
 AC_MSG_CHECKING([tests support])
@@ -488,6 +523,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/UWebSocketGate/tests)
 	AC_CONFIG_TESTDIR(extensions/OPCUAServer/tests)
 	AC_CONFIG_TESTDIR(extensions/OPCUAExchange/tests)
+	AC_CONFIG_TESTDIR(extensions/JScript/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
@@ -672,6 +708,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/OPCUAExchange/Makefile
 				 extensions/OPCUAExchange/tests/Makefile
 				 extensions/OPCUAExchange/libUniSet2OPCUAExchange.pc
+				 extensions/JScript/Makefile
+				 extensions/JScript/tests/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile

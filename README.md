@@ -18,6 +18,7 @@ There are set of base components to construct this kind of systems:
 * REST API
 * supported websocket API
 * supported OPC UA interface (based on [open62541](https://github.com/open62541/open62541) and [open62541pp](https://github.com/open62541pp/open62541pp) libraries)
+* supported JavaScript scripts (based on [quickjs (bellard)](https://github.com/bellard/quickjs) library
 
 UniSet have been written in C++ and IDL languages but you can use another languages in your
 add-on components. The main principle of the UniSet library's design is a maximum integration

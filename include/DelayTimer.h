@@ -49,6 +49,7 @@ namespace uniset
             inline void reset() noexcept
             {
                 pt.reset();
+                prevState = false;
                 waiting_on = false;
                 waiting_off = false;
                 state = false;

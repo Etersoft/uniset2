@@ -1,3 +1,4 @@
+# %{?optflags_lto:%global optflags_lto %optflags_lto -ffat-lto-objects}
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
@@ -17,6 +18,7 @@
 %def_enable uwebsocket
 %def_enable clickhouse
 %def_enable opcua
+%def_enable js
 
 %ifarch %ix86
 %def_enable com485f
@@ -84,6 +86,9 @@ BuildRequires: libmosquitto-devel
 BuildRequires: libopen62541-devel libopen62541pp-devel >= 0.15.0-alt1
 %endif
 
+%if_enabled js
+BuildRequires: quickjs-devel quickjs-devel-static
+%endif
 
 %if_enabled netdata
 BuildRequires: netdata
@@ -409,6 +414,16 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset OPC UA extension
 %endif
 
+%if_enabled js
+%package extension-js
+Group: Development/C++
+Summary: JavaScript support for %{name}
+Requires: %name-extension-common = %version-%release
+
+%description extension-js
+JavaScript runner for %{name}
+%endif
+
 %prep
 %setup
 
@@ -616,12 +631,19 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_bindir/%oname-opcua*
 %_libdir/libUniSet2OPCUA*.so.*
 
-
 %files extension-opcua-devel
 %_pkgconfigdir/libUniSet2OPCUA*.pc
 %_libdir/libUniSet2OPCUA*.so
 %_includedir/%oname/extensions/opcua/
 %endif
+
+%if_enabled js
+%files extension-js
+%_bindir/%oname-jscript*
+%_datadir/%oname/js/
+
+%endif
+
 
 %if_enabled api
 %if_enabled uresolver

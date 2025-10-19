@@ -1,0 +1,4 @@
+AT_SETUP([JScript tests])
+AT_SKIP_IF([$abs_top_builddir/config.status --config | grep disable-js])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/JScript/tests tests_with_sm.sh],[0],[ignore],[ignore])
+AT_CLEANUP
