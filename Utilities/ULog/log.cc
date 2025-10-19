@@ -98,7 +98,7 @@ static void print_help()
     printf("uniset2-log -i host -p 30202 --del any --set info TV1 --grep [Tt]ransient\n");
 }
 // --------------------------------------------------------------------------
-static char* checkArg( int i, int argc, char* argv[] );
+static std::string checkArg( int i, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
@@ -139,13 +139,8 @@ int main( int argc, char** argv )
                 case 'a':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdAddLevel;
-                    std::string filter("");
                     std::string d = string(optarg);
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, (int)Debug::value(d), filter);
                 }
                 break;
@@ -153,13 +148,8 @@ int main( int argc, char** argv )
                 case 'd':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
-                    std::string filter("");
                     std::string d = string(optarg);
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
                 }
                 break;
@@ -167,13 +157,8 @@ int main( int argc, char** argv )
                 case 's':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdSetLevel;
-                    std::string filter("");
                     std::string d = string(optarg);
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
                 }
                 break;
@@ -181,13 +166,8 @@ int main( int argc, char** argv )
                 case 'q':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdSetVerbosity;
-                    std::string filter("");
                     int d = uni_atoi(optarg);
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, d, filter);
                 }
                 break;
@@ -195,12 +175,7 @@ int main( int argc, char** argv )
                 case 'l':
                 {
                     cmdonly = 1;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(LogServerTypes::cmdList, 0, filter);
                 }
                 break;
@@ -208,12 +183,7 @@ int main( int argc, char** argv )
                 case 'o':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdOffLogFile;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, 0, filter);
                 }
                 break;
@@ -221,12 +191,7 @@ int main( int argc, char** argv )
                 case 'u':  // --save-loglevels
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdSaveLogLevel;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, 0, filter);
                 }
                 break;
@@ -234,12 +199,7 @@ int main( int argc, char** argv )
                 case 'y':  // --restore-loglevels
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdRestoreLogLevel;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, 0, filter);
                 }
                 break;
@@ -248,12 +208,7 @@ int main( int argc, char** argv )
                 {
                     cmdonly = 1;
                     LogServerTypes::Command cmd = LogServerTypes::cmdViewDefaultLogLevel;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, 0, filter);
                 }
                 break;
@@ -261,12 +216,7 @@ int main( int argc, char** argv )
                 case 'e':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdOnLogFile;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, 0, filter);
                 }
                 break;
@@ -274,12 +224,7 @@ int main( int argc, char** argv )
                 case 'f':
                 {
                     cmd = LogServerTypes::cmdFilterMode;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     logfilter = filter;
                 }
                 break;
@@ -287,12 +232,7 @@ int main( int argc, char** argv )
                 case 'r':
                 {
                     LogServerTypes::Command cmd = LogServerTypes::cmdRotate;
-                    std::string filter("");
-                    char* arg2 = checkArg(optind, argc, argv);
-
-                    if( arg2 )
-                        filter = string(arg2);
-
+                    const auto filter = checkArg(optind, argc, argv);
                     vcmd.emplace_back(cmd, 0, filter);
                 }
                 break;
@@ -397,11 +337,11 @@ int main( int argc, char** argv )
     return 0;
 }
 // --------------------------------------------------------------------------
-char* checkArg( int i, int argc, char* argv[] )
+std::string checkArg( int i, int argc, char* argv[] )
 {
     if( i < argc && (argv[i])[0] != '-' )
         return argv[i];
 
-    return 0;
+    return "";
 }
 // --------------------------------------------------------------------------

@@ -130,7 +130,7 @@ namespace uniset
 
             i++;
 
-            const std::string filter = checkArg(i + 2, v);
+            const std::string filter = checkArg(i + 1, v);
 
             if( !filter.empty() )
                 i++;

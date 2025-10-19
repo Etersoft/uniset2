@@ -1,0 +1,5 @@
+m4_include(package.m4)
+
+AT_COLOR_TESTS
+AT_INIT([JScript tests])
+m4_include(jscript-tests.at)

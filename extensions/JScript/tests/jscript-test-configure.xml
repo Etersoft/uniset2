@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+
+	<settings>
+		<SharedMemory name="SharedMemory" shmID="SharedMemory">
+			<History savetime="200">
+				<item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
+				<item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
+			</History>
+		</SharedMemory>
+		<JSProxy name="JSProxy1">
+			<modules>
+				<item path="../js"/>
+			</modules>
+		</JSProxy>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<nodes port="2809">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел"/>
+		</nodes>
+		<sensors name="Sensors">
+
+			<item default="1" id="1000" iotype="AI" name="JS_Start_C" textname="JS_Start_C"/>
+			<item default="100" id="1001" iotype="AI" name="JS_Start_S" textname="JS_Start_S"/>
+			<item default="1" id="1002" iotype="AI" name="JS_Stop_C" textname="JS_Stop_C"/>
+			<item default="1" id="1003" iotype="AI" name="JS1_S" textname="Тестовый js датчик N1"/>
+			<item default="1" id="1004" iotype="AO" name="JS2_C" textname="Тестовый js output N2"/>
+			<item default="1" id="1005" iotype="AO" name="JS3_C" textname="Тестовый js output N3"/>
+			<item default="1" id="1006" iotype="AO" name="JS4_C" textname="Тестовый js output N4"/>
+			<item id="1007" iotype="AI" name="JS_StartModulesTests_S" textname="run modules tests"/>
+			<item id="1008" iotype="AO" name="JS_ModulesTestsResult_C" textname="modules tests result"/>
+
+			<item default="1" id="1009" iotype="AI" name="UI_TestSensor1" textname="UI Test Sensor 1"/>
+			<item default="1" id="1010" iotype="AI" name="UI_TestSensor2" textname="UI Test Sensor 2"/>
+			<item default="1" id="1011" iotype="AO" name="UI_TestOutput1" textname="UI Test Output 1"/>
+			<item default="1" id="1012" iotype="AO" name="UI_TestOutput2" textname="UI Test Output 2"/>
+			<item default="0" id="1013" iotype="AI" name="UI_TestCommand_S" textname="UI Test Command"/>
+			<item default="0" id="1014" iotype="AO" name="UI_TestResult_C" textname="UI Test Result"/>
+
+			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
+
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<services name="Services">
+		</services>
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="JSProxy1"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+</UNISETPLC>
