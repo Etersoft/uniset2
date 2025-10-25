@@ -1,0 +1,88 @@
+name: Build & Deploy Doxygen docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.c'
+      - '**/*.cpp'
+      - '**/*.cc'
+      - '**/*.hh'
+      - '**/*.md'
+      - 'Doxyfile'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.c'
+      - '**/*.cpp'
+      - '**/*.cc'
+      - '**/*.hh'
+      - '**/*.md'
+      - 'Doxyfile'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+# Keep deployments atomic and cancel older runs if a new commit arrives.
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Doxygen & Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      # If you configure/generate Doxyfile via CMake, enable this
+      # - name: Configure project (optional)
+      #   run: cmake -S . -B build
+
+      - name: Build Doxygen
+        run: |
+          echo "Doxygen version:"
+          doxygen -v
+          cd docs
+          if [ -f ./UniSetDox.cfg.in ]; then
+            doxygen UniSetDox.cfg.in || true
+          else
+            echo "::error file=UniSetDox.cfg::Doxyfile not found at repository root"
+            exit 1
+          fi
+          if [ -f doxygen-warnings.log ] && [ -s doxygen-warnings.log ]; then
+            echo "::warning file=doxygen-warnings.log::Doxygen produced warnings (see artifact)."
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/html
+
+  deploy:
+    needs: build
+    # if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
