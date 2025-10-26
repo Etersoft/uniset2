@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>'{{LOGNAME}}'</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style media='all' type='text/css'>
+  body { background:#111111; color:#c4c4c4; margin:0; }
+  .logs {
+    font-family: 'Liberation Mono','DejaVu Sans Mono','Courier New',monospace;
+    padding-top: 104px;
+    padding-left: 10px;
+    padding-right: 10px;
+    line-height: 1.35;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .logtitle {
+    position: fixed;
+    top: 0; left: 0;
+    padding: 8px 10px;
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: #156a15;
+    color: #ececec;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+    box-sizing: border-box;
+    z-index: 10;
+  }
+  .bar { display:flex; align-items:center; gap: 8px; }
+  .title-text { font-weight: bold; margin-right: auto; }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .controls button, .controls input, .search input, .search label {
+    background: #2b2b2b;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px 10px;
+  }
+  .controls button { cursor: pointer; }
+  .controls button:hover { background:#3b3b3b; }
+  .controls button.active {
+    background: orange;
+    color: black;
+    border-color: #c66;
+  }
+  .search {
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  }
+  .search input[type="text"] {
+    min-width: 240px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    padding: 6px 10px;
+    background: #1f1f1f;
+    color: #f0f0f0;
+  }
+  .search .chk {
+    display:flex; align-items:center; gap:4px;
+    border: none; padding: 0; background: transparent;
+  }
+  .badge {
+    display: inline-block;
+    min-width: 22px;
+    text-align: center;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #444;
+    border: 1px solid #777;
+    color: #fff;
+    font-size: 12px;
+  }
+  .badge--active { background:#a35; border-color:#d68; }
+  .badge-total {
+    background: #666;
+    border-color: #aaa;
+    font-weight: bold;
+  }
+  .match-indicator {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    background: #333;
+    border: 1px solid #666;
+    min-width: 90px;
+    text-align: center;
+  }
+  .match-indicator.active {
+    background: #2f6;
+    color: #000;
+    border-color: #5f5;
+    font-weight: bold;
+  }
+  .divider {
+    color: #ccc;
+    opacity: 0.6;
+    padding: 0 4px;
+    user-select: none;
+  }
+  mark {
+    background: #ffd54a;
+    color: #000;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+  .hidden-by-filter { display:none; }
+  .to-end {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #666;
+    background: #2b2b2b;
+    color: #f0f0f0;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35);
+    z-index: 20;
+    display: none;
+  }
+  .to-end.show { display: block; }
+</style>
+<script type="text/javascript">
+(function(){
+  let autoScroll = true;
+  let ws = null;
+  let buffer = [];
+  let bufferCount = 0;
+  let totalCount = 0;
+
+  const searchState = {
+    query: "",
+    regex: false,
+    caseSensitive: false,
+    showOnlyMatches: false,
+  };
+
+  function el(id){ return document.getElementById(id); }
+  const logsEl = () => el('logs');
+  const endEl  = () => el('end');
+  const pauseResumeBtn = () => el('btnPauseResume');
+  const clearBtn = () => el('btnClear');
+  const downloadBtn = () => el('btnDownload');
+  const badgeBuffered = () => el('bufferCount');
+  const badgeTotal = () => el('totalCount');
+  const titleText = () => el('logname');
+  const toEndBtn = () => el('btnToEnd');
+
+  const searchInput = () => el('searchInput');
+  const chkRegex = () => el('chkRegex');
+  const chkCase = () => el('chkCase');
+  const chkOnly = () => el('chkOnly');
+  const matchCountEl = () => el('matchCount');
+
+  function updateBadges(){
+    const b = badgeBuffered();
+    b.textContent = "Buffered: " + bufferCount;
+    b.classList.toggle('badge--active', bufferCount > 0);
+    const t = badgeTotal();
+    t.textContent = "Total: " + totalCount;
+  }
+
+  function setPaused(paused){
+    autoScroll = !paused;
+    const btn = pauseResumeBtn();
+    if(paused){
+      btn.textContent = "Resume";
+      btn.classList.add("active");
+    } else {
+      btn.textContent = "Pause";
+      btn.classList.remove("active");
+    }
+    updateBadges();
+  }
+
+  function atBottom(thresholdPx = 64){
+    const scrollPos = window.scrollY + window.innerHeight;
+    const fullHeight = document.documentElement.scrollHeight;
+    return (fullHeight - scrollPos) <= thresholdPx;
+  }
+
+  function updateToEndVisibility(){
+    toEndBtn().classList.toggle('show', !atBottom() || !autoScroll);
+  }
+
+  function buildMatcher(){
+    const q = searchState.query;
+    if(!q) return null;
+    try {
+      if(searchState.regex){
+        return new RegExp(q, searchState.caseSensitive ? 'g' : 'gi');
+      } else {
+        const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(esc, searchState.caseSensitive ? 'g' : 'gi');
+      }
+    } catch(e){
+      return null;
+    }
+  }
+
+  function countMatchesInText(text, re){
+    if(!re || !text) return 0;
+    let count = 0, m;
+    if(!re.global){
+      const flags = (re.ignoreCase ? 'i' : '') + (re.multiline ? 'm' : '') + (re.unicode ? 'u' : '');
+      re = new RegExp(re.source, 'g' + flags);
+    }
+    while((m = re.exec(text))){
+      count++;
+      if(m[0].length === 0) re.lastIndex++;
+    }
+    re.lastIndex = 0;
+    return count;
+  }
+
+  function updateMatchCounter(){
+    const re = buildMatcher();
+    let total = 0;
+    if(re){
+      const nodes = logsEl().children;
+      for(let i=0;i<nodes.length;i++){
+        const raw = nodes[i].getAttribute('data-raw') || nodes[i].textContent || "";
+        total += countMatchesInText(raw, re);
+      }
+    }
+    const indicator = matchCountEl();
+    indicator.textContent = "Matches: " + total;
+    indicator.classList.toggle('active', total > 0);
+  }
+
+  function highlightText(text, re){
+    if(!re) return document.createTextNode(text);
+    const frag = document.createDocumentFragment();
+    let lastIndex = 0;
+    text.replace(re, (m, offset) => {
+      if(offset > lastIndex){
+        frag.appendChild(document.createTextNode(text.slice(lastIndex, offset)));
+      }
+      const mark = document.createElement('mark');
+      mark.textContent = m;
+      frag.appendChild(mark);
+      lastIndex = offset + m.length;
+      return m;
+    });
+    if(lastIndex < text.length){
+      frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
+    return frag;
+  }
+
+  function applySearchToLine(lineEl){
+    const text = lineEl.getAttribute('data-raw') ?? lineEl.textContent;
+    const re = buildMatcher();
+    lineEl.textContent = "";
+    lineEl.appendChild(highlightText(text, re));
+    if(searchState.showOnlyMatches && re){
+      lineEl.classList.toggle('hidden-by-filter', !re.test(text));
+      if(re.global) re.lastIndex = 0;
+    } else {
+      lineEl.classList.remove('hidden-by-filter');
+    }
+  }
+
+  function applySearchToAll(){
+    const nodes = logsEl().children;
+    for(let i=0;i<nodes.length;i++){
+      applySearchToLine(nodes[i]);
+    }
+    updateMatchCounter();
+  }
+
+  function makeLineElement(msg){
+    const line = document.createElement('div');
+    line.setAttribute('data-raw', msg);
+    const re = buildMatcher();
+    line.appendChild(highlightText(msg, re));
+    if(searchState.showOnlyMatches && re){
+      line.classList.toggle('hidden-by-filter', !re.test(msg));
+      if(re.global) re.lastIndex = 0;
+    }
+    return line;
+  }
+
+  function appendMessageToDOM(msg){
+    if(msg === ".") return;
+    const line = makeLineElement(msg);
+    logsEl().appendChild(line);
+    if(searchState.query) updateMatchCounter();
+  }
+
+  function flushBufferToDOM(){
+    if(buffer.length === 0) return;
+    const frag = document.createDocumentFragment();
+    for(const msg of buffer){
+      if(msg === ".") continue;
+      frag.appendChild(makeLineElement(msg));
+    }
+    logsEl().appendChild(frag);
+    buffer = [];
+    bufferCount = 0;
+    updateBadges();
+    if(searchState.query) updateMatchCounter();
+  }
+
+  function maybeScroll(){
+    if(autoScroll){
+      endEl().scrollIntoView();
+    }
+  }
+
+  function onPauseResumeClick(){
+    if(autoScroll){
+      setPaused(true);
+    } else {
+      flushBufferToDOM();
+      setPaused(false);
+      maybeScroll();
+    }
+    updateToEndVisibility();
+  }
+
+  function onClearClick(){
+    logsEl().innerHTML = "";
+    buffer = [];
+    bufferCount = 0;
+    totalCount = 0;
+    updateBadges();
+    updateMatchCounter();
+    maybeScroll();
+  }
+
+  function onDownloadClick(){
+    const visibleLines = [];
+    Array.from(logsEl().children).forEach(n => {
+      const txt = n.getAttribute('data-raw') || n.textContent || "";
+      txt.split(/\r?\n/).forEach(line => { if(line !== "") visibleLines.push(line); });
+    });
+    const bufferedLines = [];
+    buffer.forEach(m => {
+      if(m === ".") return;
+      (m || "").split(/\r?\n/).forEach(line => { if(line !== "") bufferedLines.push(line); });
+    });
+    const allLines = visibleLines.concat(bufferedLines);
+    const content = (allLines.join("\r\n") + "\r\n");
+
+    const logname = titleText().getAttribute("data-logname") || "log";
+    const ts = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    const fname = `${logname}-${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}-${pad(ts.getHours())}${pad(ts.getMinutes())}${pad(ts.getSeconds())}.txt`;
+
+    const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 0);
+  }
+
+  function onKeydown(e){
+    const target = e.target;
+    if(target === searchInput()){
+      if(e.key === "Escape"){
+        e.preventDefault();
+        clearSearch();
+        searchInput().blur();
+        updateMatchCounter();
+      }
+      return;
+    }
+    if(e.key === "/"){
+      e.preventDefault();
+      searchInput().focus();
+      return;
+    }
+    if(e.key === "End"){
+      e.preventDefault();
+      onToEnd();
+      return;
+    }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      onPauseResumeClick();
+      return;
+    }
+  }
+
+  function onScroll(){
+    if(autoScroll && !atBottom()){
+      setPaused(true);
+    }
+    updateToEndVisibility();
+  }
+
+  function onToEnd(){
+    flushBufferToDOM();
+    setPaused(false);
+    maybeScroll();
+    updateToEndVisibility();
+  }
+
+  function onSearchChange(){
+    searchState.query = (searchInput().value || "");
+    applySearchToAll();
+  }
+  function onRegexToggle(){ searchState.regex = !!chkRegex().checked; applySearchToAll(); }
+  function onCaseToggle(){ searchState.caseSensitive = !!chkCase().checked; applySearchToAll(); }
+  function onOnlyToggle(){ searchState.showOnlyMatches = !!chkOnly().checked; applySearchToAll(); }
+  function clearSearch(){
+    searchInput().value = "";
+    chkRegex().checked = false;
+    chkCase().checked = false;
+    chkOnly().checked = false;
+    searchState.query = "";
+    searchState.regex = false;
+    searchState.caseSensitive = false;
+    searchState.showOnlyMatches = false;
+    applySearchToAll();
+  }
+
+  window.WebSocketCreate = function(logname){
+    titleText().textContent = "'" + logname + "'";
+    titleText().setAttribute("data-logname", logname);
+    if(!("WebSocket" in window)){
+      alert("This browser does not support WebSockets.");
+      return;
+    }
+    ws = new WebSocket("ws://{{ADDR}}/ws/connect/" + logname + "{{QPARAMS}}");
+    ws.onmessage = function(evt){
+      const data = (typeof evt.data === "string") ? evt.data : "";
+      if(data !== ".") totalCount++;
+      if(autoScroll){
+        appendMessageToDOM(data);
+        maybeScroll();
+      } else {
+        buffer.push(data);
+        bufferCount = buffer.length;
+      }
+      updateBadges();
+    };
+    ws.onclose = function(){
+      alert("WebSocket closed.");
+    };
+  };
+
+  window.addEventListener("load", function(){
+    pauseResumeBtn().addEventListener("click", onPauseResumeClick);
+    clearBtn().addEventListener("click", onClearClick);
+    downloadBtn().addEventListener("click", onDownloadClick);
+    toEndBtn().addEventListener("click", onToEnd);
+
+    searchInput().addEventListener("input", onSearchChange);
+    chkRegex().addEventListener("change", onRegexToggle);
+    chkCase().addEventListener("change", onCaseToggle);
+    chkOnly().addEventListener("change", onOnlyToggle);
+
+    window.addEventListener("scroll", onScroll, {passive:true});
+
+    setPaused(false);
+    updateToEndVisibility();
+    updateMatchCounter();
+  });
+
+  window.addEventListener("keydown", onKeydown);
+})();
+</script>
+</head>
+<body onload="WebSocketCreate('{{LOGNAME}}')">
+  <div class='logtitle'>
+    <div class="bar">
+      <div id='logname' class='title-text' data-logname=""></div>
+      <div class="controls">
+        <span class="badge badge-total" id="totalCount">Total: 0</span>
+        <span class="badge" id="bufferCount" title="0 buffered messages">Buffered: 0</span>
+        <button id="btnPauseResume" type="button" title="Pause or resume auto-scrolling (Space)">Pause</button>
+        <button id="btnClear" type="button" title="Clear screen and buffer">Clear</button>
+        <span class="divider">|</span>
+        <button id="btnDownload" type="button" title="Download visible + buffered log as .txt">Download</button>
+        <span class="divider">|</span>
+      </div>
+    </div>
+    <div class="bar search">
+      <input id="searchInput" type="text" placeholder="Search (/ to focus, Esc to clear)">
+      <span id="matchCount" class="match-indicator">Matches: 0</span>
+      <label class="chk"><input id="chkRegex" type="checkbox"> Regex</label>
+      <label class="chk"><input id="chkCase" type="checkbox"> Case</label>
+      <label class="chk"><input id="chkOnly" type="checkbox"> Show only matches</label>
+    </div>
+  </div>
+
+  <div id='logs' class='logs'></div>
+  <div id='end'>&nbsp;</div>
+  <button id="btnToEnd" class="to-end" type="button" title="Scroll to end (End)">To End</button>
+</body>
+</html>

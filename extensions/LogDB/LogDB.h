@@ -251,7 +251,7 @@ namespace uniset
 
             void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                     Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
-            void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req,
+            void httpWebSocketConnectPage( Poco::Net::HTTPServerRequest& req,
                                            Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& p );
 
             bool supportsGzip( Poco::Net::HTTPServerRequest& request );
@@ -266,6 +266,7 @@ namespace uniset
             std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp,
                     const std::string& logname, const Poco::URI::QueryParameters& p );
             void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
+
 #endif
             std::string myname;
             std::unique_ptr<SQLiteInterface> db;
@@ -372,10 +373,7 @@ namespace uniset
             bool httpEnabledLogControl = { false };
             bool httpEnabledDownload = { false };
 
-            std::string fgColor = { "#c4c4c4" };
-            std::string bgColor = { "#111111" };
-            std::string bgColorTitle = { "green" };
-            std::string fgColorTitle = { "#ececec" };
+            std::string wsPageTemplate = "";
 
             /*! класс реализует работу с websocket через eventloop
              * Из-за того, что поступление логов может быть достаточно быстрым

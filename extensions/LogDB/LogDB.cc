@@ -34,9 +34,11 @@
 #include "LogDB.h"
 #include "Configuration.h"
 #include "Exceptions.h"
-#include "Debug.h"
-#include "UniXML.h"
 #include "LogDBSugar.h"
+// --------------------------------------------------------------------------
+#ifndef UNISET_DATADIR
+#define UNISET_DATADIR "/usr/share/uniset2/"
+#endif
 // --------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
@@ -50,7 +52,9 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
     int i = uniset::findArgParam("--" + prefix + "single-confile", argc, argv);
 
-    if( i != -1 )
+    bool singleMode = (i != -1);
+
+    if( singleMode )
         specconfig = uniset::getArgParam("--" + prefix + "single-confile", argc, argv, "");
 
     std::shared_ptr<UniXML> xml;
@@ -270,10 +274,52 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     Poco::Net::SocketAddress sa(httpHost, httpPort);
 
     maxwsocks = uniset::getArgPInt("--" + prefix + "ws-max", argc, argv, it.getProp("wsMax"), maxwsocks);
-    bgColor = uniset::getArg2Param("--" + prefix + "bg-color", argc, argv, it.getProp("bgColor"), bgColor);
-    fgColor = uniset::getArg2Param("--" + prefix + "fg-color", argc, argv, it.getProp("fgColor"), fgColor);
-    fgColorTitle = uniset::getArg2Param("--" + prefix + "fg-color-title", argc, argv, it.getProp("fgColorTitle"), fgColorTitle);
-    bgColorTitle = uniset::getArg2Param("--" + prefix + "bg-color-title", argc, argv, it.getProp("bgColorTitle"), bgColorTitle);
+
+    // загружаем html-файл
+    auto htmlfile = uniset::getArg2Param("--" + prefix + "ws-html-template", argc, argv, it.getProp("wsHtmlTemplate"), "logdb-websocket.html");
+
+    if( htmlfile.empty() )
+    {
+        ostringstream err;
+        err << myname
+            << "(init): websocket html template file not defined...";
+
+        dbcrit << err.str() << endl;
+        throw uniset::SystemError(err.str());
+    }
+
+    if( htmlfile[0] != '.' && htmlfile[0] != '/' )
+    {
+        std::vector<std::string> searchPath = {"./"};
+
+        if( !singleMode )
+            searchPath.push_back(uniset_conf()->getDataDir());
+
+        searchPath.push_back(UNISET_DATADIR);
+
+        for( const auto& p : searchPath )
+        {
+            if( file_exist( p + htmlfile) )
+            {
+                htmlfile = p + htmlfile;
+                break;
+            }
+        }
+    }
+
+    dbinfo << "(init): websocket html template " << htmlfile << endl;
+
+    if( !file_exist(htmlfile) )
+    {
+        ostringstream err;
+        err << myname
+            << "(init): Not found " << htmlfile;
+
+        dbcrit << err.str() << endl;
+        throw uniset::SystemError(err.str());
+    }
+
+    wsPageTemplate = htmlfile;
 
     try
     {
@@ -507,10 +553,7 @@ void LogDB::help_print()
     cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
     cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
-    cout << "--prefix-bg-color clr                - Цвет фона при выводе логов. По умолчанию: #111111" << endl;
-    cout << "--prefix-fg-color clr                - Цвет текста при выводе логов. По умолчанию: #c4c4c4" << endl;
-    cout << "--prefix-bg-color-title clr          - Цвет фона заголовка окна. По умолчанию: green" << endl;
-    cout << "--prefix-fg-color-title clr          - Цвет текста заголовка окна. По умолчанию: #ececec" << endl;
+    cout << "--prefix-ws-html-template file       - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
 
     cout << "logservers: " << endl;
     cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
@@ -964,9 +1007,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
                 if( seg[1] == "connect" )
                 {
                     resp.setContentType(httpHtmlContentType);
-                    std::ostream& out = resp.send();
-                    httpWebSocketConnectPage(out, req, resp, seg[2], qp);
-                    out.flush();
+                    httpWebSocketConnectPage(req, resp, seg[2], qp);
                     return;
                 }
 
@@ -1889,14 +1930,27 @@ Poco::JSON::Object::Ptr LogDB::httpLogControl( std::ostream& out, Poco::Net::HTT
     return jdata;
 }
 // -----------------------------------------------------------------------------
-void LogDB::httpWebSocketConnectPage( ostream& ostr,
-                                      Poco::Net::HTTPServerRequest& req,
+static void replaceAll(std::string& str, const std::string& from, const std::string& to)
+{
+    if( from.empty() )
+        return;
+
+    size_t start_pos = 0;
+
+    while((start_pos = str.find(from, start_pos)) != std::string::npos)
+    {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+// -----------------------------------------------------------------------------
+void LogDB::httpWebSocketConnectPage( Poco::Net::HTTPServerRequest& req,
                                       Poco::Net::HTTPServerResponse& resp,
                                       const std::string& logname,
                                       const Poco::URI::QueryParameters& params )
 {
     resp.setChunkedTransferEncoding(true);
-    resp.setContentType(httpHtmlContentType);
+    resp.setContentType("text/html; charset=UTF-8");
 
     std::string qparams = "";
 
@@ -1915,90 +1969,33 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
         }
     }
 
-    // code base on example from
-    // https://github.com/pocoproject/poco/blob/developNet/samples/WebSocketServer/src/WebSocketServer.cpp
+    if( !qparams.empty() )
+        qparams = "?set=" + qparams;
 
-    ostr << "<html>" << endl;
-    ostr << "<head>" << endl;
-    ostr << "<title>" << myname << " log '" << logname << "'</title>" << endl;
-    ostr << "<meta http-equiv=\"Content-Type\" content=\"" << httpHtmlContentType << "\">" << endl;
-    ostr << "<script type=\"text/javascript\">" << endl;
-    ostr << "logscrollStopped = false;" << endl;
-    ostr << "" << endl;
-    ostr << "function clickScroll()" << endl;
-    ostr << "{" << endl;
-    ostr << "	if( logscrollStopped )" << endl;
-    ostr << "		logscrollStopped = false;" << endl;
-    ostr << "	else" << endl;
-    ostr << "		logscrollStopped = true;" << endl;
-    ostr << "}" << endl;
-    ostr << "function LogAutoScroll()" << endl;
-    ostr << "{" << endl;
-    ostr << "   if( logscrollStopped == false )" << endl;
-    ostr << "   {" << endl;
-    ostr << "	   document.getElementById('end').scrollIntoView();" << endl;
-    ostr << "   }" << endl;
-    ostr << "}" << endl;
-    ostr << "" << endl;
-    ostr << "function WebSocketCreate(logname)" << endl;
-    ostr << "{" << endl;
-    ostr << "  if (\"WebSocket\" in window)" << endl;
-    ostr << "  {" << endl;
-    ostr << "    // LogScrollTimer = setInterval(LogAutoScroll,800);" << endl;
-    ostr << "    var ws = new WebSocket(\"ws://"
-         << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr )
-         << "/ws/connect/\" + logname"
-         << ( !qparams.empty() ? "+ \"?set=" + qparams + "\"" : "" )
-         << ");"
-         << endl;
-    ostr << "    var l = document.getElementById('logname');" << endl;
-    ostr << "    l.innerHTML = logname" << endl;
-    ostr << "    ws.onmessage = function(evt)" << endl;
-    ostr << "    {" << endl;
-    ostr << "    	var p = document.getElementById('logs');" << endl;
-    ostr << "    	if( evt.data != '.' ) {" << endl;
-    ostr << "    		p.innerHTML = p.innerHTML + \"</br>\"+evt.data" << endl;
-    ostr << "    		LogAutoScroll();" << endl;
-    ostr << "    	}" << endl;
-    ostr << "    };" << endl;
-    ostr << "    ws.onclose = function()" << endl;
-    ostr << "      { " << endl;
-    ostr << "        alert(\"WebSocket closed.\");" << endl;
-    ostr << "      };" << endl;
-    ostr << "  }" << endl;
-    ostr << "  else" << endl;
-    ostr << "  {" << endl;
-    ostr << "     alert(\"This browser does not support WebSockets.\");" << endl;
-    ostr << "  }" << endl;
-    ostr << "}" << endl;
+    std::string serverAddr = httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr;
+    std::ifstream file(wsPageTemplate);
 
-    ostr << "</script>" << endl;
-    ostr << "<style media='all' type='text/css'>" << endl;
-    ostr << ".logs {" << endl;
-    ostr << "	font-family: 'Liberation Mono', 'DejaVu Sans Mono', 'Courier New', monospace;" << endl;
-    ostr << "	padding-top: 30px;" << endl;
-    ostr << "}" << endl;
-    ostr << "" << endl;
-    ostr << ".logtitle {" << endl;
-    ostr << "	position: fixed;" << endl;
-    ostr << "	top: 0;" << endl;
-    ostr << "	left: 0;" << endl;
-    ostr << "	padding: 10px;" << endl;
-    ostr << "	width: 100%;" << endl;
-    ostr << "	height: 25px;" << endl;
-    ostr << "	background-color: " << bgColorTitle << ";" << endl;
-    ostr << "	color: " << fgColorTitle << ";" << endl;
-    ostr << "	border-top: 2px solid;" << endl;
-    ostr << "	border-bottom: 2px solid;" << endl;
-    ostr << "	border-color: white;" << endl;
-    ostr << "}" << endl;
-    ostr << "</style>" << endl;
-    ostr << "</head>" << endl;
-    ostr << "<body style='background: " << bgColor << "; color: " << fgColor << ";' onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
-    ostr << "<h4><div onclick='javascritpt:clickScroll()' id='logname' class='logtitle'></div></h4>" << endl;
-    ostr << "<div id='logs' class='logs'></div>" << endl;
-    ostr << "<p><div id='end' style='display: hidden;'>&nbsp;</div></p>" << endl;
-    ostr << "</body>" << endl;
+    if( !file.is_open() )
+    {
+        dbcrit << "(httpWebSocketConnectPage): Can't open file: '" << wsPageTemplate << "'" << endl;
+        resp.setStatusAndReason(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+        resp.setContentLength(0);
+        resp.send();
+        return;
+    }
+
+    std::ostream& out = resp.send();
+    std::string line;
+
+    while( std::getline(file, line) )
+    {
+        replaceAll(line, "{{LOGNAME}}", logname);
+        replaceAll(line, "{{ADDR}}", serverAddr);
+        replaceAll(line, "{{QPARAMS}}", qparams);
+        out << line;
+    }
+
+    out.flush();
 }
 // -----------------------------------------------------------------------------
 #endif

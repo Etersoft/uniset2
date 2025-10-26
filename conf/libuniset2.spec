@@ -502,6 +502,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled logdb
 %files extension-logdb
 %_bindir/%oname-logdb*
+%_datadir/%oname/logdb-websocket.html
 %endif
 %endif
 
