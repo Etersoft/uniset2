@@ -1278,6 +1278,54 @@ namespace uniset
         return os;
     }
     // -----------------------------------------------------------------------------
+    std::string to_string( const MBConfig::ExchangeMode& m )
+    {
+        switch(m)
+        {
+            case MBConfig::emNone:
+                return "none";
+
+            case MBConfig::emWriteOnly:
+                return "writeOnly";
+
+            case MBConfig::emReadOnly:
+                return "readOnly";
+
+            case MBConfig::emSkipSaveToSM:
+                return "skipSaveToSM";
+
+            case MBConfig::emSkipExchange:
+                return "skipExchange";
+        }
+
+        return "unknown";
+    }
+    // -----------------------------------------------------------------------------
+    std::vector<std::string> MBConfig::supported_modes()
+    {
+        return {"none", "writeOnly", "readOnly", "skipSaveToSM", "skipExchange"};
+    }
+    // -----------------------------------------------------------------------------
+    MBConfig::ExchangeMode MBConfig::from_string( const std::string& s )
+    {
+        if( s == "none" || s == "normal" || s == "default" )
+            return MBConfig::emNone;
+
+        if( s == "writeonly" || s == "write_only" )
+            return MBConfig::emWriteOnly;
+
+        if( s == "readonly" || s == "read_only" )
+            return MBConfig::emReadOnly;
+
+        if( s == "skipsavetosm" || s == "skip_save_to_sm" )
+            return MBConfig::emSkipSaveToSM;
+
+        if( s == "skipexchange" || s == "skip_exchange" )
+            return MBConfig::emSkipExchange;
+
+        return MBConfig::emNone;
+    }
+    // -----------------------------------------------------------------------------
     std::string to_string( const MBConfig::SafeMode& m )
     {
         if( m == MBConfig::safeNone )

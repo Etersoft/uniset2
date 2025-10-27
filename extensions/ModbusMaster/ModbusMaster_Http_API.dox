@@ -1,0 +1,239 @@
+/*!
+\page page_ModbusTCP_HTTP ModbusMaster HTTP API
+\section sec_MBTCP_HTTP_API ModbusMaster HTTP API
+
+- \ref sec_MBTCP_HTTP_API_help  
+- \ref sec_MBTCP_HTTP_API_root  
+- \ref sec_MBTCP_HTTP_API_reload  
+- \ref sec_MBTCP_HTTP_API_mode  
+- \ref sec_MBTCP_HTTP_API_params
+- \ref sec_MBTCP_HTTP_API_status
+
+\par Базовый URL
+
+ /api/v01/<object>/
+
+ /help
+  Получение списка доступных команд и параметров.
+
+ /
+  Получение стандартной информации об объекте.
+
+ /reload?confile=/path/to/confile
+  Перезагрузить конфигурацию.
+  Параметр \c confile — абсолютный путь до файла конфигурации (необязательный).
+
+ /mode
+  Управление режимом обмена.
+  Поддерживаются команды:
+  - \c ?get — получить текущий режим
+  - \c ?supported=1 — получить список поддерживаемых режимов
+  - \c ?set=<mode> — установить новый режим (если не привязан к датчику)
+
+ \par Примеры
+ \code
+ GET /api/v01/MBTCPMaster1/help
+ GET /api/v01/MBTCPMaster1/
+ GET /api/v01/MBTCPMaster1/reload
+ GET /api/v01/MBTCPMaster1/mode?get
+ GET /api/v01/MBTCPMaster1/mode?supported=1
+ GET /api/v01/MBTCPMaster1/mode?set=writeOnly
+ \endcode
+
+ \note При привязке режима к датчику \c ?set вернёт ошибку:
+ "control via sensor is enabled. Manual change is not allowed."
+
+\section sec_MBTCP_HTTP_API_help /help
+
+Возвращает список доступных команд и их краткое описание.
+Используется для интроспекции API и автоматизации.
+
+\code
+GET /<object>/help
+\endcode
+
+\note Возвращает JSON с перечнем доступных команд и параметров.
+
+\section sec_MBTCP_HTTP_API_root /
+
+Возвращает стандартную информацию об объекте, включая состояние и базовые параметры.
+
+\code
+GET /<object>/
+\endcode
+
+\note Используется для получения общей информации о процессе ModbusMaster.
+
+\section sec_MBTCP_HTTP_API_reload /reload
+
+Перезагрузка конфигурации с возможностью указания альтернативного файла конфигурации.
+
+\code
+GET /<object>/reload?confile=/path/to/confile
+Response:
+{
+  "result": "OK",
+  "confile": "/path/to/confile"
+}
+\endcode
+
+\warning Если указан \c confile, он должен соответствовать базовому configure.xml.
+Минимум должен содержать секцию настроек для процесса и используемые датчики.
+Глобальный конфиг не заменяется — только частично переинициализируется.
+
+\section sec_MBTCP_HTTP_API_mode /mode
+
+Управление режимом обмена.
+Доступные команды:
+- \c ?get — получить текущий режим
+- \c ?supported=1 — получить список поддерживаемых режимов
+- \c ?set=<mode> — установить новый режим (если не привязан к датчику)
+
+\code
+GET /<object>/mode?get
+GET /<object>/mode?supported=1
+GET /<object>/mode?set=writeOnly
+\endcode
+
+\note Если режим привязан к датчику, установка через \c ?set недоступна:
+"control via sensor is enabled. Manual change is not allowed."
+
+\section sec_MBTCP_HTTP_API_params /getparam и /setparam
+
+Чтение и изменение выбранных runtime-параметров процесса обмена.
+Базовый путь: \c /api/v01/<object>/...
+
+Поддерживаемые параметры:
+- \b force (0|1) — принудительный режим (bool)
+- \b force_out (0|1) — принудительный режим для выходов (bool)
+- \b maxHeartBeat (ms) — максимальный интервал «пульса» (целое, миллисекунды)
+- \b recv_timeout (ms) — таймаут при ожидании ответа от устройства
+- \b sleepPause_msec (ms) — пауза между циклами опроса
+- \b polltime (ms) — период опроса
+- \b default_timeout (ms) — стандартный таймаут обмена
+
+\par Чтение параметров
+\code
+GET /api/v01/MBTCPMaster1/getparam?name=force&name=recv_timeout&name=polltime
+Response:
+{
+  "result": "OK",
+  "params": {
+    "force": 0,
+    "recv_timeout": 2000,
+    "polltime": 1000
+  },
+  "unknown": ["..."]        // (опционально) имена, которые не поддерживаются
+}
+\endcode
+
+Правила:
+- Параметр \c name может повторяться. Если список пуст, сервер вернёт ошибку.
+- Неизвестные \c name попадают в массив \c unknown (ответ остаётся \c "result":"OK").
+
+\par Изменение параметров
+\code
+GET /api/v01/MBTCPMaster1/setparam?recv_timeout=3000&polltime=2000
+Response:
+{
+  "result": "OK",
+  "updated": {
+    "recv_timeout": 3000,
+    "polltime": 2000
+  },
+  "unknown": ["..."]        // (опционально) имена, которые не поддерживаются
+}
+\endcode
+
+Правила:
+- Передаются пары \c name=value в query-строке. Допускается изменение нескольких параметров за один запрос.
+- Для \b force и \b force_out допустимы строки \c "0" или \c "1".
+- Для таймаутов — целое число миллисекунд (>0 рекомендуется).
+- Параметры \b polltime и \b recv_timeout применяются динамически.
+- Параметры \b sleepPause_msec и \b default_timeout являются постоянными.
+
+\par Коды ошибок
+- 400/5xx при отсутствующих или некорректных значениях (например, \c recv_timeout="abc")
+- 400 при отсутствии ключей в запросе \c /setparam или отсутствии \c name в \c /getparam
+
+\note Данные параметры ограничены только перечисленными выше.
+Добавление новых параметров требует изменений в реализации.
+
+\section sec_MBTCP_HTTP_API_status /status
+
+Возвращает текущее состояние объекта в формате JSON (аналогично getInfo()).
+
+\code
+GET /api/v01/MBTCPMaster1/status
+\endcode
+
+\par Response
+
+\code
+{
+  "result": "OK",
+  "status": {
+    "name": "MBTCPMaster1",
+    "monitor": "vmon: OK",
+    "activated": 1,
+    "logserver": {
+      "host": "127.0.0.1",
+      "port": 5510
+    },
+    "parameters": {
+      "reopenTimeout": 5000,
+      "config": "TCP(master): 192.168.0.1:502 (10 devices)"
+    },
+    "statistics": {
+      "text": "Packets: 1200 ok, 0 errors",
+      "interval": 30000
+    },
+    "devices": [
+      { "id": 1, "info": "Dev1 [10 regs]" },
+      { "id": 2, "info": "Dev2 [8 regs]" }
+    ],
+    "mode": {
+      "name": "writeOnly",
+      "id": 1,
+      "control": "manual"
+    },
+    "maxHeartBeat": 10,
+    "force": 0,
+    "force_out": 0,
+    "activateTimeout": 2000,
+    "reopenTimeout": 5000,
+    "notUseExchangeTimer": 0,
+    "httpEnabledSetParams": 1,
+    "config_params": {
+      "recv_timeout": 1000,
+      "sleepPause_msec": 50,
+      "polltime": 200,
+      "default_timeout": 5000
+    }
+  }
+}
+\endcode
+
+\par Описание полей
+- \b name — имя объекта обмена
+- \b monitor — краткая строка мониторинга состояния
+- \b activated — флаг активности
+- \b logserver — адрес и порт лог-сервера
+- \b parameters — основные параметры обмена (включая reopenTimeout и краткую конфигурацию)
+- \b statistics — текстовая статистика и интервал обновления
+- \b devices — список подключённых устройств с краткой информацией
+- \b mode — текущий режим работы, включая:
+  - \c name — строковое название режима
+  - \c id — числовой идентификатор режима
+  - \c control — источник управления ("manual" или "sensor")
+  - \c sid — идентификатор датчика, если режим управляется через него
+- \b maxHeartBeat, \b force, \b force_out — текущие значения ключевых параметров обмена
+- \b activateTimeout, \b reopenTimeout — интервалы (мс)
+- \b notUseExchangeTimer — флаг использования таймера обмена
+- \b httpEnabledSetParams — разрешён ли вызов /setparam
+- \b config_params — набор базовых конфигурационных параметров обмена
+
+\par Примечания
+- Запрос не требует параметров.
+- Ответ полностью соответствует содержанию getInfo(), но представлен в виде структурированного JSON.
+*/

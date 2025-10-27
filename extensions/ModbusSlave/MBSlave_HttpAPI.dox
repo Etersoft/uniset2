@@ -1,0 +1,149 @@
+/*!
+\page page_ModbusSlave_HTTP ModbusSlave HTTP API
+
+- \ref sec_MBSLAVE_HTTP_API_help
+- \ref sec_MBSLAVE_HTTP_API_root
+- \ref sec_MBSLAVE_HTTP_API_regs
+- \ref sec_MBSLAVE_HTTP_API_status
+- \ref sec_MBSLAVE_HTTP_API_params
+
+\par Базовый URL
+
+ /api/v01/<object>/
+
+\section sec_MBSLAVE_HTTP_API_help /help
+
+Возвращает список доступных команд и их краткое описание.
+
+\code
+GET /<object>/help
+\endcode
+
+\section sec_MBSLAVE_HTTP_API_root /
+
+Возвращает стандартную информацию об объекте.
+
+\code
+GET /<object>/
+\endcode
+
+\section sec_MBSLAVE_HTTP_API_regs /regs
+
+Получить список/значения регистров (как реализовано в MBSlave::request_regs).
+
+\code
+GET /<object>/regs?addr=mbaddr1,mbaddr2&regs=reg1,reg2
+\endcode
+
+Параметры:
+- \c addr — список адресов Modbus slave (строка, через запятую)
+- \c regs — список регистров (строка, через запятую)
+
+\section sec_MBSLAVE_HTTP_API_params /getparam и /setparam
+
+Чтение и изменение выбранных runtime-параметров процесса.
+
+Базовый путь: \c /api/v01/<object>/...
+
+Поддерживаемые параметры:
+- \b force (0|1)
+- \b sockTimeout (ms)
+- \b sessTimeout (ms)
+- \b updateStatTime (ms)
+
+\par Чтение параметров
+\code
+GET /api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime
+Response:
+{
+  "result": "OK",
+  "params": {
+    "force": 0,
+    "sockTimeout": 30000,
+    "sessTimeout": 2000,
+    "updateStatTime": 4000
+  },
+  "unknown": ["..."]
+}
+\endcode
+
+\par Изменение параметров
+\code
+GET /api/v01/MBSlave1/setparam?force=1&sockTimeout=45000&sessTimeout=2500&updateStatTime=5000
+Response:
+{
+  "result": "OK",
+  "updated": {
+    "force": 1,
+    "sockTimeout": 45000,
+    "sessTimeout": 2500,
+    "updateStatTime": 5000
+  },
+  "unknown": ["..."]
+}
+\endcode
+
+\par Ограничения
+- Изменение параметров через \c /setparam может быть заблокировано флагом \c httpEnabledSetParams.
+- При заблокированном режиме \c /setparam вернёт ошибку.
+
+\par Коды ошибок
+- 400/5xx: некорректные значения (например, \c sockTimeout="abc")
+- 400: пустой запрос \c /setparam (нет key=value) или \c /getparam (нет \c name)
+
+
+\section sec_MBSLAVE_HTTP_API_status /status
+
+Возвращает текущее состояние объекта в JSON (аналогично getInfo()).
+
+\code
+GET /api/v01/MBSlave1/status
+\endcode
+
+Ответ содержит поля:
+- name, tcp{ip,port}, logserver{host,port}
+- iomap{size,map[]}, myaddr
+- stat{connectionCount,smPingOK,restartTCPServerCount}
+- tcp_clients[], tcp_sessions{count,max_sessions,updateStatTime,items[]}
+- sockTimeout, sessTimeout, updateStatTime, force
+
+\code
+GET /api/v01/MBSlave1/status
+Response:
+{
+  "result": "OK",
+  "status": {
+    "name": "MBSlave1",
+    "tcp": {"ip":"192.168.1.10","port":502},
+    "monitor": "....",
+    "logserver": {"host":"127.0.0.1","port":5510},
+    "iomap": {
+      "size": 3,
+      "map": [
+        {"mbaddr":"1","iomap":12},
+        {"mbaddr":"2","iomap":8}
+      ]
+    },
+    "myaddr": 1,
+    "stat": {"connectionCount":42,"smPingOK":42,"restartTCPServerCount":0},
+    "tcp_clients": [
+      {"id":1,"short":"..."},
+      {"id":2,"short":"..."}
+    ],
+    "tcp_sessions": {
+      "count": 2,
+      "max_sessions": 10,
+      "updateStatTime": 4000,
+      "items": [
+        {"ip":"10.0.0.5","askCount":123},
+        {"ip":"10.0.0.6","askCount":77}
+      ]
+    },
+    "sockTimeout": 30000,
+    "sessTimeout": 2000,
+    "updateStatTime": 4000,
+    "force": 0
+  }
+}
+\endcode
+*/

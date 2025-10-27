@@ -193,7 +193,7 @@ void RTUExchange::step()
     try
     {
         if( sidExchangeMode != DefaultObjectId && force )
-            exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
+            exchangeMode.store( (MBConfig::ExchangeMode)shm->localGetValue(itExchangeMode, sidExchangeMode) );
     }
     catch(...) {}
 

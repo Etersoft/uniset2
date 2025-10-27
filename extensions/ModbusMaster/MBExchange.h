@@ -22,6 +22,7 @@
 #include <map>
 #include <unordered_map>
 #include <memory>
+#include <atomic>
 #include "IONotifyController.h"
 #include "UniSetObject.h"
 #include "PassiveTimer.h"
@@ -110,6 +111,18 @@ namespace uniset
             // http API
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
             virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+
+            // control helpers
+            Poco::JSON::Object::Ptr httpModeGet(const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpModeSet(const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpModeSupported(const Poco::URI::QueryParameters&);
+            Poco::JSON::Object::Ptr httpMode( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpReload( const Poco::URI::QueryParameters& p );
+            virtual Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
+            virtual Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
+            virtual Poco::JSON::Object::Ptr httpStatus();
+
+            bool httpEnabledSetParams = { false };
 #endif
             void firstInitRegisters();
             bool preInitRead( MBConfig::InitList::iterator& p );
@@ -161,7 +174,7 @@ namespace uniset
 
             uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
             IOController::IOStateList::iterator itExchangeMode;
-            long exchangeMode = { MBConfig::emNone }; /*!< режим работы см. ExchangeMode */
+            std::atomic<MBConfig::ExchangeMode> exchangeMode = { MBConfig::emNone }; /*!< режим работы см. ExchangeMode */
 
             std::atomic_bool activated = { false };
             std::atomic_bool canceled = { false };

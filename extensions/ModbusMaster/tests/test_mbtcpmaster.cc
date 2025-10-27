@@ -10,6 +10,11 @@
 #include "MBTCPMultiMaster.h"
 #include "MBTCPMaster.h"
 #include "UniSetActivator.h"
+
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/JSON/Parser.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -26,6 +31,8 @@ static int polltime = 100; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
 static const string confile2 = "mbmaster-test-configure2.xml";
+static const string httpAddr = "127.0.0.1";
+static const uint16_t httpPort = 9090;
 // -----------------------------------------------------------------------------
 extern std::shared_ptr<SharedMemory> shm;
 extern std::shared_ptr<MBTCPMaster> mbm;
@@ -1022,3 +1029,547 @@ TEST_CASE("MBTCPMaster: F2 to DI", "[modbus][ftodi]")
 }
 #endif
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+TEST_CASE("MBTCPMaster: HTTP /mode?supported", "[http][rest][mbtcpmaster][supported]")
+{
+    InitTest();
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "api/v01/MBTCPMaster1/mode?supported=1", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    try
+    {
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+        REQUIRE(json->get("result").toString() == "OK");
+
+        auto arr = json->get("supported").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(arr);
+        REQUIRE(arr->size() >= 3);
+    }
+    catch(const std::exception& e)
+    {
+        FAIL(std::string("HTTP /mode?supported failed: ") + e.what());
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /mode?get", "[http][rest][mbtcpmaster][get]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "api/v01/MBTCPMaster1/mode?get", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(json);
+    REQUIRE(json->get("result").toString() == "OK");
+    REQUIRE(json->has("mode"));
+    REQUIRE(json->has("mode_id"));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /mode?set=writeOnly (sensor-bound -> error)", "[http][rest][mbtcpmaster][set][negative]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "api/v01/MBTCPMaster1/mode?set=writeOnly", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+
+    //  Должна быть ошибка, т.к. управление режимом привязано к датчику
+    REQUIRE(res.getStatus() != HTTPResponse::HTTP_OK);
+    REQUIRE(res.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+    const std::string body = ss.str();
+
+    cerr << body << endl;
+
+    // Сообщение об ошибке из кода: "control via sensor is enabled"
+    REQUIRE(body.find("control via sensor is enabled") != std::string::npos);
+}
+// -----------------------------------------------------------------------------
+// /getparam: базовая проверка на три параметра
+TEST_CASE("MBTCPMaster: HTTP /getparam (force, force_out, maxHeartBeat)", "[http][rest][mbtcpmaster][getparam]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET,
+                    "api/v01/MBTCPMaster1/getparam?name=force&name=force_out&name=maxHeartBeat",
+                    HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(json);
+    REQUIRE(json->get("result").toString() == "OK");
+    REQUIRE(json->has("params"));
+
+    auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(params);
+    REQUIRE(params->has("force"));
+    REQUIRE(params->has("force_out"));
+    REQUIRE(params->has("maxHeartBeat"));
+}
+// -----------------------------------------------------------------------------
+// /setparam: переключение force и force_out (с возвратом исходных значений)
+TEST_CASE("MBTCPMaster: HTTP /setparam (force & force_out)", "[http][rest][mbtcpmaster][setparam][bools]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    // Сначала читаем текущие значения
+    {
+        HTTPClientSession cs(httpAddr, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "api/v01/MBTCPMaster1/getparam?name=force&name=force_out",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+        int prev_force = params->get("force");
+        int prev_force_out = params->get("force_out");
+
+        // Выберем новые значения (переключим 0<->1)
+        int new_force = prev_force ? 0 : 1;
+        int new_force_out = prev_force_out ? 0 : 1;
+
+        // Устанавливаем новые
+        {
+            HTTPRequest reqSet(HTTPRequest::HTTP_GET,
+                               std::string("api/v01/MBTCPMaster1/setparam?force=")
+                               + std::to_string(new_force)
+                               + "&force_out=" + std::to_string(new_force_out),
+                               HTTPRequest::HTTP_1_1);
+            HTTPResponse resSet;
+            cs.sendRequest(reqSet);
+            std::istream& rsSet = cs.receiveResponse(resSet);
+            REQUIRE(resSet.getStatus() == HTTPResponse::HTTP_OK);
+
+            std::stringstream ssSet;
+            ssSet << rsSet.rdbuf();
+            auto rSet = parser.parse(ssSet.str());
+            auto jSet = rSet.extract<Poco::JSON::Object::Ptr>();
+            REQUIRE(jSet->get("result").toString() == "OK");
+            REQUIRE(jSet->has("updated"));
+        }
+
+        // Проверяем, что применилось
+        {
+            HTTPRequest reqGet2(HTTPRequest::HTTP_GET,
+                                "api/v01/MBTCPMaster1/getparam?name=force&name=force_out",
+                                HTTPRequest::HTTP_1_1);
+            HTTPResponse resGet2;
+            cs.sendRequest(reqGet2);
+            std::istream& rsGet2 = cs.receiveResponse(resGet2);
+            REQUIRE(resGet2.getStatus() == HTTPResponse::HTTP_OK);
+
+            std::stringstream ssGet2;
+            ssGet2 << rsGet2.rdbuf();
+            auto r2 = parser.parse(ssGet2.str());
+            auto j2 = r2.extract<Poco::JSON::Object::Ptr>();
+            auto p2 = j2->get("params").extract<Poco::JSON::Object::Ptr>();
+
+            REQUIRE((int)p2->get("force") == new_force);
+            REQUIRE((int)p2->get("force_out") == new_force_out);
+        }
+
+        // Возвращаем исходные значения
+        {
+            HTTPRequest reqBack(HTTPRequest::HTTP_GET,
+                                std::string("api/v01/MBTCPMaster1/setparam?force=")
+                                + std::to_string(prev_force)
+                                + "&force_out=" + std::to_string(prev_force_out),
+                                HTTPRequest::HTTP_1_1);
+            HTTPResponse resBack;
+            cs.sendRequest(reqBack);
+            std::istream& rsBack = cs.receiveResponse(resBack);
+            REQUIRE(resBack.getStatus() == HTTPResponse::HTTP_OK);
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+// /setparam: изменение maxHeartBeat (с возвратом исходного)
+TEST_CASE("MBTCPMaster: HTTP /setparam (maxHeartBeat)", "[http][rest][mbtcpmaster][setparam][maxHeartBeat]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // читаем текущее значение
+    int prev_mhb = [&]()
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "api/v01/MBTCPMaster1/getparam?name=maxHeartBeat",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+        auto p = j->get("params").extract<Poco::JSON::Object::Ptr>();
+        return (int) p->get("maxHeartBeat");
+    }
+    ();
+
+    // ставим новое значение (сдвиг +1234, минимум 1)
+    int new_mhb = prev_mhb + 1234;
+    {
+        HTTPRequest reqSet(HTTPRequest::HTTP_GET,
+                           std::string("api/v01/MBTCPMaster1/setparam?maxHeartBeat=") + std::to_string(new_mhb),
+                           HTTPRequest::HTTP_1_1);
+        HTTPResponse resSet;
+        cs.sendRequest(reqSet);
+        std::istream& rsSet = cs.receiveResponse(resSet);
+        REQUIRE(resSet.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ssSet;
+        ssSet << rsSet.rdbuf();
+        auto rSet = parser.parse(ssSet.str());
+        auto jSet = rSet.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(jSet->get("result").toString() == "OK");
+    }
+
+    // проверяем новое значение
+    {
+        HTTPRequest reqGet2(HTTPRequest::HTTP_GET,
+                            "api/v01/MBTCPMaster1/getparam?name=maxHeartBeat",
+                            HTTPRequest::HTTP_1_1);
+        HTTPResponse resGet2;
+        cs.sendRequest(reqGet2);
+        std::istream& rsGet2 = cs.receiveResponse(resGet2);
+        REQUIRE(resGet2.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ssGet2;
+        ssGet2 << rsGet2.rdbuf();
+        auto r2 = parser.parse(ssGet2.str());
+        auto j2 = r2.extract<Poco::JSON::Object::Ptr>();
+        auto p2 = j2->get("params").extract<Poco::JSON::Object::Ptr>();
+        REQUIRE((int) p2->get("maxHeartBeat") == new_mhb);
+    }
+
+    // возвращаем исходное
+    {
+        HTTPRequest reqBack(HTTPRequest::HTTP_GET,
+                            std::string("api/v01/MBTCPMaster1/setparam?maxHeartBeat=") + std::to_string(prev_mhb),
+                            HTTPRequest::HTTP_1_1);
+        HTTPResponse resBack;
+        cs.sendRequest(reqBack);
+        std::istream& rsBack = cs.receiveResponse(resBack);
+        REQUIRE(resBack.getStatus() == HTTPResponse::HTTP_OK);
+    }
+}
+// -----------------------------------------------------------------------------
+// /getparam и /setparam: recv_timeout и polltime (set -> verify -> revert)
+TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) recv_timeout & polltime", "[http][rest][mbtcpmaster][setparam][getparam]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // 1) читаем текущие значения
+    int prev_recv_to = 0, prev_polltime = 0;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "api/v01/MBTCPMaster1/getparam?name=recv_timeout&name=polltime",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = r.extract<Poco::JSON::Object::Ptr>();
+        auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+        prev_recv_to = (int)params->get("recv_timeout");
+        prev_polltime = (int)params->get("polltime");
+    }
+
+    // новые значения (сдвиг на +123/+456)
+    int new_recv_to = prev_recv_to + 123;
+    int new_polltime = prev_polltime + 456;
+
+    // 2) устанавливаем новые
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        std::string("api/v01/MBTCPMaster1/setparam?recv_timeout=") + std::to_string(new_recv_to) +
+                        "&polltime=" + std::to_string(new_polltime),
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = r.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json->get("result").toString() == "OK");
+    }
+
+    // 3) проверяем, что применилось
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "api/v01/MBTCPMaster1/getparam?name=recv_timeout&name=polltime",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = r.extract<Poco::JSON::Object::Ptr>();
+        auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+        REQUIRE((int)params->get("recv_timeout") == new_recv_to);
+        REQUIRE((int)params->get("polltime") == new_polltime);
+    }
+
+    // 4) возвращаем исходные
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        std::string("api/v01/MBTCPMaster1/setparam?recv_timeout=") + std::to_string(prev_recv_to) +
+                        "&polltime=" + std::to_string(prev_polltime),
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+    }
+}
+// -----------------------------------------------------------------------------
+// /getparam и /setparam: sleepPause_msec и default_timeout (set -> verify -> revert)
+TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) sleepPause_msec & default_timeout", "[http][rest][mbtcpmaster][setparam][getparam]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // 1) читаем текущие значения
+    int prev_sleep = 0, prev_default_to = 0;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "api/v01/MBTCPMaster1/getparam?name=sleepPause_msec&name=default_timeout",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = r.extract<Poco::JSON::Object::Ptr>();
+        auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+        prev_sleep = (int)params->get("sleepPause_msec");
+        prev_default_to = (int)params->get("default_timeout");
+    }
+
+    // новые значения (сдвиг на +111/+222)
+    int new_sleep = prev_sleep + 111;
+    int new_default_to = prev_default_to + 222;
+
+    // 2) устанавливаем новые
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        std::string("api/v01/MBTCPMaster1/setparam?sleepPause_msec=") + std::to_string(new_sleep) +
+                        "&default_timeout=" + std::to_string(new_default_to),
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = r.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json->get("result").toString() == "OK");
+    }
+
+    // 3) проверяем, что применилось
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "api/v01/MBTCPMaster1/getparam?name=sleepPause_msec&name=default_timeout",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr json = r.extract<Poco::JSON::Object::Ptr>();
+        auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+        REQUIRE((int)params->get("sleepPause_msec") == new_sleep);
+        REQUIRE((int)params->get("default_timeout") == new_default_to);
+    }
+
+    // 4) возвращаем исходные
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        std::string("api/v01/MBTCPMaster1/setparam?sleepPause_msec=") + std::to_string(prev_sleep) +
+                        "&default_timeout=" + std::to_string(prev_default_to),
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+    }
+}
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+TEST_CASE("MBTCPMaster: HTTP /status extended fields", "[http][rest][mbtcpmaster][status][extended]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/MBTCPMaster1/status", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->has("result"));
+    REQUIRE(root->get("result").toString() == "OK");
+    REQUIRE(root->has("status"));
+
+    auto status = root->getObject("status");
+    REQUIRE(status);
+
+    // mode-block
+    REQUIRE(status->has("mode"));
+    {
+        auto mode = status->getObject("mode");
+        REQUIRE(mode);
+        REQUIRE(mode->has("name"));
+        REQUIRE(mode->has("id"));
+        REQUIRE(mode->has("control"));
+
+        // sid присутствует только если control == "sensor"
+        if( mode->get("control").toString() == "sensor" )
+            REQUIRE(mode->has("sid"));
+    }
+
+    // flat fields
+    REQUIRE(status->has("maxHeartBeat"));
+    REQUIRE(status->has("force"));
+    REQUIRE(status->has("force_out"));
+    REQUIRE(status->has("activateTimeout"));
+    REQUIRE(status->has("reopenTimeout"));
+    REQUIRE(status->has("notUseExchangeTimer"));
+
+    if( status->has("httpEnabledSetParams") )
+    {
+        // значение проверяем как наличие поля; само значение зависит от конфигурации теста
+        (void)status->get("httpEnabledSetParams");
+    }
+
+    // config_params block
+    REQUIRE(status->has("config_params"));
+    {
+        auto cfg = status->getObject("config_params");
+        REQUIRE(cfg);
+        REQUIRE(cfg->has("recv_timeout"));
+        REQUIRE(cfg->has("sleepPause_msec"));
+        REQUIRE(cfg->has("polltime"));
+        REQUIRE(cfg->has("default_timeout"));
+    }
+}
+#endif // DISABLE_REST_API
+
+// -----------------------------------------------------------------------------
+#endif // DISABLE_REST_API

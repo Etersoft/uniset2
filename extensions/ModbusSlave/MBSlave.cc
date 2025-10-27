@@ -116,6 +116,7 @@ namespace uniset
         mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
         force = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
+        httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
 
         // int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
 
@@ -1595,6 +1596,9 @@ namespace uniset
         cout << "--mbs-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
         cout << "--mbs-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
         cout << endl;
+        cout << " HTTP API: " << endl;
+        cout << "--mbs-http-enabled-setparams 1 - Enable API /setparams" << endl;
+        cout << endl;
         cout << " Logs: " << endl;
         cout << "--mbs-log-...            - log control" << endl;
         cout << "             add-levels ...  " << endl;
@@ -2105,29 +2109,6 @@ namespace uniset
     }
 #ifndef DISABLE_REST_API
     // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBSlave::httpHelp( const Poco::URI::QueryParameters& p )
-    {
-        uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
-
-        {
-            // 'regs'
-            uniset::json::help::item cmd("regs", "get registers list");
-            cmd.param("regs=reg1,reg2,reg3..", "get these registers");
-            cmd.param("addr=mbaddr1,mbaddr2,..", "get registers for mbaddr");
-            myhelp.add(cmd);
-        }
-
-        return myhelp;
-    }
-    // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBSlave::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
-    {
-        if( req == "regs" )
-            return request_regs(req, p);
-
-        return UniSetObject::httpRequest(req, p);
-    }
-    // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBSlave::request_regs( const string& req, const Poco::URI::QueryParameters& params )
     {
         Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -2227,6 +2208,298 @@ namespace uniset
         reginfo->set("value",  prop.value);
         return reginfo;
     }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpHelp( const Poco::URI::QueryParameters& p )
+    {
+        uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
+
+        {
+            uniset::json::help::item cmd("regs", "get registers list");
+            cmd.param("regs=reg1,reg2,reg3..", "get these registers");
+            cmd.param("addr=mbaddr1,mbaddr2,..", "get registers for mbaddr");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("getparam", "read runtime parameters");
+            cmd.param("name", "parameter to read; can be repeated");
+            cmd.param("note", "supported: force | sockTimeout | sessTimeout | updateStatTime");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("setparam", "set runtime parameters");
+            cmd.param("force", "0|1");
+            cmd.param("sockTimeout", "milliseconds");
+            cmd.param("sessTimeout", "milliseconds");
+            cmd.param("updateStatTime", "milliseconds");
+            cmd.param("note", "may be disabled by httpEnabledSetParams");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("status", "get current object status (same as getInfo())");
+            myhelp.add(cmd);
+        }
+
+
+        return myhelp;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+    {
+        if( req == "regs" )
+            return request_regs(req, p);
+
+        if( req == "getparam" )
+            return httpGetParam(p);
+
+        if( req == "setparam" )
+            return httpSetParam(p);
+
+        if( req == "status" )
+            return httpStatus();
+
+        return UniSetObject::httpRequest(req, p);
+    }
+    // -------------------------------------------------------------------------
+    static long to_long(const std::string& s, const std::string& what, const std::string& myname)
+    {
+        try
+        {
+            size_t pos = 0;
+            long v = std::stol(s, &pos, 10);
+
+            if( pos != s.size() )
+                throw std::invalid_argument("garbage");
+
+            return v;
+        }
+        catch(...)
+        {
+            throw uniset::SystemError(myname + "(/setparam): invalid value for '" + what + "': '" + s + "'");
+        }
+    }
+
+    static bool to_bool01(const std::string& s, const std::string& what, const std::string& myname)
+    {
+        if( s == "0" ) return false;
+
+        if( s == "1" ) return true;
+
+        throw uniset::SystemError(myname + "(/setparam): invalid value for '" + what + "': '" + s + "' (expected 0|1)");
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpGetParam( const Poco::URI::QueryParameters& p )
+    {
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/getparam): pass at least one 'name' parameter");
+
+        std::vector<std::string> names;
+        names.reserve(p.size());
+
+        for( const auto& kv : p )
+            if( kv.first == "name" && !kv.second.empty() )
+                names.push_back(kv.second);
+
+        if( names.empty() )
+            throw uniset::SystemError(myname + "(/getparam): parameter 'name' is required (can be repeated)");
+
+        Poco::JSON::Object::Ptr js = new Poco::JSON::Object();
+        Poco::JSON::Object::Ptr params = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+        for( const auto& n : names )
+        {
+            if( n == "force" )
+                params->set(n, force ? 1 : 0);
+            else if( n == "sockTimeout" )
+                params->set(n, (int)sockTimeout);
+            else if( n == "sessTimeout" )
+                params->set(n, (int)sessTimeout);
+            else if( n == "updateStatTime" )
+                params->set(n, (int)updateStatTime);
+            else
+                unknown->add(n);
+        }
+
+        js->set("result", "OK");
+        js->set("params", params);
+
+        if( unknown->size() > 0 )
+            js->set("unknown", unknown);
+
+        return js;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpSetParam( const Poco::URI::QueryParameters& p )
+    {
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/setparam): pass key=value pairs, e.g. /setparam?force=1");
+
+        if( !httpEnabledSetParams )
+            throw uniset::SystemError(myname + "(/setparam): disabled by httpEnabledSetParams");
+
+        Poco::JSON::Object::Ptr js = new Poco::JSON::Object();
+        Poco::JSON::Object::Ptr updated = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+        for( const auto& kv : p )
+        {
+            const std::string& name = kv.first;
+            const std::string& val  = kv.second;
+
+            if( name == "force" )
+            {
+                bool b = to_bool01(val, name, myname);
+                force = b;
+                updated->set(name, b ? 1 : 0);
+            }
+            else if( name == "sockTimeout" )
+            {
+                long v = to_long(val, name, myname);
+                sockTimeout = (timeout_t)v;
+                updated->set(name, (int)sockTimeout);
+            }
+            else if( name == "sessTimeout" )
+            {
+                long v = to_long(val, name, myname);
+                sessTimeout = (timeout_t)v;
+                updated->set(name, (int)sessTimeout);
+            }
+            else if( name == "updateStatTime" )
+            {
+                long v = to_long(val, name, myname);
+                updateStatTime = (timeout_t)v;
+                updated->set(name, (int)updateStatTime);
+            }
+            else
+            {
+                unknown->add(name);
+            }
+        }
+
+        js->set("result", "OK");
+        js->set("updated", updated);
+
+        if( unknown->size() > 0 )
+            js->set("unknown", unknown);
+
+        return js;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpStatus()
+    {
+        using Poco::JSON::Array;
+        using Poco::JSON::Object;
+
+        Object::Ptr js = new Object();
+
+        // Базовая информация (как в начале getInfo())
+        js->set("name", myname);
+
+        // TCP endpoint (если это TCP-слот)
+        if( auto sslot = std::dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot) )
+        {
+            Object::Ptr tcp = new Object();
+            tcp->set("ip",   sslot->getInetAddress());
+            tcp->set("port", (int)sslot->getInetPort());
+            js->set("tcp", tcp);
+        }
+
+        // Мониторинг/счётчики (если нужен быстрый обзор строкой)
+        // Аналог vmon.pretty_str(); оставим как строку
+        js->set("monitor", vmon.pretty_str());
+
+        // LogServer адрес/порт (как печатается в getInfo)
+        {
+            Object::Ptr log = new Object();
+            log->set("host", logserv_host);
+            log->set("port", (int)logserv_port);
+            js->set("logserver", log);
+        }
+
+        // I/O карта (iomap)
+        {
+            Object::Ptr io = new Object();
+            io->set("size", (int)iomap.size());
+
+            Array::Ptr mb = new Array();
+
+            for( const auto& m : iomap )
+            {
+                Object::Ptr it = new Object();
+                it->set("mbaddr", ModbusRTU::addr2str(m.first));   // как в getInfo()
+                it->set("iomap",  (int)m.second.size());
+                mb->add(it);
+            }
+
+            io->set("map", mb);
+            js->set("iomap", io);
+        }
+
+        // Собственный адрес устройства
+        js->set("myaddr", ModbusServer::vaddr2str(vaddr) );
+
+        // Статистика соединений (как в getInfo: connectionCount, smPingOK, restartTCPServerCount)
+        {
+            Object::Ptr st = new Object();
+            st->set("connectionCount",      (int)connCount);
+            st->set("smPingOK",             (int)smPingOK);
+            st->set("restartTCPServerCount", (int)restartTCPServerCount);
+            js->set("stat", st);
+        }
+
+        // TCP-клиенты (как печатается список cmap)
+        {
+            Array::Ptr clients = new Array();
+
+            for( const auto& c : cmap )
+            {
+                Object::Ptr co = new Object();
+                co->set("id",    c.first);
+                co->set("short", c.second.getShortInfo()); // как "   <short info>"
+                clients->add(co);
+            }
+
+            js->set("tcp_clients", clients);
+        }
+
+        // TCP-сессии (как печатается в конце getInfo: sess, sessMaxNum, updateStatTime)
+        {
+            Object::Ptr s = new Object();
+            Array::Ptr  arr = new Array();
+            {
+                std::lock_guard<std::mutex> l(sessMutex);
+                s->set("count",        (int)sess.size());
+                s->set("max_sessions", (int)sessMaxNum);
+                s->set("updateStatTime", (int)updateStatTime);
+
+                for( const auto& m : sess )
+                {
+                    Object::Ptr so = new Object();
+                    so->set("ip",       m.iaddr);
+                    so->set("askCount", (int)m.askCount);
+                    arr->add(so);
+                }
+            }
+            s->set("items", arr);
+            js->set("tcp_sessions", s);
+        }
+
+        // Пара удобных «плоских» полей для быстрого доступа
+        js->set("sockTimeout",    (int)sockTimeout);
+        js->set("sessTimeout",    (int)sessTimeout);
+        js->set("updateStatTime", (int)updateStatTime);
+        js->set("force",          force ? 1 : 0);
+
+        // Результат в стиле остальных API
+        Object::Ptr out = new Object();
+        out->set("result", "OK");
+        out->set("status", js);
+        return out;
+    }
+
 #endif
     // -------------------------------------------------------------------------
     ModbusRTU::mbErrCode MBSlave::much_read(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
