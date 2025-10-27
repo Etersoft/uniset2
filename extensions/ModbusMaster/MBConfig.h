@@ -57,6 +57,9 @@ namespace uniset
                 emSkipExchange = 4 /*!< отключить обмен */
             };
             friend std::ostream& operator<<( std::ostream& os, const ExchangeMode& em );
+            friend std::string to_string( const ExchangeMode& m );
+            static ExchangeMode from_string( const std::string& s );
+            static std::vector<std::string> supported_modes();
 
             /*! Режимы работы процесса обмена */
             enum SafeMode

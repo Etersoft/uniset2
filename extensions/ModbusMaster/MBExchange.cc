@@ -126,6 +126,8 @@ namespace uniset
         vmonit(force);
         vmonit(force_out);
 
+        httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
+
         mbconf->defaultMBtype = conf->getArg2Param("--" + prefix + "-default-mbtype", it.getProp("default_mbtype"), "rtu");
         mbconf->defaultMBaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
         mbconf->defaultMBinitOK = conf->getArgPInt("--" + prefix + "-default-mbinit-ok", it.getProp("default_mbinitOK"), 0);
@@ -228,6 +230,9 @@ namespace uniset
         cout << "--prefix-default-mbinit-ok 0,1  - Флаг инициализации. 1 - не ждать первого обмена с устройством, а сохранить при старте в SM значение 'default'" << endl;
         cout << "--prefix-query-max-count max    - Максимальное количество запрашиваемых за один раз регистров (При условии no-query-optimization=0). По умолчанию: " << ModbusRTU::MAXDATALEN << "." << endl;
         cout << "--prefix-init-mbval-changed 0,1 - Инициализация флага изменения значения датчика регистра. Значение по умолчанию при запуске процесса." << endl;
+        cout << endl;
+        cout << " HTTP API: " << endl;
+        cout << "--prefix-http-enabled-setparams 1 - Enable API /setparams" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--prefix-log-...            - log control" << endl;
@@ -2334,7 +2339,7 @@ namespace uniset
     {
         if( sm->id == sidExchangeMode )
         {
-            exchangeMode = sm->value;
+            exchangeMode.store( (MBConfig::ExchangeMode) sm->value);
             mblog3 << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
             //return; // этот датчик может встречаться и в списке обмена.. поэтому делать return нельзя.
         }
@@ -2643,44 +2648,402 @@ namespace uniset
             myhelp.add(cmd);
         }
 
-        return myhelp;
+        {
+            // 'mode'
+            uniset::json::help::item cmd("mode", "set exchange mode manually");
+            cmd.param("set", "one of: none|writeOnly|readOnly|skipSaveToSM|skipExchange");
+            cmd.param("note", "works only if sidExchangeMode==DefaultObjectId (manual control).");
+            cmd.param("get", "returns current mode");
+            cmd.param("supported", "returns list of supported modes");
+            myhelp.add(cmd);
+        }
 
+        {
+            uniset::json::help::item cmd("getparam", "read runtime parameters");
+            cmd.param("name", "parameter to read; can be repeated");
+            cmd.param("note", "supported: force | force_out | maxHeartBeat | recv_timeout | sleepPause_msec | polltime | default_timeout");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("setparam", "set runtime parameters");
+            cmd.param("force", "0|1");
+            cmd.param("force_out", "0|1");
+            cmd.param("maxHeartBeat", "milliseconds");
+            cmd.param("recv_timeout", "milliseconds");
+            cmd.param("sleepPause_msec", "milliseconds");
+            cmd.param("polltime", "milliseconds");
+            cmd.param("default_timeout", "milliseconds");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("status", "get current object status (JSON, like getInfo())");
+            myhelp.add(cmd);
+        }
+
+        return myhelp;
     }
     // ----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBExchange::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
     {
         mbinfo << myname << "(httpRequest): " << req << endl;
 
+        if( req == "mode" )
+            return httpMode(p);
+
         if( req == "reload" )
-        {
-            std::string confile = uniset_conf()->getConfFileName();
+            return httpReload(p);
 
-            if( p.size() > 0 && p[0].first == "confile" )
-            {
-                confile = p[0].second;
+        if( req == "getparam" )
+            return httpGetParam(p);
 
-                if( !uniset::file_exist(confile) )
-                {
-                    ostringstream err;
-                    err << myname << "(reload): Not found config file '" << confile << "'";
-                    throw uniset::SystemError(err.str());
-                }
-            }
+        if( req == "setparam" )
+            return httpSetParam(p);
 
-            if( reload(confile) )
-            {
-                Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-                json->set("result", "OK");
-                json->set("config", confile);
-                return json;
-            }
-
-            ostringstream err;
-            err << myname << "(reload): Failed reload from '" << confile << "'";
-            throw uniset::SystemError(err.str());
-        }
+        if( req == "status" )
+            return httpStatus();
 
         return UniSetObject::httpRequest(req, p);
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpMode(const Poco::URI::QueryParameters& p )
+    {
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/mode): Unknown command. Must be /mode?cmd=xxx");
+
+        const std::string cmd = p[0].first; // support ?get / ?supported=1 / ?set=writeOnly
+
+        if( cmd == "get" )
+            return httpModeGet(p);
+
+        if( cmd == "supported" )
+            return httpModeSupported(p);
+
+        if( cmd == "set" )
+            return httpModeSet(p);
+
+        throw uniset::SystemError(myname + "(/mode): Unknown command. Must be /mode?cmd=xxx");
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpModeGet(const Poco::URI::QueryParameters& p )
+    {
+        auto cur = exchangeMode.load();
+        Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+        json->set("result", "OK");
+        json->set("mode", to_string(cur));
+        json->set("mode_id", static_cast<int>(cur));
+        return json;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpModeSupported(const Poco::URI::QueryParameters& /*p*/ )
+    {
+        Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr arr = new Poco::JSON::Array();
+
+        for( const auto& m : MBConfig::supported_modes() )
+            arr->add(m);
+
+        json->set("result", "OK");
+        json->set("supported", arr);
+        return json;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpModeSet(const Poco::URI::QueryParameters& p )
+    {
+        if( sidExchangeMode != DefaultObjectId )
+            throw uniset::SystemError(myname + "(/mode): control via sensor is enabled. Manual change is not allowed.");
+
+        std::string vset = p[0].second;
+
+        if( vset.empty() )
+            throw uniset::SystemError(myname + "(/mode): parameter 'set' is required");
+
+        MBConfig::ExchangeMode newMode = MBConfig::from_string(vset);
+        MBConfig::ExchangeMode prevMode = exchangeMode.exchange(newMode);
+
+        Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+        json->set("result", "OK");
+        json->set("mode", to_string(newMode));
+        json->set("mode_id", static_cast<int>(newMode));
+        json->set("previous_mode", to_string(prevMode));
+        json->set("previous_mode_id", static_cast<int>(prevMode));
+        return json;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpReload( const Poco::URI::QueryParameters& p )
+    {
+        std::string confile = uniset_conf()->getConfFileName();
+
+        if( p.size() > 0 && p[0].first == "confile" )
+        {
+            confile = p[0].second;
+
+            if( !uniset::file_exist(confile) )
+            {
+                ostringstream err;
+                err << myname << "(reload): Not found config file '" << confile << "'";
+                throw uniset::SystemError(err.str());
+            }
+        }
+
+        if( reload(confile) )
+        {
+            Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+            json->set("result", "OK");
+            json->set("config", confile);
+            return json;
+        }
+
+        ostringstream err;
+        err << myname << "(reload): Failed reload from '" << confile << "'";
+        throw uniset::SystemError(err.str());
+    }
+    // ----------------------------------------------------------------------------
+    static long to_long(const std::string& s, const std::string& what, const std::string& myname)
+    {
+        try
+        {
+            size_t pos = 0;
+            long v = std::stol(s, &pos, 10);
+
+            if( pos != s.size() )
+                throw std::invalid_argument("garbage");
+
+            return v;
+        }
+        catch(...)
+        {
+            throw uniset::SystemError(myname + "(/setparam): invalid value for '" + what + "': '" + s + "'");
+        }
+    }
+
+    static bool to_bool01(const std::string& s, const std::string& what, const std::string& myname)
+    {
+        if( s == "0" ) return false;
+
+        if( s == "1" ) return true;
+
+        throw uniset::SystemError(myname + "(/setparam): invalid value for '" + what + "': '" + s + "' (expected 0|1)");
+    }
+    // ----------------------------------------------------------------------------
+
+    Poco::JSON::Object::Ptr MBExchange::httpGetParam( const Poco::URI::QueryParameters& p )
+    {
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/getparam): pass at least one 'name' parameter");
+
+        std::vector<std::string> names;
+        names.reserve(p.size());
+
+        for( const auto& kv : p )
+            if( kv.first == "name" && !kv.second.empty() )
+                names.push_back(kv.second);
+
+        if( names.empty() )
+            throw uniset::SystemError(myname + "(/getparam): parameter 'name' is required (can be repeated)");
+
+        Poco::JSON::Object::Ptr js = new Poco::JSON::Object();
+        Poco::JSON::Object::Ptr params = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+        for( const auto& n : names )
+        {
+            if( n == "force" )
+                params->set(n, force);
+            else if( n == "force_out" )
+                params->set(n, force_out);
+            else if( n == "maxHeartBeat" )
+                params->set(n, static_cast<int>(maxHeartBeat));
+            else if( n == "recv_timeout" )
+                params->set(n, (int)mbconf->recv_timeout);
+            else if( n == "sleepPause_msec" )
+                params->set(n, (int)mbconf->sleepPause_msec);
+            else if( n == "polltime" )
+                params->set(n, (int)mbconf->polltime);
+            else if( n == "default_timeout" )
+                params->set(n, (int)mbconf->default_timeout);
+            else
+                unknown->add(n);
+        }
+
+        js->set("result", "OK");
+        js->set("params", params);
+
+        if( unknown->size() > 0 )
+            js->set("unknown", unknown);
+
+        return js;
+    }
+
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpSetParam( const Poco::URI::QueryParameters& p )
+    {
+        if( !httpEnabledSetParams )
+            throw uniset::SystemError(myname + ": /setparam API disabled by admin");
+
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/setparam): pass key=value pairs, e.g. /setparam?force=1");
+
+        Poco::JSON::Object::Ptr js = new Poco::JSON::Object();
+        Poco::JSON::Object::Ptr updated = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+        for( const auto& kv : p )
+        {
+            const std::string& name = kv.first;
+            const std::string& val  = kv.second;
+
+            if( name == "force" )
+            {
+                bool b = (val == "1" || val == "true");
+                force = b;
+                updated->set(name, force);
+            }
+            else if( name == "force_out" )
+            {
+                bool b = (val == "1" || val == "true");
+                force_out = b;
+                updated->set(name, force_out);
+            }
+            else if( name == "maxHeartBeat" )
+            {
+                long v = to_long(val, name, myname);
+                maxHeartBeat = static_cast<timeout_t>(v);
+                updated->set(name, static_cast<int>(maxHeartBeat));
+            }
+            else if( name == "recv_timeout" )
+            {
+                long v = to_long(val, name, myname);
+                mbconf->recv_timeout = (int)v;
+                updated->set(name, (int)mbconf->recv_timeout);
+            }
+            else if( name == "sleepPause_msec" )
+            {
+                long v = to_long(val, name, myname);
+                mbconf->sleepPause_msec = (int)v;
+                updated->set(name, (int)mbconf->sleepPause_msec);
+            }
+            else if( name == "polltime" )
+            {
+                long v = to_long(val, name, myname);
+                mbconf->polltime = (int)v;
+                // если у тебя есть таймер опроса — можно перезапустить его тут
+                updated->set(name, (int)mbconf->polltime);
+            }
+            else if( name == "default_timeout" )
+            {
+                long v = to_long(val, name, myname);
+                mbconf->default_timeout = (int)v;
+                updated->set(name, (int)mbconf->default_timeout);
+            }
+            else
+            {
+                unknown->add(name);
+            }
+        }
+
+        js->set("result", "OK");
+        js->set("updated", updated);
+
+        if( unknown->size() > 0 )
+            js->set("unknown", unknown);
+
+        return js;
+    }
+
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpStatus()
+    {
+        using Poco::JSON::Array;
+        using Poco::JSON::Object;
+
+        Object::Ptr st = new Object();
+
+        // Базовая часть (идентификатор)
+        st->set("name", myname);
+
+        // Мониторинг и активность
+        st->set("monitor", vmon.pretty_str());
+        st->set("activated", activated ? 1 : 0);
+
+        // LogServer
+        {
+            Object::Ptr log = new Object();
+            log->set("host", logserv_host);
+            log->set("port", (int)logserv_port);
+            st->set("logserver", log);
+        }
+
+        // Параметры (как в getInfo(): reopenTimeout + короткая инфа конфигурации)
+        {
+            Object::Ptr params = new Object();
+            params->set("reopenTimeout", (int)ptReopen.getInterval());
+            params->set("config", mbconf->getShortInfo()); // строка, как в getInfo()
+            st->set("parameters", params);
+        }
+
+        // Статистика (если включена)
+        if( stat_time > 0 )
+        {
+            Object::Ptr s = new Object();
+            s->set("text", statInfo);     // та же строка, что печатается
+            s->set("interval", (int)stat_time);
+            st->set("statistics", s);
+        }
+
+        // Устройства (как в getInfo(): список getShortInfo())
+        {
+            Array::Ptr devs = new Array();
+
+            for( const auto& it : mbconf->devices )
+            {
+                Object::Ptr d = new Object();
+                d->set("id", it.first);
+                d->set("info", it.second->getShortInfo());
+                devs->add(d);
+            }
+
+            st->set("devices", devs);
+        }
+        // Текущий режим обмена (как строка и id) + источник управления режимом
+        {
+            auto curMode = exchangeMode.load();
+            Poco::JSON::Object::Ptr m = new Poco::JSON::Object();
+            m->set("name", to_string(curMode));
+            m->set("id", static_cast<int>(curMode));
+            const bool manual = (sidExchangeMode == DefaultObjectId);
+            m->set("control", manual ? "manual" : "sensor");
+
+            if( !manual )
+                m->set("sid", static_cast<int>(sidExchangeMode));
+
+            st->set("mode", m);
+        }
+
+        // Плоские поля статуса (чтобы не лазить по вложенным разделам)
+        st->set("maxHeartBeat", static_cast<int>(maxHeartBeat));
+        st->set("force",        force ? 1 : 0);
+        st->set("force_out",    force_out ? 1 : 0);
+        st->set("activateTimeout", static_cast<int>(activateTimeout));
+        st->set("reopenTimeout",   static_cast<int>(ptReopen.getInterval()));
+        st->set("notUseExchangeTimer", notUseExchangeTimer ? 1 : 0);
+
+        // Текущие значимые параметры конфигурации (как числа, без перегенерации короткой строки)
+        {
+            Poco::JSON::Object::Ptr cfg = new Poco::JSON::Object();
+            cfg->set("recv_timeout",     static_cast<int>(mbconf->recv_timeout));
+            cfg->set("sleepPause_msec",  static_cast<int>(mbconf->sleepPause_msec));
+            cfg->set("polltime",         static_cast<int>(mbconf->polltime));
+            cfg->set("default_timeout",  static_cast<int>(mbconf->default_timeout));
+            st->set("config_params", cfg);
+        }
+
+        // Ответ в стиле остальных HTTP-методов
+        Object::Ptr out = new Object();
+        out->set("result", "OK");
+        out->set("status", st);
+        return out;
     }
     // ----------------------------------------------------------------------------
 #endif

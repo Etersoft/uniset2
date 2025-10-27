@@ -15,7 +15,9 @@ cd -
 --mbtcp-filter-value 1 \
 --mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 20048 \
---mbtcp-polltime 50 --mbtcp-recv-timeout 500 --mbtcp-timeout 2500
+--mbtcp-polltime 50 --mbtcp-recv-timeout 500 --mbtcp-timeout 2500 \
+--activator-run-httpserver --activator-httpserver-host 127.0.0.1 --activator-httpserver-port 9090 --mbtcp-http-enabled-setparams 1
+
 # --mbtcp-log-add-levels any
 #--mbtcp-default-mbinit-ok 1
 #--dlog-add-levels any

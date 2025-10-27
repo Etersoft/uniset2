@@ -101,14 +101,12 @@ namespace uniset
 
 		const std::string objectName(seg[2]);
 		auto qp = uri.getQueryParameters();
-
 		resp.setStatus(HTTPResponse::HTTP_OK);
-		std::ostream& out = resp.send();
-
 		try
 		{
 			if( objectName == "help" )
 			{
+				std::ostream& out = resp.send();
 				out << "{ \"help\": ["
 					"{\"help\": {\"desc\": \"this help\"}},"
 					"{\"list\": {\"desc\": \"list of objects\"}},"
@@ -116,26 +114,35 @@ namespace uniset
 					"{\"ObjectName/help\": {\"desc\": \"help for ObjectName\"}},"
 					"{\"apidocs\": {\"desc\": \"https://github.com/Etersoft/uniset2\"}}"
 					"]}";
+				out.flush();
 			}
 			else if( objectName == "list" )
 			{
 				auto json = registry->httpGetObjectsList(qp);
+				std::ostream& out = resp.send();
 				json->stringify(out);
+				out.flush();
 			}
 			else if( seg.size() == 4 && seg[3] == "help" ) // /api/version/ObjectName/help
 			{
 				auto json = registry->httpHelpByName(objectName, qp);
+				std::ostream& out = resp.send();
 				json->stringify(out);
+				out.flush();
 			}
 			else if( seg.size() >= 4 ) // /api/version/ObjectName/xxx..
 			{
 				auto json = registry->httpRequestByName(objectName, seg[3], qp);
+				std::ostream& out = resp.send();
 				json->stringify(out);
+				out.flush();
 			}
 			else
 			{
 				auto json = registry->httpGetByName(objectName, qp);
+				std::ostream& out = resp.send();
 				json->stringify(out);
+				out.flush();
 			}
 		}
 		//	catch( Poco::JSON::JSONException jsone )
@@ -150,10 +157,10 @@ namespace uniset
 			Poco::JSON::Object jdata;
 			jdata.set("error", err.str());
 			jdata.set("ecode", (int)resp.getStatus());
+			std::ostream& out = resp.send();
 			jdata.stringify(out);
+			out.flush();
 		}
-
-		out.flush();
 	}
 	// -------------------------------------------------------------------------
 

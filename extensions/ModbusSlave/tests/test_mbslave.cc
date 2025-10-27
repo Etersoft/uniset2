@@ -3,12 +3,23 @@
 #include <time.h>
 #include <limits>
 #include <memory>
+
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/JSON/Parser.h"
+
+#include <sstream>
+#include <string>
 #include "MBSlave.h"
 #include "UniSetTypes.h"
 #include "modbus/ModbusTCPMaster.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
+using Poco::Net::HTTPClientSession;
+using Poco::Net::HTTPRequest;
+using Poco::Net::HTTPResponse;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01;
 static ModbusRTU::ModbusAddr slaveaddr2 = 0x02;
@@ -17,6 +28,8 @@ static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static ObjectId slaveID = 6004; // conf->getObjectID( conf->getArgParam("--mbs-name"));
 static std::shared_ptr<ModbusTCPMaster> mb;
 static std::shared_ptr<UInterface> ui;
+static const string httpAddr = "127.0.0.1";
+static const uint16_t httpPort = 9091;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -64,7 +77,7 @@ TEST_CASE("(0x01): read coil status", "[modbus][mbslave][mbtcpslave]")
     // a lot of registers
     {
         ModbusRTU::ReadCoilRetMessage ret(slaveaddr);
-        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1, ModbusRTU::MAXPDULEN*ModbusRTU::BitsPerByte) );
+        REQUIRE_NOTHROW( ret = mb->read01(slaveaddr, 1, ModbusRTU::MAXPDULEN * ModbusRTU::BitsPerByte) );
         REQUIRE( (int)ret.bcnt == (int)ModbusRTU::MAXPDULEN );
     }
 
@@ -98,7 +111,7 @@ TEST_CASE("(0x02): read input status", "[modbus][mbslave][mbtcpslave]")
     // a lot of registers
     {
         ModbusRTU::ReadInputStatusRetMessage ret(slaveaddr);
-        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1, ModbusRTU::MAXPDULEN*ModbusRTU::BitsPerByte) );
+        REQUIRE_NOTHROW( ret = mb->read02(slaveaddr, 1, ModbusRTU::MAXPDULEN * ModbusRTU::BitsPerByte) );
         REQUIRE( (int)ret.bcnt == (int)ModbusRTU::MAXPDULEN );
     }
 
@@ -1248,5 +1261,229 @@ TEST_CASE("Thresholds", "[modbus][mbslave][thresholds]")
     REQUIRE( ui->getValue(2055) == 1 );
     REQUIRE( ui->getValue(2056) == 0 );
 }
-// -------------------------------------------------------------
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// -----------------------------------------------------------------------------
+// /getparam: базовая проверка на четыре параметра
+TEST_CASE("MBSlave: HTTP /getparam (force, sockTimeout, sessTimeout, updateStatTime)", "[http][mbslave][getparam]")
+{
+    InitTest();
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET,
+                    "/api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
+                    HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(json);
+    REQUIRE(json->get("result").toString() == "OK");
+    REQUIRE(json->has("params"));
+
+    auto params = json->get("params").extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(params);
+    REQUIRE(params->has("force"));
+    REQUIRE(params->has("sockTimeout"));
+    REQUIRE(params->has("sessTimeout"));
+    REQUIRE(params->has("updateStatTime"));
+}
+
+// -----------------------------------------------------------------------------
+// /setparam: переключение force и изменение таймаутов.
+// Тест устойчив к флагу httpEnabledSetParams:
+//  - если set разрешен: ожидаем 200 OK и проверяем применение;
+//  - если set запрещен: ожидаем 4xx/5xx и диагностическое сообщение.
+TEST_CASE("MBSlave: HTTP /setparam (force & timeouts) with httpEnabledSetParams guard", "[http][mbslave][setparam]")
+{
+    InitTest();
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Снимем текущие значения
+    int prev_force = 0, prev_sock = 0, prev_sess = 0, prev_upd = 0;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+        auto p = j->get("params").extract<Poco::JSON::Object::Ptr>();
+
+        prev_force = (int)p->get("force");
+        prev_sock  = (int)p->get("sockTimeout");
+        prev_sess  = (int)p->get("sessTimeout");
+        prev_upd   = (int)p->get("updateStatTime");
+    }
+
+    const int new_force = prev_force ? 0 : 1;
+    const int new_sock  = prev_sock  + 1234;
+    const int new_sess  = prev_sess  + 234;
+    const int new_upd   = prev_upd   + 345;
+
+    // Пытаемся применить новые значения
+    HTTPRequest reqSet(HTTPRequest::HTTP_GET,
+                       std::string("/api/v01/MBSlave1/setparam?")
+                       + "force=" + std::to_string(new_force)
+                       + "&sockTimeout=" + std::to_string(new_sock)
+                       + "&sessTimeout=" + std::to_string(new_sess)
+                       + "&updateStatTime=" + std::to_string(new_upd),
+                       HTTPRequest::HTTP_1_1);
+
+    HTTPResponse resSet;
+    cs.sendRequest(reqSet);
+    std::istream& rsSet = cs.receiveResponse(resSet);
+
+    std::stringstream ssSet;
+    ssSet << rsSet.rdbuf();
+    const std::string bodySet = ssSet.str();
+
+    if( resSet.getStatus() == HTTPResponse::HTTP_OK )
+    {
+        // setparam разрешён — проверяем применение
+        auto rSet = parser.parse(bodySet);
+        auto jSet = rSet.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(jSet);
+        REQUIRE(jSet->get("result").toString() == "OK");
+
+        // читаем снова и проверяем
+        HTTPRequest reqGet2(HTTPRequest::HTTP_GET,
+                            "/api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
+                            HTTPRequest::HTTP_1_1);
+        HTTPResponse resGet2;
+        cs.sendRequest(reqGet2);
+        std::istream& rsGet2 = cs.receiveResponse(resGet2);
+        REQUIRE(resGet2.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ssGet2;
+        ssGet2 << rsGet2.rdbuf();
+        auto r2 = parser.parse(ssGet2.str());
+        auto j2 = r2.extract<Poco::JSON::Object::Ptr>();
+        auto p2 = j2->get("params").extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE((int)p2->get("force") == new_force);
+        REQUIRE((int)p2->get("sockTimeout") == new_sock);
+        REQUIRE((int)p2->get("sessTimeout") == new_sess);
+        REQUIRE((int)p2->get("updateStatTime") == new_upd);
+
+        // Возвращаем исходные значения (чтобы тест не менял глобальное состояние)
+        HTTPRequest reqBack(HTTPRequest::HTTP_GET,
+                            std::string("/api/v01/MBSlave1/setparam?")
+                            + "force=" + std::to_string(prev_force)
+                            + "&sockTimeout=" + std::to_string(prev_sock)
+                            + "&sessTimeout=" + std::to_string(prev_sess)
+                            + "&updateStatTime=" + std::to_string(prev_upd),
+                            HTTPRequest::HTTP_1_1);
+        HTTPResponse resBack;
+        cs.sendRequest(reqBack);
+        std::istream& rsBack = cs.receiveResponse(resBack);
+        REQUIRE(resBack.getStatus() == HTTPResponse::HTTP_OK);
+    }
+    else
+    {
+        // setparam заблокирован флагом httpEnabledSetParams — проверяем корректную ошибку
+        REQUIRE(resSet.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+
+        REQUIRE( bodySet.find("httpEnabledSetParams") != std::string::npos );
+        REQUIRE( bodySet.find("disabled") != std::string::npos );
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBSlave: HTTP /status returns info", "[http][mbslave][status]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/MBSlave1/status", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+
+    // Поддерживаем два формата ответа:
+    // 1) {"result":"OK","status":{...}}
+    // 2) { ... } (без обёртки)
+    Poco::JSON::Object::Ptr status;
+
+    if( root->has("status") )
+    {
+        if( root->has("result") )
+            REQUIRE(root->get("result").toString() == "OK");
+
+        status = root->getObject("status");
+    }
+    else
+    {
+        status = root;
+    }
+
+    REQUIRE(status);
+
+    // Базовые поля
+    REQUIRE(status->has("name"));
+    REQUIRE(status->has("sockTimeout"));
+    REQUIRE(status->has("sessTimeout"));
+    REQUIRE(status->has("updateStatTime"));
+
+    // Опциональные разделы — проверяем структуру если присутствуют
+    if( status->has("tcp") )
+    {
+        auto tcp = status->getObject("tcp");
+        REQUIRE(tcp);
+        REQUIRE(tcp->has("port"));
+    }
+
+    if( status->has("logserver") )
+    {
+        auto log = status->getObject("logserver");
+        REQUIRE(log);
+        REQUIRE(log->has("port"));
+    }
+
+    if( status->has("iomap") )
+    {
+        auto io = status->getObject("iomap");
+        REQUIRE(io);
+        REQUIRE(io->has("size"));
+    }
+
+    if( status->has("stat") )
+    {
+        auto st = status->getObject("stat");
+        REQUIRE(st);
+        REQUIRE(st->has("connectionCount"));
+    }
+}
+// -----------------------------------------------------------------------------
+#endif // #ifndef DISABLE_REST_API
+
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */
