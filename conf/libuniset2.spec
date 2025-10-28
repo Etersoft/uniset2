@@ -1,4 +1,3 @@
-# %{?optflags_lto:%global optflags_lto %optflags_lto -ffat-lto-objects}
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
@@ -432,7 +431,13 @@ JavaScript runner for %{name}
 %if "%__gcc_version_major" < "12"
 %add_optflags -std=c++17
 %endif
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket} %{subst_enable clickhouse} %{subst_enable opcua}
+
+quickjs_with=
+%ifarch %ix86
+quickjs_with="--with-quickjs=/usr/lib/quickjs"
+%endif
+
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket} %{subst_enable clickhouse} %{subst_enable opcua} ${quickjs_with}
 %make_build
 
 %install
