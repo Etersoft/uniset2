@@ -59,6 +59,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     UniXML::iterator it(cnode);
 
+    httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
     auto ip = conf->getArgParam("--" + argprefix + "host", "0.0.0.0");
     auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
     auto browseName = it.getProp2("browseName", conf->oind->getMapName(conf->getLocalNode()));
@@ -934,4 +935,196 @@ UA_StatusCode OPCUAServer::UA_setValueMethod(UA_Server* server,
 
     return UA_STATUSCODE_BAD;
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr OPCUAServer::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+{
+    if( req == "getparam" )
+        return httpGetParam(p);
+
+    if( req == "setparam" )
+        return httpSetParam(p);
+
+    if( req == "status" )
+        return httpStatus();
+
+    return UObject_SK::httpRequest(req, p);
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpHelp( const Poco::URI::QueryParameters& p )
+{
+    uniset::json::help::object myhelp(myname, UObject_SK::httpHelp(p));
+
+    {
+        uniset::json::help::item cmd("status", "get current OPC UA server status (JSON)");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("getparam", "read runtime parameters");
+        cmd.param("name", "parameter to read; can be repeated");
+        cmd.param("note", "supported: updateTime_msec");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("setparam", "set runtime parameters");
+        cmd.param("updateTime_msec", "milliseconds");
+        cmd.param("note", "may be disabled by httpEnabledSetParams");
+        myhelp.add(cmd);
+    }
+
+    return myhelp;
+}
+// -----------------------------------------------------------------------------
+namespace
+{
+    inline long to_long(const std::string& s, const std::string& what, const std::string& myname)
+    {
+        try
+        {
+            size_t pos = 0;
+            long v = std::stol(s, &pos, 10);
+
+            if( pos != s.size() ) throw std::invalid_argument("garbage");
+
+            return v;
+        }
+        catch(...)
+        {
+            throw uniset::SystemError(myname + "(/setparam): invalid value for '" + what + "': '" + s + "'");
+        }
+    }
+
+    inline std::string UAStringToStdString( const UA_String& uas )
+    {
+        if (uas.length == 0 || uas.data == nullptr)
+            return std::string();
+
+        return std::string(reinterpret_cast<const char*>(uas.data), uas.length);
+    }
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpGetParam( const Poco::URI::QueryParameters& p )
+{
+    if( p.empty() )
+        throw uniset::SystemError(myname + "(/getparam): pass at least one 'name' parameter");
+
+    std::vector<std::string> names;
+    names.reserve(p.size());
+
+    for( const auto& kv : p )
+        if( kv.first == "name" && !kv.second.empty() )
+            names.push_back(kv.second);
+
+    if( names.empty() )
+        throw uniset::SystemError(myname + "(/getparam): parameter 'name' is required (can be repeated)");
+
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    Object::Ptr out = new Object();
+    Object::Ptr params = new Object();
+    Array::Ptr unknown = new Array();
+
+    for( const auto& n : names )
+    {
+        if( n == "updateTime_msec" )
+            params->set(n, (int)updateTime_msec);
+        else
+            unknown->add(n);
+    }
+
+    out->set("result", "OK");
+    out->set("params", params);
+
+    if( unknown->size() > 0 )
+        out->set("unknown", unknown);
+
+    return out;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpSetParam( const Poco::URI::QueryParameters& p )
+{
+    if( p.empty() )
+        throw uniset::SystemError(myname + "(/setparam): pass key=value pairs");
+
+    if( !httpEnabledSetParams )
+        throw uniset::SystemError(myname + "(/setparam): disabled by admin");
+
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    Object::Ptr out = new Object();
+    Object::Ptr updated = new Object();
+    Array::Ptr unknown = new Array();
+
+    for( const auto& kv : p )
+    {
+        const std::string& name = kv.first;
+        const std::string& val  = kv.second;
+
+        if( name == "updateTime_msec" )
+        {
+            long v = to_long(val, name, myname);
+            updateTime_msec = (timeout_t)v;
+            updated->set(name, (int)updateTime_msec);
+        }
+        else
+        {
+            unknown->add(name);
+        }
+    }
+
+    out->set("result", "OK");
+    out->set("updated", updated);
+
+    if( unknown->size() > 0 )
+        out->set("unknown", unknown);
+
+    return out;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
+{
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    Object::Ptr st = new Object();
+    st->set("name", myname);
+
+    auto opcConfig = UA_Server_getConfig(opcServer->handle());
+
+    // endpoints
+    for( int i = 0; i < opcConfig->endpointsSize; i++ )
+    {
+        Object::Ptr ep = new Object();
+        ep->set("url",  UAStringToStdString(opcConfig->endpoints[i].server.applicationUri));
+        ep->set("name",  UAStringToStdString(opcConfig->endpoints[i].server.applicationName.text));
+        st->set("endpoint", ep);
+    }
+
+    // runtime params
+    {
+        Object::Ptr rp = new Object();
+        rp->set("updateTime_msec",  (int)updateTime_msec);
+        st->set("params", rp);
+    }
+
+    // conf
+    {
+        Object::Ptr sz = new Object();
+        sz->set("maxSubscriptions",      (int)opcConfig->maxSubscriptions);
+        sz->set("maxSessions", (int)opcConfig->maxSessions);
+        sz->set("maxSecureChannels",         (int)opcConfig->maxSecureChannels );
+        st->set("maxSessionTimeout", opcConfig->maxSessionTimeout);
+    }
+
+    st->set("httpEnabledSetParams", httpEnabledSetParams ? 1 : 0);
+
+    Object::Ptr out = new Object();
+    out->set("result", "OK");
+    out->set("status", st);
+    return out;
+}
+// -----------------------------------------------------------------------------
+#endif // DISABLE_REST_API
 // -----------------------------------------------------------------------------
