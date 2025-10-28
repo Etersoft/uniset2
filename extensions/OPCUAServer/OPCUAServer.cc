@@ -1068,6 +1068,9 @@ Poco::JSON::Object::Ptr OPCUAServer::httpSetParam( const Poco::URI::QueryParamet
         if( name == "updateTime_msec" )
         {
             long v = to_long(val, name, myname);
+            if( v < 0 )
+                throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
             updateTime_msec = (timeout_t)v;
             updated->set(name, (int)updateTime_msec);
         }

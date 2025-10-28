@@ -2909,24 +2909,36 @@ namespace uniset
             else if( name == "maxHeartBeat" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
                 maxHeartBeat = static_cast<timeout_t>(v);
                 updated->set(name, static_cast<int>(maxHeartBeat));
             }
             else if( name == "recv_timeout" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
                 mbconf->recv_timeout = (int)v;
                 updated->set(name, (int)mbconf->recv_timeout);
             }
             else if( name == "sleepPause_msec" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
                 mbconf->sleepPause_msec = (int)v;
                 updated->set(name, (int)mbconf->sleepPause_msec);
             }
             else if( name == "polltime" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
                 mbconf->polltime = (int)v;
                 // если у тебя есть таймер опроса — можно перезапустить его тут
                 updated->set(name, (int)mbconf->polltime);
@@ -2934,6 +2946,9 @@ namespace uniset
             else if( name == "default_timeout" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
                 mbconf->default_timeout = (int)v;
                 updated->set(name, (int)mbconf->default_timeout);
             }

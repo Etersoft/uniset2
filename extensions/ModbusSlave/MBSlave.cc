@@ -2349,6 +2349,8 @@ namespace uniset
             const std::string& name = kv.first;
             const std::string& val  = kv.second;
 
+            long v = std::stol(val);
+
             if( name == "force" )
             {
                 bool b = to_bool01(val, name, myname);
@@ -2358,18 +2360,25 @@ namespace uniset
             else if( name == "sockTimeout" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
                 sockTimeout = (timeout_t)v;
                 updated->set(name, (int)sockTimeout);
             }
             else if( name == "sessTimeout" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
                 sessTimeout = (timeout_t)v;
                 updated->set(name, (int)sessTimeout);
             }
             else if( name == "updateStatTime" )
             {
                 long v = to_long(val, name, myname);
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
                 updateStatTime = (timeout_t)v;
                 updated->set(name, (int)updateStatTime);
             }
