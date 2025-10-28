@@ -2,6 +2,12 @@
 // -----------------------------------------------------------------------------
 #include <limits>
 #include <memory>
+
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/JSON/Parser.h"
+
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "client.h"
@@ -14,6 +20,8 @@ static string addr  = "opc.tcp://127.0.0.1:44999";
 static std::shared_ptr<UInterface> ui;
 static uint16_t nodeId = 0;
 static int pause_msec = 200;
+static const string httpAddr = "127.0.0.1";
+static const uint16_t httpPort = 9090;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -216,4 +224,127 @@ TEST_CASE("[OPCUAServer]: reconnect check", "[opcuaserver][reconnect]")
     msleep(pause_msec);
     REQUIRE( ui->getValue(3) == 1 );
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
+{
+    InitTest(); // если у тебя есть общий инициализатор окружения
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAServer/status", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+
+    auto st = root->getObject("status");
+    REQUIRE(st);
+    REQUIRE(st->has("name"));
+
+    if( st->has("endpoint") ) REQUIRE(st->getObject("endpoint")->has("url"));
+
+    if( st->has("params") )   REQUIRE(st->getObject("params")->has("updateTime_msec"));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // 1) читаем текущие значения
+    int prev_ut = 0;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAServer/getparam?name=updateTime_msec",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+        auto p = j->getObject("params");
+        prev_ut = (int)p->get("updateTime_msec");
+    }
+
+    int new_ut = prev_ut + 60000; // +1 мин
+
+    // 2) пробуем применить
+    HTTPRequest reqSet(HTTPRequest::HTTP_GET,
+                       std::string("/api/v01/OPCUAServer/setparam?")
+                       + "updateTime_msec=" + std::to_string(new_ut),
+                       HTTPRequest::HTTP_1_1);
+    HTTPResponse resSet;
+    cs.sendRequest(reqSet);
+    std::istream& rsSet = cs.receiveResponse(resSet);
+
+    std::stringstream ssSet;
+    ssSet << rsSet.rdbuf();
+    const auto body = ssSet.str();
+
+    if( resSet.getStatus() == HTTPResponse::HTTP_OK )
+    {
+        auto rSet = parser.parse(body);
+        auto jSet = rSet.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(jSet->get("result").toString() == "OK");
+
+        // 3) проверяем
+        HTTPRequest req2(HTTPRequest::HTTP_GET,
+                         "/api/v01/OPCUAServer/getparam?name=updateTime_msec",
+                         HTTPRequest::HTTP_1_1);
+        HTTPResponse res2;
+        cs.sendRequest(req2);
+        std::istream& rs2 = cs.receiveResponse(res2);
+        REQUIRE(res2.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss2;
+        ss2 << rs2.rdbuf();
+        auto r2 = parser.parse(ss2.str());
+        auto j2 = r2.extract<Poco::JSON::Object::Ptr>();
+        auto p2 = j2->getObject("params");
+        REQUIRE((int)p2->get("updateTime_msec") == new_ut);
+
+        // 4) возвращаем
+        HTTPRequest reqBack(HTTPRequest::HTTP_GET,
+                            std::string("/api/v01/OPCUAServer/setparam?")
+                            + "sessionTimeout=" + std::to_string(prev_ut),
+                            HTTPRequest::HTTP_1_1);
+        HTTPResponse resBack;
+        cs.sendRequest(reqBack);
+        std::istream& rsBack = cs.receiveResponse(resBack);
+        REQUIRE(resBack.getStatus() == HTTPResponse::HTTP_OK);
+    }
+    else
+    {
+        // setparam заблокирован флагом
+        REQUIRE(resSet.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+        REQUIRE(body.find("httpEnabledSetParams") != std::string::npos);
+        REQUIRE(body.find("disabled") != std::string::npos);
+    }
+}
+// -----------------------------------------------------------------------------
+#endif // DISABLE_REST_API
 // -----------------------------------------------------------------------------

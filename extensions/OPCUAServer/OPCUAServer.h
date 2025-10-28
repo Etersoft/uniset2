@@ -200,6 +200,12 @@ namespace uniset
                                                    const UA_NodeId* methodId, void* methodContext, const UA_NodeId* objectId,
                                                    void* objectContext, size_t inputSize, const UA_Variant* input, size_t outputSize, UA_Variant* output);
 
+#ifndef DISABLE_REST_API
+            // HTTP API
+            virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+#endif
+
         protected:
             OPCUAServer();
 
@@ -214,6 +220,17 @@ namespace uniset
             void updateLoop();
             void update();
 
+#ifndef DISABLE_REST_API
+            // params
+            virtual Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
+            virtual Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
+
+            // status
+            Poco::JSON::Object::Ptr httpStatus();
+
+            // Защитный флаг: разрешить/запретить /setparam (по аналогии с MBExchange/MBSlave)
+            bool httpEnabledSetParams { true };
+#endif
             bool initVariable(UniXML::iterator& it);
             bool readItem(const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec);
             void readConfiguration();

@@ -203,7 +203,6 @@ GET /api/v01/MBTCPMaster1/status
     "activateTimeout": 2000,
     "reopenTimeout": 5000,
     "notUseExchangeTimer": 0,
-    "httpEnabledSetParams": 1,
     "config_params": {
       "recv_timeout": 1000,
       "sleepPause_msec": 50,
@@ -230,7 +229,6 @@ GET /api/v01/MBTCPMaster1/status
 - \b maxHeartBeat, \b force, \b force_out — текущие значения ключевых параметров обмена
 - \b activateTimeout, \b reopenTimeout — интервалы (мс)
 - \b notUseExchangeTimer — флаг использования таймера обмена
-- \b httpEnabledSetParams — разрешён ли вызов /setparam
 - \b config_params — набор базовых конфигурационных параметров обмена
 
 \par Примечания
