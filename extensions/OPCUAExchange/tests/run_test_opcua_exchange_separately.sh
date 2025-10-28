@@ -12,5 +12,6 @@ cd -
 --opcua-name OPCUAExchange1 \
 --smemory-id SharedMemory \
 --opcua-filter-field opc \
---opcua-filter-value 1
+--opcua-filter-value 1 \
+--activator-run-httpserver --activator-httpserver-host 127.0.0.1 --activator-httpserver-port 9090 --opcua-http-enabled-setparams 1 $*
 #--opcua-log-add-levels any

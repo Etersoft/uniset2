@@ -16,5 +16,6 @@ cd -
 --opcua-filter-field opc \
 --opcua-filter-value 1 \
 --opcua-maxNodesPerRead 2 \
---opcua-maxNodesPerWrite 2
+--opcua-maxNodesPerWrite 2 \
+--activator-run-httpserver --activator-httpserver-host 127.0.0.1 --activator-httpserver-port 9090 --opcua-http-enabled-setparams 1
 #--opcua-log-add-levels any

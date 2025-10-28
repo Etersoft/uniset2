@@ -9,6 +9,7 @@ cd ../../../Utilities/Admin/
 cd -
 
 ./uniset2-start.sh -f ./run_test_opcua_thr $* -- --confile opcua-thr-test-configure.xml --e-startup-pause 10 \
+--activator-run-httpserver --activator-httpserver-host 127.0.0.1 --activator-httpserver-port 9090 --opcua-http-enabled-setparams 1 \
 --opcua-name OPCUAExchange1 \
 --smemory-id SharedMemory \
 --opcua-filter-field opc \

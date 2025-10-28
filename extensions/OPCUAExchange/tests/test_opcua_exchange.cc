@@ -3,6 +3,11 @@
 #include <memory>
 #include <unordered_set>
 #include <limits>
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/JSON/Parser.h"
+
 #include "OPCUATestServer.h"
 #include "OPCUAExchange.h"
 #include "UniSetActivator.h"
@@ -46,6 +51,8 @@ const ObjectId sidRespond2 = 12;
 const ObjectId exchangeMode = 13;
 const timeout_t step_pause_msec = 350;
 const timeout_t timeout_msec = 6000;
+static const string httpAddr = "127.0.0.1";
+static const uint16_t httpPort = 9090;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -545,4 +552,139 @@ TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
     msleep(timeout_msec);
     REQUIRE(shm->getValue(sidAttrI101) == 20);
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+TEST_CASE("OPCUAExchange: HTTP /getparam (polltime, updatetime, reconnectPause, timeoutIterate)", "[http][opcuaex][getparam]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET,
+                    "/api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
+                    HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+    Poco::JSON::Parser parser;
+    auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+    auto params = root->getObject("params");
+    REQUIRE(params);
+
+    REQUIRE(params->has("polltime"));
+    REQUIRE(params->has("updatetime"));
+    REQUIRE(params->has("reconnectPause"));
+    REQUIRE(params->has("timeoutIterate"));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /setparam (apply or blocked)", "[http][opcuaex][setparam]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    Poco::JSON::Parser parser;
+    HTTPClientSession cs(httpAddr, httpPort);
+
+    // 1) снимем исходные значения
+    int prev_poll = 0, prev_update = 0, prev_reconn = 0, prev_iter = 0;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto params = root->getObject("params");
+        prev_poll   = (int)params->get("polltime");
+        prev_update = (int)params->get("updatetime");
+        prev_reconn = (int)params->get("reconnectPause");
+        prev_iter   = (int)params->get("timeoutIterate");
+    }
+
+    // 2) новые значения
+    const int new_poll   = prev_poll   + 10;
+    const int new_update = prev_update + 20;
+    const int new_reconn = prev_reconn + 30;
+    const int new_iter   = prev_iter   + 5;
+
+    // 3) пытаемся применить
+    HTTPRequest reqSet(HTTPRequest::HTTP_GET,
+                       std::string("/api/v01/OPCUAExchange1/setparam?")
+                       + "polltime=" + std::to_string(new_poll)
+                       + "&updatetime=" + std::to_string(new_update)
+                       + "&reconnectPause=" + std::to_string(new_reconn)
+                       + "&timeoutIterate=" + std::to_string(new_iter),
+                       HTTPRequest::HTTP_1_1);
+    HTTPResponse resSet;
+    cs.sendRequest(reqSet);
+    std::istream& rsSet = cs.receiveResponse(resSet);
+    std::stringstream ssSet;
+    ssSet << rsSet.rdbuf();
+    const std::string bodySet = ssSet.str();
+
+    if( resSet.getStatus() == HTTPResponse::HTTP_OK )
+    {
+        // setparam разрешен — проверяем применение
+        auto jSet = parser.parse(bodySet).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(jSet->get("result").toString() == "OK");
+
+        HTTPRequest req2(HTTPRequest::HTTP_GET,
+                         "/api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
+                         HTTPRequest::HTTP_1_1);
+        HTTPResponse res2;
+        cs.sendRequest(req2);
+        std::istream& rs2 = cs.receiveResponse(res2);
+        REQUIRE(res2.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss2;
+        ss2 << rs2.rdbuf();
+        auto root2 = parser.parse(ss2.str()).extract<Poco::JSON::Object::Ptr>();
+        auto params2 = root2->getObject("params");
+
+        REQUIRE((int)params2->get("polltime")       == new_poll);
+        REQUIRE((int)params2->get("updatetime")     == new_update);
+        REQUIRE((int)params2->get("reconnectPause") == new_reconn);
+        REQUIRE((int)params2->get("timeoutIterate") == new_iter);
+
+        // 4) возвращаем исходные значения, чтобы не ломать окружение
+        HTTPRequest reqBack(HTTPRequest::HTTP_GET,
+                            std::string("/api/v01/OPCUAExchange1/setparam?")
+                            + "polltime=" + std::to_string(prev_poll)
+                            + "&updatetime=" + std::to_string(prev_update)
+                            + "&reconnectPause=" + std::to_string(prev_reconn)
+                            + "&timeoutIterate=" + std::to_string(prev_iter),
+                            HTTPRequest::HTTP_1_1);
+        HTTPResponse resBack;
+        cs.sendRequest(reqBack);
+        std::istream& rsBack = cs.receiveResponse(resBack);
+        REQUIRE(resBack.getStatus() == HTTPResponse::HTTP_OK);
+    }
+    else
+    {
+        // setparam заблокирован флагом httpEnabledSetParams
+        REQUIRE(resSet.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+        REQUIRE(bodySet.find("httpEnabledSetParams") != std::string::npos);
+        REQUIRE(bodySet.find("disabled") != std::string::npos);
+    }
+}
+// -----------------------------------------------------------------------------
+#endif // DISABLE_REST_API
 // -----------------------------------------------------------------------------

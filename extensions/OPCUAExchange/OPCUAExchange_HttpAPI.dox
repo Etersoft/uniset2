@@ -1,0 +1,119 @@
+/*!
+\page page_OPCUAExchange_HTTP OPCUAExchange HTTP API
+
+- \ref sec_OPCUAEX_HTTP_API_help
+- \ref sec_OPCUAEX_HTTP_API_status
+- \ref sec_OPCUAEX_HTTP_API_params
+
+\par Базовый URL
+
+ /api/v01/<object>/
+
+\section sec_OPCUAEX_HTTP_API_help /help
+
+Возвращает список доступных команд и их краткое описание.
+
+\code
+GET /<object>/help
+\endcode
+
+\section sec_OPCUAEX_HTTP_API_status /status
+
+Возвращает текущее состояние объекта обмена OPC UA (эквивалентно содержанию getInfo()).
+
+\code
+GET /api/v01/OPCUAExchange1/status
+\endcode
+
+\par Response
+\code
+{
+  "result": "OK",
+  "status": {
+    "name": "OPCUAExchange1",
+    "logserver": {
+      "host": "127.0.0.1",
+      "port": 5510,
+      "short": "LogServer: OK"
+    },
+    "channels": [
+      { "index": 0, "disabled": 0, "ok": 1, "addr": "opc.tcp://127.0.0.1:4840" },
+      { "index": 1, "disabled": 1 }
+    ],
+    "iolist_size": 32,
+    "subscription": {
+      "enabled": 1,
+      "items": 120
+    },
+    "monitor": "vmon: OK",
+    "httpEnabledSetParams": 1
+  }
+}
+\endcode
+
+Если подписка отключена (\c enableSubscription=0), вместо поля \c subscription возвращаются структуры с разбиением по «тикам»:
+
+\code
+{
+  "result": "OK",
+  "status": {
+    ...,
+    "read_attributes": [
+      { "tick":  0, "batches": [25],      "total": 25 },
+      { "tick": 10, "batches": [12, 12],  "total": 24 }
+    ],
+    "write_attributes": [
+      { "tick":  0, "batches": [10],      "total": 10 }
+    ],
+    "monitor": "vmon: OK"
+  }
+}
+\endcode
+
+\section sec_OPCUAEX_HTTP_API_params /getparam и /setparam
+
+Чтение и изменение выбранных runtime-параметров обмена.
+
+Поддерживаемые параметры:
+- \b polltime (ms) — период цикла обмена
+- \b updatetime (ms) — период обновления данных в SM
+- \b reconnectPause (ms) — пауза между попытками переподключения
+- \b timeoutIterate (ms) — таймаут итерации цикла
+
+\par Чтение параметров
+\code
+GET /api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate
+Response
+{
+  "result": "OK",
+  "params": {
+    "polltime": 100,
+    "updatetime": 500,
+    "reconnectPause": 2000,
+    "timeoutIterate": 50
+  }
+}
+\endcode
+
+\par Изменение параметров
+\code
+GET /api/v01/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=3000&timeoutIterate=60
+Response
+{
+  "result": "OK",
+  "updated": {
+    "polltime": 200,
+    "updatetime": 700,
+    "reconnectPause": 3000,
+    "timeoutIterate": 60
+  }
+}
+\endcode
+
+\par Ограничения
+- Изменение может быть заблокировано флагом \c httpEnabledSetParams.
+
+\par Коды ошибок
+- 400/5xx: некорректные значения (например, \c timeoutIterate="abc" или \c < 0)
+- 400: пустой запрос \c /setparam (нет key=value) или \c /getparam (нет \c name)
+*/

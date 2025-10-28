@@ -89,6 +89,8 @@ namespace uniset
             logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
         }
 
+        httpEnabledSetParams =  conf->getArgPInt("--" + argprefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
+
         if( ic )
             ic->logAgregator()->add(loga);
 
@@ -1523,6 +1525,10 @@ namespace uniset
         cout << "--opcua-userN user        - OPC UA server N auth user (channelN). Default: ''(not used)" << endl;
         cout << "--opcua-passM pass        - OPC UA server N auth pass (channelN). Default: ''(not used)" << endl;
         cout << "--opcua-reconnectPause msec  - Pause between reconnect to server, milliseconds" << endl;
+        cout << endl;
+        cout << " HTTP API: " << endl;
+        cout << "--opcua-http-enabled-setparams 1 - Enable API /setparams" << endl;
+        cout << endl;
         cout << " Logs: " << endl;
         cout << endl;
         cout << "--opcua-log-...            - log control" << endl;
@@ -2057,5 +2063,287 @@ namespace uniset
             subscription_ok = true;
         });
     }
+    // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+    Poco::JSON::Object::Ptr OPCUAExchange::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+    {
+        if( req == "getparam" )
+            return httpGetParam(p);
+
+        if( req == "setparam" )
+            return httpSetParam(p);
+
+        if( req == "status" )
+            return httpStatus();
+
+        return UniSetObject::httpRequest(req, p);
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpHelp( const Poco::URI::QueryParameters& p )
+    {
+        uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
+
+        {
+            uniset::json::help::item cmd("getparam", "read runtime parameters");
+            cmd.param("name", "parameter to read; can be repeated");
+            cmd.param("note", "supported: polltime | updatetime | reconnectPause | timeoutIterate");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("setparam", "set runtime parameters");
+            cmd.param("polltime", "ms");
+            cmd.param("updatetime", "ms");
+            cmd.param("reconnectPause", "ms");
+            cmd.param("timeoutIterate", "ms");
+            cmd.param("note", "may be disabled by httpEnabledSetParams");
+            myhelp.add(cmd);
+        }
+
+        return myhelp;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpSetParam(const Poco::URI::QueryParameters& p)
+    {
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/setparam): pass key=value pairs");
+
+        if( !httpEnabledSetParams )
+            throw uniset::SystemError(myname + "(/setparam): disabled by httpEnabledSetParams");
+
+        Poco::JSON::Object::Ptr out = new Poco::JSON::Object();
+        Poco::JSON::Object::Ptr updated = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+        for( const auto& kv : p )
+        {
+            const auto& name = kv.first;
+            const auto& val  = kv.second;
+
+            try
+            {
+                long v = std::stol(val);
+
+                if( v < 0 )
+                    throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
+
+                if( name == "polltime" )
+                {
+                    polltime = (timeout_t)v;
+                    updated->set(name, (int)polltime);
+                }
+                else if( name == "updatetime" )
+                {
+                    updatetime = (timeout_t)v;
+                    updated->set(name, (int)updatetime);
+                }
+                else if( name == "reconnectPause" )
+                {
+                    reconnectPause = (timeout_t)v;
+                    updated->set(name, (int)reconnectPause);
+                }
+                else if( name == "timeoutIterate" )
+                {
+                    timeoutIterate = static_cast<uint16_t>(v);
+                    updated->set(name, (int)timeoutIterate);
+                }
+                else
+                {
+                    unknown->add(name);
+                }
+            }
+            catch(const std::exception& e)
+            {
+                throw uniset::SystemError(myname + "(/setparam): invalid value for '" + name + "'");
+            }
+        }
+
+        out->set("result", "OK");
+        out->set("updated", updated);
+
+        if( unknown->size() > 0 )
+            out->set("unknown", unknown);
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpGetParam(const Poco::URI::QueryParameters& p)
+    {
+        if( p.empty() )
+            throw uniset::SystemError(myname + "(/getparam): pass at least one 'name' parameter");
+
+        std::vector<std::string> names;
+
+        for( const auto& kv : p )
+            if( kv.first == "name" && !kv.second.empty() )
+                names.push_back(kv.second);
+
+        if( names.empty() )
+            throw uniset::SystemError(myname + "(/getparam): parameter 'name' is required");
+
+        Poco::JSON::Object::Ptr out = new Poco::JSON::Object();
+        Poco::JSON::Object::Ptr params = new Poco::JSON::Object();
+        Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+        for( const auto& n : names )
+        {
+            if( n == "polltime" )
+                params->set(n, (int)polltime);
+            else if( n == "updatetime" )
+                params->set(n, (int)updatetime);
+            else if( n == "reconnectPause" )
+                params->set(n, (int)reconnectPause);
+            else if( n == "timeoutIterate" )
+                params->set(n, (int)timeoutIterate);
+            else
+                unknown->add(n);
+        }
+
+        out->set("result", "OK");
+        out->set("params", params);
+
+        if( unknown->size() > 0 )
+            out->set("unknown", unknown);
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpStatus()
+    {
+        using Poco::JSON::Object;
+        using Poco::JSON::Array;
+
+        Object::Ptr st = new Object();
+
+        st->set("name", myname);
+
+        // 2) LogServer
+        {
+            Object::Ptr log = new Object();
+            log->set("host", logserv_host);
+            log->set("port", (int)logserv_port);
+
+            if( logserv )
+                log->set("short", logserv->getShortInfo());
+            else
+                log->set("short", "No logserver running.");
+
+            st->set("logserver", log);
+        }
+
+        // 3) Каналы: статус + addr
+        {
+            Array::Ptr chs = new Array();
+
+            for( size_t i = 0; i < numChannels; ++i )
+            {
+                Object::Ptr ch = new Object();
+                ch->set("index", (int)i);  // нумерация с 0 (в getInfo печать идет с i+1)
+                const bool disabled = channels[i].addr.empty();
+                ch->set("disabled", disabled ? 1 : 0);
+
+                if( !disabled )
+                {
+                    ch->set("ok", channels[i].status ? 1 : 0);
+                    ch->set("addr", channels[i].addr);
+                }
+
+                chs->add(ch);
+            }
+
+            st->set("channels", chs);
+        }
+
+        // 4) iolist size
+        st->set("iolist_size", (int)iolist.size());
+
+        // 5) Подписка или пачечные чтения/записи
+        if( enableSubscription )
+        {
+            Object::Ptr sub = new Object();
+            int subSize = 0;
+
+            if( channels[0].client )
+                subSize = channels[0].client->getSubscriptionSize();
+
+            sub->set("enabled", 1);
+            sub->set("items", subSize);
+            st->set("subscription", sub);
+        }
+        else
+        {
+            // read attributes by tick
+            Array::Ptr reads = new Array();
+
+            if( channels[0].client )
+            {
+                for( const auto& kv : channels[0].readValues )
+                {
+                    Object::Ptr tick = new Object();
+                    tick->set("tick", (int)kv.first);
+                    const auto& idsVec = kv.second->ids;
+                    Array::Ptr batches = new Array();
+                    int total = 0;
+
+                    for( const auto& batch : idsVec )
+                    {
+                        int n = (int)batch.size();
+                        batches->add(n);
+                        total += n;
+                    }
+
+                    tick->set("batches", batches);
+                    tick->set("total", total);
+                    reads->add(tick);
+                }
+            }
+
+            st->set("read_attributes", reads);
+
+            // write attributes by tick
+            Array::Ptr writes = new Array();
+
+            if( channels[0].client )
+            {
+                for( const auto& kv : channels[0].writeValues )
+                {
+                    Object::Ptr tick = new Object();
+                    tick->set("tick", (int)kv.first);
+                    const auto& idsVec = kv.second->ids;
+                    Array::Ptr batches = new Array();
+                    int total = 0;
+
+                    for( const auto& batch : idsVec )
+                    {
+                        int n = (int)batch.size();
+                        batches->add(n);
+                        total += n;
+                    }
+
+                    tick->set("batches", batches);
+                    tick->set("total", total);
+                    writes->add(tick);
+                }
+            }
+
+            st->set("write_attributes", writes);
+        }
+
+        // 6) Мониторинг (vmon.pretty_str())
+        st->set("monitor", vmon.pretty_str());
+
+        if( httpEnabledSetParams )
+            st->set("httpEnabledSetParams", 1);
+        else
+            st->set("httpEnabledSetParams", 0);
+
+        // final
+        Poco::JSON::Object::Ptr out = new Object();
+        out->set("result", "OK");
+        out->set("status", st);
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+
+#endif // DISABLE_REST_API
     // -----------------------------------------------------------------------------
 } // end of namespace uniset
