@@ -14,5 +14,6 @@ cd -
 --opcua-filter-field opc \
 --opcua-filter-value 1 \
 --opcua-enable-subscription 1 \
---subscr
+--subscr \
+--activator-run-httpserver --activator-httpserver-host 127.0.0.1 --activator-httpserver-port 9090 --opcua-http-enabled-setparams 1
 #--opcua-log-add-levels level4,level8

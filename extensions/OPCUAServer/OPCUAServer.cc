@@ -608,6 +608,9 @@ void OPCUAServer::help_print()
     cout << "--opcua-maxSubscriptions num - Максимальное количество подписок" << endl;
     cout << "--opcua-maxSessions num      - Максимальное количество сессий" << endl;
     cout << endl;
+    cout << " HTTP API: " << endl;
+    cout << "--opcua-http-enabled-setparams 1 - Enable API /setparams" << endl;
+    cout << endl;
     cout << "Logs:" << endl;
     cout << "--opcua-log-...            - log control" << endl;
     cout << "             add-levels ...  " << endl;

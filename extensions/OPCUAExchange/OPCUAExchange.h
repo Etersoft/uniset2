@@ -300,6 +300,12 @@ namespace uniset
             // и отдельно его проверяем потом
             ThresholdList thrlist;
 
+#ifndef DISABLE_REST_API
+            // HTTP API
+            virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+#endif
+
         protected:
 
             enum Timers
@@ -326,6 +332,17 @@ namespace uniset
             virtual bool activateObject() override;
             virtual bool deactivateObject() override;
 
+#ifndef DISABLE_REST_API
+            // Публичные HTTP-обработчики параметров
+            Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpStatus();
+
+            // Защитный флаг: запретить /setparam при false
+            bool httpEnabledSetParams { true };
+#endif
+
+
             // чтение файла конфигурации
             void readConfiguration();
             bool initIOItem( UniXML::iterator& it );
@@ -335,7 +352,7 @@ namespace uniset
             void initOutputs();
             void createSubscription(int nchannel);
 
-            xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
+            xmlNode* confnode = { nullptr }; /*!< xml-узел в настроечном файле */
             timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
             timeout_t updatetime = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
 

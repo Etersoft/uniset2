@@ -9,6 +9,7 @@ cd ../../../Utilities/Admin/
 cd -
 
 ./uniset2-start.sh -f ./test-method-with-sm $* -- --confile opcua-server-test-method-configure.xml --e-startup-pause 10 \
+--activator-run-httpserver --activator-httpserver-host 127.0.0.1 --activator-httpserver-port 9090 --opcua-http-enabled-setparams 1 \
 --opcua-filter-field iotype --smemory-id SharedMemory $*
 
 # --opcua-log-add-levels any

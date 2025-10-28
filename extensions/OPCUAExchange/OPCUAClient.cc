@@ -135,8 +135,10 @@ constexpr std::string_view getLogCategoryName(opcua::LogCategory category)
     }
 }
 // -----------------------------------------------------------------------------
-namespace opcua {
-    static auto log = [](Client& client, auto level, auto category, auto msg) {
+namespace opcua
+{
+    static auto log = [](Client& client, auto level, auto category, auto msg)
+    {
         std::cout << "[" << getLogLevelName(level) << "] "
                   << "[" << getLogCategoryName(category) << "] " << msg << std::endl;
     };
@@ -144,7 +146,7 @@ namespace opcua {
 // -----------------------------------------------------------------------------
 OPCUAClient::OPCUAClient()
 {
-//    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "create OPCUAClient");
+    //    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "create OPCUAClient");
     val = UA_Variant_new();
 }
 // -----------------------------------------------------------------------------
