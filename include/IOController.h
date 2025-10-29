@@ -32,6 +32,8 @@
 #include "Configuration.h"
 #include "Mutex.h"
 #include "DBServer.h"
+#include "AccessMask.h"
+#include "AccessConfig.h"
 //---------------------------------------------------------------------------
 namespace uniset
 {
@@ -67,7 +69,7 @@ namespace uniset
             // Публичный (IDL) интерфейс IOController_i
             // ----------------------------------------------------------------
 
-            virtual CORBA::Long getValue( uniset::ObjectId sid ) override;
+            virtual CORBA::Long getValue( uniset::ObjectId sid, uniset::ObjectId sup_id ) override;
 
             virtual void setValue( uniset::ObjectId sid, CORBA::Long value,
                                    uniset::ObjectId sup_id = uniset::DefaultObjectId ) override;
@@ -80,21 +82,21 @@ namespace uniset
                                       CORBA::Long value,
                                       uniset::ObjectId sup_id = uniset::DefaultObjectId ) override;
 
-            virtual IOController_i::SensorInfoSeq* getSensorSeq( const uniset::IDSeq& lst ) override;
+            virtual IOController_i::SensorInfoSeq* getSensorSeq( const uniset::IDSeq& lst, uniset::ObjectId sup_id ) override;
             virtual uniset::IDSeq* setOutputSeq( const IOController_i::OutSeq& lst, uniset::ObjectId sup_id ) override;
 
             //     ----------------------------------------------------------------
             virtual UniversalIO::IOType getIOType( uniset::ObjectId sid ) override;
 
-            virtual IOController_i::SensorInfoSeq* getSensorsMap() override;
-            virtual IOController_i::SensorIOInfo getSensorIOInfo( uniset::ObjectId sid ) override;
+            virtual IOController_i::SensorInfoSeq* getSensorsMap( uniset::ObjectId sup_id ) override;
+            virtual IOController_i::SensorIOInfo getSensorIOInfo( uniset::ObjectId sid, uniset::ObjectId sup_id ) override;
 
-            virtual CORBA::Long getRawValue( uniset::ObjectId sid ) override;
+            virtual CORBA::Long getRawValue( uniset::ObjectId sid, uniset::ObjectId sup_id ) override;
             virtual void calibrate( uniset::ObjectId sid,
                                     const IOController_i::CalibrateInfo& ci,
                                     uniset::ObjectId adminId ) override;
 
-            IOController_i::CalibrateInfo getCalibrateInfo( uniset::ObjectId sid ) override;
+            IOController_i::CalibrateInfo getCalibrateInfo( const uniset::ObjectId sid, const uniset::ObjectId consumer_id ) override;
 
             inline IOController_i::SensorInfo SensorInfo( const uniset::ObjectId sid,
                     const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode())
@@ -105,11 +107,11 @@ namespace uniset
                 return si;
             };
 
-            uniset::Message::Priority getPriority( const uniset::ObjectId id );
+            uniset::Message::Priority getPriority( const uniset::ObjectId id, const uniset::ObjectId consumer_id );
 
-            virtual IOController_i::ShortIOInfo getTimeChange( const uniset::ObjectId id ) override;
+            virtual IOController_i::ShortIOInfo getTimeChange( const uniset::ObjectId id, const uniset::ObjectId consumer_id ) override;
 
-            virtual IOController_i::ShortMapSeq* getSensors() override;
+            virtual IOController_i::ShortMapSeq* getSensors( const uniset::ObjectId consumer_id ) override;
 
 #ifndef DISABLE_REST_API
             // http API
@@ -173,7 +175,7 @@ namespace uniset
             virtual long localSetValueIt( IOStateList::iterator& it, const uniset::ObjectId sid,
                                           CORBA::Long value, uniset::ObjectId sup_id );
 
-            virtual long localGetValue( IOStateList::iterator& it, const uniset::ObjectId sid );
+            virtual long localGetValue( IOStateList::iterator& it, const uniset::ObjectId sid, uniset::ObjectId sup_id );
 
             /*! функция выставления признака неопределённого состояния для аналоговых датчиков
                 // для дискретных датчиков необходимости для подобной функции нет.
@@ -196,7 +198,7 @@ namespace uniset
 
             // -- работа через указатель ---
             virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, uniset::ObjectId sup_id );
-            long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
+            long localGetValue( std::shared_ptr<USensorInfo>& usi, const uniset::ObjectId consumer_id ) ;
 
 #ifndef DISABLE_REST_API
             // http API
@@ -206,7 +208,8 @@ namespace uniset
             virtual Poco::JSON::Object::Ptr request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
             void getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo = false );
             bool disabledHttpSetApi = { false }; /*!< отключить API "set", для невозможности устанавливать датчики через HTTP API */
-            bool disabledHttpFreezeApi = { false };/*!< отключить API "freeze/unfreeze", для невозможности управлять через HTTP API */
+            bool disabledHttpFreezeApi = { false }; /*!< отключить API "freeze/unfreeze", для невозможности управлять через HTTP API */
+            bool disableHttpAccessControl = { false }; /*!< отключить проверку прав доступа для HTTP API */
 #endif
 
             // переопределяем для добавления вызова регистрации датчиков
@@ -231,6 +234,9 @@ namespace uniset
 
             /*! разрегистрация датчика */
             void ioUnRegistration( const uniset::ObjectId sid );
+
+            /*! перезагрузка ACL */
+            void reloadACLConfig( uniset::ACLMap& amap, uniset::ACLInfoMap& iomap );
 
             // ------------------------------
             inline IOController_i::SensorIOInfo
@@ -284,6 +290,8 @@ namespace uniset
             // функция работает с mutex
             void for_iolist( UFunction f );
 
+            void setDefaultAccessMask( uniset::AccessMask m );
+
         private:
             friend class NCRestorer;
             friend class SMInterface;
@@ -303,6 +311,8 @@ namespace uniset
             std::shared_ptr<uniset::DBServer> dbserver = { nullptr };
 
             std::mutex loggingMutex; /*!< logging info mutex */
+
+            uniset::AccessMask defaultAccessMask = { uniset::AccessRW };
 
         public:
 
@@ -360,7 +370,11 @@ namespace uniset
                 long undef_value = { not_specified_value }; // значение для "неопределённого состояния датчика"
                 long frozen_value = { 0 };
 
-                bool readonly = { false }; // readonly датчик
+                bool readonly = { false }; // readonly датчик (deprecated, use permissions)
+
+                std::string aclName = { "" };
+                uniset::ACLPtr acl = { nullptr };
+                uniset::AccessMask checkMask(uniset::ObjectId, const AccessMask& defaultMask) const;
 
                 // функция обработки информации об изменении состояния датчика, от которого зависит данный
                 void checkDepend( std::shared_ptr<USensorInfo>& d_usi, IOController* );

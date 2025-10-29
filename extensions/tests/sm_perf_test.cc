@@ -51,7 +51,7 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 
         while (num--)
         {
-            shm->getValue(sid);
+            shm->getValue(sid, uniset::AdminID);
         }
     };
 
@@ -62,7 +62,7 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 
         while (num--)
         {
-            shm->setValue(sid, num);
+            shm->setValue(sid, num, uniset::AdminID);
         }
     };
 

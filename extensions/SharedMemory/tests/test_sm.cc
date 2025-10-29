@@ -2,9 +2,11 @@
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <future>
+#include <fstream>
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "DelayTimer.h"
+#include "SharedMemory.h"
 #include "TestObject.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -12,20 +14,21 @@ using namespace uniset;
 // -----------------------------------------------------------------------------
 static shared_ptr<UInterface> ui;
 extern shared_ptr<TestObject> obj;
+extern shared_ptr<SharedMemory> shm;
 // -----------------------------------------------------------------------------
 void InitTest()
 {
     auto conf = uniset_conf();
     REQUIRE( conf != nullptr );
+    REQUIRE( obj != nullptr );
+    REQUIRE( shm != nullptr );
 
     if( !ui )
     {
-        ui = make_shared<UInterface>();
+        ui = make_shared<UInterface>(obj->getId());
         REQUIRE( ui->getObjectIndex() != nullptr );
         REQUIRE( ui->getConf() == conf );
     }
-
-    REQUIRE( obj != nullptr );
 }
 // -----------------------------------------------------------------------------
 /*
@@ -372,5 +375,116 @@ TEST_CASE("[SM]: readonly", "[sm][readonly]")
     REQUIRE(ui->getValue(519) == 100);
     REQUIRE_THROWS_AS(ui->setValue(519, 11), uniset::IOBadParam);
     REQUIRE(ui->getValue(519) == 100);
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: permissions for TestObject via UInterface", "[sm][permissions]")
+{
+    InitTest();
+
+    // IDs из sm-configure.xml:
+    const ObjectId SID_RW   = 520; // <item name="Perm_RW_AI">   permission="RW"
+    const ObjectId SID_RO   = 521; // <item name="Perm_RO_DI">   permission="RO"
+    const ObjectId SID_NONE = 522; // <item name="Perm_NONE_DO"> permission="None"
+    const ObjectId SID_WR = 523; // <item name="Perm_WR_DO"> permission="WR" (write)
+    const ObjectId SID_UNKNOWN = 524; // unknown
+
+    // ---- RW: запись разрешена, чтение возвращает записанное значение
+    SECTION("RW sensor: write allowed, read returns value")
+    {
+        REQUIRE_NOTHROW( ui->setValue(SID_RW, 123) );
+        msleep(50);
+        REQUIRE( ui->getValue(SID_RW) == 123 );
+    }
+
+    // ---- RO: чтение разрешено, запись запрещена
+    SECTION("RO sensor: read allowed, write denied")
+    {
+        // чтение (значение может быть любым — главное, что исключения нет)
+        REQUIRE_NOTHROW( (void)ui->getValue(SID_RO) );
+
+        // запись должна привести к AccessDenied (в коде это uniset::SystemError)
+        REQUIRE_THROWS_AS( ui->setValue(SID_RO, 1), uniset::AccessDenied );
+    }
+
+    // ---- None: чтение и запись запрещены
+    SECTION("None sensor: read/write denied")
+    {
+        REQUIRE_THROWS_AS( (void)ui->getValue(SID_NONE), uniset::AccessDenied );
+        REQUIRE_THROWS_AS( ui->setValue(SID_NONE, 1), uniset::AccessDenied );
+    }
+
+    // ---- WR: разрешено только запись
+    SECTION("WR sensor: write allowed, read denied")
+    {
+        REQUIRE_NOTHROW( ui->setValue(SID_WR, 123) );
+        msleep(50);
+        REQUIRE_THROWS_AS( ui->getValue(SID_WR), uniset::AccessDenied );
+    }
+
+    SECTION("Unknown sensor: read/write OK (default permission=RW)")
+    {
+        const ObjectId SID_UNKNOWN = 524;
+
+        REQUIRE_NOTHROW( (void)ui->getValue(SID_UNKNOWN) );
+        REQUIRE_NOTHROW( ui->setValue(SID_UNKNOWN, 1) );
+    }
+}
+// -----------------------------------------------------------------------------
+static bool copyFile(const std::string& src, const std::string& dst)
+{
+    std::ifstream in(src, std::ios::binary);
+    std::ofstream out(dst, std::ios::binary | std::ios::trunc);
+
+    if( !in.is_open() || !out.is_open() )
+        return false;
+
+    out << in.rdbuf();
+    out << flush;
+    out.close();
+    in.close();
+    return true;
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: reload config", "[sm][reload]")
+{
+    InitTest();
+
+    struct CopyFileGuard
+    {
+        CopyFileGuard( const std::string& _src, const std::string& _dst ):
+            src(_src),
+            dst(_dst)
+        {
+            REQUIRE( copyFile(src, dst) );
+        }
+
+        ~CopyFileGuard()
+        {
+            CHECK(copyFile(dst, src));
+        }
+
+        const std::string src;
+        const std::string dst;
+    };
+
+    CopyFileGuard fg("sm-acl-sensors.xml", "sm-acl-sensors.xml.bak");
+    REQUIRE(copyFile("sm-acl-sensors-reload.xml", "sm-acl-sensors.xml"));
+
+    TransportMessage tm( SystemMessage(SystemMessage::ReloadConfig).transport_msg() );
+    REQUIRE_NOTHROW( shm->push(tm));
+
+    msleep(500);
+
+    const ObjectId SID_RW   = 520; // <item name="Perm_RW_AI">   permission="RW"
+    const ObjectId SID_RO   = 521; // <item name="Perm_RO_DI">   permission="RO"
+    const ObjectId SID_NONE = 522; // <item name="Perm_NONE_DO"> permission="None"
+    const ObjectId SID_WR = 523; // <item name="Perm_WR_DO"> permission="WR" (write)
+    const ObjectId SID_UNKNOWN = 524; // unknown
+
+    // all sensors acl=NONE
+    REQUIRE_THROWS_AS( ui->getValue(SID_RO), uniset::AccessDenied );
+    REQUIRE_THROWS_AS( ui->getValue(SID_RW), uniset::AccessDenied );
+    REQUIRE_THROWS_AS( ui->getValue(SID_WR), uniset::AccessDenied );
+    REQUIRE_NOTHROW( (void)ui->getValue(SID_UNKNOWN) );
 }
 // -----------------------------------------------------------------------------

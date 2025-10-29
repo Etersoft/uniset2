@@ -322,7 +322,7 @@ int main( int argc, const char** argv )
 
         cout << "TEST MUTEX LOCK RESULT: " << endl;
 
-        for( const auto& it: tvec )
+        for( const auto& it : tvec )
         {
             int c = it->lock_count();
             it->terminate();
@@ -369,7 +369,7 @@ int main( int argc, const char** argv )
 
         cout << "TEST RWMUTEX LOCK RESULT: " << endl;
 
-        for( const auto& it: tsvec )
+        for( const auto& it : tsvec )
         {
             int c = it->lock_count();
             it->terminate();

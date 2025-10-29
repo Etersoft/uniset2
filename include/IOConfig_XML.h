@@ -28,12 +28,13 @@
 #include "UniXML.h"
 #include "UniSetTypes.h"
 #include "IOConfig.h"
+#include "AccessConfig.h"
 // ------------------------------------------------------------------------------------------
 namespace uniset
 {
     // ------------------------------------------------------------------------------------------
     /*! Реализация интерфейса конфигурирования на основе XML */
-    class IOConfig_XML:
+    class IOConfig_XML final:
         public IOConfig
     {
         public:
@@ -41,6 +42,9 @@ namespace uniset
 
             // реализация интерфейса IOConfig
             virtual IOController::IOStateList read() override;
+
+            // читать список датчиков
+            static ACLInfoMap readACLInfo( const std::shared_ptr<Configuration>& conf, const std::shared_ptr<UniXML>& _xml );
 
             /*!
              * \param fname - файл формата uniset-project
@@ -55,6 +59,7 @@ namespace uniset
              */
             IOConfig_XML( const std::shared_ptr<UniXML>& _xml, const std::shared_ptr<Configuration>& conf, xmlNode* root = nullptr );
 
+            void setAclConfig( const std::string& name, const std::string& section="ACLConfig" );
 
             /*! слот для подключения функции чтения датчика из xml-файла.
                 \param uxml  - интерфейс для работы с xml-файлом
@@ -162,6 +167,9 @@ namespace uniset
             std::string fname = { "" };
             std::shared_ptr<Configuration> conf;
             std::shared_ptr<UniXML> uxml;
+            uniset::ACLMap acls;
+            std::string aclConfigName;
+            std::string aclConfigSectionName;
             xmlNode* root = { nullptr };
             ReaderSlot rtslot;
             ReaderSlot rslot;

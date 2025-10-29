@@ -172,8 +172,8 @@ namespace uniset
         if( c == SystemMessage::WatchDog )
             return os << "WatchDog";
 
-        if( c == SystemMessage::ReConfiguration )
-            return os << "ReConfiguration";
+        if( c == SystemMessage::ReloadConfig )
+            return os << "ReloadConfig";
 
         if( c == SystemMessage::NetworkInfo )
             return os << "NetworkInfo";

@@ -36,7 +36,7 @@ namespace uniset
     {
         public:
 
-            explicit SViewer(const std::string& ControllersSection, bool isShortName = true);
+            explicit SViewer( uniset::ObjectId id, const std::string& ControllersSection, bool isShortName = true);
             virtual ~SViewer();
 
             void view();
@@ -58,11 +58,11 @@ namespace uniset
                            const std::string& txtname, const std::string& iotype);
 
             std::shared_ptr<UInterface> ui;
+            uniset::ObjectId myid = { uniset::DefaultObjectId };
 
         private:
             ObjectRepository rep;
             bool isShortName = { true };
-
     };
     // -------------------------------------------------------------------------
 } // end of uniset namespace

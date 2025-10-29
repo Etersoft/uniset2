@@ -8,7 +8,7 @@ using namespace std;
 // --------------------------------------------------------------------------
 static void short_usage()
 {
-    cout << "Usage: uniset-sviewer-text [--fullname] [--polltime msec] [--confile uniset-confile]\n";
+    cout << "Usage: uniset-sviewer-text [--fullname] [-name TestProc] [--polltime msec] [--confile uniset-confile]\n";
     cout << endl;
     cout << uniset::Configuration::help() << endl;
 }
@@ -27,12 +27,25 @@ int main(int argc, const char** argv)
 
         auto conf = uniset_init(argc, argv, "configure.xml");
 
+        ObjectId ID(DefaultObjectId);
+        const string name = conf->getArgParam("--name", "TestProc");
+
+        ID = conf->getObjectID(name);
+
+        if( ID == uniset::DefaultObjectId )
+        {
+            cerr << "(main): идентификатор '" << name
+                 << "' не найден в конф. файле!"
+                 << " в секции " << conf->getObjectsSection() << endl;
+            return 0;
+        }
+
         bool fullname = false;
 
         if( findArgParam("--fullname", conf->getArgc(), conf->getArgv()) != -1 )
             fullname = true;
 
-        SViewer sv(conf->getControllersSection(), !fullname);
+        SViewer sv(ID, conf->getControllersSection(), !fullname);
         timeout_t timeMS = conf->getArgInt("--polltime");
 
         if( timeMS )

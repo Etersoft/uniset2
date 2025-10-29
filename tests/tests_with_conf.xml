@@ -48,9 +48,23 @@
 	</Services>
 
 </UniSet>
-
 	<settings>
 		<TestUObject name="TestUObject1" />
+		<ACLConfig name="ACLConfig">
+			<acl name="acl1" default="RW">
+				<access name="Process1" permission="RO"/>
+				<access name="Process2" permission="WRITE"/>
+			</acl>
+			<acl name="acl2" default="RW">
+				<access name="Process1" permission="RO"/>
+				<access name="Process3" permission="WRITE"/>
+			</acl>
+		</ACLConfig>
+		<ACLConfig name="ACLConfig2">
+			<acl name="acl_no_default">
+				<access name="Process1" permission="RO"/>
+			</acl>
+		</ACLConfig>
 	</settings>
 
 	<dlog name="dlog" levels="" file=""/>
@@ -77,6 +91,9 @@
 		<item id="5" name="Input5_S" textname="Команда 2" node="" iotype="DI" priority="Medium" />
 		<item id="140" name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium"/>
 		<item id="141" name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium"/>
+		<!-- Датчики с правами доступа -->
+		<item id="142" name="SensorRW" textname="Датчик с правами" node="" iotype="AI" priority="Medium" default="0" acl="acl1"/>
+		<item id="143" name="SensorRO" textname="Датчик только для чтения" node="" iotype="AI" priority="Medium" default="0" acl="acl2"/>
 	</sensors>
 
 	<thresholds name="thresholds">
@@ -98,6 +115,10 @@
 		<item id="102" name="TestProc3"/>
 		<item id="103" name="TestProc4"/>
 		<item id="104" name="TestUObject1"/>
+		<!-- Объекты для тестов прав доступа -->
+		<item id="500" name="Process1" textname="Процесс 1"/>
+		<item id="501" name="Process2" textname="Процесс 2"/>
+		<item id="502" name="Process3" textname="Процесс 3"/>
 	</objects>
 </ObjectsMap>
 

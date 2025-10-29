@@ -17,6 +17,7 @@ int main( int argc, const char** argv )
             cout << "Usage: uniset2-smviewer --confile configure.xml args1 args2" << endl;
             cout << endl;
             cout << "--smemory-id objectName  - SharedMemory objectID. Default: read from <SharedMemory>" << endl;
+            cout << "--name consumerName      - Process name (ID). Default: TestProc" << endl;
             cout << endl;
             cout << "Global options:" << endl;
             cout << uniset::Configuration::help() << endl;
@@ -39,7 +40,20 @@ int main( int argc, const char** argv )
             return 1;
         }
 
-        SMViewer smv(shmID);
+        ObjectId ID(DefaultObjectId);
+        const string name = conf->getArgParam("--name", "TestProc");
+
+        ID = conf->getObjectID(name);
+
+        if( ID == uniset::DefaultObjectId )
+        {
+            cerr << "(main): идентификатор '" << name
+                 << "' не найден в конф. файле!"
+                 << " в секции " << conf->getObjectsSection() << endl;
+            return 0;
+        }
+
+        SMViewer smv(ID, shmID);
         smv.run();
         return 0;
     }

@@ -26,7 +26,7 @@ class SMViewer:
     public uniset::SViewer
 {
     public:
-        SMViewer( uniset::ObjectId shmID );
+        SMViewer( uniset::ObjectId ID, uniset::ObjectId shmID );
         virtual ~SMViewer();
 
         void run();

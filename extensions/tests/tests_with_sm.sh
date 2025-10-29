@@ -10,5 +10,5 @@ cd ../../Utilities/Admin/
 
 cd -
 
-./uniset2-start.sh -f ./tests_with_sm $* -- --confile tests_with_sm.xml --e-startup-pause 10 
+./uniset2-start.sh -f ./tests_with_sm $* -- --confile tests_with_sm.xml --e-startup-pause 10 --http-api-disable-access-control 1
 # --ulog-add-levels any

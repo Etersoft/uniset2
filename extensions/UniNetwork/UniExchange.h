@@ -68,7 +68,7 @@ namespace uniset
             /*! глобальная функция для вывода help-а */
             static void help_print( int argc, const char** argv );
 
-            virtual IOController_i::ShortMapSeq* getSensors() override;
+            virtual IOController_i::ShortMapSeq* getSensors( const uniset::ObjectId consumer_id ) override;
 
         protected:
 

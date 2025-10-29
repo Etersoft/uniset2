@@ -28,7 +28,7 @@ enum Command
     FoldUp,
     Finish,
     Exist,
-    Configure,
+    ReloadConfig,
     LogRotate
 };
 
@@ -42,7 +42,7 @@ static struct option longopts[] =
     { "start", no_argument, 0, 's' },
     { "finish", no_argument, 0, 'f' },
     { "foldUp", no_argument, 0, 'u' },
-    { "configure", optional_argument, 0, 'r' },
+    { "reloadconfig", required_argument, 0, 'r' },
     { "logrotate", optional_argument, 0, 'l' },
     { "info", required_argument, 0, 'i' },
     { "setValue", required_argument, 0, 'x' },
@@ -72,7 +72,7 @@ static void errDoNotResolve( const std::string& oname );
 static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int omap();
-int configure( const string& args, UInterface& ui );
+int reloadconfig( const string& args, UInterface& ui );
 int logRotate( const string& args, UInterface& ui );
 int setValue( const string& args, UInterface& ui );
 int getValue( const string& args, UInterface& ui );
@@ -115,7 +115,7 @@ static void usage()
     print_help(24, "-f|--finish ", "Посылка SystemMessage::Finish всем объектам (процессам)\n");
     print_help(24, "-h|--help  ", "Вывести это сообщение.\n");
     cout << endl;
-    print_help(36, "-r|--configure [FullObjName] ", "Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
+    print_help(36, "-r|--reloadconfig id1@node1,id2@node2,id3,.. ", "Посылка SystemMessage::ReloadConfig всем указанным объектам (процессам)\n");
     print_help(36, "-l|--logrotate [FullObjName] ", "Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
     print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n");
     print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
@@ -356,8 +356,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    const string name = ( optarg ) ? optarg : "";
-                    return configure(name, ui);
+                    return reloadconfig(optarg, ui);
                 }
                 break;
 
@@ -612,13 +611,13 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
                     }
                     break;
 
-                    case Configure:
+                    case ReloadConfig:
                     {
-                        SystemMessage sm(SystemMessage::ReConfiguration);
+                        SystemMessage sm(SystemMessage::ReloadConfig);
                         obj->push(sm.transport_msg());
 
                         if( verb )
-                            cout << setw(55) << oname << "   <--- configure ok\n";
+                            cout << setw(55) << oname << "   <--- reload config ok\n";
                     }
                     break;
 
@@ -1141,42 +1140,46 @@ int logRotate( const string& arg, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int configure( const string& arg, UInterface& ui )
+int reloadconfig( const string& args, UInterface& ui )
 {
     auto conf = ui.getConf();
 
     // посылка всем
-    if( arg.empty() || arg[0] == '-' )
+    if( args.empty() )
     {
-        auto rep = make_shared<ObjectRepository>(conf);
-        commandToAll(conf->getServicesSection(), rep, (Command)Configure);
-        commandToAll(conf->getControllersSection(), rep, (Command)Configure);
-        commandToAll(conf->getObjectsSection(), rep, (Command)Configure);
+        if( !quiet )
+            cout << "(reloadconfig): Unknown objects name" << endl;
+
+        return -1;
     }
-    else // посылка определённому объекту
+
+    TransportMessage tm( SystemMessage(SystemMessage::ReloadConfig).transport_msg() );
+
+    auto sl = uniset::getObjectsList( args, conf );
+
+    for( auto&& it : sl )
     {
-        uniset::ObjectId id = conf->getObjectID(arg);
+        if( it.node == DefaultObjectId )
+            it.node = conf->getLocalNode();
 
-        if( id == DefaultObjectId )
-            id = conf->getControllerID(arg);
-
-        if( id == DefaultObjectId )
-            id = conf->getServiceID(arg);
-
-        if( id == DefaultObjectId )
+        try
+        {
+            ui.send(it.id, tm);
+        }
+        catch( const std::exception& ex )
         {
             if( !quiet )
-                cout << "(configure): name='" << arg << "' не найдено!!!\n";
-
-            return 1;
+                cerr << "(reloadconfig): error: " << ex.what() << endl;
         }
-
-        TransportMessage tm( SystemMessage(SystemMessage::ReConfiguration).transport_msg() );
-        ui.send(id, tm);
-
-        if( verb )
-            cout << "\nSend 'ReConfigure' to " << arg << " OK.\n";
+        catch(...)
+        {
+            if( !quiet )
+                cerr << "(reloadconfig): Unknown exception.." << endl;
+        }
     }
+
+    if( verb )
+        cout << "\nSend 'reloadconfig' OK.\n";
 
     return 0;
 }

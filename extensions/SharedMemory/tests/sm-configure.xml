@@ -25,6 +25,20 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<settings>
+		<ACLConfig name="ACLConfig">
+			<acl name="aclRO" default="RW">
+				<access name="TestObject" permission="RO"/>
+			</acl>
+			<acl name="aclRW" default="RW">
+				<access name="TestObject" permission="RW"/>
+			</acl>
+			<acl name="aclNONE" default="RW">
+				<access name="TestObject" permission="NONE"/>
+			</acl>
+			<acl name="aclWR" default="WR">
+				<access name="TestObject" permission="WR"/>
+			</acl>
+		</ACLConfig>
 		<SharedMemory name="SharedMemory" shmID="SharedMemory">
             <ReservList>
                 <item node="localhost" name="ReservSharedMemory"/>
@@ -60,6 +74,9 @@
 			<item id="517" iotype="AI" name="FreezeAI_S" priority="Medium" textname="Freeze AI sesnor"/>
 			<item id="518" iotype="AI" name="DefaultFreezeAI_S" frozen_value="10" priority="Medium" textname="Freeze AI sesnor(default)"/>
 			<item id="519" iotype="AI" name="ReadOnly_S" default="100" readonly="1" priority="Medium" textname="Freeze AI sesnor"/>
+
+			<!-- ===== permissions test sensors ===== -->
+			<xi:include href="sm-acl-sensors.xml" xpointer="xpointer(//item)"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor name="AI1_AS">
