@@ -38,7 +38,7 @@ static void InitTest()
 
     if( !ui )
     {
-        ui = make_shared<UInterface>();
+        ui = make_shared<UInterface>(uniset::AdminID);
         CHECK( ui->getObjectIndex() != nullptr );
         CHECK( ui->getConf() == conf );
     }
@@ -51,7 +51,7 @@ static void InitTest()
         if( ui == nullptr )
             throw SystemError("UInterface don`t initialize..");
 
-        smi = make_shared<SMInterface>(shm->getId(), ui, shm->getId(), shm );
+        smi = make_shared<SMInterface>(ui->getId(), ui, ui->getId(), shm );
     }
 
     CHECK(opcTestServer1 != nullptr );
@@ -72,32 +72,32 @@ TEST_CASE("OPCUAExchange: check thr", "[opcua][checkThr]")
     opcTestServer2->setI32(rdAttr1, 20);
     REQUIRE(opcTestServer1->getI32(rdAttr1) == 2 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr1) == 2);
-    REQUIRE(shm->getValue(sidThr) == 0);
+    REQUIRE(ui->getValue(sidAttr1) == 2);
+    REQUIRE(ui->getValue(sidThr) == 0);
 
     opcTestServer1->setI32(rdAttr1, 7);
     REQUIRE(opcTestServer1->getI32(rdAttr1) == 7 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr1) == 7);
-    REQUIRE(shm->getValue(sidThr) == 0);
+    REQUIRE(ui->getValue(sidAttr1) == 7);
+    REQUIRE(ui->getValue(sidThr) == 0);
 
     opcTestServer1->setI32(rdAttr1, 15);
     REQUIRE(opcTestServer1->getI32(rdAttr1) == 15 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr1) == 15);
-    REQUIRE(shm->getValue(sidThr) == 1);
+    REQUIRE(ui->getValue(sidAttr1) == 15);
+    REQUIRE(ui->getValue(sidThr) == 1);
 
     opcTestServer1->setI32(rdAttr1, 8);
     opcTestServer2->setI32(rdAttr1, 2);
     REQUIRE(opcTestServer1->getI32(rdAttr1) == 8 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr1) == 8);
-    REQUIRE(shm->getValue(sidThr) == 1);
+    REQUIRE(ui->getValue(sidAttr1) == 8);
+    REQUIRE(ui->getValue(sidThr) == 1);
 
     opcTestServer1->setI32(rdAttr1, 3);
     REQUIRE(opcTestServer1->getI32(rdAttr1) == 3 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr1) == 3);
-    REQUIRE(shm->getValue(sidThr) == 0);
+    REQUIRE(ui->getValue(sidAttr1) == 3);
+    REQUIRE(ui->getValue(sidThr) == 0);
 }
 // -----------------------------------------------------------------------------

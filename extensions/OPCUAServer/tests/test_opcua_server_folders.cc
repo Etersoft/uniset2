@@ -22,7 +22,7 @@ static void InitTest()
 
     if( !ui )
     {
-        ui = std::make_shared<UInterface>();
+        ui = std::make_shared<UInterface>(uniset::AdminID);
         // UI понадобиться для проверки записанных в SM значений.
         CHECK( ui->getObjectIndex() != nullptr );
         CHECK( ui->getConf() == conf );

@@ -42,7 +42,7 @@ static void InitTest()
 
     if( !ui )
     {
-        ui = make_shared<UInterface>();
+        ui = make_shared<UInterface>(uniset::AdminID);
         CHECK( ui->getObjectIndex() != nullptr );
         CHECK( ui->getConf() == conf );
     }
@@ -55,7 +55,7 @@ static void InitTest()
         if( ui == nullptr )
             throw SystemError("UInterface don`t initialize..");
 
-        smi = make_shared<SMInterface>(shm->getId(), ui, shm->getId(), shm );
+        smi = make_shared<SMInterface>(ui->getId(), ui, ui->getId(), shm );
     }
 
     CHECK(js != nullptr );
@@ -64,12 +64,12 @@ static void InitTest()
 // Функция для сброса состояния между тестами
 static void ResetUITestState()
 {
-    shm->setValue(sidUI_TestSensor1, 0);
-    shm->setValue(sidUI_TestSensor2, 0);
-    shm->setValue(sidUI_TestOutput1, 0);
-    shm->setValue(sidUI_TestOutput2, 0);
-    shm->setValue(sidUI_TestCommand_S, 0);
-    shm->setValue(sidUI_TestResult_C, 0);
+    ui->setValue(sidUI_TestSensor1, 0);
+    ui->setValue(sidUI_TestSensor2, 0);
+    ui->setValue(sidUI_TestOutput1, 0);
+    ui->setValue(sidUI_TestOutput2, 0);
+    ui->setValue(sidUI_TestCommand_S, 0);
+    ui->setValue(sidUI_TestResult_C, 0);
     msleep(200); // Даем время на обработку сброса
 }
 
@@ -78,20 +78,20 @@ static bool ExecuteUITest(int testCommand, int expectedOutput1 = -1, int expecte
 {
 #if debuglog
     cout << "=== Executing UI Test " << testCommand << " ===" << endl;
-    cout << "Before test - Command: " << shm->getValue(sidUI_TestCommand_S)
-         << ", Result: " << shm->getValue(sidUI_TestResult_C)
-         << ", Output1: " << shm->getValue(sidUI_TestOutput1)
-         << ", Output2: " << shm->getValue(sidUI_TestOutput2) << endl;
+    cout << "Before test - Command: " << ui->getValue(sidUI_TestCommand_S)
+         << ", Result: " << ui->getValue(sidUI_TestResult_C)
+         << ", Output1: " << ui->getValue(sidUI_TestOutput1)
+         << ", Output2: " << ui->getValue(sidUI_TestOutput2) << endl;
 #endif
 
     // Сохраняем исходное состояние команды
-    int originalCommand = shm->getValue(sidUI_TestCommand_S);
+    int originalCommand = ui->getValue(sidUI_TestCommand_S);
 
     // Сбрасываем результат перед началом теста
-    shm->setValue(sidUI_TestResult_C, 0);
+    ui->setValue(sidUI_TestResult_C, 0);
 
     // Устанавливаем команду теста
-    shm->setValue(sidUI_TestCommand_S, testCommand);
+    ui->setValue(sidUI_TestCommand_S, testCommand);
 
     // Интеллектуальное ожидание с проверкой готовности
     bool testCompleted = false;
@@ -105,7 +105,7 @@ static bool ExecuteUITest(int testCommand, int expectedOutput1 = -1, int expecte
         elapsedTime += checkInterval;
 
         // Проверяем, готов ли результат теста
-        int currentResult = shm->getValue(sidUI_TestResult_C);
+        int currentResult = ui->getValue(sidUI_TestResult_C);
 
         // Если результат изменился
         if (currentResult != lastResult)
@@ -123,15 +123,15 @@ static bool ExecuteUITest(int testCommand, int expectedOutput1 = -1, int expecte
 
 #if debuglog
             cout << "Test completed after " << elapsedTime << " ms" << endl;
-            cout << "After test - Command: " << shm->getValue(sidUI_TestCommand_S)
-                 << ", Result: " << shm->getValue(sidUI_TestResult_C)
-                 << ", Output1: " << shm->getValue(sidUI_TestOutput1)
-                 << ", Output2: " << shm->getValue(sidUI_TestOutput2) << endl;
+            cout << "After test - Command: " << ui->getValue(sidUI_TestCommand_S)
+                 << ", Result: " << ui->getValue(sidUI_TestResult_C)
+                 << ", Output1: " << ui->getValue(sidUI_TestOutput1)
+                 << ", Output2: " << ui->getValue(sidUI_TestOutput2) << endl;
 #endif
         }
 
         // Дополнительная проверка: если команда была сброшена, тест завершился
-        if (shm->getValue(sidUI_TestCommand_S) != testCommand)
+        if (ui->getValue(sidUI_TestCommand_S) != testCommand)
         {
             testCompleted = true;
 #if debuglog
@@ -144,22 +144,22 @@ static bool ExecuteUITest(int testCommand, int expectedOutput1 = -1, int expecte
     if (!testCompleted)
     {
         cout << "Test FAILED: Timeout after " << maxWaitMsec << " ms" << endl;
-        cout << "Last state - Command: " << shm->getValue(sidUI_TestCommand_S)
-             << ", Result: " << shm->getValue(sidUI_TestResult_C)
-             << ", Output1: " << shm->getValue(sidUI_TestOutput1)
-             << ", Output2: " << shm->getValue(sidUI_TestOutput2) << endl;
+        cout << "Last state - Command: " << ui->getValue(sidUI_TestCommand_S)
+             << ", Result: " << ui->getValue(sidUI_TestResult_C)
+             << ", Output1: " << ui->getValue(sidUI_TestOutput1)
+             << ", Output2: " << ui->getValue(sidUI_TestOutput2) << endl;
         return false;
     }
 
     // Проверяем успешность теста
-    int finalResult = shm->getValue(sidUI_TestResult_C);
+    int finalResult = ui->getValue(sidUI_TestResult_C);
 
     if (finalResult != 1)
     {
         cout << "Test FAILED: Result is " << finalResult << " (expected 1)" << endl;
-        cout << "Final state - Command: " << shm->getValue(sidUI_TestCommand_S)
-             << ", Output1: " << shm->getValue(sidUI_TestOutput1)
-             << ", Output2: " << shm->getValue(sidUI_TestOutput2) << endl;
+        cout << "Final state - Command: " << ui->getValue(sidUI_TestCommand_S)
+             << ", Output1: " << ui->getValue(sidUI_TestOutput1)
+             << ", Output2: " << ui->getValue(sidUI_TestOutput2) << endl;
         return false;
     }
 
@@ -168,7 +168,7 @@ static bool ExecuteUITest(int testCommand, int expectedOutput1 = -1, int expecte
 
     if (expectedOutput1 != -1)
     {
-        int actualOutput1 = shm->getValue(sidUI_TestOutput1);
+        int actualOutput1 = ui->getValue(sidUI_TestOutput1);
 
         if (actualOutput1 != expectedOutput1)
         {
@@ -180,7 +180,7 @@ static bool ExecuteUITest(int testCommand, int expectedOutput1 = -1, int expecte
 
     if (expectedOutput2 != -1)
     {
-        int actualOutput2 = shm->getValue(sidUI_TestOutput2);
+        int actualOutput2 = ui->getValue(sidUI_TestOutput2);
 
         if (actualOutput2 != expectedOutput2)
         {
@@ -203,21 +203,21 @@ TEST_CASE("JSEngine: start", "[jscript]")
 {
     InitTest();
 
-    REQUIRE( shm->getValue(sidStart_C) == 10 );
-    REQUIRE( shm->getValue(sidStop_C) != 15 );
-    REQUIRE( shm->getValue(sidStart_S) == 100 );
+    REQUIRE( ui->getValue(sidStart_C) == 10 );
+    REQUIRE( ui->getValue(sidStop_C) != 15 );
+    REQUIRE( ui->getValue(sidStart_S) == 100 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("JSEngine: step", "[jscript]")
 {
     InitTest();
-    shm->setValue(sidJS1_S, 100);
+    ui->setValue(sidJS1_S, 100);
     msleep(200);
-    REQUIRE(shm->getValue(sidJS2_C) == 100);
+    REQUIRE(ui->getValue(sidJS2_C) == 100);
 
-    shm->setValue(sidJS1_S, 110);
+    ui->setValue(sidJS1_S, 110);
     msleep(200);
-    REQUIRE(shm->getValue(sidJS2_C) == 110);
+    REQUIRE(ui->getValue(sidJS2_C) == 110);
 
 }
 // -----------------------------------------------------------------------------
@@ -225,24 +225,24 @@ TEST_CASE("JSEngine: local func", "[jscript]")
 {
     InitTest();
 
-    shm->setValue(sidJS1_S, 100);
+    ui->setValue(sidJS1_S, 100);
     msleep(200);
-    REQUIRE(shm->getValue(sidJS4_C) == 200);
-    REQUIRE(shm->getValue(sidJS3_C) == 100);
+    REQUIRE(ui->getValue(sidJS4_C) == 200);
+    REQUIRE(ui->getValue(sidJS3_C) == 100);
 
-    shm->setValue(sidJS1_S, 110);
+    ui->setValue(sidJS1_S, 110);
     msleep(200);
-    REQUIRE(shm->getValue(sidJS4_C) == 220);
-    REQUIRE(shm->getValue(sidJS3_C) == 110);
+    REQUIRE(ui->getValue(sidJS4_C) == 220);
+    REQUIRE(ui->getValue(sidJS3_C) == 110);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("JSEngine: modules tests", "[jscript][modules]")
 {
     InitTest();
 
-    //    shm->setValue(sidStartModuleTests, 100);
+    //    ui->setValue(sidStartModuleTests, 100);
     //    msleep(10000);
-    //    REQUIRE(shm->getValue(sidModuleTestsResult) == 1);
+    //    REQUIRE(ui->getValue(sidModuleTestsResult) == 1);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("JSEngine: ui object - getValue by ID", "[jscript][ui][1]")
@@ -251,7 +251,7 @@ TEST_CASE("JSEngine: ui object - getValue by ID", "[jscript][ui][1]")
     ResetUITestState();
 
     // Тест 1: ui.getValue() с числовым ID
-    shm->setValue(sidUI_TestSensor1, 42);
+    ui->setValue(sidUI_TestSensor1, 42);
     REQUIRE(ExecuteUITest(1, 42, -1)); // Ожидаем UI_TestOutput1 = 42
 }
 // -----------------------------------------------------------------------------
@@ -261,7 +261,7 @@ TEST_CASE("JSEngine: ui object - getValue by name", "[jscript][ui][2]")
     ResetUITestState();
 
     // Тест 2: ui.getValue() с именем датчика в виде строки
-    shm->setValue(sidUI_TestSensor2, 123);
+    ui->setValue(sidUI_TestSensor2, 123);
     REQUIRE(ExecuteUITest(2, -1, 123)); // Ожидаем UI_TestOutput2 = 123
 }
 // -----------------------------------------------------------------------------
@@ -292,10 +292,10 @@ TEST_CASE("JSEngine: ui object - askSensor reaction", "[jscript][ui][5]")
     REQUIRE(ExecuteUITest(5)); // Запускаем тест 5
 
     // Меняем значение датчика - JS должен отреагировать в uniset_on_sensor
-    shm->setValue(sidUI_TestSensor1, 77);
+    ui->setValue(sidUI_TestSensor1, 77);
     msleep(400);
 
-    REQUIRE(shm->getValue(sidUI_TestOutput1) == 77); // Проверяем реакцию на изменение
+    REQUIRE(ui->getValue(sidUI_TestOutput1) == 77); // Проверяем реакцию на изменение
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("JSEngine: ui object - UIONotify constants", "[jscript][ui][6]")
@@ -313,8 +313,8 @@ TEST_CASE("JSEngine: ui object - combined test", "[jscript][ui][7]")
     ResetUITestState();
 
     // Тест 7: комбинированный тест - чтение и запись
-    shm->setValue(sidUI_TestSensor1, 30);
-    shm->setValue(sidUI_TestSensor2, 20);
+    ui->setValue(sidUI_TestSensor1, 30);
+    ui->setValue(sidUI_TestSensor2, 20);
     REQUIRE(ExecuteUITest(7, 60, 30)); // Ожидаем UI_TestOutput1 = 60, UI_TestOutput2 = 30
 }
 // -----------------------------------------------------------------------------

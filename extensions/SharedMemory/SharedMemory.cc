@@ -52,6 +52,8 @@ namespace uniset
         cout << "--http-api-disable-set [1,0]     - включение или отключение функции 'set' в HTTP API" << endl;
         cout << "--http-api-disable-freeze  [1,0] - включение или отключение функций 'freeze/unfreeze' в HTTP API" << endl;
         cout << endl;
+        cout << "--sm-default-sensor-persmission perm - Умолчательные права на датчики [RW, RO, WR, None]. По умолчанию: rw" << endl;
+        cout << endl;
         cout << " Logs: " << endl;
         cout << "--sm-log-...            - log control" << endl;
         cout << "         add-levels ..." << endl;
@@ -112,6 +114,17 @@ namespace uniset
             logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
             logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
         }
+
+        auto defPermission = conf->getArg2Param("--sm-default-sensor-persmission", it.getProp("defaultSensorPermission"), "rw");
+        auto amask = AccessMask::fromString(defPermission);
+        if( amask == AccessNone )
+        {
+            ostringstream err;
+            err << myname << "(init): Can't parse persmission '" << defPermission << "'";
+            ucrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        setDefaultAccessMask(amask);
 
         // ----------------------
         buildHistoryList(confnode);
@@ -229,7 +242,7 @@ namespace uniset
         {
             if( sidPulsar != DefaultObjectId )
             {
-                bool st = (bool)localGetValue(itPulsar, sidPulsar);
+                bool st = (bool)localGetValue(itPulsar, sidPulsar, getId());
                 st ^= true;
                 localSetValueIt(itPulsar, sidPulsar, (st ? 1 : 0), getId() );
             }
@@ -401,7 +414,7 @@ namespace uniset
         {
             try
             {
-                long val = localGetValue(it.a_it, it.a_sid);
+                long val = localGetValue(it.a_it, it.a_sid, getId());
                 val--;
 
                 if( val < -1 )
@@ -781,7 +794,7 @@ namespace uniset
             {
                 try
                 {
-                    hit.add( localGetValue( hit.ioit, hit.id ), it.size );
+                    hit.add( localGetValue( hit.ioit, hit.id, getId() ), it.size );
                 }
                 catch( IOController_i::Undefined& ex )
                 {
@@ -1013,6 +1026,10 @@ namespace uniset
                 catch( const IOController_i::NameNotFound& ex )
                 {
                     smcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+                }
+                catch( const IOController_i::AccessDenied& ex )
+                {
+                    smcrit << myname << "(initFromSM): Access denied for sensor id=" << ii.si.id << "'" << endl;
                 }
                 catch( const uniset::Exception& ex )
                 {

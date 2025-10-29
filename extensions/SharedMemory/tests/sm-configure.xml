@@ -60,6 +60,29 @@
 			<item id="517" iotype="AI" name="FreezeAI_S" priority="Medium" textname="Freeze AI sesnor"/>
 			<item id="518" iotype="AI" name="DefaultFreezeAI_S" frozen_value="10" priority="Medium" textname="Freeze AI sesnor(default)"/>
 			<item id="519" iotype="AI" name="ReadOnly_S" default="100" readonly="1" priority="Medium" textname="Freeze AI sesnor"/>
+
+			<!-- ===== permissions test sensors ===== -->
+			<item id="520" iotype="AI" name="Perm_RW_AI" priority="Medium" textname="Perm: RW">
+				<access>
+					<item name="TestObject" permission="RW"/>
+				</access>
+			</item>
+			<item id="521" iotype="DI" name="Perm_RO_DI" priority="Medium" textname="Perm: RO">
+				<access>
+					<item name="TestObject" permission="RO"/>
+				</access>
+			</item>
+			<item id="522" iotype="DO" name="Perm_NONE_DO" priority="Medium" textname="Perm: NONE">
+				<access>
+					<item name="TestObject" permission="None"/>
+				</access>
+			</item>
+			<item id="523" iotype="DO" name="Perm_WR_DO" priority="Medium" textname="Perm: WR">
+				<access>
+					<item name="TestObject" permission="WR"/>
+				</access>
+			</item>
+			<item id="524" iotype="AI" name="Perm_UNK_AI" priority="Medium" textname="Perm: Unknown"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor name="AI1_AS">

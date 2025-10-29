@@ -32,7 +32,7 @@ using namespace uniset;
 using namespace UniversalIO;
 using namespace std;
 // --------------------------------------------------------------------------
-SViewer::SViewer(const string& csec, bool sn):
+SViewer::SViewer( const string& csec, bool sn ):
 	csec(csec),
 	rep(uniset::uniset_conf()),
 	isShortName(sn)
@@ -171,7 +171,7 @@ void SViewer::getInfo( ObjectId id )
 
 		try
 		{
-			IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
+			IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap(myid);
 			updateSensors(amap, id);
 		}
 		catch( const IOController_i::NameNotFound& ex ) {}
@@ -179,7 +179,7 @@ void SViewer::getInfo( ObjectId id )
 
 		try
 		{
-			IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
+			IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList(myid);
 			updateThresholds(tlst, id);
 		}
 		catch( const IOController_i::NameNotFound& ex ) {}

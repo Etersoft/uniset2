@@ -58,11 +58,11 @@ namespace uniset
                            const std::string& txtname, const std::string& iotype);
 
             std::shared_ptr<UInterface> ui;
+            uniset::ObjectId myid = { uniset::UtilsID };
 
         private:
             ObjectRepository rep;
             bool isShortName = { true };
-
     };
     // -------------------------------------------------------------------------
 } // end of uniset namespace
