@@ -163,6 +163,13 @@ namespace uniset
             IOBadParam(const std::string& err) noexcept: Exception(err) {}
     };
 
+    class AccessDenied: public Exception
+    {
+        public:
+            AccessDenied() noexcept: AccessDenied("AccessDenied") {}
+            AccessDenied(const std::string& err) noexcept: Exception(err) {}
+    };
+
     /*!
         Исключение, вырабатываемое в случае присутствия в имени недопустимых символов.
         См. uniset::BadSymbols[]

@@ -30,8 +30,8 @@ test_tcpcheck.cc \
 test_utcpsocket.cc \
 test_iocontroller_types.cc \
 test_debugstream.cc \
-test_oindex_hash.cc
-
+test_oindex_hash.cc \
+test_accessmask.cc
 #test_uhttp.cc
 
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/contrib/cityhash102/libCityHash102.la $(top_builddir)/contrib/murmurhash/libMurMurHash.la
@@ -45,7 +45,9 @@ test_messagetype.cc \
 test_utypes.cc \
 test_mqueue.cc \
 test_uobject.cc \
-test_lt_object.cc
+test_lt_object.cc \
+test_ioconfig_xml.cc \
+test_accessconfig.cc
 
 # threadtst_SOURCES = threadtst.cc
 # threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS}

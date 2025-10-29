@@ -508,6 +508,8 @@ bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerIn
 void IONotifyController::askSensor(const uniset::ObjectId sid,
 								   const uniset::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
+    // TODO: check access control
+
 	ulog2 << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" : "заказ" ) << " от "
 		  << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node
 		  << " на аналоговый датчик "
@@ -518,7 +520,7 @@ void IONotifyController::askSensor(const uniset::ObjectId sid,
 	try
 	{
 		// если такого аналогового датчика нет, здесь сработает исключение...
-		localGetValue(li, sid);
+		localGetValue(li, sid, ci.id);
 	}
 	catch( IOController_i::Undefined& ex ) {}
 
@@ -546,6 +548,7 @@ void IONotifyController::askSensor(const uniset::ObjectId sid,
 void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 							  const uniset::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
+    // TODO: check access control
 	// поиск датчика в списке
 	auto askIterator = askLst.find(sid);
 
@@ -789,6 +792,7 @@ void IONotifyController::askThreshold(uniset::ObjectId sid,
 									  CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert,
 									  UniversalIO::UIOCommand cmd )
 {
+    // TODO: check access control
 	ulog2 << "(askThreshold): " << ( cmd == UIODontNotify ? "отказ" : "заказ" ) << " от "
 		  << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node
 		  << " на порог tid=" << tid
@@ -807,7 +811,7 @@ void IONotifyController::askThreshold(uniset::ObjectId sid,
 	try
 	{
 		// если такого датчика нет здесь сработает исключение...
-		val = localGetValue(li, sid);
+		val = localGetValue(li, sid, ci.id);
 	}
 	catch( const IOController_i::Undefined& ex ) {}
 
@@ -1039,8 +1043,10 @@ std::shared_ptr<IOController::UThresholdInfo> IONotifyController::findThreshold(
 }
 // --------------------------------------------------------------------------------------------------------------
 
-IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( uniset::ObjectId sid, uniset::ThresholdId tid )
+IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( uniset::ObjectId sid, uniset::ThresholdId tid, const uniset::ObjectId consumer_id )
 {
+    // TODO: check access control
+
 	uniset_rwmutex_rlock lock(trshMutex);
 	auto it = findThreshold(sid, tid);
 
@@ -1057,8 +1063,9 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( uniset
 	return IONotifyController_i::ThresholdInfo(*it);
 }
 // --------------------------------------------------------------------------------------------------------------
-IONotifyController_i::ThresholdList* IONotifyController::getThresholds( uniset::ObjectId sid )
+IONotifyController_i::ThresholdList* IONotifyController::getThresholds( uniset::ObjectId sid, const uniset::ObjectId consumer_id )
 {
+    // TODO: check access control
 	auto it = myiofind(sid);
 
 	if( it == myioEnd() )
@@ -1077,7 +1084,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( uniset::
 	try
 	{
 		res->si     = usi->si;
-		res->value  = IOController::localGetValue(usi);
+		res->value  = IOController::localGetValue(usi, consumer_id);
 		res->type   = usi->type;
 	}
 	catch( const uniset::Exception& ex )
@@ -1106,8 +1113,10 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( uniset::
 	return res;
 }
 // --------------------------------------------------------------------------------------------------------------
-IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
+IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList( const uniset::ObjectId consumer_id )
 {
+    // TODO: check access control
+
 	std::list< std::shared_ptr<USensorInfo> > slist;
 
 	// ищем все датчики, у которых не пустой список порогов
@@ -1131,7 +1140,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 			try
 			{
 				(*res)[i].si    = it->si;
-				(*res)[i].value = IOController::localGetValue(it);
+				(*res)[i].value = IOController::localGetValue(it, consumer_id);
 				(*res)[i].type  = it->type;
 			}
 			catch( const std::exception& ex )

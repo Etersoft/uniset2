@@ -717,6 +717,10 @@ namespace uniset
         {
             mblog3 << myname << "(initSMValue):(IOBadParam) " << ex.err << endl;
         }
+        catch(IOController_i::AccessDenied& ex )
+        {
+            mblog3 << myname << "(initSMValue):(AccessDenied) " << ex.err << endl;
+        }
         catch(IONotifyController_i::BadRange& ex )
         {
             mblog3 << myname << "(initSMValue): (BadRange)..." << endl;
@@ -990,6 +994,10 @@ namespace uniset
                 {
                     mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
                 }
+                catch(IOController_i::AccessDenied& ex )
+                {
+                    mblog3 << myname << "(updateSM):(AccessDenied) " << ex.err << endl;
+                }
                 catch( IONotifyController_i::BadRange& ex )
                 {
                     mblog3 << myname << "(updateSM): (BadRange)..." << endl;
@@ -1027,6 +1035,10 @@ namespace uniset
                     catch(IOController_i::IOBadParam& ex )
                     {
                         mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+                    }
+                    catch(IOController_i::AccessDenied& ex )
+                    {
+                        mblog3 << myname << "(updateSM):(AccessDenied) " << ex.err << endl;
                     }
                     catch( IONotifyController_i::BadRange& ex )
                     {
@@ -1075,6 +1087,10 @@ namespace uniset
                     catch(IOController_i::IOBadParam& ex )
                     {
                         mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+                    }
+                    catch(IOController_i::AccessDenied& ex )
+                    {
+                        mblog3 << myname << "(updateSM):(AccessDenied) " << ex.err << endl;
                     }
                     catch(IONotifyController_i::BadRange& ex )
                     {
@@ -1616,6 +1632,10 @@ namespace uniset
         {
             mblog3 << myname << "(updateRSProperty):(IOBadParam) " << ex.err << endl;
         }
+        catch(IOController_i::AccessDenied& ex )
+        {
+            mblog3 << myname << "(updateRSProperty):(AccessDenied) " << ex.err << endl;
+        }
         catch(IONotifyController_i::BadRange& ex )
         {
             mblog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
@@ -1956,6 +1976,10 @@ namespace uniset
             {
                 mblog3 << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
             }
+            catch(IOController_i::AccessDenied& ex )
+            {
+                mblog3 << myname << "(updateMTR):(AccessDenied) " << ex.err << endl;
+            }
             catch(IONotifyController_i::BadRange& ex )
             {
                 mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
@@ -2022,6 +2046,10 @@ namespace uniset
             catch(IOController_i::IOBadParam& ex )
             {
                 mblog3 << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
+            }
+            catch(IOController_i::AccessDenied& ex )
+            {
+                mblog3 << myname << "(updateRTU188):(AccessDenied) " << ex.err << endl;
             }
             catch(IONotifyController_i::BadRange& ex )
             {
@@ -2169,7 +2197,7 @@ namespace uniset
             }
             break;
 
-            case SystemMessage::ReConfiguration:
+            case SystemMessage::ReloadConfig:
             {
                 mblogany << myname << "(sysCommand): reconfig" << std::endl;
                 reload(uniset_conf()->getConfFileName());

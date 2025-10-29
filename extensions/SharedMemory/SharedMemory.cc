@@ -51,6 +51,9 @@ namespace uniset
         cout << "--db-logging [1,0]     - включение или отключение логирования датчиков в БД (должен быть запущен DBServer)" << endl;
         cout << "--http-api-disable-set [1,0]     - включение или отключение функции 'set' в HTTP API" << endl;
         cout << "--http-api-disable-freeze  [1,0] - включение или отключение функций 'freeze/unfreeze' в HTTP API" << endl;
+        cout << "--http-api-disable-access-control  [1,0] - включение или отключение проверки прав доступа для функций HTTP API" << endl;
+        cout << endl;
+        cout << "--sm-default-sensor-permission perm - Умолчательные права на датчики [RW, RO, WR, None]. По умолчанию: rw" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--sm-log-...            - log control" << endl;
@@ -113,6 +116,17 @@ namespace uniset
             logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
         }
 
+        auto defPermission = conf->getArg2Param("--sm-default-sensor-permission", it.getProp("defaultSensorPermission"), "rw");
+        auto amask = AccessMask::fromString(defPermission);
+        if( amask == AccessNone )
+        {
+            ostringstream err;
+            err << myname << "(init): Can't parse persmission '" << defPermission << "'";
+            ucrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        setDefaultAccessMask(amask);
+
         // ----------------------
         buildHistoryList(confnode);
         signal_change_value().connect(sigc::mem_fun(*this, &SharedMemory::checkFuse));
@@ -161,6 +175,10 @@ namespace uniset
         disabledHttpFreezeApi = conf->getArgInt("--http-api-disable-freeze");
         if( disabledHttpFreezeApi )
             sminfo << myname << "(init): HTTP API 'freeze/unfreeze' disabled" << endl;
+
+        disableHttpAccessControl = conf->getArgInt("--http-api-disable-access-control");
+        if( disableHttpAccessControl )
+            sminfo << myname << "(init): HTTP API 'access control' disabled" << endl;
 #endif
 
         e_filter = conf->getArgParam("--e-filter");
@@ -229,7 +247,7 @@ namespace uniset
         {
             if( sidPulsar != DefaultObjectId )
             {
-                bool st = (bool)localGetValue(itPulsar, sidPulsar);
+                bool st = (bool)localGetValue(itPulsar, sidPulsar, getId());
                 st ^= true;
                 localSetValueIt(itPulsar, sidPulsar, (st ? 1 : 0), getId() );
             }
@@ -311,6 +329,10 @@ namespace uniset
             case SystemMessage::LogRotate:
                 break;
 
+            case SystemMessage::ReloadConfig:
+                reloadConfig();
+                break;
+
             default:
                 break;
         }
@@ -380,6 +402,29 @@ namespace uniset
         return res;
     }
     // ------------------------------------------------------------------------------------------
+    void SharedMemory::reloadConfig()
+    {
+        sminfo << myname << "(reloadConfig): RELOAD ACL CONFIG" << endl;
+        try
+        {
+            auto conf = uniset_conf();
+            auto xml = std::make_shared<UniXML>(conf->getConfFileName());
+            auto amap = AccessConfig::read(conf, xml, "ACLConfig", "ACLConfig");
+            auto slist = IOConfig_XML::readACLInfo(conf, xml);
+            if( !amap.empty() && !slist.empty() )
+            {
+                reloadACLConfig(amap, slist);
+                sminfo << myname << "(reloadConfig): RELOAD ACL CONFIG - OK" << endl;
+            }
+            else
+                sminfo << myname << "(reloadConfig): RELOAD: empty ACL..skipped" << endl;
+        }
+        catch( exception& ex )
+        {
+            smcrit << myname << "(reloadConfig): error: " << ex.what() << endl;
+        }
+    }
+    // ------------------------------------------------------------------------------------------
     CORBA::Boolean SharedMemory::exist()
     {
         return workready;
@@ -401,7 +446,7 @@ namespace uniset
         {
             try
             {
-                long val = localGetValue(it.a_it, it.a_sid);
+                long val = localGetValue(it.a_it, it.a_sid, getId());
                 val--;
 
                 if( val < -1 )
@@ -682,7 +727,6 @@ namespace uniset
         }
 
         histSaveTime = it.getIntProp("savetime");
-
         if( histSaveTime <= 0 )
             histSaveTime = 0;
 
@@ -781,7 +825,7 @@ namespace uniset
             {
                 try
                 {
-                    hit.add( localGetValue( hit.ioit, hit.id ), it.size );
+                    hit.add( localGetValue( hit.ioit, hit.id, getId() ), it.size );
                 }
                 catch( IOController_i::Undefined& ex )
                 {
@@ -1013,6 +1057,10 @@ namespace uniset
                 catch( const IOController_i::NameNotFound& ex )
                 {
                     smcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+                }
+                catch( const IOController_i::AccessDenied& ex )
+                {
+                    smcrit << myname << "(initFromSM): Access denied for sensor id=" << ii.si.id << "'" << endl;
                 }
                 catch( const uniset::Exception& ex )
                 {

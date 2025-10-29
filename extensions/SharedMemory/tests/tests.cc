@@ -15,6 +15,7 @@ using namespace uniset;
 using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 std::shared_ptr<TestObject> obj;
+std::shared_ptr<SharedMemory> shm;
 // --------------------------------------------------------------------------
 int main(int argc, const char* argv[] )
 {
@@ -38,7 +39,7 @@ int main(int argc, const char* argv[] )
 
         auto conf = uniset_init(argc, argv);
 
-        auto shm = SharedMemory::init_smemory(argc, argv);
+        shm = SharedMemory::init_smemory(argc, argv);
 
         if( !shm )
             return 1;

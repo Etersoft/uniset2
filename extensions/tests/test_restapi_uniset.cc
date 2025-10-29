@@ -439,7 +439,7 @@ TEST_CASE("[REST API: /freeze|unfreeze]", "[restapi][freeze]")
             Poco::JSON::Object::Ptr jret = jarr->getObject(i);
 
             if( jret->get("name").convert<std::string>() == "dummy"
-                && !jret->get("error").convert<std::string>().empty() )
+                    && !jret->get("error").convert<std::string>().empty() )
             {
                 found_error = true;
                 break;

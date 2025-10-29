@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<uniset>
+    <sensors>
+        <sensor name="TestSensor1" id="1" iotype="AI"
+                default="100" dbignore="0" readonly="0"
+                permission="RW">
+            <access name="Process1" permission="RO"/>
+            <access name="Process2" permission="WRITE"/>
+        </sensor>
+
+        <sensor name="TestSensor2" id="2" iotype="DI"
+                default="1" dbignore="1" readonly="1"
+                permission="RO">
+            <access name="Process3" permission="RW"/>
+        </sensor>
+
+        <sensor name="TestSensor3" id="3" iotype="AO"
+                default="50" depend="TestSensor1"
+                depend_value="1" depend_off_value="0"
+                rmin="0" rmax="1000" cmin="0" cmax="100" precision="2">
+        </sensor>
+
+        <sensor name="TestSensor4" id="4" iotype="DO"
+                default="0" undefined_value="-1"
+                frozen_value="99" priority="High">
+        </sensor>
+
+        <sensor name="FilteredSensor" id="5" iotype="AI"
+                default="200" test_filter="keep">
+        </sensor>
+
+        <sensor name="ExcludedSensor" id="6" iotype="AI"
+                default="300" test_filter="skip">
+        </sensor>
+    </sensors>
+
+    <thresholds>
+        <sensor name="TestSensor1" id="1">
+            <threshold id="1" lowlimit="10" hilimit="90" sid="TestSensor2"/>
+            <threshold id="2" lowlimit="0" hilimit="50" sid="TestSensor3" invert="1"/>
+        </sensor>
+    </thresholds>
+</uniset>

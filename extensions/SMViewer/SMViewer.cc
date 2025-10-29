@@ -22,9 +22,9 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 //--------------------------------------------------------------------------------
-SMViewer::SMViewer( uniset::ObjectId shmID ):
-    SViewer(uniset_conf()->getControllersSection(), true),
-    shm(make_shared<SMInterface>(shmID, ui, DefaultObjectId))
+SMViewer::SMViewer(  uniset::ObjectId ID, uniset::ObjectId shmID ):
+    SViewer(ID, uniset_conf()->getControllersSection(), true),
+    shm(make_shared<SMInterface>(shmID, ui, ID))
 {
 
 }

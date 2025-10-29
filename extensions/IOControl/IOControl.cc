@@ -726,6 +726,10 @@ namespace uniset
         {
             iolog3 << myname << "(iopoll):(IOBadParam) " << ex.err << endl;
         }
+        catch( const IOController_i::AccessDenied& ex )
+        {
+            iolog3 << myname << "(iopoll):(AccessDenied) " << ex.err << endl;
+        }
         catch( const IONotifyController_i::BadRange& ex )
         {
             iolog3 << myname << "(iopoll): (BadRange)..." << endl;

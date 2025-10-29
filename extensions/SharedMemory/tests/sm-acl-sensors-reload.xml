@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sensors name="acl_sensors">
+    <item id="520" iotype="AI" name="Perm_RW_AI" priority="Medium" textname="Perm: RW" acl="aclNONE"/>
+    <item id="521" iotype="DI" name="Perm_RO_DI" priority="Medium" textname="Perm: RO" acl="aclNONE"/>
+    <item id="522" iotype="DO" name="Perm_NONE_DO" priority="Medium" textname="Perm: NONE" acl="aclNONE"/>
+    <item id="523" iotype="DO" name="Perm_WR_DO" priority="Medium" textname="Perm: WR" acl="aclNONE"/>
+    <item id="524" iotype="AI" name="Perm_UNK_AI" priority="Medium" textname="Perm: Unknown"/>
+</sensors>

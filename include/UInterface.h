@@ -226,6 +226,14 @@ namespace uniset
             {
                 return uconf;
             }
+            inline uniset::ObjectId getId() const noexcept
+            {
+                return myid;
+            }
+            inline void setId( uniset::ObjectId id )
+            {
+                myid = id;
+            }
             // ---------------------------------------------------------------
             // Посылка сообщений
 
