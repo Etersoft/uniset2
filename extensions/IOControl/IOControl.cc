@@ -263,18 +263,18 @@ namespace uniset
 
         vmonit(smReadyTimeout);
 
-        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-ready-test-sid", it.getProp("sm_ready_test_sid"));
+        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-test-sid", it.getProp("smTestSID"));
         sidTestSMReady = conf->getSensorID(sm_ready_sid);
 
         if( sidTestSMReady == DefaultObjectId )
         {
             sidTestSMReady = conf->getSensorID("TestMode_S");
             iowarn << myname
-                   << "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
+                   << "(init): Unknown ID for sm-test-sid (--" << prefix << "-sm-test-sid)."
                    << " Use 'TestMode_S' (if present)" << endl;
         }
         else
-            ioinfo << myname << "(init): sm-ready-test-sid: " << sm_ready_sid << endl;
+            ioinfo << myname << "(init): sm-test-sid: " << sm_ready_sid << endl;
 
         vmonit(sidTestSMReady);
 
@@ -1276,7 +1276,7 @@ namespace uniset
         cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
         cout << "--prefix-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
         cout << "--prefix-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
-        cout << "--prefix-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+        cout << "--prefix-sm-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
         cout << "--prefix-sm-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << endl;
         cout << " Logs: " << endl;
