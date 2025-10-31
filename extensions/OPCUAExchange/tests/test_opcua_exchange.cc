@@ -61,7 +61,7 @@ static void InitTest()
 
     if( !ui )
     {
-        ui = make_shared<UInterface>();
+        ui = make_shared<UInterface>(uniset::AdminID);
         CHECK( ui->getObjectIndex() != nullptr );
         CHECK( ui->getConf() == conf );
     }
@@ -74,7 +74,7 @@ static void InitTest()
         if( ui == nullptr )
             throw SystemError("UInterface don`t initialize..");
 
-        smi = make_shared<SMInterface>(shm->getId(), ui, shm->getId(), shm );
+        smi = make_shared<SMInterface>(ui->getId(), ui, ui->getId(), shm );
     }
 
     CHECK(opcTestServer1 != nullptr );
@@ -98,8 +98,8 @@ TEST_CASE("OPCUAExchange: read", "[opcua][exchange][read]")
     REQUIRE(opcTestServer1->getBool(rdAttr2) == true );
 
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr1) == 10);
-    REQUIRE(shm->getValue(sidAttr2) == 1);
+    REQUIRE(ui->getValue(sidAttr1) == 10);
+    REQUIRE(ui->getValue(sidAttr2) == 1);
 
     opcTestServer1->setI32(rdAttr1, 20);
     opcTestServer1->setBool(rdAttr2, false);
@@ -112,17 +112,17 @@ TEST_CASE("OPCUAExchange: read", "[opcua][exchange][read]")
     opcTestServer1->setF32(rdFloat, 10.01);
     REQUIRE(opcTestServer1->getF32(rdFloat) == 10.01f );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidFloat1) == 1001);
+    REQUIRE(ui->getValue(sidFloat1) == 1001);
 
     // float: round up
     opcTestServer1->setF32(rdFloat, 5.056);
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidFloat1) == 506);
+    REQUIRE(ui->getValue(sidFloat1) == 506);
 
     // float: round down
     opcTestServer1->setF32(rdFloat, 5.053);
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidFloat1) == 505);
+    REQUIRE(ui->getValue(sidFloat1) == 505);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: write", "[opcua][exchange][write]")
@@ -135,25 +135,25 @@ TEST_CASE("OPCUAExchange: write", "[opcua][exchange][write]")
     REQUIRE(opcTestServer1->getI32(wrAttr3) == 100 );
     REQUIRE(opcTestServer1->getBool(wrAttr4) == false );
 
-    REQUIRE_NOTHROW(shm->setValue(sidAttr3, 1000));
-    REQUIRE_NOTHROW(shm->setValue(sidAttr4, 1));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr3, 1000));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr4, 1));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr3) == 1000);
     REQUIRE(opcTestServer1->getBool(wrAttr4) == true);
 
-    REQUIRE_NOTHROW(shm->setValue(sidAttr3, 20));
-    REQUIRE_NOTHROW(shm->setValue(sidAttr4, 0));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr3, 20));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr4, 0));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr3) == 20 );
     REQUIRE(opcTestServer1->getBool(wrAttr4) == false);
 
     // float
     opcTestServer1->setF32(wrFloatOut, 0.0);
-    REQUIRE_NOTHROW(shm->setValue(sidFloatOut1, 2000));
+    REQUIRE_NOTHROW(ui->setValue(sidFloatOut1, 2000));
     msleep(step_pause_msec);
     REQUIRE( opcTestServer1->getF32(wrFloatOut) == 20.0f );
 
-    REQUIRE_NOTHROW(shm->setValue(sidFloatOut1, 2226));
+    REQUIRE_NOTHROW(ui->setValue(sidFloatOut1, 2226));
     msleep(step_pause_msec);
     REQUIRE( opcTestServer1->getF32(wrFloatOut) == 22.26f );
 }
@@ -164,14 +164,14 @@ TEST_CASE("OPCUAExchange: ignore", "[opcua][exchange][ignore]")
 
     opcTestServer1->setI32(ignAttr5, 100);
     REQUIRE(opcTestServer1->getI32(ignAttr5) == 100 );
-    REQUIRE( shm->getValue(sidAttr5) == 0 );
+    REQUIRE( ui->getValue(sidAttr5) == 0 );
     msleep(step_pause_msec);
-    REQUIRE( shm->getValue(sidAttr5) == 0 );
+    REQUIRE( ui->getValue(sidAttr5) == 0 );
 
     opcTestServer1->setI32(ignAttr5, 10);
     REQUIRE(opcTestServer1->getI32(ignAttr5) == 10 );
     msleep(step_pause_msec);
-    REQUIRE( shm->getValue(sidAttr5) == 0 );
+    REQUIRE( ui->getValue(sidAttr5) == 0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: read numeric nodeId", "[opcua][exchange][readI]")
@@ -181,12 +181,12 @@ TEST_CASE("OPCUAExchange: read numeric nodeId", "[opcua][exchange][readI]")
     opcTestServer1->setI32(rdI101, 10);
     REQUIRE(opcTestServer1->getI32(rdI101) == 10 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 10);
+    REQUIRE(ui->getValue(sidAttrI101) == 10);
 
     opcTestServer1->setI32(rdI101, 20);
     REQUIRE(opcTestServer1->getI32(rdI101) == 20 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 20);
+    REQUIRE(ui->getValue(sidAttrI101) == 20);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: read types", "[opcua][exchange][types]")
@@ -206,11 +206,11 @@ TEST_CASE("OPCUAExchange: read types", "[opcua][exchange][types]")
     REQUIRE(opcTestServer1->getX(1005, opcua::DataTypeId::UInt64) == 5 );
     REQUIRE(opcTestServer1->getX(1006, opcua::DataTypeId::Byte) == 6 );
 
-    REQUIRE_NOTHROW(shm->setValue(1022, 102)); // int16
-    REQUIRE_NOTHROW(shm->setValue(1023, 103)); // uint16
-    REQUIRE_NOTHROW(shm->setValue(1024, 104)); // int64
-    REQUIRE_NOTHROW(shm->setValue(1025, 105)); // uint64
-    REQUIRE_NOTHROW(shm->setValue(1026, 106)); // byte
+    REQUIRE_NOTHROW(ui->setValue(1022, 102)); // int16
+    REQUIRE_NOTHROW(ui->setValue(1023, 103)); // uint16
+    REQUIRE_NOTHROW(ui->setValue(1024, 104)); // int64
+    REQUIRE_NOTHROW(ui->setValue(1025, 105)); // uint64
+    REQUIRE_NOTHROW(ui->setValue(1026, 106)); // byte
     msleep(step_pause_msec);
 
     REQUIRE(opcTestServer1->getX(1002, opcua::DataTypeId::Int16) == 102 );
@@ -278,48 +278,48 @@ TEST_CASE("MBTCPMaster: read/write mask", "[opcua][exchange][mask]")
     opcTestServer1->setI32(rdAttr6, 11);
     REQUIRE(opcTestServer1->getI32(rdAttr6) == 11 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr6) == 3 );
+    REQUIRE(ui->getValue(sidAttr6) == 3 );
 
     opcTestServer1->setI32(rdAttr6, 5);
     REQUIRE(opcTestServer1->getI32(rdAttr6) == 5 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr6) == 1 );
+    REQUIRE(ui->getValue(sidAttr6) == 1 );
 
     opcTestServer1->setI32(rdAttr6, 2);
     REQUIRE(opcTestServer1->getI32(rdAttr6) == 2 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr6) == 2 );
+    REQUIRE(ui->getValue(sidAttr6) == 2 );
 
     opcTestServer1->setI32(rdAttr6, 0);
     REQUIRE(opcTestServer1->getI32(rdAttr6) == 0 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr6) == 0 );
+    REQUIRE(ui->getValue(sidAttr6) == 0 );
 
     opcTestServer1->setI32(rdAttr6, 8);
     REQUIRE(opcTestServer1->getI32(rdAttr6) == 8 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttr6) == 0 );
+    REQUIRE(ui->getValue(sidAttr6) == 0 );
 
     // write
     opcTestServer1->setI32(wrAttr7, 100);
     REQUIRE(opcTestServer1->getI32(wrAttr7) == 100 );
-    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 1));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr7, 1));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr7) == 1 );
 
-    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 3));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr7, 3));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr7) == 3 );
 
-    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 5));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr7, 5));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr7) == 1 );
 
-    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 8));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr7, 8));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr7) == 0 );
 
-    REQUIRE_NOTHROW(shm->setValue(sidAttr7, 2));
+    REQUIRE_NOTHROW(ui->setValue(sidAttr7, 2));
     msleep(step_pause_msec);
     REQUIRE(opcTestServer1->getI32(wrAttr7) == 2 );
 }
@@ -341,11 +341,11 @@ TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
             opcTestServer1->setI32(rdAttr1, 10);
             REQUIRE(opcTestServer1->getI32(rdAttr1) == 10 );
             msleep(step_pause_msec);
-            REQUIRE(shm->getValue(sidAttr1) == 10);
+            REQUIRE(ui->getValue(sidAttr1) == 10);
         }
         SECTION("write")
         {
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 10));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 10));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) == 10);
         }
@@ -372,11 +372,11 @@ TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
         }
         SECTION("write")
         {
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 150));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) == 150);
 
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 155));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 155));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) == 155);
         }
@@ -402,11 +402,11 @@ TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
         }
         SECTION("write")
         {
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 150));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) != 150);
 
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 250));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 250));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) != 250);
 
@@ -437,11 +437,11 @@ TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
         SECTION("write")
         {
             // в этом режиме "write" работает
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 150));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) == 150);
 
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 350));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 350));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) == 350);
         }
@@ -468,11 +468,11 @@ TEST_CASE("OPCUAExchange: exchangeMode", "[opcua][exchange][exchangemode]")
         }
         SECTION("write")
         {
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 150));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 150));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) != 150);
 
-            REQUIRE_NOTHROW(shm->setValue(sidAttr3, 250));
+            REQUIRE_NOTHROW(ui->setValue(sidAttr3, 250));
             msleep(step_pause_msec);
             REQUIRE(opcTestServer1->getI32(wrAttr3) != 250);
 
@@ -492,11 +492,11 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
     REQUIRE(opcTestServer1->getI32(rdI101) == 10 );
     REQUIRE(opcTestServer2->getI32(rdI101) == 10 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 10);
+    REQUIRE(ui->getValue(sidAttrI101) == 10);
 
-    REQUIRE(shm->getValue(sidRespond) == 1);
-    REQUIRE(shm->getValue(sidRespond1) == 1);
-    REQUIRE(shm->getValue(sidRespond2) == 1);
+    REQUIRE(ui->getValue(sidRespond) == 1);
+    REQUIRE(ui->getValue(sidRespond1) == 1);
+    REQUIRE(ui->getValue(sidRespond2) == 1);
 
     opcTestServer1->setI32(rdI101, 20);
     opcTestServer2->setI32(rdI101, 50);
@@ -505,25 +505,25 @@ TEST_CASE("OPCUAExchange: change channel", "[opcua][exchange][connection]")
 
     opcTestServer1->stop();
     msleep(timeout_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 50);
-    REQUIRE(shm->getValue(sidRespond) == 1);
-    REQUIRE(shm->getValue(sidRespond1) == 0);
-    REQUIRE(shm->getValue(sidRespond2) == 1);
+    REQUIRE(ui->getValue(sidAttrI101) == 50);
+    REQUIRE(ui->getValue(sidRespond) == 1);
+    REQUIRE(ui->getValue(sidRespond1) == 0);
+    REQUIRE(ui->getValue(sidRespond2) == 1);
 
     opcTestServer2->setI32(rdI101, 150);
     REQUIRE(opcTestServer2->getI32(rdI101) == 150 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 150);
+    REQUIRE(ui->getValue(sidAttrI101) == 150);
 
-    REQUIRE(shm->getValue(sidRespond) == 1);
-    REQUIRE(shm->getValue(sidRespond1) == 0);
-    REQUIRE(shm->getValue(sidRespond2) == 1);
+    REQUIRE(ui->getValue(sidRespond) == 1);
+    REQUIRE(ui->getValue(sidRespond1) == 0);
+    REQUIRE(ui->getValue(sidRespond2) == 1);
 
     opcTestServer2->stop();
     msleep(timeout_msec);
-    REQUIRE(shm->getValue(sidRespond) == 0);
-    REQUIRE(shm->getValue(sidRespond1) == 0);
-    REQUIRE(shm->getValue(sidRespond2) == 0);
+    REQUIRE(ui->getValue(sidRespond) == 0);
+    REQUIRE(ui->getValue(sidRespond1) == 0);
+    REQUIRE(ui->getValue(sidRespond2) == 0);
 
     opcTestServer1->start();
     opcTestServer2->start();
@@ -539,7 +539,7 @@ TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
     REQUIRE(opcTestServer1->getI32(rdI101) == 10 );
     REQUIRE(opcTestServer2->getI32(rdI101) == 10 );
     msleep(step_pause_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 10);
+    REQUIRE(ui->getValue(sidAttrI101) == 10);
     REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emSkipExchange ) );
     REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emSkipExchange );
     msleep(timeout_msec);
@@ -550,7 +550,7 @@ TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
     REQUIRE_NOTHROW( ui->setValue(exchangeMode, OPCUAExchange::emNone ) );
     REQUIRE( ui->getValue(exchangeMode) == OPCUAExchange::emNone );
     msleep(timeout_msec);
-    REQUIRE(shm->getValue(sidAttrI101) == 20);
+    REQUIRE(ui->getValue(sidAttrI101) == 20);
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API

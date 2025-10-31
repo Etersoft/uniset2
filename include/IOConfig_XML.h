@@ -136,6 +136,7 @@ namespace uniset
             bool check_consumer_item( UniXML::iterator& it ) const;
             bool check_thresholds_item( UniXML::iterator& it ) const;
             void read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* node, std::shared_ptr<IOController::USensorInfo>& inf );
+            void read_permissions( xmlNode* node, std::shared_ptr<IOController::USensorInfo>& inf ) const;
             IOController::IOStateList read_list( xmlNode* node );
             void init_thresholds( xmlNode* node, IOController::IOStateList& iolist );
             void init_depends_signals( IOController::IOStateList& lst );

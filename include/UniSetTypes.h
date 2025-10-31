@@ -73,6 +73,7 @@ namespace uniset
     const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
 
     const ObjectId AdminID = -2; /*!< сервисный идентификатор используемый утилитой admin */
+    const ObjectId UtilsID = -3; /*!< сервисный идентификатор используемый утилитами */
 
     typedef uint64_t KeyType;    /*!< уникальный ключ объекта */
 

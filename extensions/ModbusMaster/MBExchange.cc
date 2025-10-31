@@ -222,7 +222,7 @@ namespace uniset
         cout << "--prefix-filter-value val       - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
         cout << "--prefix-statistic-sec sec      - Выводить статистику опроса каждые sec секунд" << endl;
         cout << "--prefix-sm-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-        cout << "--prefix-sm-ready-test-sid name - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
+        cout << "--prefix-sm-test-sid name       - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
         cout << "--prefix-exchange-mode-id       - Идентификатор (AI) датчика, позволяющего управлять работой процесса" << endl;
         cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс." << endl;
         cout << "--prefix-default-mbtype [rtu|rtu188|mtr]  - У датчиков которых не задан 'mbtype' использовать данный. По умолчанию: 'rtu'" << endl;
@@ -717,6 +717,10 @@ namespace uniset
         {
             mblog3 << myname << "(initSMValue):(IOBadParam) " << ex.err << endl;
         }
+        catch(IOController_i::AccessDenied& ex )
+        {
+            mblog3 << myname << "(initSMValue):(AccessDenied) " << ex.err << endl;
+        }
         catch(IONotifyController_i::BadRange& ex )
         {
             mblog3 << myname << "(initSMValue): (BadRange)..." << endl;
@@ -990,6 +994,10 @@ namespace uniset
                 {
                     mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
                 }
+                catch(IOController_i::AccessDenied& ex )
+                {
+                    mblog3 << myname << "(updateSM):(AccessDenied) " << ex.err << endl;
+                }
                 catch( IONotifyController_i::BadRange& ex )
                 {
                     mblog3 << myname << "(updateSM): (BadRange)..." << endl;
@@ -1027,6 +1035,10 @@ namespace uniset
                     catch(IOController_i::IOBadParam& ex )
                     {
                         mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+                    }
+                    catch(IOController_i::AccessDenied& ex )
+                    {
+                        mblog3 << myname << "(updateSM):(AccessDenied) " << ex.err << endl;
                     }
                     catch( IONotifyController_i::BadRange& ex )
                     {
@@ -1075,6 +1087,10 @@ namespace uniset
                     catch(IOController_i::IOBadParam& ex )
                     {
                         mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+                    }
+                    catch(IOController_i::AccessDenied& ex )
+                    {
+                        mblog3 << myname << "(updateSM):(AccessDenied) " << ex.err << endl;
                     }
                     catch(IONotifyController_i::BadRange& ex )
                     {
@@ -1616,6 +1632,10 @@ namespace uniset
         {
             mblog3 << myname << "(updateRSProperty):(IOBadParam) " << ex.err << endl;
         }
+        catch(IOController_i::AccessDenied& ex )
+        {
+            mblog3 << myname << "(updateRSProperty):(AccessDenied) " << ex.err << endl;
+        }
         catch(IONotifyController_i::BadRange& ex )
         {
             mblog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
@@ -1956,6 +1976,10 @@ namespace uniset
             {
                 mblog3 << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
             }
+            catch(IOController_i::AccessDenied& ex )
+            {
+                mblog3 << myname << "(updateMTR):(AccessDenied) " << ex.err << endl;
+            }
             catch(IONotifyController_i::BadRange& ex )
             {
                 mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
@@ -2022,6 +2046,10 @@ namespace uniset
             catch(IOController_i::IOBadParam& ex )
             {
                 mblog3 << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
+            }
+            catch(IOController_i::AccessDenied& ex )
+            {
+                mblog3 << myname << "(updateRTU188):(AccessDenied) " << ex.err << endl;
             }
             catch(IONotifyController_i::BadRange& ex )
             {

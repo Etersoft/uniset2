@@ -1557,7 +1557,7 @@ namespace uniset
         cout << "--mbs-heartbeat-id            - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--mbs-heartbeat-max           - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
         cout << "--mbs-sm-ready-timeout        - время на ожидание старта SM" << endl;
-        cout << "--mbs-sm-ready-test-sid name  - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
+        cout << "--mbs-sm-test-sid name        - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
         cout << "--mbs-initPause               - Задержка перед инициализацией (время на активизация процесса)" << endl;
         cout << "--mbs-force 1                 - Читать данные из SM каждый раз, а не по изменению." << endl;
         cout << "--mbs-respond-id              - respond sensor id" << endl;

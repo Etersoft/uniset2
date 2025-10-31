@@ -74,6 +74,10 @@ using namespace uniset;
     { \
         uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
     } \
+    catch( const IOController_i::AccessDenied &ex ) \
+    { \
+        uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
+    } \
     catch( const CORBA::SystemException& ex ) \
     { \
         uwarn << "(" << __STRING(fname) << "): CORBA::SystemException: " \
@@ -136,7 +140,7 @@ long SMInterface::getValue( uniset::ObjectId id )
     if( ic )
     {
         BEG_FUNC1(SMInterface::getValue)
-        return ic->getValue(id);
+        return ic->getValue(id, myid);
         END_FUNC(SMInterface::getValue)
     }
 
@@ -170,12 +174,12 @@ IOController_i::SensorInfoSeq* SMInterface::getSensorsMap()
     if( ic )
     {
         BEG_FUNC1(SMInterface::getSensorsMap)
-        return ic->getSensorsMap();
+        return ic->getSensorsMap(myid);
         END_FUNC(SMInterface::getSensorsMap)
     }
 
     BEG_FUNC(SMInterface::getSensorsMap)
-    return shm->getSensorsMap();
+    return shm->getSensorsMap(myid);
     END_FUNC(SMInterface::getSensorsMap)
 }
 // --------------------------------------------------------------------------
@@ -184,12 +188,12 @@ IONotifyController_i::ThresholdsListSeq* SMInterface::getThresholdsList()
     if( ic )
     {
         BEG_FUNC1(SMInterface::getThresholdsList)
-        return ic->getThresholdsList();
+        return ic->getThresholdsList(myid);
         END_FUNC(SMInterface::getThresholdsList)
     }
 
     BEG_FUNC(SMInterface::getThresholdsList)
-    return shm->getThresholdsList();
+    return shm->getThresholdsList(myid);
     END_FUNC(SMInterface::getThresholdsList)
 }
 // --------------------------------------------------------------------------
@@ -261,7 +265,7 @@ long SMInterface::localGetValue( IOController::IOStateList::iterator& it, uniset
         return getValue( sid );
 
     //    CHECK_IC_PTR(localGetValue)
-    return ic->localGetValue(it, sid);
+    return ic->localGetValue(it, sid, myid);
 }
 // --------------------------------------------------------------------------
 void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,

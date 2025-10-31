@@ -321,6 +321,9 @@
 					<consumer cfilter="test1" name="TestProc" type="objects"/>
 					<consumer name="PLCProcessor" type="objects"/>
 				</consumers>
+				<access>
+					<item name="RTUExchange" permission="RW"/>
+				</access>
 			</item>
 			<item id="30044" iotype="DI" depend="AlarmFuse2_AS" depend_value="3" name="DI1_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30044" rs_mbtype="rtu" textname="Test DI sensor"/>
 			<item id="30045" iotype="DI" name="DI2_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30045" rs_mbtype="rtu" textname="Test DI sensor"/>

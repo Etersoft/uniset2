@@ -278,8 +278,9 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, con
     }
 }
 // --------------------------------------------------------------------------
-IOController_i::ShortMapSeq* UniExchange::getSensors()
+IOController_i::ShortMapSeq* UniExchange::getSensors( const uniset::ObjectId consumer_id )
 {
+    // TODO: check access control
     if( !init_ok )
         throw CORBA::COMM_FAILURE();
 

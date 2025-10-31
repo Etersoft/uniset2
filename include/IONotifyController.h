@@ -154,9 +154,9 @@ namespace uniset
                                       CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
                                       UniversalIO::UIOCommand cmd ) override;
 
-            virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const uniset::ObjectId sid, uniset::ThresholdId tid ) override;
-            virtual IONotifyController_i::ThresholdList* getThresholds(const uniset::ObjectId sid ) override;
-            virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList() override;
+            virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const uniset::ObjectId sid, uniset::ThresholdId tid, const uniset::ObjectId consumer_id ) override;
+            virtual IONotifyController_i::ThresholdList* getThresholds( const uniset::ObjectId sid, const uniset::ObjectId consumer_id ) override;
+            virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList( const uniset::ObjectId consumer_id ) override;
 
             virtual uniset::IDSeq* askSensorsSeq(const uniset::IDSeq& lst,
                                                  const uniset::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
