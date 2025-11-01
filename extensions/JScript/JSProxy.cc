@@ -27,7 +27,7 @@ using namespace uniset;
 #include <functional>
 // -------------------------------------------------------------------------
 #ifndef UNISET_DATADIR
-#define UNISET_DATADIR "/usr/share/uniset2"
+#define UNISET_DATADIR "/usr/share/uniset2/js"
 #endif
 // -------------------------------------------------------------------------
 JSProxy::JSProxy( uniset::ObjectId id, xmlNode* confnode, const std::string& _prefix ):

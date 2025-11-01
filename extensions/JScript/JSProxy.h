@@ -17,13 +17,13 @@
 #ifndef JSProxy_H_
 #define JSProxy_H_
 // --------------------------------------------------------------------------
-/*! \page pageJSProxy Поддержка скриптов на JS
+/*! \page pageJScript Поддержка скриптов на JS
 
     \tableofcontents
 
-    \section sec_jsArch Архитектура JSEngine
+    \section sec_jsArch Архитектура JScript
 
-    JSEngine предоставляет полноценную среду выполнения JavaScript с интеграцией
+    JScript предоставляет полноценную среду выполнения JavaScript с интеграцией
     в систему uniset.
 
     \subsection subsec_jsCore Базовые возможности
@@ -33,7 +33,7 @@
     - готовые модули для типовых задач
 
     \subsection subsec_jsIO Работа с датчиками uniset
-    JSEngine автоматически создает \b глобальные переменные для работы с датчиками:
+    JScript автоматически создает \b глобальные переменные для работы с датчиками:
     \code
     // Конфигурация в JS:
     uniset_inputs = [
@@ -62,7 +62,7 @@
     \endcode
 
     \subsection subsec_jsEvents Система событий
-    JSEngine предоставляет набор callback-функций для реакции на системные события:
+    JScript предоставляет набор callback-функций для реакции на системные события:
 
     \code
     // Вызывается при старте системы
@@ -126,7 +126,7 @@
 
     \code
     // Создание логгера
-    mylog = uniset_log_create("MyModule", true, true);
+    mylog = uniset_log_create("MyModule", true, true, true, true);
 
     // Настройка уровней логирования
     mylog.level("info", "warn", "crit", "level5");
@@ -140,7 +140,7 @@
 
 
     \subsection subsec_jsUiObject Глобальный объект ui
-    JSEngine предоставляет глобальный объект \b ui для прямого взаимодействия с системой uniset:
+    JScript предоставляет глобальный объект \b ui для прямого взаимодействия с системой uniset:
 
     \code
     // Функции объекта ui:
