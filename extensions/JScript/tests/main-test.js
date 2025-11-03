@@ -238,6 +238,18 @@ function runUiTest(testCommand) {
             }
             break;
 
+        case 12:
+            // Тест 12: tests-uniset2-mini-http
+            load("tests-uniset2-mini-http.js")
+            testLog.info("Test 12: tests-uniset2-mini-http.js");
+            result = runLogTests();
+            if( result.failed === 0 )
+            {
+                out_UI_TestResult_C = 1; // Успех
+                testLog.info("Test 12: Completed successfully");
+            }
+            break;
+
         default:
             testLog.warn("Unknown test command:", testCommand);
             break;

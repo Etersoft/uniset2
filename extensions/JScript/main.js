@@ -1,7 +1,8 @@
-load("uniset2-timers.js")
-load("uniset2-log.js")
+load("uniset2-timers.js");
+load("uniset2-log.js");
 load("local.js");
-load("uniset2-delaytimer.js")
+load("uniset2-delaytimer.js");
+load("my-http-api.js");
 // ----------------------------------------------------------------------------
 uniset_inputs = [
     { name: "JS_AI1_AS" },
@@ -21,6 +22,8 @@ mylog.level("info","warn","crit", "level5")
 const dt = new DelayTimer(200, 50);
 const pt = new PassiveTimer(200);
 // ----------------------------------------------------------------------------
+startMyHttpServer();
+// ----------------------------------------------------------------------------
 function uniset_on_sensor( id, value )
 {
     mylog.info("OnSensor:", id, value)
@@ -38,7 +41,6 @@ function uniset_on_step()
 function uniset_on_stop()
 {
     mylog.info("=== STOP ===");
-    clearAllTimers();
 }
 // ----------------------------------------------------------------------------
 function uniset_on_start() {

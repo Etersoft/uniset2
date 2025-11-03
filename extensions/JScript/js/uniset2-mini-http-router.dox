@@ -1,0 +1,228 @@
+
+/**
+\page mini_http_router Руководство по роутеру (uniset2-mini-http-router.js)
+
+Короткая справка по минималистичному роутеру для неблокирующего HTTP‑сервера.
+
+\section intro Введение
+Роутер сопоставляет HTTP-запросы с обработчиками по методу и шаблону пути,
+поддерживает middleware, группировки маршрутов (prefix), CORS и обработчики ошибок.
+Роутер спроектирован для работы поверх мини‑HTTP сервера из `uniset2-mini-http.js`,
+но может использоваться и отдельно, если передать совместимые `req`/`res`.
+
+Пример
+\code{.js}
+load("uniset2-mini-http.js");
+load("uniset2-mini-http-router.js");
+
+..
+const r = createRouter();
+
+// cors
+r.use(setCors({ origin: '*', methods: 'GET,POST,OPTIONS' }));
+
+// маршруты
+r.route('GET', '/ping', http_pong);
+r.route('GET', '/info', http_info);
+r.route('GET', '/hello', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.end('hello');
+});
+
+// подпрефиксы (группы)
+// example: /api/v1/xxx
+const api = r.group('/api');
+api.route('GET', '/v1/info', http_info);
+api.route('GET', '/v1/ping', http_pong);
+
+// логирование
+router.setLogger(function(ev){
+    // ev = { method, path, status, ms }
+    print(`[${ev.ms}ms] ${ev.status} ${ev.method} ${ev.path}`);
+});
+
+// server
+startMiniHttp({
+    host: "127.0.0.1",
+    port: 9090,
+    onRequest: r.handle
+});
+
+function http_pong(req, res) {
+    return res.end('pong');
+}
+
+function http_info(req, res) {
+    mylog.info("HTTP INFO");
+
+    const info = {
+        script: 'main.js',
+        date: new Date().toISOString()
+    };
+    return res.json(info);
+}
+\endcode
+
+\section quickstart Быстрый старт
+\code{.js}
+// 1) Создаём роутер
+const router = createRouter();
+
+// 2) Базовый middleware (логирование)
+router.use((req, res, next) => {
+  // req.method, req.path, req.headers, req.query доступны до хендлеров
+  // Важно вызывать next() чтобы передать управление дальше
+  next();
+});
+
+// 3) Простой маршрут GET /ping
+router.route('GET', '/ping', (req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.end('pong');
+});
+
+// 4) Параметры пути и query: GET /user/:id
+router.route('GET', '/user/:id', (req, res) => {
+  // req.params.id (из сегмента :id), req.query (из строки запроса)
+  const id = req.params.id;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.end(JSON.stringify({ ok: true, id }));
+});
+
+// 5) Обработчик по умолчанию 404 (если ничего не сматчилось)
+router.use((req, res, next) => {
+  if (res.headersSent) return; // если кто-то уже ответил
+  res.statusCode = 404;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.end('Not Found');
+});
+
+// 6) Error-middleware (ловит исключения из хендлеров)
+router.useError((err, req, res, next) => {
+  res.statusCode = 500;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.end('Internal Error: ' + (err && err.message ? err.message : String(err)));
+});
+\endcode
+
+\section api Обзор API
+\subsection createRouter createRouter([options]) -> router
+Создаёт экземпляр роутера.
+- \b options (опционально): объект с настройками роутера (приоритеты, кодеки и пр., если поддержаны текущей сборкой).
+
+\subsection route router.route(method, pattern, handler[, opts])
+Регистрирует обработчик для метода и шаблона пути.
+- \b method: строка HTTP‑метода (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, ...).
+- \b pattern: шаблон пути. Поддерживаются сегменты `:name` (параметры) и `*` (жадный хвост).
+  Примеры: `/`, `/api/v1/items`, `/user/:id`, `/files/*`.
+- \b handler(req, res, next): функция‑обработчик. Внутри доступны:
+  - `req.method`, `req.path`, `req.params`, `req.query`, `req.headers`, `req.body` (если сервер распарсил тело).
+  - `res.statusCode`, `res.setHeader(name, value)`, `res.end(data)`.
+  - `next(err?)` — передать управление следующему совпавшему маршруту или error‑middleware при `err`.
+- \b opts (опционально): дополнительные опции маршрута (например, пользовательские метки/приоритет).
+
+\subsection use router.use(middleware)
+Добавляет обычный middleware.
+- \b middleware(req, res, next): вызывается до маршрутов и может завершить ответ или вызвать `next()`.
+Полезно для логирования, аутентификации, парсеров тела, быстрых ответов на `OPTIONS` и т.п.
+
+\subsection useError router.useError(errorMiddleware)
+Добавляет error‑middleware.
+- \b errorMiddleware(err, req, res, next): вызывается, если в хендлере/предыдущем middleware был брошен `throw` или вызван `next(err)`.
+
+\subsection group router.group(prefix, configure[, opts])
+Группирует набор маршрутов под общим префиксом.
+- \b prefix: строка префикса, напр. `/api` или `/v1/users`.
+- \b configure(sub) — функция, внутри которой регистрируются маршруты на под‑роутере `sub`.
+- \b opts (опционально): опции группы.
+Пример:
+\code{.js}
+router.group('/api', (api) => {
+  api.route('GET', '/health', (req, res) => {
+    res.end('OK');
+  });
+  api.route('POST', '/items', createItem);
+});
+\endcode
+
+\subsection setCors setCors(options) -> middleware
+Фабрика CORS‑middleware. Обычно применяется в самом начале до маршрутов.
+- \b options:
+  - `origin`: строка или `*` (по умолчанию `*`).
+  - `methods`: массив/строка допустимых методов (напр. `GET,POST,OPTIONS`).
+  - `headers`: массив/строка разрешённых заголовков (напр. `Content-Type,Authorization`).
+  - `credentials`: `true|false` (по умолчанию `false`).
+Пример:
+\code{.js}
+const cors = setCors({ origin: '*', methods: 'GET,POST,OPTIONS' });
+router.use(cors);
+
+// быстрая обработка preflight в обычном middleware
+router.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
+  next();
+});
+\endcode
+
+\section matching Сопоставление и параметры
+Маршрутизатор поддерживает параметры пути (через `:param`), строку запроса (`?a=1`), а также wildcard-пути (`*`).
+
+- `:param` — один сегмент пути  
+- `*` — любое окончание пути
+
+\code{.js}
+var r = createRouter();
+
+// параметр :id и query ?active=1
+r.route('GET', '/user/:id', function(req, res){
+    // req.params = { id: "42" }
+    // req.query  = { active: "1" }
+    res.json({ id: req.params.id, active: req.query.active });
+});
+
+// wildcard для любых под-путей
+r.route('GET', '/files/*', function(req,res){
+    // path: /files/docs/readme.txt
+    // req.params = { wild: "docs/readme.txt" }
+    res.send('Requested: ' + req.params.wild);
+});
+\endcode
+
+\section errors Ошибки и 404/405
+Если маршрут не найден, по умолчанию возвращается `404 Not Found`.  
+Для переопределения или добавления универсальной обработки ошибок можно использовать `useError()`.
+
+\code{.js}
+var r = createRouter();
+
+// пример ошибки в маршруте
+r.route('GET', '/boom', function(req,res){
+    throw new Error('internal failure');
+});
+
+// обработчик ошибок
+r.useError(function(err, req, res, next){
+    res.status(500).json({ error: err.message });
+});
+
+// 404 (и 405) можно вернуть вручную
+r.route('GET', '/onlyget', function(req,res){
+    res.send('GET OK');
+});
+r.route('POST', '/onlyget', function(req,res){
+    res.status(405).send('Method Not Allowed');
+});
+\endcode
+
+
+\section tips Советы по эксплуатации
+- Добавляйте метрики (время обработки, коды ответов) в первом middleware.
+- Отвечайте на `OPTIONS` как можно раньше (204 No Content).
+- Явно устанавливайте `Content-Type`, даже для текстовых ответов.
+- При больших ответах убедитесь, что нижний слой поддерживает бэкап давления (очередь отправки).
+*/

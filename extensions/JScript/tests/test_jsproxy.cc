@@ -354,3 +354,12 @@ TEST_CASE("JSEngine: timers system", "[jscript][ui][11]")
     REQUIRE(ExecuteUITest(11, -1, -1, 8000));
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("JSEngine: mini http", "[jscript][httpserver][12]")
+{
+    InitTest();
+    ResetUITestState();
+
+    // Тест 12: uniset2-mini-http + router
+    REQUIRE(ExecuteUITest(12, -1, -1, 8000));
+}
+// -----------------------------------------------------------------------------

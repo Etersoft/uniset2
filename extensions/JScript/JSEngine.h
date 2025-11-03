@@ -61,7 +61,9 @@ namespace uniset
             void initGlobal( JSContext* ctx );
             void exportAllFunctionsFromTimerModule();
             void createUInterfaceObject();
+            void createUnisetObject();
             void jsLoop();
+            void preStop();
 
         private:
             std::atomic_bool activated = { false };
@@ -85,6 +87,8 @@ namespace uniset
 
             std::unordered_map<uniset::ObjectId, jsSensor> inputs;
             std::unordered_map<uniset::ObjectId, jsSensor> outputs;
+            std::list<JSValue> stepFunctions;
+            std::list<JSValue> stopFunctions;
 
             JSValue jsFnStep = { JS_UNDEFINED };
             JSValue jsFnStart = { JS_UNDEFINED };
@@ -97,6 +101,8 @@ namespace uniset
             JSValue js_ui_getValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_uniset_StepCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_uniset_StopCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_log(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_log_level(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
@@ -106,6 +112,8 @@ namespace uniset
             static JSValue jsUiSetValue_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsLog_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsLogLevel_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsUniSetStepCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsUniSetStopCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
             // "синтаксический сахар" для логов
 #ifndef myinfo
