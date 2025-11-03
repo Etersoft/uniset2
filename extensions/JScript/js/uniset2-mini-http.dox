@@ -1,0 +1,80 @@
+/*!
+\page page_JScript_HTTPServer JScript Mini HTTP Server
+
+Лёгкий неблокирующий HTTP‑сервер на js и частью кода написанного на с++.<br>
+Предназначен для встроенного использования JScript и интеграции с простым \ref mini_http_router "роутером".<br>
+Поддерживает keep‑alive, фиксированные ответы с \c Content-Length, обработку событий poll().<br>
+Не поддерживает: TLS, chunked‑кодирование, HTTP/2.
+
+\section sec_MiniHttp_API API
+
+\subsection sec_MiniHttp_start startMiniHttp(opts)
+Запускает сервер и возвращает объект управления.
+\warning Сервер может быть только один
+
+Параметры:
+- \c opts.host (string, по умолчанию "0.0.0.0")
+- \c opts.port (number, по умолчанию 9090)
+- \c opts.onRequest (function(req,res)): пользовательский обработчик запросов.
+
+Возвращаемый объект:
+- \c step() — обработать очередную порцию событий (если \c autoLoop=false).
+- \c close() — закрыть все соединения и серверный сокет.
+- \c host, \c port, \c serverFd — служебная информация.
+
+\subsection sec_MiniHttp_Request Request
+Объект \c req имеет поля:
+- \c method (string, "GET"/"POST"/...)
+- \c path (string, например "/api/v1/info")
+- \c headers (object, нижний регистр ключей)
+- \c body (ArrayBuffer) — если был \c Content-Length > 0
+
+\subsection sec_MiniHttp_Response Response
+Объект \c res предоставляет:
+- \c status(code) — установить код ответа (цепочка).
+- \c setHeader(name,value) — установить заголовок.
+- \c writeHead(code, text?, headers?) — сразу записать статус/заголовки.
+- \c send(data) — отправить тело (string/ArrayBuffer/TypedArray).
+- \c json(obj) — отправить JSON (\c Content-Type: application/json).
+
+Гарантии:
+- Ровно один ответ на запрос. Повторные вызовы \c send/json игнорируются.
+- Если \c Content-Length не задан — выставляется автоматически по длине тела.
+
+\section sec_MiniHttp_Examples Примеры
+
+\subsection sec_MiniHttp_Example_Min Минимальный сервер
+\code{.js}
+load("uniset2-mini-http.js");
+
+var srv = startMiniHttp({
+  port: 9090,
+  autoLoop: false,
+  onRequest: function(req, res){
+    if (req.method === 'GET' && req.path === '/ping') return res.send('pong');
+    res.json({ ok: true });
+  }
+});
+
+\endcode
+
+\subsection sec_MiniHttp_Example_Router Интеграция с роутером
+\code{.js}
+load("uniset2-mini-http.js");
+load("uniset2-mini-http-router.js");
+
+var r = createRouter();
+r.setLogger(function(ev){
+  // ev = { method, path, status, ms }
+  print(`[${ev.ms}ms] ${ev.status} ${ev.method} ${ev.path}`);
+});
+r.route('GET', '/api/v1/info', function(req,res){ res.json({hello:'world'}); });
+
+var srv = startMiniHttp({
+  autoLoop: false,
+  onRequest: function(req,res){ r.handle(req,res); }
+});
+
+\endcode
+\sa \ref mini_http_router
+*/

@@ -19,6 +19,7 @@
 extern "C" {
 #include "quickjs/quickjs-libc.h"
 }
+#include "JSEngine_os_nb.h"
 #include "Configuration.h"
 #include "Exceptions.h"
 #include "JSHelpers.h"
@@ -72,6 +73,7 @@ void JSEngine::initGlobal( JSContext* ctx )
 
     JSValue engine_ptr = JS_NewInt64(ctx, static_cast<int64_t>(reinterpret_cast<uintptr_t>(this)));
     JS_SetPropertyStr(ctx, __g, "__js_engine_instance", engine_ptr);
+
     JS_FreeValue(ctx, __g);
 }
 // -------------------------------------------------------------------------
@@ -88,7 +90,6 @@ void JSEngine::initJS()
     if( !ctx )
         throw SystemError("init JS context error");
 
-
     js_std_init_handlers(rt);
     js_std_add_helpers(ctx, 0, NULL);
     js_init_module_std(ctx, "std");
@@ -101,6 +102,12 @@ void JSEngine::initJS()
     else
         JS_SetModuleLoaderFunc(rt, NULL, jshelper::module_loader_with_path, private_data);
 
+    // Publish net object via Poco shim (always on)
+    if (!qjs_init_poco_net(ctx))
+    {
+        throw SystemError("Failed to init Poco-based net shim");
+    }
+
     jsGlobal = JS_GetGlobalObject(ctx);
 
     if( JS_IsUndefined(jsGlobal) )
@@ -110,6 +117,8 @@ void JSEngine::initJS()
     }
 
     initGlobal(ctx);
+    createUnisetObject();
+    createUInterfaceObject();
 
     // load main script
     size_t jsbuf_len;
@@ -154,9 +163,8 @@ void JSEngine::initJS()
 
     myinfo << "(init): parse js " << jsfile << " OK" << endl;
 
-    // ПОТОМ загружаем таймеры
+    // экспортируем таймеры если загружены
     exportAllFunctionsFromTimerModule();
-    createUInterfaceObject();
 
     // ДАЛЕЕ инициализация INPUTS/OUTPUTS
     JSValue js_inputs = JS_GetPropertyStr(ctx, jsGlobal, "uniset_inputs");
@@ -322,12 +330,69 @@ void JSEngine::initJS()
     js_std_loop(ctx);
 }
 // ----------------------------------------------------------------------------
+void JSEngine::preStop()
+{
+    for( const auto& cb : stopFunctions )
+        jshelper::safe_function_call(ctx, jsGlobal, cb, 0, nullptr);
+
+    jsLoop();
+}
+// ----------------------------------------------------------------------------
 void JSEngine::freeJS()
 {
     myinfo << "(freeJS): freeing JS resources..." << endl;
 
+    try
+    {
+        if( activated )
+            preStop();
+    }
+    catch( Poco::Exception& ex )
+    {
+        mycrit << "(freeJS): preStop error: " << ex.displayText() << endl;
+    }
+
+    try
+    {
+        qjs_net_pre_stop();
+    }
+    catch( Poco::Exception& ex )
+    {
+        mycrit << "(freeJS): qjs_net_pre_stop error: " << ex.displayText() << endl;
+    }
+
     if( activated )
         stop();
+
+    if( ctx )
+    {
+        try
+        {
+            qjs_shutdown_poco_net(ctx);
+        }
+        catch( Poco::Exception& ex )
+        {
+            mycrit << "(freeJS): qjs_shutdown_poco_net error: " << ex.displayText() << endl;
+        }
+
+        try
+        {
+            for( auto&& cb : stepFunctions )
+                JS_FreeValue(ctx, cb);
+
+            stepFunctions.clear();
+        }
+        catch(...) {}
+
+        try
+        {
+            for( auto&& cb : stopFunctions )
+                JS_FreeValue(ctx, cb);
+
+            stopFunctions.clear();
+        }
+        catch(...) {}
+    }
 
     if( rt )
     {
@@ -419,6 +484,22 @@ void JSEngine::stop()
         jshelper::safe_function_call(ctx, jsGlobal, jsFnStop, 0, nullptr);
         jsLoop();
     }
+
+    JSValue fd_val = JS_GetPropertyStr(ctx, jsGlobal, "__http_server_fd");
+
+    if (JS_IsNumber(fd_val))
+    {
+        int fd = 0;
+        JS_ToInt32(ctx, &fd, fd_val);
+
+        if (fd > 0)
+        {
+            close(fd);  // если os.close есть, или просто close(fd)
+            myinfo << "(stop): HTTP server fd=" << fd << " closed" << endl;
+        }
+    }
+
+    JS_FreeValue(ctx, fd_val);
 }
 // ----------------------------------------------------------------------------
 void JSEngine::askSensors( UniversalIO::UIOCommand cmd )
@@ -471,6 +552,11 @@ void JSEngine::step()
     // timers processing
     if( !JS_IsUndefined(jsFnTimers) )
         jshelper::safe_function_call(ctx, jsGlobal, jsFnTimers, 0, nullptr);
+
+    jsLoop();
+
+    for( const auto& cb : stepFunctions )
+        jshelper::safe_function_call(ctx, jsGlobal, cb, 0, nullptr);
 
     jsLoop();
 
@@ -624,6 +710,14 @@ void JSEngine::createUInterfaceObject()
     myinfo << "(createUInterfaceObject): ui object created with askSensor, getValue, setValue functions" << endl;
 }
 // ----------------------------------------------------------------------------
+void JSEngine::createUnisetObject()
+{
+    JSValue uobj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, uobj, "step_cb",   JS_NewCFunction(ctx, jsUniSetStepCb_wrapper,   "step_cb",   1));
+    JS_SetPropertyStr(ctx, uobj, "stop_cb",   JS_NewCFunction(ctx, jsUniSetStopCb_wrapper,   "stop_cb",   1));
+    JS_SetPropertyStr(ctx, jsGlobal, "uniset", uobj);
+}
+// ----------------------------------------------------------------------------
 // Статические обертки для вызова нестатических методов
 JSValue JSEngine::jsUiAskSensor_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
@@ -689,6 +783,54 @@ JSValue JSEngine::jsUiSetValue_wrapper(JSContext* ctx, JSValueConst this_val, in
         if( engine )
         {
             JSValue ret = engine->js_ui_setValue(ctx, this_val, argc, argv);
+            JS_FreeValue(ctx, engine_ptr_val);
+            return ret;
+        }
+    }
+
+    JS_FreeValue(ctx, engine_ptr_val);
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsUniSetStepCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
+    JS_FreeValue(ctx, global);
+
+    if( JS_IsNumber(engine_ptr_val) )
+    {
+        int64_t ptr_int;
+        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
+        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
+
+        if( engine )
+        {
+            JSValue ret = engine->js_uniset_StepCb(ctx, this_val, argc, argv);
+            JS_FreeValue(ctx, engine_ptr_val);
+            return ret;
+        }
+    }
+
+    JS_FreeValue(ctx, engine_ptr_val);
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsUniSetStopCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
+    JS_FreeValue(ctx, global);
+
+    if( JS_IsNumber(engine_ptr_val) )
+    {
+        int64_t ptr_int;
+        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
+        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
+
+        if( engine )
+        {
+            JSValue ret = engine->js_uniset_StopCb(ctx, this_val, argc, argv);
             JS_FreeValue(ctx, engine_ptr_val);
             return ret;
         }
@@ -865,7 +1007,6 @@ JSValue JSEngine::js_ui_getValue( JSContext* ctx, JSValueConst this_val, int arg
 // ----------------------------------------------------------------------------
 JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    // TODO: Реализовать вызов UInterface::setValue
     // Параметры:
     // argv[0] - ID датчика (number or string)
     // argv[1] - значение (number)
@@ -931,6 +1072,46 @@ JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     JS_ThrowTypeError(ctx, "setValue catch exception");
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_uniset_StepCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    // Параметры:
+    // argv[0] - callback function
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_StepCb expects 1 argument (function)");
+        return JS_UNDEFINED;
+    }
+
+    if( !JS_IsFunction(ctx, argv[0]) )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_StepCb: First argument must be 'function'");
+        return JS_UNDEFINED;
+    }
+
+    stepFunctions.push_back(JS_DupValue(ctx, argv[0]));
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_uniset_StopCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    // Параметры:
+    // argv[0] - callback function
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_StopCb expects 1 argument (function)");
+        return JS_UNDEFINED;
+    }
+
+    if( !JS_IsFunction(ctx, argv[0]) )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_StopCb: First argument must be 'function'");
+        return JS_UNDEFINED;
+    }
+
+    stopFunctions.push_back(JS_DupValue(ctx, argv[0]));
     return JS_UNDEFINED;
 }
 // ----------------------------------------------------------------------------
