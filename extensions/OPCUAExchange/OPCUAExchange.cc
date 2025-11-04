@@ -1451,7 +1451,14 @@ namespace uniset
                     for( size_t i = 0; i < numChannels; i++ )
                     {
                         if( !channels[i].addr.empty() )
-                            channels[i].client->write(it->wval[i].ref());
+                        {
+                            auto errcode = channels[i].client->write(it->wval[i].ref());
+
+                            if( errcode != UA_STATUSCODE_GOOD )
+                                opcwarn << myname << "(initOutput): channel" << i
+                                        << " sid=" << it->si.id
+                                        << " write error: " << UA_StatusCode_name(errcode) << endl;
+                        }
                     }
                 }
             }
