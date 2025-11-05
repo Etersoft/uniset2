@@ -15,7 +15,6 @@ function startMyHttpServer() {
     startMiniHttp({
         host: "127.0.0.1",
         port: 9090,
-        autoLoop: false,
         onRequest: r.handle
     });
 }
@@ -25,8 +24,6 @@ function http_pong(req, res) {
 }
 // ----------------------------------------------------------------------------
 function http_info(req, res) {
-    mylog.info("HTTP INFO");
-
     const info = {
         script: 'main.js',
         date: new Date().toISOString()

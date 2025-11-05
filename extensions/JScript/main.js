@@ -22,6 +22,7 @@ mylog.level("info","warn","crit", "level5")
 const dt = new DelayTimer(200, 50);
 const pt = new PassiveTimer(200);
 // ----------------------------------------------------------------------------
+// HTTP server
 startMyHttpServer();
 // ----------------------------------------------------------------------------
 function uniset_on_sensor( id, value )
