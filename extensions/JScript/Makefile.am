@@ -5,7 +5,7 @@ libUniSet2JScript_la_LIBADD = $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la $(SIGC_LIBS)
 libUniSet2JScript_la_CXXFLAGS = -I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(QUICKJS_CFLAGS)
-libUniSet2JScript_la_SOURCES = JSProxy_SK.cc JSProxy.cc JSEngine.cc JSHelpers.cc JSEngine_os_nb.cc
+libUniSet2JScript_la_SOURCES = JSProxy_SK.cc JSProxy.cc JSEngine.cc JSHelpers.cc JHttpServer.cc
 
 bin_PROGRAMS = @PACKAGE@-jscript
 

@@ -87,7 +87,7 @@
     }
 
     // Вызывается при изменении значения датчика
-    function uniset_on_sensor(id, value) {
+    function uniset_on_sensor(id, value, name) {
         mylog.info("Sensor " + id + " changed to " + value);
         // Реакция на изменение конкретного датчика
         if( id == Sensor1 )

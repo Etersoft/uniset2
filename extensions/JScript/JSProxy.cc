@@ -31,7 +31,7 @@ using namespace uniset;
 #endif
 // -------------------------------------------------------------------------
 JSProxy::JSProxy( uniset::ObjectId id, xmlNode* confnode, const std::string& _prefix ):
-    USingleProcess(confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
+    USingleProcess(confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
     JSProxy_SK( id, confnode, string(_prefix + "-") )
 {
     if( file.empty() )
@@ -68,7 +68,17 @@ JSProxy::JSProxy( uniset::ObjectId id, xmlNode* confnode, const std::string& _pr
         myinfo << "(init): added js modules path '" << p << "'" << endl;
 
     myinfo << "(init): esm module mode " << ( esmModuleMode ? "ENABLED" : "DISABLED") << endl;
-    js = make_shared<JSEngine>(file, searchPaths, ui, loopCount, esmModuleMode);
+
+    JSOptions opts;
+    opts.esmModuleMode = esmModuleMode;
+    opts.httpQueueWaitTimeout = std::chrono::milliseconds(httpQueueWaitTimeout_msec);
+    opts.httpMaxQueueSize = httpMaxQueueSize;
+    opts.httpLoopCount = httpLoopCount;
+    opts.httpResponseTimeout = std::chrono::milliseconds(httpResponseTimeout_msec);
+    opts.httpMaxThreads = httpMaxThreads;
+    opts.httpMaxRequestQueue = httpMaxRequestQueue;
+
+    js = make_shared<JSEngine>(file, searchPaths, ui, opts);
 
     if( !js )
         throw SystemError("Can't create JSEngine");
@@ -77,10 +87,19 @@ JSProxy::JSProxy( uniset::ObjectId id, xmlNode* confnode, const std::string& _pr
     loga->add(js->js_log());
     js->log()->addLevel(log()->level());
 
+    loga->add(js->http_log());
+    js->http_log()->addLevel(log()->level());
+
     {
         ostringstream s;
         s << argprefix << "script-log";
         conf->initLogStream(js->js_log(), s.str());
+    }
+
+    {
+        ostringstream s;
+        s << argprefix << "http-log";
+        conf->initLogStream(js->http_log(), s.str());
     }
 }
 // -------------------------------------------------------------------------

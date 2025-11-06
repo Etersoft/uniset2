@@ -38,7 +38,7 @@ namespace uniset
         void dump_exception_details( JSContext* ctx );
 
         void safe_function_call(JSContext* ctx, JSValueConst obj, JSValueConst func,
-                                int argc = 0, JSValue* argv = nullptr );
+                                int argc = 0, JSValueConst* argv = nullptr );
         void safe_function_call_by_name(JSContext* ctx, const char* func_name,
                                         int argc = 0, JSValue* argv = nullptr );
 
@@ -50,7 +50,45 @@ namespace uniset
         };
 
         const std::string js_search_paths_object = "__load_search_paths";
+        // ----------------------------------------------------------------------
+        struct JsArgs
+        {
+            JSContext* ctx;
+            std::vector<JSValue > vals;
 
+            explicit JsArgs(JSContext* c) : ctx(c) {}
+            ~JsArgs()
+            {
+                for (auto& v : vals)
+                    JS_FreeValue(ctx, v);
+            }
+
+            // Добавить аргументы
+            JsArgs& i64(int64_t x)
+            {
+                vals.push_back(JS_NewInt64(ctx, x));
+                return *this;
+            }
+
+            JsArgs& str(const char* s)
+            {
+                vals.push_back(JS_NewString(ctx, s));
+                return *this;
+            }
+
+            int size() const
+            {
+                return (int)vals.size();
+            }
+
+            // Важно: возвращаем JSValueConst* !
+            JSValueConst* data()
+            {
+                return vals.data();
+            }
+        };
+
+        // ----------------------------------------------------------------------
         JSModuleDef* module_loader_with_path( JSContext* ctx, const char* module_name, void* opaque );
         JSValue js_load_file_with_data( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv );
         std::string find_file( const std::string filename, const std::vector<std::string>& search_paths );

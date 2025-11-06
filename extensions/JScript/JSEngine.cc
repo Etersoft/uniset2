@@ -19,7 +19,6 @@
 extern "C" {
 #include "quickjs/quickjs-libc.h"
 }
-#include "JSEngine_os_nb.h"
 #include "Configuration.h"
 #include "Exceptions.h"
 #include "JSHelpers.h"
@@ -33,22 +32,58 @@ using namespace uniset;
 JSEngine::JSEngine( const std::string& _jsfile,
                     std::vector<std::string>& _searchPaths,
                     std::shared_ptr<UInterface>& _ui,
-                    int _jsLoopCount,
-                    bool _esmModuleMode ):
+                    JSOptions& _opts ):
     jsfile(_jsfile),
     searchPaths(_searchPaths),
     ui(_ui),
-    jsLoopCount(_jsLoopCount),
-    esmModuleMode(_esmModuleMode)
+    opts(_opts)
 {
     if( jsfile.empty() )
         throw SystemError("JS file undefined");
 
+    oind = ui->getObjectIndex();
     jslog = make_shared<DebugStream>();
     jslog->setLogName("JSLog");
 
     mylog = make_shared<DebugStream>();
     mylog->setLogName("JSEngine");
+
+    httpHandleFn = [this](const JHttpServer::RequestSnapshot & request)->JHttpServer::ResponseSnapshot
+    {
+        if( JS_IsUndefined(jsFnHttpRequest) )
+        {
+            JHttpServer::ResponseSnapshot resp;
+            resp.headers = { {"Content-Type", "application/json"} };
+            resp.status = Poco::Net::HTTPResponse::HTTP_FOUND;
+            return resp;
+        }
+
+        JHttpServer::ResponseAdapter adapter;
+        JSValue req = jsMakeRequest(ctx, jsReqProto_, reqAtoms_, request);
+        JSValue res = jsMakeResponse(ctx, jsResProto_, &adapter);
+
+        JSValueConst argv[2] = { req, res };
+        JSValue ret = JS_Call(ctx, jsFnHttpRequest, JS_UNDEFINED, 2, argv);
+
+        JHttpServer::ResponseSnapshot finalResp;
+
+        if (!adapter.finished && JS_IsObject(ret))
+            jsApplyResponseObject(ctx, ret, finalResp);
+        else
+            jsApplyResponseAdapter(adapter, finalResp);
+
+        JS_FreeValue(ctx, argv[0]);
+        JS_FreeValue(ctx, argv[1]);
+        JS_FreeValue(ctx, req);
+        JS_FreeValue(ctx, res);
+        JS_FreeValue(ctx, ret);
+
+        return finalResp;
+    };
+
+    httpserv = std::make_shared<JHttpServer>(opts.httpMaxThreads, opts.httpMaxRequestQueue);
+    httpserv->setMaxQueueSize(opts.httpMaxQueueSize);
+    httpserv->setProcessTimeout(opts.httpResponseTimeout);
 }
 // -------------------------------------------------------------------------
 void JSEngine::initGlobal( JSContext* ctx )
@@ -97,16 +132,10 @@ void JSEngine::initJS()
 
     auto private_data = new jshelper::JSPrivateData{searchPaths};
 
-    if( esmModuleMode )
+    if( opts.esmModuleMode )
         JS_SetModuleLoaderFunc(rt, jshelper::qjs_module_normalize, jshelper::qjs_module_loader, private_data);
     else
         JS_SetModuleLoaderFunc(rt, NULL, jshelper::module_loader_with_path, private_data);
-
-    // Publish net object via Poco shim (always on)
-    if (!qjs_init_poco_net(ctx))
-    {
-        throw SystemError("Failed to init Poco-based net shim");
-    }
 
     jsGlobal = JS_GetGlobalObject(ctx);
 
@@ -119,6 +148,9 @@ void JSEngine::initJS()
     initGlobal(ctx);
     createUnisetObject();
     createUInterfaceObject();
+    createResponsePrototype(ctx);
+    createRequestAtoms(ctx);
+    createRequestPrototype(ctx);
 
     // load main script
     size_t jsbuf_len;
@@ -133,7 +165,7 @@ void JSEngine::initJS()
 
     myinfo << "(init): load js " << jsfile << " OK" << endl;
 
-    if( esmModuleMode )
+    if( opts.esmModuleMode )
         jsModule = JS_Eval(ctx, (char*) jsbuf, jsbuf_len, jsfile.c_str(), JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
     else
         jsModule = JS_Eval(ctx, (char*) jsbuf, jsbuf_len, jsfile.c_str(), JS_EVAL_TYPE_GLOBAL);
@@ -146,7 +178,7 @@ void JSEngine::initJS()
         throw SystemError("Failed to eval jsfile");
     }
 
-    if( esmModuleMode )
+    if( opts.esmModuleMode )
     {
         JSValue ret = JS_EvalFunction(ctx, jsModule);
 
@@ -352,29 +384,11 @@ void JSEngine::freeJS()
         mycrit << "(freeJS): preStop error: " << ex.displayText() << endl;
     }
 
-    try
-    {
-        qjs_net_pre_stop();
-    }
-    catch( Poco::Exception& ex )
-    {
-        mycrit << "(freeJS): qjs_net_pre_stop error: " << ex.displayText() << endl;
-    }
-
     if( activated )
         stop();
 
     if( ctx )
     {
-        try
-        {
-            qjs_shutdown_poco_net(ctx);
-        }
-        catch( Poco::Exception& ex )
-        {
-            mycrit << "(freeJS): qjs_shutdown_poco_net error: " << ex.displayText() << endl;
-        }
-
         try
         {
             for( auto&& cb : stepFunctions )
@@ -421,10 +435,13 @@ void JSEngine::freeJS()
         if (!JS_IsUndefined(jsFnOnSensor))
             JS_FreeValue(ctx, jsFnOnSensor);
 
+        if (!JS_IsUndefined(jsFnHttpRequest))
+            JS_FreeValue(ctx, jsFnHttpRequest);
+
         if (!JS_IsUndefined(jsGlobal))
             JS_FreeValue(ctx, jsGlobal);
 
-        if ( !esmModuleMode && !JS_IsUndefined(jsModule))
+        if ( !opts.esmModuleMode && !JS_IsUndefined(jsModule))
             JS_FreeValue(ctx, jsModule);
 
         // Затем освободим буфер
@@ -451,6 +468,31 @@ void JSEngine::freeJS()
 // ----------------------------------------------------------------------------
 JSEngine::~JSEngine()
 {
+    if (!JS_IsUndefined(jsResProto_))
+    {
+        JS_FreeValue(ctx, jsResProto_);
+        jsResProto_ = JS_UNDEFINED;
+    }
+
+    if (reqAtomsInited_)
+    {
+        JS_FreeAtom(ctx, reqAtoms_.method);
+        JS_FreeAtom(ctx, reqAtoms_.uri);
+        JS_FreeAtom(ctx, reqAtoms_.version);
+        JS_FreeAtom(ctx, reqAtoms_.url);
+        JS_FreeAtom(ctx, reqAtoms_.path);
+        JS_FreeAtom(ctx, reqAtoms_.query);
+        JS_FreeAtom(ctx, reqAtoms_.headers);
+        JS_FreeAtom(ctx, reqAtoms_.body);
+        reqAtomsInited_ = false;
+    }
+
+    if (!JS_IsUndefined(jsReqProto_))
+    {
+        JS_FreeValue(ctx, jsReqProto_);
+        jsReqProto_ = JS_UNDEFINED;
+    }
+
     freeJS();
 }
 // ----------------------------------------------------------------------------
@@ -479,27 +521,23 @@ void JSEngine::start()
 // ----------------------------------------------------------------------------
 void JSEngine::stop()
 {
+    if( httpserv->isRunning() )
+    {
+        try
+        {
+            httpserv->softStop(std::chrono::seconds(5) );
+        }
+        catch( Poco::Exception& ex )
+        {
+            mycrit << "(preStop): http server error: " << ex.displayText() << endl;
+        }
+    }
+
     if( !JS_IsUndefined(jsFnStop) )
     {
         jshelper::safe_function_call(ctx, jsGlobal, jsFnStop, 0, nullptr);
         jsLoop();
     }
-
-    JSValue fd_val = JS_GetPropertyStr(ctx, jsGlobal, "__http_server_fd");
-
-    if (JS_IsNumber(fd_val))
-    {
-        int fd = 0;
-        JS_ToInt32(ctx, &fd, fd_val);
-
-        if (fd > 0)
-        {
-            close(fd);  // если os.close есть, или просто close(fd)
-            myinfo << "(stop): HTTP server fd=" << fd << " closed" << endl;
-        }
-    }
-
-    JS_FreeValue(ctx, fd_val);
 }
 // ----------------------------------------------------------------------------
 void JSEngine::askSensors( UniversalIO::UIOCommand cmd )
@@ -524,17 +562,20 @@ void JSEngine::sensorInfo( const uniset::SensorMessage* sm )
     if( it != inputs.end() )
     {
         if( !it->second.set(ctx, jsGlobal, int64_t(sm->value)) )
-            mycrit << "(jsSetValue): can't update value for " << it->second.name << endl;
+            mycrit << "(sensorInfo): can't update value for " << it->second.name << endl;
     }
 
     if( !JS_IsUndefined(jsFnOnSensor) )
     {
-        JSValue argv[2];
-        argv[0] = JS_NewInt64(ctx, sm->id);
-        argv[1] = JS_NewInt64(ctx, sm->value);
-        jshelper::safe_function_call(ctx, jsGlobal, jsFnOnSensor, 2, argv);
-        JS_FreeValue(ctx, argv[0]);
-        JS_FreeValue(ctx, argv[1]);
+        std::string sname;
+        auto oinf = oind->getObjectInfo(sm->id);
+
+        if( oinf )
+            sname = oinf->name;
+
+        jshelper::JsArgs args(ctx);
+        args.i64(sm->id).i64(sm->value).str(sname.c_str());
+        jshelper::safe_function_call(ctx, jsGlobal, jsFnOnSensor, args.size(), args.data());
     }
 
     jsLoop();
@@ -543,7 +584,7 @@ void JSEngine::sensorInfo( const uniset::SensorMessage* sm )
 void JSEngine::jsLoop()
 {
     // js loop processing
-    for( int i = 0; i < jsLoopCount; i++ )
+    for( int i = 0; i < opts.jsLoopCount; i++ )
         js_std_loop(ctx);
 }
 // ----------------------------------------------------------------------------
@@ -564,6 +605,9 @@ void JSEngine::step()
     jshelper::safe_function_call(ctx, jsGlobal, jsFnStep, 0, nullptr);
 
     jsLoop();
+
+    if( !JS_IsUndefined(jsFnHttpRequest) )
+        httpserv->httpLoop(httpHandleFn, opts.httpLoopCount,  opts.httpQueueWaitTimeout );
 }
 // ----------------------------------------------------------------------------
 void JSEngine::updateOutputs()
@@ -715,6 +759,7 @@ void JSEngine::createUnisetObject()
     JSValue uobj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, uobj, "step_cb",   JS_NewCFunction(ctx, jsUniSetStepCb_wrapper,   "step_cb",   1));
     JS_SetPropertyStr(ctx, uobj, "stop_cb",   JS_NewCFunction(ctx, jsUniSetStopCb_wrapper,   "stop_cb",   1));
+    JS_SetPropertyStr(ctx, uobj, "http_start",   JS_NewCFunction(ctx, jsUniSetHttpStart_wrapper,   "http_start",   3));
     JS_SetPropertyStr(ctx, jsGlobal, "uniset", uobj);
 }
 // ----------------------------------------------------------------------------
@@ -831,6 +876,30 @@ JSValue JSEngine::jsUniSetStopCb_wrapper(JSContext* ctx, JSValueConst this_val, 
         if( engine )
         {
             JSValue ret = engine->js_uniset_StopCb(ctx, this_val, argc, argv);
+            JS_FreeValue(ctx, engine_ptr_val);
+            return ret;
+        }
+    }
+
+    JS_FreeValue(ctx, engine_ptr_val);
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsUniSetHttpStart_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
+    JS_FreeValue(ctx, global);
+
+    if( JS_IsNumber(engine_ptr_val) )
+    {
+        int64_t ptr_int;
+        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
+        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
+
+        if( engine )
+        {
+            JSValue ret = engine->js_uniset_httpStart(ctx, this_val, argc, argv);
             JS_FreeValue(ctx, engine_ptr_val);
             return ret;
         }
@@ -1115,6 +1184,69 @@ JSValue JSEngine::js_uniset_StopCb(JSContext* ctx, JSValueConst this_val, int ar
     return JS_UNDEFINED;
 }
 // ----------------------------------------------------------------------------
+JSValue JSEngine::js_uniset_httpStart(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    if( httpserv->isRunning() )
+    {
+        mylog5 << "(js_uniset_httpStart): http server is already running.." << endl;
+        return JS_UNDEFINED;
+    }
+
+    // Параметры:
+    // argv[0] - host
+    // argv[1] - port
+    // argv[2] - http request callback
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_httpStart expects 3 argument (host, port, function)");
+        return JS_UNDEFINED;
+    }
+
+    if( !JS_IsString(argv[0]) )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_httpStart: First argument must be 'string' (host)");
+        return JS_UNDEFINED;
+    }
+
+    const char* chost = JS_ToCString(ctx, argv[0]);
+
+    if( !chost )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_httpStart: Undefined host parameter");
+        return JS_UNDEFINED;
+    }
+
+    std::string host = string(chost);
+    JS_FreeCString(ctx, chost);
+
+    if( !JS_IsNumber(argv[1]) )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_httpStart: Second argument must be 'number' (port)");
+        return JS_UNDEFINED;
+    }
+
+    int32_t port;
+
+    if (JS_ToInt32(ctx, &port, argv[1]) != 0)
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_httpStart: Invalid port");
+        return JS_UNDEFINED;
+    }
+
+    if( !JS_IsFunction(ctx, argv[2]) )
+    {
+        JS_ThrowTypeError(ctx, "js_uniset_httpStart: Third argument must be 'function' (on_http_request)");
+        return JS_UNDEFINED;
+    }
+
+    jsFnHttpRequest = JS_DupValue(ctx, argv[2]);
+
+    mylog5 << "(js_uniset_httpStart): starting http server host=" << host << " port=" << port << endl;
+    httpserv->start(host, port);
+    mylog5 << "(js_uniset_httpStart): http server started" << endl;
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
 JSValue JSEngine::js_log( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv )
 {
     // Параметры:
@@ -1193,5 +1325,347 @@ JSValue JSEngine::js_log_level( JSContext* ctx, JSValueConst this_val, int argc,
     mylog5 << "(js_log_level): set log level: " << Debug::str((Debug::type)value) << endl;
     jslog->level((Debug::type)value);
     return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeRequest(JSContext* ctx, JSValueConst& jsReqProto_, JSReqAtom& reqAtoms_, const JHttpServer::RequestSnapshot& r)
+{
+    JSValue req = JS_NewObjectProto(ctx, jsReqProto_);
+
+    JS_SetProperty(ctx, req, reqAtoms_.method,  JS_NewString(ctx, r.method.c_str()));
+    JS_SetProperty(ctx, req, reqAtoms_.uri,     JS_NewString(ctx, r.uri.c_str()));
+    JS_SetProperty(ctx, req, reqAtoms_.version, JS_NewString(ctx, r.version.c_str()));
+    // на всякий случай совместимость с libs, которые читают url:
+    JS_SetProperty(ctx, req, reqAtoms_.url,     JS_NewString(ctx, r.uri.c_str()));
+
+    // router ожидает path; дадим url/path/query из uri
+    {
+        const std::string& u = r.uri;
+        auto qm = u.find('?');
+
+        if( qm == std::string::npos )
+        {
+            JS_SetProperty(ctx, req, reqAtoms_.path,  JS_NewStringLen(ctx, u.data(), u.size()));
+            JS_SetProperty(ctx, req, reqAtoms_.query, JS_NewStringLen(ctx, "", 0));
+        }
+        else
+        {
+            JS_SetProperty(ctx, req, reqAtoms_.path,  JS_NewStringLen(ctx, u.data(), qm));
+            JS_SetProperty(ctx, req, reqAtoms_.query, JS_NewStringLen(ctx, u.data() + qm + 1, u.size() - qm - 1));
+        }
+    }
+
+    // headers
+    JSValue h = JS_NewObject(ctx);
+
+    for (const auto& kv : r.headers)
+        JS_SetPropertyStr(ctx, h, kv.first.c_str(), JS_NewString(ctx, kv.second.c_str()));
+
+    JS_SetProperty(ctx, req, reqAtoms_.headers, h);
+
+    // body (как строка, без копирования бинарных данных)
+    JS_SetProperty(ctx, req, reqAtoms_.body, JS_NewStringLen(ctx, r.body.data(), r.body.size()));
+
+    return req;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeResponse(JSContext* ctx, JSValueConst& jsResProto_, JHttpServer::ResponseAdapter* ad)
+{
+    JSValue res = JS_NewObjectProto(ctx, jsResProto_);
+    JS_SetPropertyStr(ctx, res, "__ptr", JS_NewInt64(ctx, (int64_t)ad));
+
+    // методы уже заданы на прототипе; здесь только привязываем адаптер
+    return res;
+}
+// ----------------------------------------------------------------------------
+void JSEngine::jsApplyResponseObject(JSContext* ctx, JSValue ret, JHttpServer::ResponseSnapshot& out)
+{
+    if (!JS_IsObject(ret))
+        return;
+
+    // status
+    JSValue v = JS_GetPropertyStr(ctx, ret, "status");
+
+    if (JS_IsNumber(v))
+    {
+        int64_t x = 200;
+        JS_ToInt64(ctx, &x, v);
+        out.status = (int)x;
+    }
+
+    JS_FreeValue(ctx, v);
+
+    // reason
+    v = JS_GetPropertyStr(ctx, ret, "reason");
+
+    if (JS_IsString(v))
+    {
+        size_t l = 0;
+        const char* s = JS_ToCStringLen(ctx, &l, v);
+
+        if(s)
+        {
+            out.reason.assign(s, l);
+            JS_FreeCString(ctx, s);
+        }
+    }
+
+    JS_FreeValue(ctx, v);
+
+    // headers
+    v = JS_GetPropertyStr(ctx, ret, "headers");
+
+    if (JS_IsObject(v))
+    {
+        JSPropertyEnum* tab;
+        uint32_t len;
+
+        if (JS_GetOwnPropertyNames(ctx, &tab, &len, v, JS_GPN_STRING_MASK | JS_GPN_ENUM_ONLY) == 0)
+        {
+            for(uint32_t i = 0; i < len; i++)
+            {
+                JSAtom a = tab[i].atom;
+                JSValue k = JS_AtomToValue(ctx, a);
+                JSValue val = JS_GetProperty(ctx, v, a);
+
+                if (JS_IsString(k) && JS_IsString(val))
+                {
+                    size_t lk = 0, lv = 0;
+                    const char* sk = JS_ToCStringLen(ctx, &lk, k);
+                    const char* sv = JS_ToCStringLen(ctx, &lv, val);
+
+                    if (sk && sv) out.headers.emplace_back(std::string(sk, lk), std::string(sv, lv));
+
+                    if (sk) JS_FreeCString(ctx, sk);
+
+                    if (sv) JS_FreeCString(ctx, sv);
+                }
+
+                JS_FreeValue(ctx, k);
+                JS_FreeValue(ctx, val);
+                JS_FreeAtom(ctx, a);
+            }
+
+            js_free(ctx, tab);
+        }
+    }
+
+    JS_FreeValue(ctx, v);
+
+    // body
+    v = JS_GetPropertyStr(ctx, ret, "body");
+
+    if (JS_IsString(v))
+    {
+        size_t l = 0;
+        const char* s = JS_ToCStringLen(ctx, &l, v);
+
+        if(s)
+        {
+            out.body.assign(s, l);
+            JS_FreeCString(ctx, s);
+        }
+    }
+
+    JS_FreeValue(ctx, v);
+}
+// ----------------------------------------------------------------------------
+void JSEngine::jsApplyResponseAdapter( const JHttpServer::ResponseAdapter& ad, JHttpServer::ResponseSnapshot& out )
+{
+    out = ad.snap;
+
+    // если причина не задана — карта статусов на стандартную фразу
+    if (out.reason.empty())
+    {
+        switch(out.status)
+        {
+            case 200:
+                out.reason = "OK";
+                break;
+
+            case 400:
+                out.reason = "Bad Request";
+                break;
+
+            case 404:
+                out.reason = "Not Found";
+                break;
+
+            case 500:
+                out.reason = "Internal Server Error";
+                break;
+
+            default:
+                break;
+        }
+    }
+}
+// ----------------------------------------------------------------------------
+void JSEngine::createResponsePrototype( JSContext* ctx )
+{
+    if( !JS_IsUndefined(jsResProto_) )
+        return;
+
+    JSValue proto = JS_NewObject(ctx);
+
+    // ---- Methods injected once on the prototype ----
+    // status, setHeader, end, json, sendStatus
+    auto fn_status = [](JSContext * c, JSValueConst self, int argc, JSValueConst * argv)->JSValue
+    {
+        JSValue pv = JS_GetPropertyStr(c, self, "__ptr");
+        int64_t p = 0;
+        JS_ToInt64(c, &p, pv);
+        JS_FreeValue(c, pv);
+        auto* ad = (JHttpServer::ResponseAdapter*)p;
+
+        if (!ad || argc < 1) return JS_UNDEFINED;
+
+        int32_t code = 200;
+        JS_ToInt32(c, &code, argv[0]);
+        ad->snap.status = code;
+
+        if (argc > 1 && JS_IsString(argv[1]))
+        {
+            size_t l = 0;
+            const char* s = JS_ToCStringLen(c, &l, argv[1]);
+
+            if (s)
+            {
+                ad->snap.reason.assign(s, l);
+                JS_FreeCString(c, s);
+            }
+        }
+
+        return JS_UNDEFINED;
+    };
+    JS_SetPropertyStr(ctx, proto, "status", JS_NewCFunction(ctx, fn_status, "status", 2));
+
+    auto fn_setHeader = [](JSContext * c, JSValueConst self, int argc, JSValueConst * argv)->JSValue
+    {
+        JSValue pv = JS_GetPropertyStr(c, self, "__ptr");
+        int64_t p = 0;
+        JS_ToInt64(c, &p, pv);
+        JS_FreeValue(c, pv);
+        auto* ad = (JHttpServer::ResponseAdapter*)p;
+
+        if (!ad || argc < 2) return JS_UNDEFINED;
+
+        size_t lk = 0, lv = 0;
+        const char* sk = JS_ToCStringLen(c, &lk, argv[0]);
+        const char* sv = JS_ToCStringLen(c, &lv, argv[1]);
+
+        if (sk && sv) ad->snap.headers.emplace_back(std::string(sk, lk), std::string(sv, lv));
+
+        if (sk) JS_FreeCString(c, sk);
+
+        if (sv) JS_FreeCString(c, sv);
+
+        return JS_UNDEFINED;
+    };
+    JS_SetPropertyStr(ctx, proto, "setHeader", JS_NewCFunction(ctx, fn_setHeader, "setHeader", 2));
+
+    auto fn_end = [](JSContext * c, JSValueConst self, int argc, JSValueConst * argv)->JSValue
+    {
+        JSValue pv = JS_GetPropertyStr(c, self, "__ptr");
+        int64_t p = 0;
+        JS_ToInt64(c, &p, pv);
+        JS_FreeValue(c, pv);
+        auto* ad = (JHttpServer::ResponseAdapter*)p;
+
+        if (!ad) return JS_UNDEFINED;
+
+        if (argc > 0 && JS_IsString(argv[0]))
+        {
+            size_t l = 0;
+            const char* s = JS_ToCStringLen(c, &l, argv[0]);
+
+            if (s)
+            {
+                ad->snap.body.assign(s, l);
+                JS_FreeCString(c, s);
+            }
+        }
+
+        JS_SetPropertyStr(c, (JSValue)self, "__ended", JS_NewBool(c, 1));
+        ad->finished = true;
+        return JS_UNDEFINED;
+    };
+    JS_SetPropertyStr(ctx, proto, "end", JS_NewCFunction(ctx, fn_end, "end", 1));
+
+    auto fn_json = [](JSContext * c, JSValueConst self, int argc, JSValueConst * argv)->JSValue
+    {
+        JSValue pv = JS_GetPropertyStr(c, self, "__ptr");
+        int64_t p = 0;
+        JS_ToInt64(c, &p, pv);
+        JS_FreeValue(c, pv);
+        auto* ad = (JHttpServer::ResponseAdapter*)p;
+
+        if (!ad || argc < 1) return JS_UNDEFINED;
+
+        JSValue j = JS_JSONStringify(c, argv[0], JS_UNDEFINED, JS_UNDEFINED);
+        size_t l = 0;
+        const char* s = JS_ToCStringLen(c, &l, j);
+
+        if (s)
+        {
+            ad->snap.headers.emplace_back("Content-Type", "application/json");
+            ad->snap.body.assign(s, l);
+            JS_FreeCString(c, s);
+        }
+
+        JS_FreeValue(c, j);
+        JS_SetPropertyStr(c, (JSValue)self, "__ended", JS_NewBool(c, 1));
+        ad->finished = true;
+        return JS_UNDEFINED;
+    };
+    JS_SetPropertyStr(ctx, proto, "json", JS_NewCFunction(ctx, fn_json, "json", 1));
+
+    auto fn_sendStatus = [](JSContext * c, JSValueConst self, int argc, JSValueConst * argv)->JSValue
+    {
+        JSValue pv = JS_GetPropertyStr(c, self, "__ptr");
+        int64_t p = 0;
+        JS_ToInt64(c, &p, pv);
+        JS_FreeValue(c, pv);
+        auto* ad = (JHttpServer::ResponseAdapter*)p;
+
+        if (!ad || argc < 1) return JS_UNDEFINED;
+
+        int32_t code = 200;
+        JS_ToInt32(c, &code, argv[0]);
+        ad->snap.status = code;
+
+        if (code != 204) ad->snap.body = std::to_string(code);
+
+        JS_SetPropertyStr(c, (JSValue)self, "__ended", JS_NewBool(c, 1));
+        ad->finished = true;
+        return JS_UNDEFINED;
+    };
+    JS_SetPropertyStr(ctx, proto, "sendStatus", JS_NewCFunction(ctx, fn_sendStatus, "sendStatus", 1));
+
+    jsResProto_ = proto;
+}
+// ----------------------------------------------------------------------------
+void JSEngine::createRequestPrototype( JSContext* ctx )
+{
+    if (!JS_IsUndefined(jsReqProto_))
+        return;
+
+    // У req нет методов — прототип пустой, но создаётся один раз
+    jsReqProto_ = JS_NewObject(ctx);
+}
+// ----------------------------------------------------------------------------
+void JSEngine::createRequestAtoms( JSContext* ctx )
+{
+    if (reqAtomsInited_) return;
+
+    reqAtoms_.method  = JS_NewAtom(ctx, "method");
+    reqAtoms_.uri     = JS_NewAtom(ctx, "uri");
+    reqAtoms_.version = JS_NewAtom(ctx, "version");
+    reqAtoms_.url     = JS_NewAtom(ctx, "url");
+    reqAtoms_.path    = JS_NewAtom(ctx, "path");
+    reqAtoms_.query   = JS_NewAtom(ctx, "query");
+    reqAtoms_.headers = JS_NewAtom(ctx, "headers");
+    reqAtoms_.body    = JS_NewAtom(ctx, "body");
+
+    reqAtomsInited_ = true;
 }
 // ----------------------------------------------------------------------------
