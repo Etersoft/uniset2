@@ -20,6 +20,12 @@
   <variables>
 	<item name="file" type="str" default="" const="1"/>
 	<item name="loopCount" type="int" default="5" min="1" const="1"/>
+	<item name="httpLoopCount" type="int" default="5" min="1" const="1"/>
+	<item name="httpMaxQueueSize" type="int" default="256" min="1" const="1"/>
+	<item name="httpResponseTimeout_msec" type="int" default="5000" min="1" const="1"/>
+	<item name="httpQueueWaitTimeout_msec" type="int" default="100" min="1" const="1"/>
+	<item name="httpMaxThreads" type="int" default="3" min="1" const="1"/>
+	<item name="httpMaxRequestQueue" type="int" default="50" min="1" const="1"/>
 	<item name="esmModuleMode" type="bool" const="1"/>
   </variables>
   <smap>

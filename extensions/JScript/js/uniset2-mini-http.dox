@@ -1,45 +1,73 @@
 /*!
 \page page_JScript_HTTPServer JScript Mini HTTP Server
 
-Лёгкий неблокирующий HTTP‑сервер на js и частью кода написанного на с++.<br>
+Лёгкий неблокирующий HTTP-сервер на js и частью кода написанного на c++.<br>
 Предназначен для встроенного использования JScript и интеграции с простым \ref mini_http_router "роутером".<br>
-Поддерживает keep‑alive, фиксированные ответы с \c Content-Length, обработку событий poll().<br>
-Не поддерживает: TLS, chunked‑кодирование, HTTP/2.
+Поддерживает keep-alive, обработку событий в общем цикле выполнения (poll/step), фиксированные ответы с \c Content-Length и потоковые ответы с \c Transfer-Encoding: chunked.<br>
+Не поддерживает: TLS, HTTP/2.
 
 \section sec_MiniHttp_API API
 
 \subsection sec_MiniHttp_start startMiniHttp(opts)
 Запускает сервер и возвращает объект управления.
-\warning Сервер может быть только один
+\warning Сервер может быть только один.
 
 Параметры:
 - \c opts.host (string, по умолчанию "0.0.0.0")
-- \c opts.port (number, по умолчанию 9090)
-- \c opts.onRequest (function(req,res)): пользовательский обработчик запросов.
+- \c opts.port (number, по умолчанию 8080)
+- \c opts.onRequest(req,res) (function) — обработчик запросов
 
-Возвращаемый объект:
-- \c step() — обработать очередную порцию событий (если \c autoLoop=false).
-- \c close() — закрыть все соединения и серверный сокет.
-- \c host, \c port, \c serverFd — служебная информация.
+Возвращает:
+\code{.js}
+{
+  stop: function() { ... }  // мягкая остановка (дожидается завершения обработки очереди)
+}
+\endcode
 
-\subsection sec_MiniHttp_Request Request
-Объект \c req имеет поля:
-- \c method (string, "GET"/"POST"/...)
-- \c path (string, например "/api/v1/info")
-- \c headers (object, нижний регистр ключей)
-- \c body (ArrayBuffer) — если был \c Content-Length > 0
+\subsection sec_MiniHttp_Request Request (req)
+- \c req.method  — строка ("GET", "POST", ...)
+- \c req.url     — оригинальный URI
+- \c req.path    — путь без query
+- \c req.query   — объект параметров
+- \c req.headers — объект заголовков
+- \c req.body    — тело запроса как строка
 
-\subsection sec_MiniHttp_Response Response
-Объект \c res предоставляет:
-- \c status(code) — установить код ответа (цепочка).
-- \c setHeader(name,value) — установить заголовок.
-- \c writeHead(code, text?, headers?) — сразу записать статус/заголовки.
-- \c send(data) — отправить тело (string/ArrayBuffer/TypedArray).
-- \c json(obj) — отправить JSON (\c Content-Type: application/json).
+\subsection sec_MiniHttp_Response Response (res)
+- \c res.status(code[,reason])
+- \c res.setHeader(name,value)
+- \c res.end([data])
+- \c res.json(obj)
+- \c res.sendStatus(code)
 
-Гарантии:
-- Ровно один ответ на запрос. Повторные вызовы \c send/json игнорируются.
-- Если \c Content-Length не задан — выставляется автоматически по длине тела.
+Поведение:
+- Ровно один вызов завершающего метода (\c end / \c json / \c sendStatus). Повторные игнорируются.
+- Если разработчик не установил \c Transfer-Encoding и не задал \c Content-Length вручную:
+  \c Content-Length выставляется автоматически по длине тела при вызове \c end / \c json.
+- Для потоковой передачи данных необходимо **явно** включить:
+\code{.js}
+res.setHeader("Transfer-Encoding", "chunked");
+\endcode
+В этом режиме \c Content-Length не используется.
+
+\section sec_MiniHttp_Errors Ошибки и таймауты
+
+Сервер использует внутреннюю очередь запросов.
+
+Если очередь заполнена:
+- Клиент получает \c 503 Service Unavailable
+- Тело может содержать текст "Server is busy"
+
+Если обработчик не завершил ответ за время \c processTimeout (по умолчанию ~10 секунд):
+- Клиент получает \c 504 Gateway Timeout
+- Обработка запроса в JS прекращается
+
+При внутренних ошибках (исключения из js или c++):
+- Клиент получает \c 500 Internal Server Error
+- Соединение может быть закрыто
+
+При мягкой остановке (\c srv.stop()):
+- Сервер перестает принимать новые запросы
+- Но корректно обрабатывает те, что уже в очереди
 
 \section sec_MiniHttp_Examples Примеры
 
@@ -49,32 +77,26 @@ load("uniset2-mini-http.js");
 
 var srv = startMiniHttp({
   port: 9090,
-  autoLoop: false,
   onRequest: function(req, res){
-    if (req.method === 'GET' && req.path === '/ping') return res.send('pong');
+    if (req.method === 'GET' && req.path === '/ping')
+      return res.end('pong');
+
     res.json({ ok: true });
   }
 });
-
 \endcode
 
 \subsection sec_MiniHttp_Example_Router Интеграция с роутером
 \code{.js}
-load("uniset2-mini-http.js");
 load("uniset2-mini-http-router.js");
 
 var r = createRouter();
-r.setLogger(function(ev){
-  // ev = { method, path, status, ms }
-  print(`[${ev.ms}ms] ${ev.status} ${ev.method} ${ev.path}`);
-});
 r.route('GET', '/api/v1/info', function(req,res){ res.json({hello:'world'}); });
 
 var srv = startMiniHttp({
-  autoLoop: false,
   onRequest: function(req,res){ r.handle(req,res); }
 });
-
 \endcode
+
 \sa \ref mini_http_router
 */

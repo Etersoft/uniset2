@@ -25,9 +25,9 @@ const pt = new PassiveTimer(200);
 // HTTP server
 startMyHttpServer();
 // ----------------------------------------------------------------------------
-function uniset_on_sensor( id, value )
+function uniset_on_sensor( id, value, name )
 {
-    mylog.info("OnSensor:", id, value)
+    mylog.info("OnSensor:", id, value, name)
 }
 // ----------------------------------------------------------------------------
 function uniset_on_step()

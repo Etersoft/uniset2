@@ -21,9 +21,22 @@ extern "C" {
 #include "quickjs/quickjs.h"
 }
 #include "UInterface.h"
+#include "JHttpServer.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
+    // ----------------------------------------------------------------------
+    struct JSOptions
+    {
+        size_t jsLoopCount = { 5 };
+        size_t httpLoopCount = { 5 };
+        size_t httpMaxQueueSize = { 100 };
+        size_t httpMaxThreads = { 3 };
+        size_t httpMaxRequestQueue = { 50 };
+        std::chrono::milliseconds httpResponseTimeout = { std::chrono::milliseconds(5000) };
+        std::chrono::milliseconds httpQueueWaitTimeout = {std::chrono::milliseconds(5000) };
+        bool esmModuleMode = { false };
+    };
     // ----------------------------------------------------------------------
     class JSEngine
     {
@@ -31,8 +44,7 @@ namespace uniset
             explicit JSEngine( const std::string& jsfile,
                                std::vector<std::string>& searchPaths,
                                std::shared_ptr<UInterface>& ui,
-                               int jsLoopCount = 5,
-                               bool esmModuleMode = false);
+                               JSOptions& opts );
             virtual ~JSEngine();
 
             inline std::shared_ptr<DebugStream> log() noexcept
@@ -43,6 +55,11 @@ namespace uniset
             inline std::shared_ptr<DebugStream> js_log() noexcept
             {
                 return jslog;
+            }
+
+            inline std::shared_ptr<DebugStream> http_log() noexcept
+            {
+                return httpserv->log();
             }
 
             void init();
@@ -62,21 +79,34 @@ namespace uniset
             void exportAllFunctionsFromTimerModule();
             void createUInterfaceObject();
             void createUnisetObject();
+            void createResponsePrototype( JSContext* ctx );
+            void createRequestAtoms(JSContext* ctx);
+            void createRequestPrototype(JSContext* ctx);
             void jsLoop();
             void preStop();
 
         private:
+            JSValue jsReqProto_ = { JS_UNDEFINED };
+            JSValue jsResProto_ = { JS_UNDEFINED };
+
+            bool reqAtomsInited_ = false;
+            struct JSReqAtom
+            {
+                JSAtom method, uri, version, url, path, query, headers, body;
+            } reqAtoms_{};
+
             std::atomic_bool activated = { false };
             std::shared_ptr<DebugStream> mylog;
             std::string jsfile;
             std::vector<std::string> searchPaths;
             std::shared_ptr<UInterface> ui;
-            int jsLoopCount = { 5 };
-            bool esmModuleMode;
             JSRuntime* rt = { nullptr };
             JSContext* ctx = { nullptr };
             uint8_t* jsbuf = { nullptr };
             std::shared_ptr<DebugStream> jslog = { nullptr };
+            std::shared_ptr<uniset::JHttpServer> httpserv = { nullptr };
+            JSOptions opts;
+            std::shared_ptr<uniset::ObjectIndex> oind;
 
             struct jsSensor
             {
@@ -97,12 +127,15 @@ namespace uniset
             JSValue jsFnOnSensor = { JS_UNDEFINED };
             JSValue jsGlobal = { JS_UNDEFINED };
             JSValue jsModule = { JS_UNDEFINED };
+            JSValue jsFnHttpRequest = { JS_UNDEFINED };
+            JHttpServer::HandlerFn httpHandleFn;
 
             JSValue js_ui_getValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_uniset_StepCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_uniset_StopCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_uniset_httpStart(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_log(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_log_level(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
@@ -114,6 +147,13 @@ namespace uniset
             static JSValue jsLogLevel_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsUniSetStepCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsUniSetStopCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsUniSetHttpStart_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
+            // http convert
+            static JSValue jsMakeRequest(JSContext* ctx, JSValueConst& jsReqProto_, JSReqAtom& atom, const JHttpServer::RequestSnapshot& r);
+            static JSValue jsMakeResponse(JSContext* ctx, JSValueConst& jsResProto_, JHttpServer::ResponseAdapter* ad);
+            static void jsApplyResponseObject(JSContext* ctx, JSValue ret, JHttpServer::ResponseSnapshot& out);
+            static void jsApplyResponseAdapter( const JHttpServer::ResponseAdapter& ad, JHttpServer::ResponseSnapshot& out );
 
             // "синтаксический сахар" для логов
 #ifndef myinfo

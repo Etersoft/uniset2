@@ -10,6 +10,7 @@ function startMyHttpServer() {
     // подпрефиксы (группы)
     const api = r.group('/api');
     api.route('GET', '/v1/info', http_info);
+    api.route('GET', '/v1/status/:id', http_status);
 
     // server
     startMiniHttp({
@@ -17,6 +18,17 @@ function startMyHttpServer() {
         port: 9090,
         onRequest: r.handle
     });
+
+    // startMiniHttp({
+    //     host: "127.0.0.1",
+    //     port: 9090,
+    //     onRequest: (req, res) => {
+    //         if (req.uri === "/ping") return res.end("pong");
+    //         if (req.uri === "/info") return res.json({ status: "ok", time: Date.now() });
+    //         res.status(404, "Not Found"); res.end("no such endpoint");
+    //     }
+    // });
+
 }
 // ----------------------------------------------------------------------------
 function http_pong(req, res) {
@@ -29,5 +41,10 @@ function http_info(req, res) {
         date: new Date().toISOString()
     };
     return res.json(info);
+}
+// ----------------------------------------------------------------------------
+function http_status(req, res) {
+    const id = req.params.id;
+    res.json({ status: id });
 }
 // ----------------------------------------------------------------------------

@@ -225,7 +225,7 @@ namespace uniset
             JS_FreeValue(ctx, global);
         }
         // -------------------------------------------------------------------------
-        void safe_function_call(JSContext* ctx, JSValueConst global, JSValueConst func, int argc, JSValue* argv)
+        void safe_function_call(JSContext* ctx, JSValueConst global, JSValueConst func, int argc, JSValueConst* argv)
         {
             JSValue result = JS_Call(ctx, func, global, argc, argv);
 
