@@ -54,6 +54,7 @@ namespace uniset
         cout << "--http-api-disable-access-control  [1,0] - включение или отключение проверки прав доступа для функций HTTP API" << endl;
         cout << endl;
         cout << "--sm-default-sensor-permission perm - Умолчательные права на датчики [RW, RO, WR, None]. По умолчанию: rw" << endl;
+        cout << "--sm-ignore-acl-errors              - Игнорировать ошибки на стройках ACL" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--sm-log-...            - log control" << endl;
@@ -116,6 +117,13 @@ namespace uniset
             logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
         }
 
+        bool ignoreAclErrors = findArgParam("--" + prefix + "-ignore-acl-errors", conf->getArgc(), conf->getArgv()) != -1;
+        ioconf->setAclIgnoreError(ignoreAclErrors);
+        if( ignoreAclErrors )
+        {
+            smwarn << myname << "(init): 'Ignore ACL error' enabled" << endl;
+        }
+
         auto defPermission = conf->getArg2Param("--sm-default-sensor-permission", it.getProp("defaultSensorPermission"), "rw");
         auto amask = AccessMask::fromString(defPermission);
         if( amask == AccessNone )
@@ -123,9 +131,14 @@ namespace uniset
             ostringstream err;
             err << myname << "(init): Can't parse persmission '" << defPermission << "'";
             ucrit << err.str() << endl;
-            throw SystemError(err.str());
+            if( ignoreAclErrors )
+                throw SystemError(err.str());
         }
-        setDefaultAccessMask(amask);
+        else
+        {
+            setDefaultAccessMask(amask);
+            vmonit(defPermission);
+        }
 
         // ----------------------
         buildHistoryList(confnode);

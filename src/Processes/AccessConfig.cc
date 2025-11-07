@@ -82,7 +82,7 @@ namespace uniset
                     pid = conf->getAnyID(pname);
 
                 if( pid == DefaultObjectId )
-                    throw SystemError(err.str() + " error: Unknown 'name' in acl=" + aclName);
+                    throw SystemError(err.str().append(" error: Not found ID for '").append(pname).append( "' in acl=").append(aclName));
 
                 acl->permissions[pid] = AccessMask::fromString(perm);
             }
