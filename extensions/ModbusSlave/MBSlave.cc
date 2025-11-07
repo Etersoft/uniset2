@@ -1548,8 +1548,9 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void MBSlave::help_print( int argc, const char* const* argv )
     {
-        cout << "--mbs-name  name        - ObjectID. По умолчанию: MBSlave1" << endl;
-        cout << "--mbs-confnode cnode    - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
+        cout << "--run-lock file               - Запустить с защитой от повторного запуска" << endl;
+        cout << "--mbs-name  name              - ObjectID. По умолчанию: MBSlave1" << endl;
+        cout << "--mbs-confnode cnode          - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
         cout << endl;
         cout << "--mbs-reg-from-id 0,1         - Использовать в качестве регистра sensor ID" << endl;
         cout << "--mbs-filter-field name       - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;

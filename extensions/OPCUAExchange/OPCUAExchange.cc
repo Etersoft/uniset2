@@ -1506,6 +1506,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::help_print( int argc, const char* const* argv )
     {
+        cout << "--run-lock file                - Запустить с защитой от повторного запуска" << endl;
         cout << "--opcua-confnode name          - Использовать для настройки указанный xml-узел" << endl;
         cout << "--opcua-name name              - ID процесса. По умолчанию OPCUAExchange1." << endl;
         cout << "--opcua-polltime msec          - Пауза между циклами обмена. По умолчанию 100 мсек." << endl;

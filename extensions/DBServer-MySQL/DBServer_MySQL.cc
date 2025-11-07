@@ -435,6 +435,8 @@ void DBServer_MySQL::help_print( int argc, const char* const* argv )
 {
     cout << "Default: prefix='mysql'" << endl;
     cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+    cout << "--run-lock file            - Запустить с защитой от повторного запуска" << endl;
+    cout << endl;
     cout << DBServer::help_print() << endl;
 }
 // -----------------------------------------------------------------------------

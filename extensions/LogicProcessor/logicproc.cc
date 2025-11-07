@@ -18,6 +18,7 @@
 #include "Configuration.h"
 #include "Extensions.h"
 #include "LProcessor.h"
+#include "RunLock.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -26,7 +27,7 @@ using namespace uniset::extensions;
 int main(int argc, const char** argv)
 {
     //  std::ios::sync_with_stdio(false);
-
+    std::shared_ptr<RunLock> rlock = nullptr;
     try
     {
         if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
@@ -36,9 +37,30 @@ int main(int argc, const char** argv)
             cout << endl;
             cout << "--sleepTime msec        - Время между шагам рассчёта. По умолчанию: 200 милисек" << endl;
             cout << "--sm-ready-timeout msec - Максимальное время ожидания готовности SharedMemory к работе, перед началом работы. По умолчанию: 2 минуты" << endl;
+            cout << "--run-lock file         - Запустить с защитой от повторного запуска" << endl;
             cout << endl;
             cout << uniset::Configuration::help() << endl;
             return 0;
+        }
+
+        int n = uniset::findArgParam("--run-lock",argc, argv);
+        if( n != -1 )
+        {
+            if( n >= argc )
+            {
+                cerr << "Unknown lock file. Use --run-lock filename" << endl;
+                return 1;
+            }
+
+            rlock = make_shared<RunLock>(argv[n+1]);
+            if( rlock->isLocked() )
+            {
+                cerr << "ERROR: process is already running.. Lockfile: " << argv[n+1] << endl;
+                return 1;
+            }
+
+            cout << "Run with lockfile: " << string(argv[n+1]) << endl;
+            rlock->lock();
         }
 
         auto conf = uniset_init( argc, argv );
@@ -78,6 +100,9 @@ int main(int argc, const char** argv)
     {
         cerr << " catch ... " << endl;
     }
+
+    if( rlock )
+        rlock->unlock();
 
     return 1;
 }

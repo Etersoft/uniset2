@@ -147,6 +147,7 @@ void BackendOpenTSDB::help_print( int argc, const char* const* argv )
     cout << " Default prefix='opentsdb'" << endl;
     cout << "--prefix-name                - ID. Default: BackendOpenTSDB." << endl;
     cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
+    cout << "--run-lock file              - Запустить с защитой от повторного запуска" << endl;
     cout << endl;
     cout << " OpenTSDB: " << endl;
     cout << "--prefix-host  ip                         - OpenTSDB: host. Default: localhost" << endl;

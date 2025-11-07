@@ -541,6 +541,7 @@ void LogDB::help_print()
     cout << "Default: prefix='logdb'" << endl;
     cout << "--prefix-single-confile conf.xml     - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
     cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
+    cout << "--run-lock file                      - Запустить с защитой от повторного запуска" << endl;
     cout << "database: " << endl;
     cout << "--prefix-db-buffer-size sz                  - Размер буфера (до скидывания в БД)." << endl;
     cout << "--prefix-db-max-records sz                  - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;

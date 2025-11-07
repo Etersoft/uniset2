@@ -19,6 +19,7 @@
 #include "UniSetActivator.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
+#include "RunLock.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -38,8 +39,30 @@ int main(int argc, const char** argv)
         return 0;
     }
 
+    std::shared_ptr<RunLock> rlock = nullptr;
+
     try
     {
+        int n = uniset::findArgParam("--run-lock",argc, argv);
+        if( n != -1 )
+        {
+            if( n >= argc )
+            {
+                cerr << "Unknown lock file. Use --run-lock filename" << endl;
+                return 1;
+            }
+
+            rlock = make_shared<RunLock>(argv[n+1]);
+            if( rlock->isLocked() )
+            {
+                cerr << "ERROR: process is already running.. Lockfile: " << argv[n+1] << endl;
+                return 1;
+            }
+
+            cout << "Run with lockfile: " << string(argv[n+1]) << endl;
+            rlock->lock();
+        }
+
         auto conf = uniset_init(argc, argv);
 
         auto shm = SharedMemory::init_smemory(argc, argv);
@@ -71,6 +94,9 @@ int main(int argc, const char** argv)
     {
         cerr << "(smemory): catch(...)" << endl;
     }
+
+    if( rlock )
+        rlock->unlock();
 
     return 1;
 }

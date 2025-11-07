@@ -202,6 +202,7 @@ void BackendClickHouse::clearData()
 void BackendClickHouse::help_print( int argc, const char* const* argv )
 {
     cout << " Default prefix='clickhouse'" << endl;
+    cout << "--run-lock file                  - Запустить с защитой от повторного запуска" << endl;
     cout << "--clickhouse-name                - ID. Default: BackendClickHouse." << endl;
     cout << "--clickhouse-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << endl;

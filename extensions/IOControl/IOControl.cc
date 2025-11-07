@@ -1253,6 +1253,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void IOControl::help_print( int argc, const char* const* argv )
     {
+        cout << "--run-lock file                - Запустить с защитой от повторного запуска" << endl;
         cout << "--prefix-confnode name   - Использовать для настройки указанный xml-узел" << endl;
         cout << "--prefix-name name       - ID процесса. По умолчанию IOController1." << endl;
         cout << "--prefix-numcards        - Количество кард в/в. По умолчанию 1." << endl;

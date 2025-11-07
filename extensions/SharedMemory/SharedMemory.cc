@@ -32,6 +32,7 @@ namespace uniset
     void SharedMemory::help_print( int argc, const char* const* argv )
     {
         cout << "--smemory-id           - SharedMemory ID. Default: SharedMemory" << endl;
+        cout << "--run-lock file        - Запустить с защитой от повторного запуска" << endl;
         cout << "--datfile fname        - Файл с картой датчиков. По умолчанию configure.xml" << endl;
         cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
         cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;

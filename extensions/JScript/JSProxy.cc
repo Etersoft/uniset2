@@ -90,6 +90,7 @@ JSProxy::~JSProxy()
 // ----------------------------------------------------------------------------
 void JSProxy::help_print()
 {
+    cout << "--run-lock file         - Запустить с защитой от повторного запуска" << endl;
     cout << "--js-name               - ID for process. Default: JSProxy " << endl;
     cout << "--js-confnode           - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << "--js-sm-ready-timeout   - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;

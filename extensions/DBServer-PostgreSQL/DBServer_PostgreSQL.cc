@@ -523,6 +523,7 @@ void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
 {
     cout << "Default: prefix='pgsql'" << endl;
     cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+    cout << "--run-lock file            - Запустить с защитой от повторного запуска" << endl;
 
     cout << "Connection: " << endl;
     cout << "--prefix-dbname name   - database name" << endl;
