@@ -24,9 +24,10 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-RTUExchange::RTUExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
+RTUExchange::RTUExchange(uniset::ObjectId objId, xmlNode* cnode,
+                         uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                          const std::string& prefix_ ):
-    MBExchange(objId, shmId, ic, prefix_)
+    MBExchange(objId, cnode, shmId, ic, prefix_)
 {
     if( objId == DefaultObjectId )
         throw uniset::SystemError("(RTUExchange): objId=-1?!! Use --" + mbconf->prefix + "-name" );
@@ -431,7 +432,15 @@ std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange(int argc, const char*
         return 0;
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(rtuexchange): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     dinfo << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<RTUExchange>(ID, icID, ic, prefix);
+    return make_shared<RTUExchange>(ID, confnode, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------

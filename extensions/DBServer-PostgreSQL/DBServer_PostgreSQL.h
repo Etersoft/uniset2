@@ -24,6 +24,7 @@
 #include "PostgreSQLInterface.h"
 #include "DBServer.h"
 #include "SharedMemory.h"
+#include "USingleProcess.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -53,10 +54,11 @@ namespace uniset
      * хотя фактически туда сейчас сохраняется значение в наносекундах!
      */
     class DBServer_PostgreSQL:
+        private USingleProcess,
         public DBServer
     {
         public:
-            DBServer_PostgreSQL( uniset::ObjectId id, const std::string& prefix );
+            DBServer_PostgreSQL( uniset::ObjectId id, xmlNode* cnode, const std::string& prefix );
             DBServer_PostgreSQL();
             virtual ~DBServer_PostgreSQL();
 

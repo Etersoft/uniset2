@@ -24,7 +24,8 @@
 using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
-DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
+DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, xmlNode* cnode, const std::string& prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     DBServer(id, prefix)
 {
     db = unisetstd::make_unique<PostgreSQLInterface>();
@@ -38,7 +39,7 @@ DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix 
 }
 
 DBServer_PostgreSQL::DBServer_PostgreSQL():
-    DBServer(uniset_conf()->getDBServer())
+    DBServer_PostgreSQL(uniset_conf()->getDBServer(), uniset_conf()->getNode("LocalDBServer"), "")
 {
     db = unisetstd::make_unique<PostgreSQLInterface>();
 
@@ -510,8 +511,16 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
         }
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", "LocalDBServer");
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(DBServer_PostgreSQL): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     uinfo << "(DBServer_PostgreSQL): name = " << name << "(" << ID << ")" << endl;
-    auto db = make_shared<DBServer_PostgreSQL>(ID, prefix);
+    auto db = make_shared<DBServer_PostgreSQL>(ID, confnode, prefix);
 
     if( shm )
         shm->setDBServer(db);
@@ -523,6 +532,7 @@ void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
 {
     cout << "Default: prefix='pgsql'" << endl;
     cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+    cout << "--run-lock file            - Запустить с защитой от повторного запуска" << endl;
 
     cout << "Connection: " << endl;
     cout << "--prefix-dbname name   - database name" << endl;

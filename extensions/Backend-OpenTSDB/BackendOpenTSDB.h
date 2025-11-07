@@ -26,6 +26,7 @@
 #include "SharedMemory.h"
 #include "extensions/Extensions.h"
 #include "UTCPStream.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -101,6 +102,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*! Реализация DBServer для OpenTSDB */
     class BackendOpenTSDB:
+        private USingleProcess,
         public UObject_SK
     {
         public:

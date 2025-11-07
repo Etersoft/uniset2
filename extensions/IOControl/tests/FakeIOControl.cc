@@ -24,9 +24,10 @@ namespace uniset
 {
     // -----------------------------------------------------------------------------
 
-    FakeIOControl::FakeIOControl(uniset::ObjectId id, uniset::ObjectId icID,
+    FakeIOControl::FakeIOControl(uniset::ObjectId id, xmlNode* cnode,
+                                 uniset::ObjectId icID,
                                  const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
-        IOControl(id, icID, ic, numcards, prefix_)
+        IOControl(id, cnode, icID, ic, numcards, prefix_)
     {
         fcard = new FakeComediInterface();
 
@@ -79,8 +80,16 @@ namespace uniset
 
         int numcards = conf->getArgPInt("--" + prefix + "-numcards", 1);
 
+        string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+        auto confnode = conf->getNode(cname);
+        if( !confnode )
+        {
+            cerr << "(iocontrol): Not found confnode '" << cname << "' in config file" << endl;
+            return nullptr;
+        }
+
         std::cout << "(iocontrol): name = " << name << "(" << ID << ")" << std::endl;
-        return std::make_shared<FakeIOControl>(ID, icID, ic, numcards, prefix);
+        return std::make_shared<FakeIOControl>(ID, confnode, icID, ic, numcards, prefix);
     }
     // -----------------------------------------------------------------------------
     FakeComediInterface::FakeComediInterface():

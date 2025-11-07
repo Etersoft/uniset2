@@ -4,6 +4,7 @@
 #include "Debug.h"
 #include "UniSetActivator.h"
 #include "Extensions.h"
+#include "RunLock.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -20,6 +21,7 @@ int main( int argc, const char** argv )
         cout << endl;
         cout << "--smemory-id objectName       - SharedMemory objectID. Default: autodetect" << endl;
         cout << "--rrdstorage-logfile filename - logfilename. Default: rrdstorage.log" << endl;
+        cout << "--run-lock file               - Запустить с защитой от повторного запуска" << endl;
         cout << endl;
         RRDServer::help_print(argc, argv);
         cout << " Global options:" << endl;

@@ -26,6 +26,7 @@
 #include "UInterface.h"
 #include "SMInterface.h"
 #include "LProcessor.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -37,7 +38,7 @@ namespace uniset
     {
         public:
 
-            PassiveLProcessor(uniset::ObjectId objId,
+            PassiveLProcessor(uniset::ObjectId objId, xmlNode* cnode,
                               uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "lproc" );
             virtual ~PassiveLProcessor();
 
@@ -53,7 +54,9 @@ namespace uniset
                     const std::string& prefix = "plproc" );
 
         protected:
-            PassiveLProcessor(): shm(0), maxHeartBeat(0) {};
+            PassiveLProcessor():
+            LProcessor("", nullptr),
+            shm(0), maxHeartBeat(0) {};
 
             virtual void step() override;
             virtual void getInputs() override;

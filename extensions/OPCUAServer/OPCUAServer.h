@@ -28,6 +28,7 @@
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
 #include "Extensions.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -164,6 +165,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*! Реализация OPCUAServer */
     class OPCUAServer:
+        private USingleProcess,
         public UObject_SK
     {
         public:

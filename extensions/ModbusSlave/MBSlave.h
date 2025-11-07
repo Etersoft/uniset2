@@ -42,6 +42,7 @@
 #include "LogServer.h"
 #include "LogAgregator.h"
 #include "VMonitor.h"
+#include "USingleProcess.h"
 // -----------------------------------------------------------------------------
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
@@ -313,6 +314,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*! Реализация slave-интерфейса */
     class MBSlave:
+        private USingleProcess,
         public UniSetObject
     {
         public:

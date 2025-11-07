@@ -35,6 +35,11 @@ class RunLock
         bool unlock() const;
         bool isLockOwner() const;
 
+        inline const std::string getLockfileName()
+        {
+            return lockfile;
+        }
+
     protected:
         const std::string lockfile;
 	

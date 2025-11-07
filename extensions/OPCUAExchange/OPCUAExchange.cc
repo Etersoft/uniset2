@@ -59,6 +59,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     OPCUAExchange::OPCUAExchange(uniset::ObjectId id, xmlNode* cnode, uniset::ObjectId icID,
                                  const std::shared_ptr<SharedMemory>& ic, const std::string& _prefix ):
+        USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
         UniSetObject(id),
         confnode(cnode),
         iolist(50),
@@ -1506,6 +1507,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::help_print( int argc, const char* const* argv )
     {
+        cout << "--run-lock file                - Запустить с защитой от повторного запуска" << endl;
         cout << "--opcua-confnode name          - Использовать для настройки указанный xml-узел" << endl;
         cout << "--opcua-name name              - ID процесса. По умолчанию OPCUAExchange1." << endl;
         cout << "--opcua-polltime msec          - Пауза между циклами обмена. По умолчанию 100 мсек." << endl;

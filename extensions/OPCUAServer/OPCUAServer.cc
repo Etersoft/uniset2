@@ -47,6 +47,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 // -----------------------------------------------------------------------------
 OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                          const string& _prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
     UObject_SK(objId, cnode, string(_prefix + "-")),
     prefix(_prefix)
 {
@@ -591,8 +592,9 @@ bool OPCUAServer::deactivateObject()
 // -----------------------------------------------------------------------------
 void OPCUAServer::help_print()
 {
-    cout << "--opcua-name        - ID for rrdstorage. Default: OPCUAServer1. " << endl;
-    cout << "--opcua-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
+    cout << "--run-lock file            - Запустить с защитой от повторного запуска" << endl;
+    cout << "--opcua-name               - ID for rrdstorage. Default: OPCUAServer1. " << endl;
+    cout << "--opcua-confnode           - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << "--opcua-heartbeat-id name  - ID for heartbeat sensor." << endl;
     cout << "--opcua-heartbeat-max val  - max value for heartbeat sensor." << endl;
     cout << "--opcua-filter-field name  - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
