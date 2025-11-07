@@ -39,6 +39,7 @@
 #include "LogServer.h"
 #include "DebugStream.h"
 #include "LogAgregator.h"
+#include "USingleProcess.h"
 // -------------------------------------------------------------------------
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
@@ -235,10 +236,12 @@ namespace uniset
         - тест ламп
     */
     class IOControl:
+        private USingleProcess,
         public UniSetObject
     {
         public:
-            IOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, size_t numcards = 2, const std::string& prefix = "io" );
+            IOControl( uniset::ObjectId id, xmlNode* cnode,
+                       uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, size_t numcards = 2, const std::string& prefix = "io" );
             virtual ~IOControl();
 
             /*! глобальная функция для инициализации объекта */

@@ -26,7 +26,6 @@ using namespace uniset::extensions;
 int main(int argc, const char** argv)
 {
     //  std::ios::sync_with_stdio(false);
-
     try
     {
         if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
@@ -36,6 +35,7 @@ int main(int argc, const char** argv)
             cout << endl;
             cout << "--sleepTime msec        - Время между шагам рассчёта. По умолчанию: 200 милисек" << endl;
             cout << "--sm-ready-timeout msec - Максимальное время ожидания готовности SharedMemory к работе, перед началом работы. По умолчанию: 2 минуты" << endl;
+            cout << "--run-lock file         - Запустить с защитой от повторного запуска" << endl;
             cout << endl;
             cout << uniset::Configuration::help() << endl;
             return 0;
@@ -62,7 +62,7 @@ int main(int argc, const char** argv)
             return 1;
         }
 
-        LProcessor plc;
+        LProcessor plc("", nullptr);
         plc.execute(schema);
         return 0;
     }

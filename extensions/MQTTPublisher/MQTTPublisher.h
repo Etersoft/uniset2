@@ -24,7 +24,8 @@
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
-#include "extensions/Extensions.h"
+#include "Extensions.h"
+#include "USingleProcess.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -107,6 +108,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*! Реализация публикатора на основе MQTT */
     class MQTTPublisher:
+        private USingleProcess,
         protected mosqpp::mosquittopp,
         public UObject_SK
     {

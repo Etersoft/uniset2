@@ -25,7 +25,8 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // -------------------------------------------------------------------------
-LProcessor::LProcessor( const std::string& name ):
+LProcessor::LProcessor( const std::string& name, xmlNode* cnode ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     logname(name)
 {
     auto conf = uniset_conf();

@@ -28,6 +28,7 @@ using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                      const string& prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
     UObject_SK(objId, cnode, string(prefix + "-")),
     prefix(prefix)
 {

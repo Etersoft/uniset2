@@ -22,9 +22,10 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // -------------------------------------------------------------------------
-PassiveLProcessor::PassiveLProcessor( uniset::ObjectId objId,
+PassiveLProcessor::PassiveLProcessor( uniset::ObjectId objId, xmlNode* cnode,
                                       uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
     UniSetObject(objId),
+    LProcessor("", cnode),
     shm(nullptr)
 {
     auto conf = uniset_conf();
@@ -32,14 +33,10 @@ PassiveLProcessor::PassiveLProcessor( uniset::ObjectId objId,
     logname = myname;
     shm = make_shared<SMInterface>(shmID, UniSetObject::ui, objId, ic);
 
-    string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
+   if( !cnode )
+        throw SystemError("Undefined confnode for " + myname );
 
-    xmlNode* confnode = conf->getNode(conf_name);
-
-    if( confnode == NULL )
-        throw SystemError("Not found conf-node for " + conf_name );
-
-    UniXML::iterator it(confnode);
+    UniXML::iterator it(cnode);
     string lfile = conf->getArgParam("--" + prefix + "-schema", it.getProp("schema"));
 
     if( lfile.empty() )
@@ -301,7 +298,15 @@ std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, cons
         return 0;
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(plproc): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     dinfo << "(plproc): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<PassiveLProcessor>(ID, shmID, ic, prefix);
+    return make_shared<PassiveLProcessor>(ID, confnode, shmID, ic, prefix);
 }
 // -----------------------------------------------------------------------------

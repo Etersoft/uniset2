@@ -32,7 +32,7 @@ class LPRunner
 
         LPRunner(const std::string& schm)
         {
-            lp = make_shared<LProcessor>();
+            lp = make_shared<LProcessor>("", nullptr);
             lp->open(schm);
             res = std::async(std::launch::async, run_lproc, lp);
         }

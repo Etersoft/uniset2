@@ -26,6 +26,7 @@
 #include "UniSetTypes.h"
 #include "SQLiteInterface.h"
 #include "DBServer.h"
+#include "USingleProcess.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -150,10 +151,11 @@ namespace uniset
     //------------------------------------------------------------------------------------------
     /*! Реализация DBServer для SQLite */
     class DBServer_SQLite:
+        private USingleProcess,
         public DBServer
     {
         public:
-            DBServer_SQLite( uniset::ObjectId id, const std::string& prefix );
+            DBServer_SQLite( uniset::ObjectId id, xmlNode* cnode, const std::string& prefix );
             explicit DBServer_SQLite( const std::string& prefix );
             virtual ~DBServer_SQLite();
 
