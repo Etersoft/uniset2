@@ -61,6 +61,11 @@ namespace uniset
         aclConfigSectionName = section;
     }
     // --------------------------------------------------------------------------
+    void IOConfig_XML::setAclIgnoreError( bool st )
+    {
+        aclIgnoreErrors = st;
+    }
+    // --------------------------------------------------------------------------
     uniset::ACLInfoMap IOConfig_XML::readACLInfo( const std::shared_ptr<Configuration>& _conf, const std::shared_ptr<UniXML>& uxml )
     {
         ACLInfoMap out;
@@ -94,7 +99,7 @@ namespace uniset
             if( sid == uniset::DefaultObjectId )
             {
                 ostringstream err;
-                err << "(IOConfig_XML::getBaseInfo): Not found ID for sensor --> " << sname;
+                err << "(IOConfig_XML::readACLInfo): Not found ID for sensor --> " << sname;
                 ucrit << err.str() << endl;
                 throw SystemError(err.str());
             }
@@ -110,7 +115,16 @@ namespace uniset
     // --------------------------------------------------------------------------
     IOController::IOStateList IOConfig_XML::read()
     {
-        acls = AccessConfig::read( conf, conf->getConfXML(), aclConfigName, aclConfigSectionName );
+        try
+        {
+            acls = AccessConfig::read(conf, conf->getConfXML(), aclConfigName, aclConfigSectionName);
+        }
+        catch( std::exception& ex )
+        {
+            acls = ACLMap(); // null
+            if( !aclIgnoreErrors )
+                throw ex;
+        }
 
         IOController::IOStateList lst;
 
@@ -293,11 +307,14 @@ namespace uniset
                     << " Not found acl='"  << aclName << "'";
 
                 ucrit << err.str() << endl;
-                throw SystemError(err.str());
+                if( !aclIgnoreErrors )
+                    throw SystemError(err.str());
             }
-
-            inf->acl = acl->second;
-            inf->aclName = aclName;
+            else
+            {
+                inf->acl = acl->second;
+                inf->aclName = aclName;
+            }
         }
 
         if( !it.getProp("undefined_value").empty() )
