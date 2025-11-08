@@ -27,9 +27,10 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
+MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, xmlNode* confnode,
+                         uniset::ObjectId shmId,
                          const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
-    MBExchange(objId, shmId, ic, prefix),
+    MBExchange(objId, confnode, shmId, ic, prefix),
     force_disconnect(true)
 {
     if( objId == DefaultObjectId )
@@ -230,8 +231,16 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
         return 0;
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(MBTCPMaster): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     dinfo << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<MBTCPMaster>(ID, icID, ic, prefix);
+    return make_shared<MBTCPMaster>(ID, confnode, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
 uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )

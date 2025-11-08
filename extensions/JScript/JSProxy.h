@@ -219,11 +219,13 @@
 // --------------------------------------------------------------------------
 #include "JSProxy_SK.h"
 #include "JSEngine.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
     // ----------------------------------------------------------------------
     class JSProxy final:
+        private USingleProcess,
         public JSProxy_SK
     {
         public:

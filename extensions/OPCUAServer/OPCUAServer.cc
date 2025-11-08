@@ -47,6 +47,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 // -----------------------------------------------------------------------------
 OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                          const string& _prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
     UObject_SK(objId, cnode, string(_prefix + "-")),
     prefix(_prefix)
 {

@@ -35,7 +35,8 @@
 using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
-DBServer_SQLite::DBServer_SQLite( ObjectId id, const std::string& prefix ):
+DBServer_SQLite::DBServer_SQLite( ObjectId id, xmlNode* cnode, const std::string& prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     DBServer(id, prefix)
 {
     if( getId() == DefaultObjectId )
@@ -49,7 +50,7 @@ DBServer_SQLite::DBServer_SQLite( ObjectId id, const std::string& prefix ):
 }
 
 DBServer_SQLite::DBServer_SQLite( const std::string& prefix ):
-    DBServer_SQLite(uniset_conf()->getDBServer(), prefix)
+    DBServer_SQLite(uniset_conf()->getDBServer(), uniset_conf()->getNode("LocalDBServer"), prefix)
 {
 }
 //--------------------------------------------------------------------------------------------
@@ -429,8 +430,16 @@ std::shared_ptr<DBServer_SQLite> DBServer_SQLite::init_dbserver( int argc, const
         }
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", "LocalDBServer");
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(MBTCPMaster): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     uinfo << "(DBServer_SQLite): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<DBServer_SQLite>(ID, prefix);
+    return make_shared<DBServer_SQLite>(ID, confnode, prefix);
 }
 // -----------------------------------------------------------------------------
 void DBServer_SQLite::help_print( int argc, const char* const* argv )

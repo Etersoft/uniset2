@@ -27,6 +27,7 @@ using namespace uniset::extensions;
 BackendOpenTSDB::BackendOpenTSDB( uniset::ObjectId objId, xmlNode* cnode,
                                   uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                                   const string& prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     UObject_SK(objId, cnode, string(prefix + "-")),
     prefix(prefix)
 {
@@ -199,7 +200,7 @@ std::shared_ptr<BackendOpenTSDB> BackendOpenTSDB::init_opendtsdb( int argc,
         }
     }
 
-    string confname = conf->getArgParam("--" + prefix + "-confnode", name);
+    string confname = conf->getArgParam("--" + prefix + "-confnode", "LocalDBServer");
     xmlNode* cnode = conf->getNode(confname);
 
     if( !cnode )

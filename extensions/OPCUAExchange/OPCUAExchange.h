@@ -38,6 +38,7 @@
 #include "DebugStream.h"
 #include "LogAgregator.h"
 #include "OPCUAClient.h"
+#include "USingleProcess.h"
 // -------------------------------------------------------------------------
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
@@ -177,6 +178,7 @@ namespace uniset
     // ---------------------------------------------------------------------
     /*! Процесс опроса OPC UA сервера */
     class OPCUAExchange:
+        private USingleProcess,
         public UniSetObject
     {
         public:

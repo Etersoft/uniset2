@@ -269,7 +269,8 @@ namespace uniset
         public MBExchange
     {
         public:
-            MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+            MBTCPMultiMaster( uniset::ObjectId objId, xmlNode* cnode,
+                              uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
                               const std::string& prefix = "mbtcp" );
             virtual ~MBTCPMultiMaster();
 

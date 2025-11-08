@@ -33,6 +33,7 @@ namespace uniset
     using namespace ModbusRTU;
     // -----------------------------------------------------------------------------
     MBSlave::MBSlave(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
+        USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
         UniSetObject(objId),
         initPause(3000),
         sidTestSMReady(DefaultObjectId),

@@ -35,7 +35,8 @@
 using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
-DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
+DBServer_MySQL::DBServer_MySQL(ObjectId id, xmlNode* cnode, const std::string& prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     DBServer(id, prefix)
 {
 
@@ -52,7 +53,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
 }
 
 DBServer_MySQL::DBServer_MySQL( const std::string& prefix ):
-    DBServer_MySQL(uniset_conf()->getDBServer(), prefix)
+    DBServer_MySQL(uniset_conf()->getDBServer(), uniset_conf()->getNode("LocalDBServer"), prefix)
 {
 }
 //--------------------------------------------------------------------------------------------
@@ -427,8 +428,16 @@ std::shared_ptr<DBServer_MySQL> DBServer_MySQL::init_dbserver( int argc, const c
         }
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", "LocalDBServer");
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(DBServer_MySQL): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     uinfo << "(DBServer_MySQL): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<DBServer_MySQL>(ID, prefix);
+    return make_shared<DBServer_MySQL>(ID, confnode, prefix);
 }
 // -----------------------------------------------------------------------------
 void DBServer_MySQL::help_print( int argc, const char* const* argv )

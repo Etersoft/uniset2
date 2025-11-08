@@ -31,6 +31,7 @@ using namespace uniset;
 #endif
 // -------------------------------------------------------------------------
 JSProxy::JSProxy( uniset::ObjectId id, xmlNode* confnode, const std::string& _prefix ):
+    USingleProcess(confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     JSProxy_SK( id, confnode, string(_prefix + "-") )
 {
     if( file.empty() )

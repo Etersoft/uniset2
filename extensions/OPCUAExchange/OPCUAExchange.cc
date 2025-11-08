@@ -59,6 +59,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     OPCUAExchange::OPCUAExchange(uniset::ObjectId id, xmlNode* cnode, uniset::ObjectId icID,
                                  const std::shared_ptr<SharedMemory>& ic, const std::string& _prefix ):
+        USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
         UniSetObject(id),
         confnode(cnode),
         iolist(50),
