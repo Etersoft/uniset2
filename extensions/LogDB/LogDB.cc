@@ -541,24 +541,25 @@ void LogDB::help_print()
     cout << "Default: prefix='logdb'" << endl;
     cout << "--prefix-single-confile conf.xml     - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
     cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
+    cout << endl;
     cout << "database: " << endl;
     cout << "--prefix-db-buffer-size sz                  - Размер буфера (до скидывания в БД)." << endl;
     cout << "--prefix-db-max-records sz                  - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
     cout << "--prefix-db-overflow-factor float           - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
     cout << "--prefix-db-disable                         - Отключить запись в БД" << endl;
     cout << "--prefix-db-timestamp-format localtime|utc  - Формат времени в ответе на запросы. По умолчанию: localtime" << endl;
-
+    cout << endl;
     cout << "websockets: " << endl;
     cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
     cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
     cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
     cout << "--prefix-ws-html-template file       - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
-
+    cout << endl;
     cout << "logservers: " << endl;
     cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
     cout << "--prefix-ls-read-buffer-size num        - Размер буфера для чтения сообщений от логсервера. По умолчанию: 10001" << endl;
-
+    cout << endl;
     cout << "http: " << endl;
     cout << "--prefix-httpserver-host ip                 - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
     cout << "--prefix-httpserver-port num                - Порт на котором принимать запросы. По умолчанию: 8080" << endl;

@@ -23,7 +23,8 @@
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
-#include "extensions/Extensions.h"
+#include "Extensions.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -83,6 +84,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*! Реализация хранения на основе RRD */
     class RRDServer:
+        private USingleProcess,
         public UObject_SK
     {
         public:

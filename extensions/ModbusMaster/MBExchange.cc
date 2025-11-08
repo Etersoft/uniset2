@@ -30,8 +30,10 @@ namespace uniset
     using namespace std;
     using namespace uniset::extensions;
     // -----------------------------------------------------------------------------
-    MBExchange::MBExchange(uniset::ObjectId objId, uniset::ObjectId shmId,
+    MBExchange::MBExchange(uniset::ObjectId objId, xmlNode* _cnode,
+                           uniset::ObjectId shmId,
                            const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
+        USingleProcess(_cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
         UniSetObject(objId),
         allInitOK(false),
         force(false),
@@ -42,7 +44,8 @@ namespace uniset
         notUseExchangeTimer(false),
         poll_count(0),
         mb(nullptr),
-        ic(_ic)
+        ic(_ic),
+        cnode(_cnode)
     {
         if( objId == DefaultObjectId )
             throw uniset::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
@@ -50,12 +53,8 @@ namespace uniset
         auto conf = uniset_conf();
         mutex_start.setName(myname + "_mutex_start");
 
-        string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
-
-        cnode = conf->getNode(conf_name);
-
         if( cnode == NULL )
-            throw uniset::SystemError("(MBExchange): Not found node <" + conf_name + " ...> for " + myname );
+            throw uniset::SystemError("(MBExchange): Unknown confnode for " + myname );
 
         shm = make_shared<SMInterface>(shmId, ui, objId, ic);
         mbconf = make_shared<MBConfig>(conf, cnode, shm);

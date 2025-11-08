@@ -28,9 +28,10 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shmId,
+MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, xmlNode* cnode,
+                                    uniset::ObjectId shmId,
                                     const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
-    MBExchange(objId, shmId, ic, prefix),
+    MBExchange(objId, cnode, shmId, ic, prefix),
     force_disconnect(true)
 {
     if( objId == DefaultObjectId )
@@ -719,8 +720,16 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
         return 0;
     }
 
+    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    auto confnode = conf->getNode(cname);
+    if( !confnode )
+    {
+        cerr << "(MBTCPMultiMaster): Not found confnode '" << cname << "' in config file" << endl;
+        return nullptr;
+    }
+
     dinfo << "(MBTCPMultiMaster): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<MBTCPMultiMaster>(ID, icID, ic, prefix);
+    return make_shared<MBTCPMultiMaster>(ID, confnode, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
 const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const

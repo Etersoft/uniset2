@@ -32,7 +32,8 @@ namespace uniset
         public MBExchange
     {
         public:
-            RTUExchange( uniset::ObjectId objId, uniset::ObjectId shmID,
+            RTUExchange( uniset::ObjectId objId, xmlNode* cnode,
+                         uniset::ObjectId shmID,
                          const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "rs" );
             virtual ~RTUExchange();
 

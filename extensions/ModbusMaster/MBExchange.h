@@ -55,10 +55,12 @@ namespace uniset
         \par Базовый класс для реализация обмена по протоколу Modbus [RTU|TCP].
     */
     class MBExchange:
+        private USingleProcess,
         public UniSetObject
     {
         public:
-            MBExchange( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+            MBExchange( uniset::ObjectId objId, xmlNode* confnode,
+                        uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
                         const std::string& prefix = "mb" );
             virtual ~MBExchange();
 

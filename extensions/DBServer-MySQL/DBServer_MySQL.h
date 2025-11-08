@@ -26,6 +26,7 @@
 #include "UniSetTypes.h"
 #include "MySQLInterface.h"
 #include "DBServer.h"
+#include "USingleProcess.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -150,10 +151,11 @@ namespace uniset
     //------------------------------------------------------------------------------------------
     /*! Реализация DBServer для MySQL */
     class DBServer_MySQL:
+        private USingleProcess,
         public DBServer
     {
         public:
-            DBServer_MySQL( uniset::ObjectId id, const std::string& prefix );
+            DBServer_MySQL( uniset::ObjectId id, xmlNode* cnode, const std::string& prefix );
             explicit DBServer_MySQL( const std::string& prefix );
             virtual ~DBServer_MySQL();
 

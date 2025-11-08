@@ -112,14 +112,16 @@
 #include "UInterface.h"
 #include "Element.h"
 #include "Schema.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
     // --------------------------------------------------------------------------
-    class LProcessor
+    class LProcessor:
+        private USingleProcess
     {
         public:
-            explicit LProcessor( const std::string& name = "" );
+            explicit LProcessor( const std::string& name, xmlNode* cnode );
             virtual ~LProcessor();
 
             void open( const std::string& lfile );

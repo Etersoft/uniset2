@@ -10,7 +10,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
     //  std::ios::sync_with_stdio(false);
-
+    std::shared_ptr<RunLock> rlock = nullptr;
     try
     {
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         if( !sID.empty() )
             shmID = conf->getControllerID(sID);
         else
-            shmID = uniset::extensions::getSharedMemoryID();
+             shmID = uniset::extensions::getSharedMemoryID();
 
         if( shmID == DefaultObjectId )
         {

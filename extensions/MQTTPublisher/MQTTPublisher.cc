@@ -24,6 +24,7 @@ using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 MQTTPublisher::MQTTPublisher(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
                              const string& prefix ):
+    USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
     mosquittopp(NULL),
     UObject_SK(objId, cnode, string(prefix + "-")),
     prefix(prefix)

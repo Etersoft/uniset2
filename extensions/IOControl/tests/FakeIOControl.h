@@ -64,7 +64,8 @@ namespace uniset
         public IOControl
     {
         public:
-            FakeIOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
+            FakeIOControl( uniset::ObjectId id, xmlNode* cnode,
+                           uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
             virtual ~FakeIOControl();
 
             /*! глобальная функция для инициализации объекта */

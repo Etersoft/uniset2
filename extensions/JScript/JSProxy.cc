@@ -31,6 +31,7 @@ using namespace uniset;
 #endif
 // -------------------------------------------------------------------------
 JSProxy::JSProxy( uniset::ObjectId id, xmlNode* confnode, const std::string& _prefix ):
+    USingleProcess(confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
     JSProxy_SK( id, confnode, string(_prefix + "-") )
 {
     if( file.empty() )
@@ -90,6 +91,7 @@ JSProxy::~JSProxy()
 // ----------------------------------------------------------------------------
 void JSProxy::help_print()
 {
+    cout << "--run-lock file         - Запустить с защитой от повторного запуска" << endl;
     cout << "--js-name               - ID for process. Default: JSProxy " << endl;
     cout << "--js-confnode           - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << "--js-sm-ready-timeout   - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;

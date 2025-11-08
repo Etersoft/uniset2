@@ -47,8 +47,10 @@ namespace uniset
     }
     // -----------------------------------------------------------------------------
 
-    IOControl::IOControl(uniset::ObjectId id, uniset::ObjectId icID,
+    IOControl::IOControl(uniset::ObjectId id, xmlNode* cnode,
+                         uniset::ObjectId icID,
                          const std::shared_ptr<SharedMemory>& ic, size_t numcards, const std::string& prefix_ ):
+        USingleProcess(cnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
         UniSetObject(id),
         polltime(150),
         cards(numcards),
@@ -75,11 +77,10 @@ namespace uniset
     {
         auto conf = uniset_conf();
 
-        string cname = conf->getArgParam("--" + prefix + "-confnode", myname);
-        confnode = conf->getNode(cname);
+        confnode = cnode;
 
         if( confnode == NULL )
-            throw SystemError("Not found conf-node " + cname + " for " + myname);
+            throw SystemError("Undefined conf-node for " + myname);
 
         iolog = make_shared<DebugStream>();
         iolog->setLogName(myname);
@@ -1247,12 +1248,21 @@ namespace uniset
 
         int numcards = conf->getArgPInt("--" + prefix + "-numcards", 1);
 
+        string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+        auto confnode = conf->getNode(cname);
+        if( !confnode )
+        {
+            cerr << "(MBTCPMaster): Not found confnode '" << cname << "' in config file" << endl;
+            return nullptr;
+        }
+
         dinfo << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
-        return make_shared<IOControl>(ID, icID, ic, numcards, prefix);
+        return make_shared<IOControl>(ID, confnode, icID, ic, numcards, prefix);
     }
     // -----------------------------------------------------------------------------
     void IOControl::help_print( int argc, const char* const* argv )
     {
+        cout << "--run-lock file                - Запустить с защитой от повторного запуска" << endl;
         cout << "--prefix-confnode name   - Использовать для настройки указанный xml-узел" << endl;
         cout << "--prefix-name name       - ID процесса. По умолчанию IOController1." << endl;
         cout << "--prefix-numcards        - Количество кард в/в. По умолчанию 1." << endl;

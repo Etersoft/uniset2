@@ -59,7 +59,8 @@ namespace uniset
              */
             IOConfig_XML( const std::shared_ptr<UniXML>& _xml, const std::shared_ptr<Configuration>& conf, xmlNode* root = nullptr );
 
-            void setAclConfig( const std::string& name, const std::string& section="ACLConfig" );
+            void setAclConfig( const std::string& name, const std::string& section="ACLConfig");
+            void setAclIgnoreError( bool st );
 
             /*! слот для подключения функции чтения датчика из xml-файла.
                 \param uxml  - интерфейс для работы с xml-файлом
@@ -170,6 +171,7 @@ namespace uniset
             uniset::ACLMap acls;
             std::string aclConfigName;
             std::string aclConfigSectionName;
+            bool aclIgnoreErrors = { false };
             xmlNode* root = { nullptr };
             ReaderSlot rtslot;
             ReaderSlot rslot;

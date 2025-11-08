@@ -31,6 +31,7 @@
 #include "LogAgregator.h"
 #include "VMonitor.h"
 #include "IOConfig_XML.h"
+#include "USingleProcess.h"
 // -----------------------------------------------------------------------------
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
@@ -41,14 +42,15 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*! Реализация SharedMemory */
     class SharedMemory:
+        private USingleProcess,
         public IONotifyController
     {
         public:
 
             // конструктор с конфигурированием через xml
             SharedMemory( ObjectId id,
-                          const std::shared_ptr<IOConfig_XML>& ioconf,
-                          const std::string& confname = "" );
+                          xmlNode* cnode,
+                          const std::shared_ptr<IOConfig_XML>& ioconf );
 
             virtual ~SharedMemory();
 

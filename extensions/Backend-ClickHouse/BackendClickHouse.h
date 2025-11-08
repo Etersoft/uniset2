@@ -26,6 +26,7 @@
 #include "extensions/Extensions.h"
 #include "ClickHouseInterface.h"
 #include "ClickHouseTagsConfig.h"
+#include "USingleProcess.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -148,6 +149,7 @@ namespace uniset
     //------------------------------------------------------------------------------------------
     /*! Реализация DBServer для Clickhouse */
     class BackendClickHouse:
+        private USingleProcess,
         public UObject_SK
     {
         public:

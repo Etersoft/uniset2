@@ -34,15 +34,15 @@ SM позволяет определять список датчиков, кот
   <sensors>
   ...
   <item id="12" name="Sensor12" textname="xxx" .... myfilter="m1" ...>
-  <consumers>
-  <item name="Consumer1" type="object" mycfilter="c1" .../>
-  </consumers>
+      <consumers>
+        <item name="Consumer1" type="object" mycfilter="c1" .../>
+      </consumers>
   </item>
   ...
   <item id="121" name="Sensor121" textname="xxx" .... myfilter="m1" ...>
-  <consumers>
-  <item name="Consumer1" type="object" mycfilter="c1" .../>
-  </consumers>
+      <consumers>
+        <item name="Consumer1" type="object" mycfilter="c1" .../>
+      </consumers>
   </item>
   ...
   </sensors>
@@ -92,8 +92,8 @@ SM внесёт в список заказчиков, только те объе
 Пример:
 \code
   <objects>
-  ...
-  <item id="2342" name="MyObject" ... evnt_myfilter="1" ../>
+     ...
+     <item id="2342" name="MyObject" ... evnt_myfilter="1" ../>
   </objects>
 \endcode
 При этом в параметрах старта SM должно быть указано \b --e-filter myfilter.
@@ -107,12 +107,12 @@ SM внесёт в список заказчиков, только те объе
 зависимости.
 \code
   <item id="20050" iotype="AI" name="Sensor1"" textname="Зависящий датчик 1">
-  <consumers>
-  <consumer name="Consumer1" type="objects"/>
-  </consumers>
-  <depends>
-  <depend block_invert="1" name="Node_Not_Respond_FS"/>
-  </depends>
+     <consumers>
+          <consumer name="Consumer1" type="objects"/>
+     </consumers>
+     <depends>
+          <depend block_invert="1" name="Node_Not_Respond_FS"/>
+     </depends>
   </item>
 \endcode
 В данном примере Sensor1 зависит от значения датчика Node_Not_Respond_FS. При этом значение блокировки
@@ -160,11 +160,10 @@ SM внесёт в список заказчиков, только те объе
 \code
   <item default="10" heartbeat="1" heartbeat_ds_name="_41_04_S" heartbeat_node="ses" heartbeat_reboot_msec="10000"
   id="103104" iotype="AI" name="_31_04_AS" textname="SES: IO heartbeat"/>
-
   <item default="1" id="104104" iotype="DI" name="_41_04_S">
-  <MessagesList>
-  <msg mtype="1" text="КСЭС: отключился ввод/вывод" value="0"/>
-  </MessagesList>
+     <MessagesList>
+         <msg mtype="1" text="КСЭС: отключился ввод/вывод" value="0"/>
+     </MessagesList>
   </item>
 \endcode
 
@@ -280,10 +279,10 @@ ACL объявляются в отдельной секции (по умолча
 \code{.xml}
   <ACLConfig>
     <acl name="IO_RW" default="RW">
-       <entry name="Process1" permission="RO"/>
-       <entry name="Historian" permission="RO"/>
+       <access name="Process1" permission="RO"/>
+       <access name="Historian" permission="RO"/>
        <!-- для явно разрешённого писателя -->
-       <entry name="Writer1" permission="WRITE"/>
+       <access name="Writer1" permission="WRITE"/>
     </acl>
 
     <!-- Пишущий только -->

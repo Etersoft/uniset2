@@ -32,6 +32,7 @@ namespace uniset
     void SharedMemory::help_print( int argc, const char* const* argv )
     {
         cout << "--smemory-id           - SharedMemory ID. Default: SharedMemory" << endl;
+        cout << "--run-lock file        - Запустить с защитой от повторного запуска" << endl;
         cout << "--datfile fname        - Файл с картой датчиков. По умолчанию configure.xml" << endl;
         cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
         cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
@@ -54,6 +55,7 @@ namespace uniset
         cout << "--http-api-disable-access-control  [1,0] - включение или отключение проверки прав доступа для функций HTTP API" << endl;
         cout << endl;
         cout << "--sm-default-sensor-permission perm - Умолчательные права на датчики [RW, RO, WR, None]. По умолчанию: rw" << endl;
+        cout << "--sm-ignore-acl-errors              - Игнорировать ошибки на стройках ACL" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--sm-log-...            - log control" << endl;
@@ -70,8 +72,9 @@ namespace uniset
     }
     // -----------------------------------------------------------------------------
     SharedMemory::SharedMemory( ObjectId id,
-                                const std::shared_ptr<IOConfig_XML>& ioconf,
-                                const std::string& confname ):
+                                xmlNode* _confnode,
+                                const std::shared_ptr<IOConfig_XML>& ioconf ):
+        USingleProcess(_confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
         IONotifyController(id, static_pointer_cast<IOConfig>(ioconf)),
         heartbeatCheckTime(5000),
         histSaveTime(0),
@@ -79,19 +82,12 @@ namespace uniset
         workready(false),
         dblogging(false),
         msecPulsar(0),
-        confnode(0)
+        confnode(_confnode)
     {
         auto conf = uniset_conf();
 
-        string cname(confname);
-
-        if( cname.empty() )
-            cname = ORepHelpers::getShortName( conf->oind->getMapName(id));
-
-        confnode = conf->getNode(cname);
-
-        if( confnode == NULL )
-            throw SystemError("Not found conf-node for " + cname );
+        if( !confnode )
+            throw SystemError("Undefined conf-node" );
 
         string prefix = "sm";
 
@@ -116,16 +112,28 @@ namespace uniset
             logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
         }
 
+        bool ignoreAclErrors = findArgParam("--" + prefix + "-ignore-acl-errors", conf->getArgc(), conf->getArgv()) != -1;
+        ioconf->setAclIgnoreError(ignoreAclErrors);
+        if( ignoreAclErrors )
+        {
+            smwarn << myname << "(init): 'Ignore ACL error' enabled" << endl;
+        }
+
         auto defPermission = conf->getArg2Param("--sm-default-sensor-permission", it.getProp("defaultSensorPermission"), "rw");
         auto amask = AccessMask::fromString(defPermission);
         if( amask == AccessNone )
         {
             ostringstream err;
-            err << myname << "(init): Can't parse persmission '" << defPermission << "'";
+            err << myname << "(init): Can't parse permission '" << defPermission << "'";
             ucrit << err.str() << endl;
-            throw SystemError(err.str());
+            if( ignoreAclErrors )
+                throw SystemError(err.str());
         }
-        setDefaultAccessMask(amask);
+        else
+        {
+            setDefaultAccessMask(amask);
+            vmonit(defPermission);
+        }
 
         // ----------------------
         buildHistoryList(confnode);
@@ -612,7 +620,17 @@ namespace uniset
         }
 
         string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
-        return make_shared<SharedMemory>(ID, ioconf, cname);
+        if( cname.empty() )
+            cname = ORepHelpers::getShortName( conf->oind->getMapName(ID));
+
+        auto confnode = conf->getNode(cname);
+        if( !confnode )
+        {
+            cerr << "(smemory): Not found confnode '" << cname << "' in config file" << endl;
+            return nullptr;
+        }
+
+        return make_shared<SharedMemory>(ID, confnode, ioconf);
     }
     // -----------------------------------------------------------------------------
     void SharedMemory::buildEventList( xmlNode* cnode )
