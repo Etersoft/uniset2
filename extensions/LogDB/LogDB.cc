@@ -1844,30 +1844,184 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
 {
     using Poco::Net::HTTPResponse;
 
-    //    resp.setChunkedTransferEncoding(true);
     resp.setContentType(httpHtmlContentType);
 
-    ostr << "<html>" << endl;
-    ostr << "<head>" << endl;
-    ostr << "<title>" << myname << ": log servers list</title>" << endl;
-    ostr << "<meta http-equiv=\"Content-Type\" content=\"" << httpHtmlContentType << "\">" << endl;
-    ostr << "</head>" << endl;
-    ostr << "<body>" << endl;
-    ostr << "<h1>servers:</h1>" << endl;
-    ostr << "<ul>" << endl;
+    ostr << "<html>\n";
+    ostr << "<head>\n";
+    ostr << "<title>" << myname << ": log servers list</title>\n";
+    ostr << "<meta http-equiv=\"Content-Type\" content=\"" << httpHtmlContentType << "\">\n";
+    ostr << "<style>\n";
+    ostr << ".pillbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0;padding:8px;border:1px solid #ddd;border-radius:10px}\n";
+    ostr << ".pill{border:1px solid #8aa;border-radius:999px;padding:5px 12px;font:inherit;cursor:pointer;background:#fff;transition:0.15s}\n";
+    ostr << ".pill:hover{background:#f2fff2}\n";
+    ostr << ".pill.active{background:#caffca;border-color:#4a9}\n";
+    ostr << ".presetbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}\n";
+    ostr << ".presetbar button{padding:4px 12px;border-radius:6px;border:1px solid #aaa;background:#eee;cursor:pointer}\n";
+    ostr << ".presetbar button:hover{background:#e2e2e2}\n";
+    ostr << ".presetbar button:disabled{opacity:.5;cursor:not-allowed}\n";
+    ostr << ".label{font-weight:bold;margin-right:8px;display:flex;align-items:center;gap:8px}\n";
+    ostr << ".indicator{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ccc;border:1px solid #bfbfbf}\n";
+    ostr << ".indicator.on{background:#8df08d;border-color:#48a848}\n";
+    ostr << "</style>\n";
+    ostr << "</head>\n";
+    ostr << "<body>\n";
 
-    for( const auto& l : logservers )
+    /* ---- Панель выбора уровней ---- */
+    ostr << "<div class='label'><span id='lvl-ind' class='indicator' title='Ничего не выбрано'></span>Levels</div>\n";
+    ostr << "<div id='level-selector' class='pillbar'>\n";
+    ostr << "  <button type='button' class='pill' data-value='info'>info</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='warn'>warn</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='crit'>crit</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level1'>level1</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level2'>level2</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level3'>level3</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level4'>level4</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level5'>level5</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level6'>level6</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level7'>level7</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level8'>level8</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='level9'>level9</button>\n";
+    ostr << "  <button type='button' class='pill' data-value='any'>any</button>\n";
+    ostr << "</div>\n";
+    // Пресеты
+    ostr << "<div class='presetbar'>\n";
+    ostr << "  <button type='button' id='btn-user-choice' onclick='applyUserChoice()' disabled title='Нет сохранённого выбора'>User choice</button>\n";
+    ostr << "  <button type='button' onclick='applyPreset([\"warn\",\"crit\"])' title='warn,crit'>Warn + Crit</button>\n";
+    ostr << "  <button type='button' onclick='applyPreset([\"info\",\"warn\"])' title='info,warn'>Info + Warn</button>\n";
+    ostr << "  <button type='button' onclick='applyPreset([\"any\"])' title='any'>Any</button>\n";
+    ostr << "  <button type='button' onclick='applyPreset([])' title='пустой выбор'>Сброс</button>\n";
+    ostr << "</div>\n";
+
+    // Список серверов
+    ostr << "<h1>servers:</h1>\n";
+    ostr << "<ul>\n";
+
+    const std::string baseHost = ( httpReplyAddr.empty()
+                                   ? req.serverAddress().toString()
+                                   : httpReplyAddr );
+
+    for (const auto& l : logservers)
     {
-        ostr << "  <li><a target='_blank' href=\"http://"
-             << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr )
-             << "/ws/connect/" << l->name << "\">"
+        // Базовый URL без параметров; href изначально такой же
+        ostr << "  <li><a target='_blank' class='ws-link' "
+             << "data-base='http://" << baseHost << "/ws/connect/" << l->name << "' "
+             << "href='http://" << baseHost << "/ws/connect/" << l->name << "'>"
              << l->name << "</a>  &#8211; "
-             << "<i>" << l->description << "</i></li>"
-             << endl;
+             << "<i>" << l->description << "</i></li>\n";
     }
 
-    ostr << "</ul>" << endl;
-    ostr << "</body>" << endl;
+    ostr << "</ul>\n";
+
+    // Скрипт обработки
+    // ---- script with localStorage ----
+    ostr << "<script>\n";
+    ostr << "(function(){\n";
+    ostr << "  const KEY = 'log_levels_selection_v1';                 // текущий выбор (UI)\n";
+    ostr << "  const KEY_LAST = 'log_levels_last_choice_v1';         // последний подтверждённый выбор (клик по ссылке)\n";
+    ostr << "  const bar = document.getElementById('level-selector');\n";
+    ostr << "  const pills = Array.from(bar.querySelectorAll('.pill[data-value]'));\n";
+    ostr << "  const ind = document.getElementById('lvl-ind');       // индикатор слева от \"Уровни\"\n";
+    ostr << "  const btnUser = document.getElementById('btn-user-choice');\n";
+    ostr << "\n";
+    ostr << "  function loadSelection(){ try{ const raw=localStorage.getItem(KEY); if(!raw) return null; const arr=JSON.parse(raw); return Array.isArray(arr)?arr:null; }catch(e){return null;} }\n";
+    ostr << "  function saveSelection(arr){ try{ localStorage.setItem(KEY, JSON.stringify(arr)); }catch(e){} }\n";
+    ostr << "  function loadLastChoice(){ try{ const raw=localStorage.getItem(KEY_LAST); if(!raw) return null; const arr=JSON.parse(raw); return Array.isArray(arr)?arr:null; }catch(e){return null;} }\n";
+    ostr << "  function saveLastChoice(arr){ try{ localStorage.setItem(KEY_LAST, JSON.stringify(arr)); }catch(e){} updateUserChoiceBtn(); }\n";
+    ostr << "\n";
+    ostr << "  function getSelectedArray(){\n";
+    ostr << "    const sel = pills.filter(p=>p.classList.contains('active')).map(p=>p.dataset.value);\n";
+    ostr << "    if (sel.includes('any')) return ['any'];\n";
+    ostr << "    return sel.filter(v=>v!=='any');\n";
+    ostr << "  }\n";
+    ostr << "  function setActiveByArray(arr){ const set=new Set(arr||[]); pills.forEach(p=>p.classList.toggle('active', set.has(p.dataset.value))); }\n";
+    ostr << "\n";
+    ostr << "  function updateIndicator(){\n";
+    ostr << "    const arr = getSelectedArray();\n";
+    ostr << "    const on = arr.length > 0; // хотя бы один выбран\n";
+    ostr << "    if (ind){ ind.classList.toggle('on', on); ind.title = on ? ('Выбрано: ' + (arr[0]==='any'?'any':arr.join(','))) : 'Ничего не выбрано'; }\n";
+    ostr << "  }\n";
+    ostr << "\n";
+    ostr << "  function updateLinks(){\n";
+    ostr << "    const arr = getSelectedArray();\n";
+    ostr << "    const setParam = (arr.length===1 && arr[0]==='any') ? 'any' : arr.join(',');\n";
+    ostr << "    document.querySelectorAll('a.ws-link').forEach(function(a){\n";
+    ostr << "      const base = a.getAttribute('data-base') || a.href.split('?')[0];\n";
+    ostr << "      a.href = setParam ? (base + '?set=' + setParam) : base;\n";
+    ostr << "    });\n";
+    ostr << "    updateIndicator();\n";
+    ostr << "  }\n";
+    ostr << "\n";
+    ostr << "  function normalizeAnyRule(){\n";
+    ostr << "    const anyBtn = pills.find(p=>p.dataset.value==='any');\n";
+    ostr << "    const others = pills.filter(p=>p!==anyBtn);\n";
+    ostr << "    if (anyBtn.classList.contains('active')) { others.forEach(p=>p.classList.remove('active')); }\n";
+    ostr << "    else { if (others.some(p=>p.classList.contains('active'))) anyBtn.classList.remove('active'); }\n";
+    ostr << "  }\n";
+    ostr << "\n";
+    ostr << "  function arraysToTitle(arr){ return (arr && arr.length) ? (arr[0]==='any'?'any':arr.join(',')) : 'Нет сохранённого выбора'; }\n";
+    ostr << "  function updateUserChoiceBtn(){\n";
+    ostr << "    if(!btnUser) return;\n";
+    ostr << "    const last = loadLastChoice();\n";
+    ostr << "    const has = Array.isArray(last) && last.length>0;\n";
+    ostr << "    btnUser.disabled = !has;\n";
+    ostr << "    btnUser.title = arraysToTitle(last);\n";
+    ostr << "  }\n";
+    ostr << "\n";
+    ostr << "  // Применить пресет (НЕ меняет KEY_LAST)\n";
+    ostr << "  function applyPreset(arr){\n";
+    ostr << "    setActiveByArray(arr);\n";
+    ostr << "    normalizeAnyRule();\n";
+    ostr << "    updateLinks();\n";
+    ostr << "    saveSelection(getSelectedArray()); // только текущий UI\n";
+    ostr << "  }\n";
+    ostr << "  window.applyPreset = applyPreset;\n";
+    ostr << "\n";
+    ostr << "  // Применить последний подтверждённый выбор (из KEY_LAST)\n";
+    ostr << "  function applyUserChoice(){\n";
+    ostr << "    const last = loadLastChoice();\n";
+    ostr << "    if (!last || !last.length) return;\n";
+    ostr << "    setActiveByArray(last);\n";
+    ostr << "    normalizeAnyRule();\n";
+    ostr << "    updateLinks();\n";
+    ostr << "    saveSelection(getSelectedArray()); // обновим текущий UI, но НЕ трогаем KEY_LAST\n";
+    ostr << "  }\n";
+    ostr << "  window.applyUserChoice = applyUserChoice;\n";
+    ostr << "\n";
+    ostr << "  // Клик по пилюлям (ручной выбор НЕ меняет KEY_LAST)\n";
+    ostr << "  pills.forEach(function(p){ p.addEventListener('click', function(){\n";
+    ostr << "    const v = this.dataset.value;\n";
+    ostr << "    if (v === 'any') { const now = this.classList.toggle('active'); pills.forEach(x=>{ if(x!==this) x.classList.remove('active'); }); }\n";
+    ostr << "    else { this.classList.toggle('active'); const anyBtn = pills.find(x=>x.dataset.value==='any'); anyBtn.classList.remove('active'); }\n";
+    ostr << "    normalizeAnyRule();\n";
+    ostr << "    updateLinks();\n";
+    ostr << "    saveSelection(getSelectedArray()); // только текущий UI\n";
+    ostr << "  });});\n";
+    ostr << "\n";
+    ostr << "  // Обработчики клика по ссылкам серверов — ЭТО и есть подтверждение выбора\n";
+    ostr << "  function attachLinkHandlers(){\n";
+    ostr << "    document.querySelectorAll('a.ws-link').forEach(function(a){\n";
+    ostr << "      a.addEventListener('click', function(){\n";
+    ostr << "        const sel = getSelectedArray();\n";
+    ostr << "        saveLastChoice(sel); // фиксируем как последний подтверждённый\n";
+    ostr << "      });\n";
+    ostr << "    });\n";
+    ostr << "  }\n";
+    ostr << "\n";
+    ostr << "  // Восстановление состояния\n";
+    ostr << "  (function restore(){\n";
+    ostr << "    const saved = loadSelection();\n";
+    ostr << "    if (saved && saved.length){ setActiveByArray(saved); }\n";
+    ostr << "    normalizeAnyRule();\n";
+    ostr << "    updateLinks();\n";
+    ostr << "    updateUserChoiceBtn();\n";
+    ostr << "    attachLinkHandlers();\n";
+    ostr << "  })();\n";
+    ostr << "})();\n";
+    ostr << "</script>\n";
+
+
+    ostr << "</body>\n";
+    ostr << "</html>\n";
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr LogDB::httpLogControl( std::ostream& out, Poco::Net::HTTPServerRequest& req,
