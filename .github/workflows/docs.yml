@@ -1,31 +1,9 @@
 name: Build & Deploy Doxygen docs
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - '**/*.h'
-      - '**/*.hpp'
-      - '**/*.c'
-      - '**/*.cpp'
-      - '**/*.cc'
-      - '**/*.hh'
-      - '**/*.md'
-      - 'Doxyfile'
-      - '.github/workflows/docs.yml'
   pull_request:
-    branches: [ main ]
-    paths:
-      - '**/*.h'
-      - '**/*.hpp'
-      - '**/*.c'
-      - '**/*.cpp'
-      - '**/*.cc'
-      - '**/*.hh'
-      - '**/*.md'
-      - 'Doxyfile'
-      - '.github/workflows/docs.yml'
-  workflow_dispatch:
+    types:
+      - closed
 
 # Keep deployments atomic and cancel older runs if a new commit arrives.
 concurrency:
