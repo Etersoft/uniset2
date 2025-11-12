@@ -37,6 +37,7 @@
 #include "EventLoopServer.h"
 #include "UTCPStream.h"
 #include "LogReader.h"
+#include "LogServer.h"
 #include "UHttpRequestHandler.h"
 #include "UHttpServer.h"
 #include "UTCPCore.h"
@@ -295,6 +296,10 @@ namespace uniset
 
             ev::async wsactivate; // активация LogWebSocket-ов
 
+            std::shared_ptr<uniset::LogServer> logserv;
+            std::string logserv_host = {""};
+            int logserv_port = {0};
+
             class Log
             {
                 public:
@@ -355,7 +360,6 @@ namespace uniset
 
             std::vector< std::shared_ptr<Log> > logservers;
             std::shared_ptr<DebugStream> dblog;
-
 
 #ifndef DISABLE_REST_API
             std::shared_ptr<Poco::Net::HTTPServer> httpserv;
