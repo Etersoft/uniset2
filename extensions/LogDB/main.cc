@@ -9,6 +9,7 @@ int main(int argc, char** argv)
 {
     //  std::ios::sync_with_stdio(false);
     std::shared_ptr<RunLock> rlock = nullptr;
+
     try
     {
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
@@ -18,7 +19,8 @@ int main(int argc, char** argv)
             return 0;
         }
 
-        int n = uniset::findArgParam("--run-lock",argc, argv);
+        int n = uniset::findArgParam("--run-lock", argc, argv);
+
         if( n != -1 )
         {
             if( n >= argc )
@@ -27,14 +29,15 @@ int main(int argc, char** argv)
                 return 1;
             }
 
-            rlock = make_shared<RunLock>(argv[n+1]);
+            rlock = make_shared<RunLock>(argv[n + 1]);
+
             if( rlock->isLocked() )
             {
-                cerr << "ERROR: process is already running.. Lockfile: " << argv[n+1] << endl;
+                cerr << "ERROR: process is already running.. Lockfile: " << argv[n + 1] << endl;
                 return 1;
             }
 
-            cout << "Run with lockfile: " << string(argv[n+1]) << endl;
+            cout << "Run with lockfile: " << string(argv[n + 1]) << endl;
             rlock->lock();
         }
 
