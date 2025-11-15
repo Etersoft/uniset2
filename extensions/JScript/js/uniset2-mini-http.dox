@@ -1,5 +1,5 @@
 /*!
-\page page_JScript_HTTPServer JScript Mini HTTP Server
+\page page_JScript_HTTPServer (JScript) Mini HTTP Server (uniset2-minit-http.js)
 
 Лёгкий неблокирующий HTTP-сервер на js и частью кода написанного на c++.<br>
 Предназначен для встроенного использования JScript и интеграции с простым \ref mini_http_router "роутером".<br>

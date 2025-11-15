@@ -16,6 +16,9 @@
 // -------------------------------------------------------------------------
 #include <vector>
 #include <string>
+#include <cmath>
+#include <algorithm>
+#include <cctype>
 extern "C" {
 #include "quickjs/quickjs-libc.h"
 }
@@ -28,6 +31,27 @@ extern "C" {
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
+
+namespace
+{
+    inline JSEngine* get_engine_from_context(JSContext* ctx)
+    {
+        JSValue global = JS_GetGlobalObject(ctx);
+        JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
+        JS_FreeValue(ctx, global);
+
+        if( JS_IsNumber(engine_ptr_val) )
+        {
+            int64_t ptr_int;
+            JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
+            JS_FreeValue(ctx, engine_ptr_val);
+            return reinterpret_cast<JSEngine*>(ptr_int);
+        }
+
+        JS_FreeValue(ctx, engine_ptr_val);
+        return nullptr;
+    }
+}
 // -------------------------------------------------------------------------
 JSEngine::JSEngine( const std::string& _jsfile,
                     std::vector<std::string>& _searchPaths,
@@ -47,6 +71,13 @@ JSEngine::JSEngine( const std::string& _jsfile,
 
     mylog = make_shared<DebugStream>();
     mylog->setLogName("JSEngine");
+
+    modbusClient = std::make_shared<JSModbusClient>();
+    modbusClient->setLog(mylog);
+#ifdef JS_OPCUA_ENABLED
+    opcuaClient = std::make_shared<JSOPCUAClient>();
+    opcuaClient->setLog(mylog);
+#endif
 
     httpHandleFn = [this](const JHttpServer::RequestSnapshot & request)->JHttpServer::ResponseSnapshot
     {
@@ -584,7 +615,7 @@ void JSEngine::sensorInfo( const uniset::SensorMessage* sm )
 void JSEngine::jsLoop()
 {
     // js loop processing
-    for( int i = 0; i < opts.jsLoopCount; i++ )
+    for( size_t i = 0; i < opts.jsLoopCount; i++ )
         js_std_loop(ctx);
 }
 // ----------------------------------------------------------------------------
@@ -760,6 +791,30 @@ void JSEngine::createUnisetObject()
     JS_SetPropertyStr(ctx, uobj, "step_cb",   JS_NewCFunction(ctx, jsUniSetStepCb_wrapper,   "step_cb",   1));
     JS_SetPropertyStr(ctx, uobj, "stop_cb",   JS_NewCFunction(ctx, jsUniSetStopCb_wrapper,   "stop_cb",   1));
     JS_SetPropertyStr(ctx, uobj, "http_start",   JS_NewCFunction(ctx, jsUniSetHttpStart_wrapper,   "http_start",   3));
+
+    JSValue modbus_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, modbus_obj, "connectTCP", JS_NewCFunction(ctx, jsModbusConnectTCP_wrapper, "connectTCP", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "disconnect", JS_NewCFunction(ctx, jsModbusDisconnect_wrapper, "disconnect", 0));
+    JS_SetPropertyStr(ctx, modbus_obj, "read01", JS_NewCFunction(ctx, jsModbusRead01_wrapper, "read01", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read02", JS_NewCFunction(ctx, jsModbusRead02_wrapper, "read02", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read03", JS_NewCFunction(ctx, jsModbusRead03_wrapper, "read03", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read04", JS_NewCFunction(ctx, jsModbusRead04_wrapper, "read04", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write05", JS_NewCFunction(ctx, jsModbusWrite05_wrapper, "write05", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write06", JS_NewCFunction(ctx, jsModbusWrite06_wrapper, "write06", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write0F", JS_NewCFunction(ctx, jsModbusWrite0F_wrapper, "write0F", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write10", JS_NewCFunction(ctx, jsModbusWrite10_wrapper, "write10", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "diag08", JS_NewCFunction(ctx, jsModbusDiag08_wrapper, "diag08", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read4314", JS_NewCFunction(ctx, jsModbusRead4314_wrapper, "read4314", 3));
+
+    JS_SetPropertyStr(ctx, uobj, "modbus", modbus_obj);
+#ifdef JS_OPCUA_ENABLED
+    JSValue opcua_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, opcua_obj, "connect", JS_NewCFunction(ctx, jsOpcuaConnect_wrapper, "connect", 3));
+    JS_SetPropertyStr(ctx, opcua_obj, "disconnect", JS_NewCFunction(ctx, jsOpcuaDisconnect_wrapper, "disconnect", 0));
+    JS_SetPropertyStr(ctx, opcua_obj, "read", JS_NewCFunction(ctx, jsOpcuaRead_wrapper, "read", 1));
+    JS_SetPropertyStr(ctx, opcua_obj, "write", JS_NewCFunction(ctx, jsOpcuaWrite_wrapper, "write", 2));
+    JS_SetPropertyStr(ctx, uobj, "opcua", opcua_obj);
+#endif
     JS_SetPropertyStr(ctx, jsGlobal, "uniset", uobj);
 }
 // ----------------------------------------------------------------------------
@@ -955,6 +1010,1291 @@ JSValue JSEngine::jsLogLevel_wrapper(JSContext* ctx, JSValueConst this_val, int 
 
     JS_FreeValue(ctx, engine_ptr_val);
     return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusConnectTCP_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_connectTCP(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusDisconnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_disconnect(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead01_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read01(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead02_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read02(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead03_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read03(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead04_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read04(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite05_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write05(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite06_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write06(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite0F_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write0F(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite10_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write10(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusDiag08_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_diag08(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead4314_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read4314(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+#ifdef JS_OPCUA_ENABLED
+JSValue JSEngine::jsOpcuaConnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_connect(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsOpcuaDisconnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_disconnect(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsOpcuaRead_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_read(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsOpcuaWrite_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_write(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+#endif // JS_OPCUA_ENABLED
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_connectTCP(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.connectTCP(host, port [, timeout])");
+        return JS_EXCEPTION;
+    }
+
+    const char* host = JS_ToCString(jsctx, argv[0]);
+
+    if( !host )
+        return JS_EXCEPTION;
+
+    int32_t port = 0;
+
+    if( JS_ToInt32(jsctx, &port, argv[1]) != 0 )
+    {
+        JS_FreeCString(jsctx, host);
+        JS_ThrowTypeError(jsctx, "modbus.connectTCP: invalid port");
+        return JS_EXCEPTION;
+    }
+
+    timeout_t timeout = 2000;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        int32_t tmp = 0;
+
+        if( JS_ToInt32(jsctx, &tmp, argv[2]) != 0 )
+        {
+            JS_FreeCString(jsctx, host);
+            JS_ThrowTypeError(jsctx, "modbus.connectTCP: invalid timeout");
+            return JS_EXCEPTION;
+        }
+
+        if( tmp > 0 )
+            timeout = tmp;
+    }
+
+    bool forceDisconnect = false;
+
+    if( argc >= 4 && !JS_IsUndefined(argv[3]) )
+        forceDisconnect = JS_ToBool(jsctx, argv[3]);
+
+    try
+    {
+        modbusClient->connectTCP(host, port, timeout, forceDisconnect);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_FreeCString(jsctx, host);
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeCString(jsctx, host);
+    return JS_NewBool(jsctx, 1);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_disconnect(JSContext* jsctx, JSValueConst, int, JSValueConst*)
+{
+    if( modbusClient )
+        modbusClient->disconnect();
+
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+namespace
+{
+    inline bool js_to_uint32(JSContext* ctx, JSValueConst value, uint32_t& out, const char* errmsg)
+    {
+        if( JS_ToUint32(ctx, &out, value) != 0 )
+        {
+            JS_ThrowTypeError(ctx, "%s", errmsg);
+            return false;
+        }
+
+        return true;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read01(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read01(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read01: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read01: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read01: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read01(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeBitsReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read02(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read02(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read02: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read02: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read02: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read02(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeBitsReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read03(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read03(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read03: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read03: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read03: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read03(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeRegisterReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read04(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read04(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read04: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read04: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read04: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read04(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeRegisterReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write05(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write05(slave, reg, value)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write05: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.write05: invalid register") )
+        return JS_EXCEPTION;
+
+    int32_t state = JS_ToBool(jsctx, argv[2]);
+
+    if( state < 0 )
+        return JS_EXCEPTION;
+
+    try
+    {
+        auto ret = modbusClient->write05(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(reg),
+                                         state != 0);
+        return jsMakeModbusBoolAck(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write06(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write06(slave, reg, value)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t value = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write06: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.write06: invalid register") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[2], value, "modbus.write06: invalid value") )
+        return JS_EXCEPTION;
+
+    try
+    {
+        auto ret = modbusClient->write06(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(reg),
+                                         static_cast<ModbusRTU::ModbusData>(value));
+        return jsMakeWriteSingleAck(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write0F(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write0F(slave, start, values)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t start = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write0F: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], start, "modbus.write0F: invalid start register") )
+        return JS_EXCEPTION;
+
+    if( !JS_IsArray(jsctx, argv[2]) )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write0F: values must be array");
+        return JS_EXCEPTION;
+    }
+
+    JSValue lenVal = JS_GetPropertyStr(jsctx, argv[2], "length");
+    uint32_t length = 0;
+
+    if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+    {
+        JS_FreeValue(jsctx, lenVal);
+        JS_ThrowTypeError(jsctx, "modbus.write0F: invalid values length");
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeValue(jsctx, lenVal);
+
+    vector<uint8_t> bits;
+    bits.reserve(length);
+
+    for( uint32_t i = 0; i < length; ++i )
+    {
+        JSValue item = JS_GetPropertyUint32(jsctx, argv[2], i);
+
+        if( JS_IsException(item) )
+            return JS_EXCEPTION;
+
+        int32_t val = JS_ToBool(jsctx, item);
+        JS_FreeValue(jsctx, item);
+
+        if( val < 0 )
+            return JS_EXCEPTION;
+
+        bits.emplace_back(val ? 1 : 0);
+    }
+
+    try
+    {
+        auto ret = modbusClient->write0F(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(start),
+                                         bits);
+        return jsMakeWriteAck(ret.start, ret.quant);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write10(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write10(slave, start, values)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t start = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write10: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], start, "modbus.write10: invalid start register") )
+        return JS_EXCEPTION;
+
+    if( !JS_IsArray(jsctx, argv[2]) )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write10: values must be array");
+        return JS_EXCEPTION;
+    }
+
+    JSValue lenVal = JS_GetPropertyStr(jsctx, argv[2], "length");
+    uint32_t length = 0;
+
+    if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+    {
+        JS_FreeValue(jsctx, lenVal);
+        JS_ThrowTypeError(jsctx, "modbus.write10: invalid values length");
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeValue(jsctx, lenVal);
+
+    vector<ModbusRTU::ModbusData> values;
+    values.reserve(length);
+
+    for( uint32_t i = 0; i < length; ++i )
+    {
+        JSValue item = JS_GetPropertyUint32(jsctx, argv[2], i);
+
+        if( JS_IsException(item) )
+            return JS_EXCEPTION;
+
+        uint32_t val = 0;
+
+        if( JS_ToUint32(jsctx, &val, item) != 0 )
+        {
+            JS_FreeValue(jsctx, item);
+            JS_ThrowTypeError(jsctx, "modbus.write10: invalid data value");
+            return JS_EXCEPTION;
+        }
+
+        JS_FreeValue(jsctx, item);
+        values.emplace_back(static_cast<ModbusRTU::ModbusData>(val));
+    }
+
+    try
+    {
+        auto ret = modbusClient->write10(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(start),
+                                         values);
+        return jsMakeWriteAck(ret.start, ret.quant);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_diag08(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.diag08(slave, subfunc [, data])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t subf = 0;
+    uint32_t data = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.diag08: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], subf, "modbus.diag08: invalid subfunction") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], data, "modbus.diag08: invalid data") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->diag08(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::DiagnosticsSubFunction>(subf),
+                                        static_cast<ModbusRTU::ModbusData>(data));
+        return jsMakeDiagReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read4314(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read4314(slave, devID, objID)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t devID = 0;
+    uint32_t objID = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read4314: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], devID, "modbus.read4314: invalid device id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[2], objID, "modbus.read4314: invalid object id") )
+        return JS_EXCEPTION;
+
+    try
+    {
+        auto ret = modbusClient->read4314(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                          static_cast<ModbusRTU::ModbusByte>(devID),
+                                          static_cast<ModbusRTU::ModbusByte>(objID));
+        return jsMake4314Reply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+#ifdef JS_OPCUA_ENABLED
+JSValue JSEngine::js_opcua_connect(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.connect(endpoint [, user, pass])");
+        return JS_EXCEPTION;
+    }
+
+    if( !opcuaClient )
+    {
+        JS_ThrowInternalError(jsctx, "opcua client not initialized");
+        return JS_EXCEPTION;
+    }
+
+    if( !JS_IsString(argv[0]) )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.connect: endpoint must be string");
+        return JS_EXCEPTION;
+    }
+
+    const char* endpoint = JS_ToCString(jsctx, argv[0]);
+
+    if( !endpoint )
+        return JS_EXCEPTION;
+
+    std::string user;
+    std::string pass;
+    bool useAuth = false;
+
+    if( argc >= 2 && !JS_IsUndefined(argv[1]) )
+    {
+        const char* ustr = JS_ToCString(jsctx, argv[1]);
+
+        if( !ustr )
+        {
+            JS_FreeCString(jsctx, endpoint);
+            return JS_EXCEPTION;
+        }
+
+        user = ustr;
+        JS_FreeCString(jsctx, ustr);
+        useAuth = true;
+    }
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        const char* pstr = JS_ToCString(jsctx, argv[2]);
+
+        if( !pstr )
+        {
+            JS_FreeCString(jsctx, endpoint);
+            return JS_EXCEPTION;
+        }
+
+        pass = pstr;
+        JS_FreeCString(jsctx, pstr);
+        useAuth = true;
+    }
+
+    try
+    {
+        if( useAuth )
+            opcuaClient->connect(endpoint, user, pass);
+        else
+            opcuaClient->connect(endpoint);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_FreeCString(jsctx, endpoint);
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeCString(jsctx, endpoint);
+    return JS_NewBool(jsctx, 1);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_opcua_disconnect(JSContext* jsctx, JSValueConst, int, JSValueConst*)
+{
+    if( opcuaClient )
+        opcuaClient->disconnect();
+
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_opcua_read(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.read(nodeId or array)");
+        return JS_EXCEPTION;
+    }
+
+    if( !opcuaClient )
+    {
+        JS_ThrowInternalError(jsctx, "opcua client not initialized");
+        return JS_EXCEPTION;
+    }
+
+    std::vector<std::string> nodes;
+
+    auto addNode = [&](JSValueConst val) -> bool
+    {
+        if( !JS_IsString(val) )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.read: nodeId must be string");
+            return false;
+        }
+
+        const char* nid = JS_ToCString(jsctx, val);
+
+        if( !nid )
+            return false;
+
+        nodes.emplace_back(nid);
+        JS_FreeCString(jsctx, nid);
+        return true;
+    };
+
+    if( JS_IsArray(jsctx, argv[0]) )
+    {
+        JSValue lenVal = JS_GetPropertyStr(jsctx, argv[0], "length");
+        uint32_t length = 0;
+
+        if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+        {
+            JS_FreeValue(jsctx, lenVal);
+            JS_ThrowTypeError(jsctx, "opcua.read: invalid array length");
+            return JS_EXCEPTION;
+        }
+
+        JS_FreeValue(jsctx, lenVal);
+
+        for( uint32_t i = 0; i < length; ++i )
+        {
+            JSValue item = JS_GetPropertyUint32(jsctx, argv[0], i);
+
+            if( JS_IsException(item) )
+                return JS_EXCEPTION;
+
+            bool ok = addNode(item);
+            JS_FreeValue(jsctx, item);
+
+            if( !ok )
+                return JS_EXCEPTION;
+        }
+    }
+    else
+    {
+        if( !addNode(argv[0]) )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto results = opcuaClient->read(nodes);
+        JSValue arr = JS_NewArray(jsctx);
+
+        for( size_t i = 0; i < nodes.size(); ++i )
+        {
+            JSValue obj = JS_NewObject(jsctx);
+            JS_SetPropertyStr(jsctx, obj, "nodeId", JS_NewString(jsctx, nodes[i].c_str()));
+
+            UA_StatusCode status = (i < results.size()) ? results[i].status : UA_STATUSCODE_BADUNEXPECTEDERROR;
+            bool ok = (i < results.size()) ? results[i].statusOk() : false;
+            JS_SetPropertyStr(jsctx, obj, "status", JS_NewInt64(jsctx, static_cast<int64_t>(status)));
+            JS_SetPropertyStr(jsctx, obj, "ok", JS_NewBool(jsctx, ok));
+
+            const char* typeStr = "int32";
+
+            if( i < results.size() && results[i].type == JSOPCUAClient::VarType::Float )
+                typeStr = "float";
+
+            JS_SetPropertyStr(jsctx, obj, "type", JS_NewString(jsctx, typeStr));
+
+            JSValue value = JS_NULL;
+
+            if( ok )
+            {
+                if( results[i].type == JSOPCUAClient::VarType::Float )
+                    value = JS_NewFloat64(jsctx, static_cast<double>(results[i].as<float>()));
+                else
+                    value = JS_NewInt32(jsctx, results[i].as<int32_t>());
+            }
+
+            JS_SetPropertyStr(jsctx, obj, "value", value);
+            JS_SetPropertyUint32(jsctx, arr, i, obj);
+        }
+
+        return arr;
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.write(nodeId, value [, type]) or opcua.write(array)");
+        return JS_EXCEPTION;
+    }
+
+    if( !opcuaClient )
+    {
+        JS_ThrowInternalError(jsctx, "opcua client not initialized");
+        return JS_EXCEPTION;
+    }
+
+    std::vector<JSOPCUAClient::WriteItem> items;
+
+    auto parseValue =
+        [&](JSValueConst valueVal, JSValueConst typeVal, JSOPCUAClient::WriteItem& item) -> bool
+    {
+        enum class ValueKind { Int32, Float, Bool };
+        ValueKind kind = ValueKind::Int32;
+
+        if( !JS_IsUndefined(typeVal) )
+        {
+            if( !JS_IsString(typeVal) )
+            {
+                JS_ThrowTypeError(jsctx, "opcua.write: type must be string");
+                return false;
+            }
+
+            const char* typeStr = JS_ToCString(jsctx, typeVal);
+
+            if( !typeStr )
+                return false;
+
+            std::string t(typeStr);
+            JS_FreeCString(jsctx, typeStr);
+
+            std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c)
+            {
+                return static_cast<char>(std::tolower(c));
+            });
+
+            if( t == "float" || t == "double" )
+                kind = ValueKind::Float;
+            else if( t == "bool" || t == "boolean" )
+                kind = ValueKind::Bool;
+            else
+                kind = ValueKind::Int32;
+        }
+        else
+        {
+            if( JS_IsBool(valueVal) )
+                kind = ValueKind::Bool;
+            else if( JS_IsNumber(valueVal) )
+            {
+                double d = 0;
+
+                if( JS_ToFloat64(jsctx, &d, valueVal) != 0 )
+                {
+                    JS_ThrowTypeError(jsctx, "opcua.write: invalid numeric value");
+                    return false;
+                }
+
+                if( std::floor(d) != d )
+                    kind = ValueKind::Float;
+                else
+                    kind = ValueKind::Int32;
+            }
+            else
+            {
+                JS_ThrowTypeError(jsctx, "opcua.write: value must be number or boolean");
+                return false;
+            }
+        }
+
+        switch( kind )
+        {
+            case ValueKind::Bool:
+            {
+                int32_t bv = JS_ToBool(jsctx, valueVal);
+
+                if( bv < 0 )
+                    return false;
+
+                item.value = (bv != 0);
+                break;
+            }
+            case ValueKind::Float:
+            {
+                double dv = 0;
+
+                if( JS_ToFloat64(jsctx, &dv, valueVal) != 0 )
+                {
+                    JS_ThrowTypeError(jsctx, "opcua.write: invalid float value");
+                    return false;
+                }
+
+                item.value = static_cast<float>(dv);
+                break;
+            }
+            case ValueKind::Int32:
+            default:
+            {
+                int32_t iv = 0;
+
+                if( JS_ToInt32(jsctx, &iv, valueVal) != 0 )
+                {
+                    JS_ThrowTypeError(jsctx, "opcua.write: invalid int32 value");
+                    return false;
+                }
+
+                item.value = iv;
+                break;
+            }
+        }
+
+        return true;
+    };
+
+    auto addItem = [&](const std::string& nodeId, JSValueConst valueVal, JSValueConst typeVal) -> bool
+    {
+        if( nodeId.empty() )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.write: nodeId must be non-empty");
+            return false;
+        }
+
+        JSOPCUAClient::WriteItem item;
+        item.nodeId = nodeId;
+
+        if( !parseValue(valueVal, typeVal, item) )
+            return false;
+
+        items.emplace_back(std::move(item));
+        return true;
+    };
+
+    if( JS_IsArray(jsctx, argv[0]) )
+    {
+        JSValue lenVal = JS_GetPropertyStr(jsctx, argv[0], "length");
+        uint32_t length = 0;
+
+        if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+        {
+            JS_FreeValue(jsctx, lenVal);
+            JS_ThrowTypeError(jsctx, "opcua.write: invalid array length");
+            return JS_EXCEPTION;
+        }
+
+        JS_FreeValue(jsctx, lenVal);
+
+        for( uint32_t i = 0; i < length; ++i )
+        {
+            JSValue entry = JS_GetPropertyUint32(jsctx, argv[0], i);
+
+            if( JS_IsException(entry) )
+                return JS_EXCEPTION;
+
+            if( !JS_IsObject(entry) )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_ThrowTypeError(jsctx, "opcua.write: array items must be objects");
+                return JS_EXCEPTION;
+            }
+
+            JSValue nodeVal = JS_GetPropertyStr(jsctx, entry, "nodeId");
+            JSValue valueVal = JS_GetPropertyStr(jsctx, entry, "value");
+            JSValue typeVal = JS_GetPropertyStr(jsctx, entry, "type");
+
+            if( JS_IsException(nodeVal) || JS_IsException(valueVal) || JS_IsException(typeVal) )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_FreeValue(jsctx, nodeVal);
+                JS_FreeValue(jsctx, valueVal);
+                JS_FreeValue(jsctx, typeVal);
+                return JS_EXCEPTION;
+            }
+
+            if( JS_IsUndefined(nodeVal) || JS_IsNull(nodeVal) )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_FreeValue(jsctx, nodeVal);
+                JS_FreeValue(jsctx, valueVal);
+                JS_FreeValue(jsctx, typeVal);
+                JS_ThrowTypeError(jsctx, "opcua.write: nodeId is required");
+                return JS_EXCEPTION;
+            }
+
+            const char* nodeStr = JS_ToCString(jsctx, nodeVal);
+
+            if( !nodeStr )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_FreeValue(jsctx, nodeVal);
+                JS_FreeValue(jsctx, valueVal);
+                JS_FreeValue(jsctx, typeVal);
+                return JS_EXCEPTION;
+            }
+
+            std::string nodeId(nodeStr);
+            JS_FreeCString(jsctx, nodeStr);
+
+            bool ok = addItem(nodeId, valueVal, typeVal);
+
+            JS_FreeValue(jsctx, nodeVal);
+            JS_FreeValue(jsctx, valueVal);
+            JS_FreeValue(jsctx, typeVal);
+            JS_FreeValue(jsctx, entry);
+
+            if( !ok )
+                return JS_EXCEPTION;
+        }
+    }
+    else
+    {
+        if( !JS_IsString(argv[0]) )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.write: nodeId must be string");
+            return JS_EXCEPTION;
+        }
+
+        if( argc < 2 )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.write: value argument required");
+            return JS_EXCEPTION;
+        }
+
+        const char* nodeStr = JS_ToCString(jsctx, argv[0]);
+
+        if( !nodeStr )
+            return JS_EXCEPTION;
+
+        std::string nodeId(nodeStr);
+        JS_FreeCString(jsctx, nodeStr);
+
+        JSValueConst typeVal = (argc >= 3) ? argv[2] : JS_UNDEFINED;
+
+        if( !addItem(nodeId, argv[1], typeVal) )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto status = opcuaClient->write(items);
+        return JS_NewInt64(jsctx, static_cast<int64_t>(status));
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+#endif // JS_OPCUA_ENABLED
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeBitsReply( const ModbusRTU::BitsBuffer& buf )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "byteCount", JS_NewInt32(ctx, buf.bcnt));
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < buf.bcnt; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, buf.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "data", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadOutputRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < msg.count; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, msg.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "values", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadInputRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < msg.count; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, msg.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "values", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeDiagReply( const ModbusRTU::DiagnosticRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "subfunc", JS_NewInt32(ctx, msg.subf));
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
+
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < msg.count; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, msg.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "values", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeWriteAck( ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, start));
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, count));
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeWriteSingleAck( const ModbusRTU::WriteSingleOutputRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, msg.start));
+    JS_SetPropertyStr(ctx, result, "value", JS_NewInt32(ctx, msg.data));
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeModbusBoolAck( const ModbusRTU::ForceSingleCoilRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, msg.start));
+    JS_SetPropertyStr(ctx, result, "value", JS_NewBool(ctx, msg.cmd()));
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMake4314Reply( const ModbusRTU::MEIMessageRetRDI& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "deviceId", JS_NewInt32(ctx, msg.devID));
+    JS_SetPropertyStr(ctx, result, "conformity", JS_NewInt32(ctx, msg.conformity));
+    JS_SetPropertyStr(ctx, result, "moreFollows", JS_NewBool(ctx, msg.mf == 0xFF));
+    JS_SetPropertyStr(ctx, result, "objectId", JS_NewInt32(ctx, msg.objID));
+    JS_SetPropertyStr(ctx, result, "objectCount", JS_NewInt32(ctx, msg.objNum));
+
+    JSValue arr = JS_NewArray(ctx);
+    uint32_t idx = 0;
+
+    for( const auto& item : msg.dlist )
+    {
+        JSValue entry = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, entry, "id", JS_NewInt32(ctx, item.id));
+        JS_SetPropertyStr(ctx, entry, "value", JS_NewString(ctx, item.val.c_str()));
+        JS_SetPropertyUint32(ctx, arr, idx++, entry);
+    }
+
+    JS_SetPropertyStr(ctx, result, "objects", arr);
+    return result;
 }
 // ----------------------------------------------------------------------------
 // Нестатические методы-члены класса

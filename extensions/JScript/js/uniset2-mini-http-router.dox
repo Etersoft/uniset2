@@ -1,6 +1,6 @@
 
 /**
-\page mini_http_router Руководство по роутеру (uniset2-mini-http-router.js)
+\page mini_http_router (JScript): Mini HTTP router (uniset2-mini-http-router.js)
 
 Роутер сопоставляет HTTP-запросы с обработчиками по методу и шаблону пути,
 поддерживает middleware, группировки маршрутов (prefix), CORS и обработчики ошибок.

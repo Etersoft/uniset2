@@ -1,0 +1,108 @@
+/*!
+\page page_JScript_ModbusClient (JScript) Modbus TCP клиент (uniset2-modbus-client.js)
+
+Обёртка над `uniset.modbus`, повторяющая команды mbtester/mbtcptester. Даёт удобный объектный API для Modbus/TCP.
+
+\section sec_ModbusClient_Load Загрузка и создание клиента
+\code{.js}
+load("uniset2-modbus-client.js");
+const mb = uniset_createModbusClient();
+\endcode
+
+Фабрика проверяет наличие всех нативных методов и бросает исключение, если движок собран без поддержки Modbus.
+
+\section sec_ModbusClient_API API и примеры
+
+\subsection sec_Modbus_connectTCP connectTCP(opts)
+Подключается к Modbus/TCP устройству.
+
+Параметры:
+- `host` — IP/домен (строка, обязательно);
+- `port` — номер порта (по умолчанию 502);
+- `timeout` — (опц.) таймаут в мс;
+- `forceDisconnect` — (опц.) `true`, чтобы разрывать прежнее соединение.
+
+\code{.js}
+mb.connectTCP({ host: "192.168.1.10", port: 502, timeout: 2000 });
+\endcode
+
+\subsection sec_Modbus_disconnect disconnect()
+Разрывает TCP-соединение.
+\code{.js}
+mb.disconnect();
+\endcode
+
+\subsection sec_Modbus_read01 read01(opts)
+Читает **coils** (функция 0x01). `opts` содержит `slave`, `reg`, `count`.
+\code{.js}
+const coils = mb.read01({ slave: 1, reg: 0, count: 8 });
+// -> [0,1,0,0,1,1,0,0]
+\endcode
+
+\subsection sec_Modbus_read02 read02(opts)
+Читает **discrete inputs** (0x02).
+\code{.js}
+const inputs = mb.read02({ slave: 1, reg: 100, count: 4 });
+\endcode
+
+\subsection sec_Modbus_read03 read03(opts)
+Читает **holding registers** (0x03).
+\code{.js}
+const hold = mb.read03({ slave: 1, reg: 0, count: 2 }); // -> [123, 456]
+\endcode
+
+\subsection sec_Modbus_read04 read04(opts)
+Читает **input registers** (0x04).
+\code{.js}
+const analog = mb.read04({ slave: 1, reg: 10, count: 6 });
+\endcode
+
+\subsection sec_Modbus_write05 write05(opts)
+Устанавливает coil (0x05). `value` приводится к булеву.
+\code{.js}
+mb.write05({ slave: 1, reg: 0, value: true });
+\endcode
+
+\subsection sec_Modbus_write06 write06(opts)
+Пишет одиночный holding register (0x06).
+\code{.js}
+mb.write06({ slave: 1, reg: 20, value: 250 });
+\endcode
+
+\subsection sec_Modbus_write0F write0F(opts)
+Записывает набор coils (0x0F). `values` — массив булевых.
+\code{.js}
+mb.write0F({ slave: 1, reg: 0, values: [1,0,1,1,0,0,1,0] });
+\endcode
+
+\subsection sec_Modbus_write10 write10(opts)
+Записывает несколько holding registers (0x10). `values` — массив чисел 0..65535.
+\code{.js}
+mb.write10({ slave: 1, reg: 30, values: [1000, 2000, 3000] });
+\endcode
+
+\subsection sec_Modbus_diag08 diag08(opts)
+Диагностическая функция 0x08.
+
+Параметры: `slave`, `subfunc` (код подфункции), `data` (опционально).
+\code{.js}
+const resp = mb.diag08({ slave: 1, subfunc: 0x0000 }); // Return Query Data
+\endcode
+
+\subsection sec_Modbus_read4314 read4314(opts)
+Читает идентификаторы устройства (Modbus Encapsulated Interface, 0x2B/0x0E). Параметры: `slave`, `devID`, `objID`.
+\code{.js}
+const info = mb.read4314({ slave: 1, devID: 0x01, objID: 0x00 }); // Basic device identification
+\endcode
+
+\section sec_ModbusClient_FullExample Полный пример
+\code{.js}
+load("uniset2-modbus-client.js");
+const mb = uniset_createModbusClient();
+
+mb.connectTCP({ host: "192.168.1.50", port: 1502, timeout: 3000 });
+const coils = mb.read01({ slave: 2, reg: 0, count: 16 });
+mb.write06({ slave: 2, reg: 5, value: 1234 });
+mb.disconnect();
+\endcode
+*/

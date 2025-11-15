@@ -105,6 +105,17 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
             dblog->level(Debug::value(loglevels));
     }
 
+    logserv = make_shared<LogServer>(dblog);
+    logserv->init( prefix + "logserver", cnode );
+
+    // ------- init logserver ---
+    if( findArgParam("--" + prefix + "run-logserver", argc, argv) != -1 )
+    {
+        logserv_host = uniset::getArg2Param("--" + prefix + "logserver-host", argc, argv, it.getProp("logserverHost"), "localhost");
+        logserv_port = uniset::getArgPInt("--" + prefix + "logserver-port", argc, argv, it.getProp("logserverPort"), 4444);
+        dblog->info() << "(init): log server host=" << logserv_host << ":" << logserv_port << endl;
+    }
+
     qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
     maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
 
@@ -570,10 +581,22 @@ void LogDB::help_print()
     cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
     cout << "--prefix-httpserver-logcontrol-enable       - Включить API для управления логами через HTTP" << endl;
     cout << "--prefix-httpserver-download-enable         - Включить возможность скачать файл БД через HTTP" << endl;
+    cout << endl;
+    cout << "LogServer: " << endl;
+    cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
+    cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
+    cout << "--prefix-logserver-port num - listen port. Default: 4444" << endl;
+    cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
 {
+    if( logserv && !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+    {
+        dblog->info() << "(run): log server " << logserv_host << ":" << logserv_port << endl;
+        logserv->async_run(logserv_host, logserv_port);
+    }
+
 #ifndef DISABLE_REST_API
 
     if( httpserv )
