@@ -22,6 +22,7 @@ extern "C" {
 }
 #include "UInterface.h"
 #include "JHttpServer.h"
+#include "JSModbusClient.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -129,6 +130,7 @@ namespace uniset
             JSValue jsModule = { JS_UNDEFINED };
             JSValue jsFnHttpRequest = { JS_UNDEFINED };
             JHttpServer::HandlerFn httpHandleFn;
+            std::shared_ptr<JSModbusClient> modbusClient;
 
             JSValue js_ui_getValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
@@ -138,6 +140,18 @@ namespace uniset
             JSValue js_uniset_httpStart(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_log(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_log_level(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_connectTCP(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_disconnect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_read01(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_read02(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_read03(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_read04(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_write05(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_write06(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_write0F(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_write10(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_diag08(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_modbus_read4314(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
             // Статические обертки для вызова нестатических методов
             static JSValue jsUiGetValue_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
@@ -148,12 +162,32 @@ namespace uniset
             static JSValue jsUniSetStepCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsUniSetStopCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsUniSetHttpStart_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusConnectTCP_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusDisconnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusRead01_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusRead02_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusRead03_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusRead04_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusWrite05_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusWrite06_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusWrite0F_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusWrite10_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusDiag08_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsModbusRead4314_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
             // http convert
             static JSValue jsMakeRequest(JSContext* ctx, JSValueConst& jsReqProto_, JSReqAtom& atom, const JHttpServer::RequestSnapshot& r);
             static JSValue jsMakeResponse(JSContext* ctx, JSValueConst& jsResProto_, JHttpServer::ResponseAdapter* ad);
             static void jsApplyResponseObject(JSContext* ctx, JSValue ret, JHttpServer::ResponseSnapshot& out);
             static void jsApplyResponseAdapter( const JHttpServer::ResponseAdapter& ad, JHttpServer::ResponseSnapshot& out );
+            JSValue jsMakeBitsReply( const ModbusRTU::BitsBuffer& buf );
+            JSValue jsMakeRegisterReply( const ModbusRTU::ReadOutputRetMessage& msg );
+            JSValue jsMakeRegisterReply( const ModbusRTU::ReadInputRetMessage& msg );
+            JSValue jsMakeDiagReply( const ModbusRTU::DiagnosticRetMessage& msg );
+            JSValue jsMakeWriteAck( ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
+            JSValue jsMakeWriteSingleAck( const ModbusRTU::WriteSingleOutputRetMessage& msg );
+            JSValue jsMakeModbusBoolAck( const ModbusRTU::ForceSingleCoilRetMessage& msg );
+            JSValue jsMake4314Reply( const ModbusRTU::MEIMessageRetRDI& msg );
 
             // "синтаксический сахар" для логов
 #ifndef myinfo

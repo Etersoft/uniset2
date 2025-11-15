@@ -28,6 +28,27 @@ extern "C" {
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
+
+namespace
+{
+    inline JSEngine* get_engine_from_context(JSContext* ctx)
+    {
+        JSValue global = JS_GetGlobalObject(ctx);
+        JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
+        JS_FreeValue(ctx, global);
+
+        if( JS_IsNumber(engine_ptr_val) )
+        {
+            int64_t ptr_int;
+            JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
+            JS_FreeValue(ctx, engine_ptr_val);
+            return reinterpret_cast<JSEngine*>(ptr_int);
+        }
+
+        JS_FreeValue(ctx, engine_ptr_val);
+        return nullptr;
+    }
+}
 // -------------------------------------------------------------------------
 JSEngine::JSEngine( const std::string& _jsfile,
                     std::vector<std::string>& _searchPaths,
@@ -47,6 +68,9 @@ JSEngine::JSEngine( const std::string& _jsfile,
 
     mylog = make_shared<DebugStream>();
     mylog->setLogName("JSEngine");
+
+    modbusClient = std::make_shared<JSModbusClient>();
+    modbusClient->setLog(mylog);
 
     httpHandleFn = [this](const JHttpServer::RequestSnapshot & request)->JHttpServer::ResponseSnapshot
     {
@@ -584,7 +608,7 @@ void JSEngine::sensorInfo( const uniset::SensorMessage* sm )
 void JSEngine::jsLoop()
 {
     // js loop processing
-    for( int i = 0; i < opts.jsLoopCount; i++ )
+    for( size_t i = 0; i < opts.jsLoopCount; i++ )
         js_std_loop(ctx);
 }
 // ----------------------------------------------------------------------------
@@ -760,6 +784,22 @@ void JSEngine::createUnisetObject()
     JS_SetPropertyStr(ctx, uobj, "step_cb",   JS_NewCFunction(ctx, jsUniSetStepCb_wrapper,   "step_cb",   1));
     JS_SetPropertyStr(ctx, uobj, "stop_cb",   JS_NewCFunction(ctx, jsUniSetStopCb_wrapper,   "stop_cb",   1));
     JS_SetPropertyStr(ctx, uobj, "http_start",   JS_NewCFunction(ctx, jsUniSetHttpStart_wrapper,   "http_start",   3));
+
+    JSValue modbus_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, modbus_obj, "connectTCP", JS_NewCFunction(ctx, jsModbusConnectTCP_wrapper, "connectTCP", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "disconnect", JS_NewCFunction(ctx, jsModbusDisconnect_wrapper, "disconnect", 0));
+    JS_SetPropertyStr(ctx, modbus_obj, "read01", JS_NewCFunction(ctx, jsModbusRead01_wrapper, "read01", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read02", JS_NewCFunction(ctx, jsModbusRead02_wrapper, "read02", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read03", JS_NewCFunction(ctx, jsModbusRead03_wrapper, "read03", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read04", JS_NewCFunction(ctx, jsModbusRead04_wrapper, "read04", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write05", JS_NewCFunction(ctx, jsModbusWrite05_wrapper, "write05", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write06", JS_NewCFunction(ctx, jsModbusWrite06_wrapper, "write06", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write0F", JS_NewCFunction(ctx, jsModbusWrite0F_wrapper, "write0F", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "write10", JS_NewCFunction(ctx, jsModbusWrite10_wrapper, "write10", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "diag08", JS_NewCFunction(ctx, jsModbusDiag08_wrapper, "diag08", 3));
+    JS_SetPropertyStr(ctx, modbus_obj, "read4314", JS_NewCFunction(ctx, jsModbusRead4314_wrapper, "read4314", 3));
+
+    JS_SetPropertyStr(ctx, uobj, "modbus", modbus_obj);
     JS_SetPropertyStr(ctx, jsGlobal, "uniset", uobj);
 }
 // ----------------------------------------------------------------------------
@@ -955,6 +995,781 @@ JSValue JSEngine::jsLogLevel_wrapper(JSContext* ctx, JSValueConst this_val, int 
 
     JS_FreeValue(ctx, engine_ptr_val);
     return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusConnectTCP_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_connectTCP(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusDisconnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_disconnect(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead01_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read01(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead02_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read02(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead03_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read03(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead04_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read04(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite05_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write05(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite06_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write06(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite0F_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write0F(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusWrite10_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_write10(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusDiag08_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_diag08(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsModbusRead4314_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_modbus_read4314(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_connectTCP(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.connectTCP(host, port [, timeout])");
+        return JS_EXCEPTION;
+    }
+
+    const char* host = JS_ToCString(jsctx, argv[0]);
+
+    if( !host )
+        return JS_EXCEPTION;
+
+    int32_t port = 0;
+
+    if( JS_ToInt32(jsctx, &port, argv[1]) != 0 )
+    {
+        JS_FreeCString(jsctx, host);
+        JS_ThrowTypeError(jsctx, "modbus.connectTCP: invalid port");
+        return JS_EXCEPTION;
+    }
+
+    timeout_t timeout = 2000;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        int32_t tmp = 0;
+
+        if( JS_ToInt32(jsctx, &tmp, argv[2]) != 0 )
+        {
+            JS_FreeCString(jsctx, host);
+            JS_ThrowTypeError(jsctx, "modbus.connectTCP: invalid timeout");
+            return JS_EXCEPTION;
+        }
+
+        if( tmp > 0 )
+            timeout = tmp;
+    }
+
+    bool forceDisconnect = false;
+
+    if( argc >= 4 && !JS_IsUndefined(argv[3]) )
+        forceDisconnect = JS_ToBool(jsctx, argv[3]);
+
+    try
+    {
+        modbusClient->connectTCP(host, port, timeout, forceDisconnect);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_FreeCString(jsctx, host);
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeCString(jsctx, host);
+    return JS_NewBool(jsctx, 1);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_disconnect(JSContext* jsctx, JSValueConst, int, JSValueConst*)
+{
+    if( modbusClient )
+        modbusClient->disconnect();
+
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+namespace
+{
+    inline bool js_to_uint32(JSContext* ctx, JSValueConst value, uint32_t& out, const char* errmsg)
+    {
+        if( JS_ToUint32(ctx, &out, value) != 0 )
+        {
+            JS_ThrowTypeError(ctx, "%s", errmsg);
+            return false;
+        }
+
+        return true;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read01(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read01(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read01: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read01: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read01: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read01(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeBitsReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read02(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read02(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read02: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read02: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read02: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read02(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeBitsReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read03(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read03(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read03: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read03: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read03: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read03(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeRegisterReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read04(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read04(slave, reg [, count])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t count = 1;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read04: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.read04: invalid register") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], count, "modbus.read04: invalid count") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->read04(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::ModbusData>(reg),
+                                        static_cast<ModbusRTU::ModbusData>(count));
+        return jsMakeRegisterReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write05(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write05(slave, reg, value)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write05: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.write05: invalid register") )
+        return JS_EXCEPTION;
+
+    int32_t state = JS_ToBool(jsctx, argv[2]);
+
+    if( state < 0 )
+        return JS_EXCEPTION;
+
+    try
+    {
+        auto ret = modbusClient->write05(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(reg),
+                                         state != 0);
+        return jsMakeModbusBoolAck(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write06(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write06(slave, reg, value)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t reg = 0;
+    uint32_t value = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write06: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], reg, "modbus.write06: invalid register") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[2], value, "modbus.write06: invalid value") )
+        return JS_EXCEPTION;
+
+    try
+    {
+        auto ret = modbusClient->write06(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(reg),
+                                         static_cast<ModbusRTU::ModbusData>(value));
+        return jsMakeWriteSingleAck(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write0F(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write0F(slave, start, values)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t start = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write0F: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], start, "modbus.write0F: invalid start register") )
+        return JS_EXCEPTION;
+
+    if( !JS_IsArray(jsctx, argv[2]) )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write0F: values must be array");
+        return JS_EXCEPTION;
+    }
+
+    JSValue lenVal = JS_GetPropertyStr(jsctx, argv[2], "length");
+    uint32_t length = 0;
+
+    if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+    {
+        JS_FreeValue(jsctx, lenVal);
+        JS_ThrowTypeError(jsctx, "modbus.write0F: invalid values length");
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeValue(jsctx, lenVal);
+
+    vector<uint8_t> bits;
+    bits.reserve(length);
+
+    for( uint32_t i = 0; i < length; ++i )
+    {
+        JSValue item = JS_GetPropertyUint32(jsctx, argv[2], i);
+
+        if( JS_IsException(item) )
+            return JS_EXCEPTION;
+
+        int32_t val = JS_ToBool(jsctx, item);
+        JS_FreeValue(jsctx, item);
+
+        if( val < 0 )
+            return JS_EXCEPTION;
+
+        bits.emplace_back(val ? 1 : 0);
+    }
+
+    try
+    {
+        auto ret = modbusClient->write0F(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(start),
+                                         bits);
+        return jsMakeWriteAck(ret.start, ret.quant);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_write10(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write10(slave, start, values)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t start = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.write10: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], start, "modbus.write10: invalid start register") )
+        return JS_EXCEPTION;
+
+    if( !JS_IsArray(jsctx, argv[2]) )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.write10: values must be array");
+        return JS_EXCEPTION;
+    }
+
+    JSValue lenVal = JS_GetPropertyStr(jsctx, argv[2], "length");
+    uint32_t length = 0;
+
+    if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+    {
+        JS_FreeValue(jsctx, lenVal);
+        JS_ThrowTypeError(jsctx, "modbus.write10: invalid values length");
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeValue(jsctx, lenVal);
+
+    vector<ModbusRTU::ModbusData> values;
+    values.reserve(length);
+
+    for( uint32_t i = 0; i < length; ++i )
+    {
+        JSValue item = JS_GetPropertyUint32(jsctx, argv[2], i);
+
+        if( JS_IsException(item) )
+            return JS_EXCEPTION;
+
+        uint32_t val = 0;
+
+        if( JS_ToUint32(jsctx, &val, item) != 0 )
+        {
+            JS_FreeValue(jsctx, item);
+            JS_ThrowTypeError(jsctx, "modbus.write10: invalid data value");
+            return JS_EXCEPTION;
+        }
+
+        JS_FreeValue(jsctx, item);
+        values.emplace_back(static_cast<ModbusRTU::ModbusData>(val));
+    }
+
+    try
+    {
+        auto ret = modbusClient->write10(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                         static_cast<ModbusRTU::ModbusData>(start),
+                                         values);
+        return jsMakeWriteAck(ret.start, ret.quant);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_diag08(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 2 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.diag08(slave, subfunc [, data])");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t subf = 0;
+    uint32_t data = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.diag08: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], subf, "modbus.diag08: invalid subfunction") )
+        return JS_EXCEPTION;
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        if( !js_to_uint32(jsctx, argv[2], data, "modbus.diag08: invalid data") )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto ret = modbusClient->diag08(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                        static_cast<ModbusRTU::DiagnosticsSubFunction>(subf),
+                                        static_cast<ModbusRTU::ModbusData>(data));
+        return jsMakeDiagReply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_modbus_read4314(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 3 )
+    {
+        JS_ThrowTypeError(jsctx, "modbus.read4314(slave, devID, objID)");
+        return JS_EXCEPTION;
+    }
+
+    uint32_t slave = 0;
+    uint32_t devID = 0;
+    uint32_t objID = 0;
+
+    if( !js_to_uint32(jsctx, argv[0], slave, "modbus.read4314: invalid slave id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[1], devID, "modbus.read4314: invalid device id") )
+        return JS_EXCEPTION;
+
+    if( !js_to_uint32(jsctx, argv[2], objID, "modbus.read4314: invalid object id") )
+        return JS_EXCEPTION;
+
+    try
+    {
+        auto ret = modbusClient->read4314(static_cast<ModbusRTU::ModbusAddr>(slave),
+                                          static_cast<ModbusRTU::ModbusByte>(devID),
+                                          static_cast<ModbusRTU::ModbusByte>(objID));
+        return jsMake4314Reply(ret);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeBitsReply( const ModbusRTU::BitsBuffer& buf )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "byteCount", JS_NewInt32(ctx, buf.bcnt));
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < buf.bcnt; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, buf.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "data", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadOutputRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < msg.count; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, msg.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "values", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadInputRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < msg.count; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, msg.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "values", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeDiagReply( const ModbusRTU::DiagnosticRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "subfunc", JS_NewInt32(ctx, msg.subf));
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
+
+    JSValue arr = JS_NewArray(ctx);
+
+    for( size_t i = 0; i < msg.count; ++i )
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewInt32(ctx, msg.data[i]));
+
+    JS_SetPropertyStr(ctx, result, "values", arr);
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeWriteAck( ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, start));
+    JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, count));
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeWriteSingleAck( const ModbusRTU::WriteSingleOutputRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, msg.start));
+    JS_SetPropertyStr(ctx, result, "value", JS_NewInt32(ctx, msg.data));
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMakeModbusBoolAck( const ModbusRTU::ForceSingleCoilRetMessage& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, msg.start));
+    JS_SetPropertyStr(ctx, result, "value", JS_NewBool(ctx, msg.cmd()));
+    return result;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsMake4314Reply( const ModbusRTU::MEIMessageRetRDI& msg )
+{
+    JSValue result = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, result, "deviceId", JS_NewInt32(ctx, msg.devID));
+    JS_SetPropertyStr(ctx, result, "conformity", JS_NewInt32(ctx, msg.conformity));
+    JS_SetPropertyStr(ctx, result, "moreFollows", JS_NewBool(ctx, msg.mf == 0xFF));
+    JS_SetPropertyStr(ctx, result, "objectId", JS_NewInt32(ctx, msg.objID));
+    JS_SetPropertyStr(ctx, result, "objectCount", JS_NewInt32(ctx, msg.objNum));
+
+    JSValue arr = JS_NewArray(ctx);
+    uint32_t idx = 0;
+
+    for( const auto& item : msg.dlist )
+    {
+        JSValue entry = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, entry, "id", JS_NewInt32(ctx, item.id));
+        JS_SetPropertyStr(ctx, entry, "value", JS_NewString(ctx, item.val.c_str()));
+        JS_SetPropertyUint32(ctx, arr, idx++, entry);
+    }
+
+    JS_SetPropertyStr(ctx, result, "objects", arr);
+    return result;
 }
 // ----------------------------------------------------------------------------
 // Нестатические методы-члены класса

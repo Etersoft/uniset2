@@ -4,6 +4,7 @@ load("local.js");
 load("uniset2-delaytimer.js");
 load("my-http-api.js");
 load("uniset2-simitator.js");
+load("uniset2-modbus-client.js");
 // ----------------------------------------------------------------------------
 uniset_inputs = [
     { name: "JS_AI1_AS" },
@@ -30,6 +31,7 @@ const simitator = createSimitator({
 // ----------------------------------------------------------------------------
 const dt = new DelayTimer(200, 50);
 const pt = new PassiveTimer(200);
+const mbclient = uniset_createModbusClient();
 // ----------------------------------------------------------------------------
 // HTTP server
 startMyHttpServer();
@@ -46,12 +48,22 @@ function uniset_on_step()
 
     out_JS_AO1_C = in_JS_AI1_AS + 1;
     MyGlobal = in_JS_AI1_AS;
+
+
+    mylog.info("Modbus demo read03...");
+    const reply = mbclient.read03({ slave: 1, reg: 0, count: 2 });
+    mylog.info("Modbus demo read03:", reply);
+    const reply4 = mbclient.read04({ slave: 1, reg: 0, count: 2 });
+    mylog.info("Modbus demo read04:", reply4);
+    const replyF = mbclient.write0F({ slave: 1, reg: 0, values: [1, 0, 1, 0] });
+    mylog.info("Modbus demo write0F:", replyF);
 }
 // ----------------------------------------------------------------------------
 function uniset_on_stop()
 {
     mylog.info("=== STOP ===");
     simitator.stop();
+    mbclient.disconnect();
 }
 // ----------------------------------------------------------------------------
 function uniset_on_start() {
@@ -71,5 +83,16 @@ function uniset_on_start() {
         mylog.info("🔄 Test timer 2 triggered! id:", id, "count:", count);
         out_JS_AO2_C = out_JS_AO2_C + 1;
     });
+
+
+    try
+    {
+        mylog.info("Modbus client try connect..");
+        mbclient.connectTCP({ host: "127.0.0.1", port: 2048, timeout: 2000});
+    }
+    catch( e )
+    {
+        mylog.crit("Modbus demo failed:", e.message);
+    }
 }
 // ----------------------------------------------------------------------------
