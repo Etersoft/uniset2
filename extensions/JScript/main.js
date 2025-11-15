@@ -3,6 +3,7 @@ load("uniset2-log.js");
 load("local.js");
 load("uniset2-delaytimer.js");
 load("my-http-api.js");
+load("uniset2-simitator.js");
 // ----------------------------------------------------------------------------
 uniset_inputs = [
     { name: "JS_AI1_AS" },
@@ -18,6 +19,14 @@ MyGlobal = 0;
 MyCounter = 0;
 mylog = uniset_log_create("main.js", true, true, true);
 mylog.level("info","warn","crit", "level5")
+const simitator = createSimitator({
+    sensors: ["JS_AI1_AS"],
+    min: 0,
+    max: 100,
+    step: 5,
+    pause: 500,
+    func: (v) => Math.round(v * Math.sin(v))
+});
 // ----------------------------------------------------------------------------
 const dt = new DelayTimer(200, 50);
 const pt = new PassiveTimer(200);
@@ -42,11 +51,15 @@ function uniset_on_step()
 function uniset_on_stop()
 {
     mylog.info("=== STOP ===");
+    simitator.stop();
 }
 // ----------------------------------------------------------------------------
 function uniset_on_start() {
 
     mylog.info("=== START ===");
+
+    simitator.start();
+    mylog.info("simitator example started for JS_AI1_AS");
 
     mylog.info("getValue by id: ", ui.getValue(9));
     mylog.info("getValue by name: ", ui.getValue("JS_AI1_AS"));

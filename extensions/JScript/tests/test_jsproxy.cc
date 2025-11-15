@@ -363,3 +363,12 @@ TEST_CASE("JSEngine: mini http", "[jscript][httpserver][12]")
     REQUIRE(ExecuteUITest(12, -1, -1, 8000));
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("JSEngine: simitator module", "[jscript][ui][13]")
+{
+    InitTest();
+    ResetUITestState();
+
+    // Тест 13: uniset2-simitator
+    REQUIRE(ExecuteUITest(13, -1, -1, 8000));
+}
+// -----------------------------------------------------------------------------
