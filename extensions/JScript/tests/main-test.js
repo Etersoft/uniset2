@@ -3,7 +3,6 @@ load("local-test.js");
 
 const TEST_MODBUS_PORT=15024
 ModulesTestsRunning = false
-const TEST_MODBUS_PORT = 15024;
 
 
 uniset_inputs = [

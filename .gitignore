@@ -190,3 +190,17 @@ tests/tests_with_conf
 testsuite/atconfig
 
 *
+!*/
+!.gitignore
+!extensions/
+!extensions/JScript/
+!extensions/JScript/js/
+!extensions/JScript/js/uniset2-opcua-client.js
+!extensions/JScript/JSOPCUAClient.cc
+!extensions/JScript/JSOPCUAClient.h
+!extensions/JScript/tests/
+!extensions/JScript/tests/OPCUATestServer.cc
+!extensions/JScript/tests/OPCUATestServer.h
+!extensions/JScript/tests/tests_opcua.cc
+.idea/
+.qtcreator/

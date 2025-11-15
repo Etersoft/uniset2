@@ -33,6 +33,7 @@ const simitator = createSimitator({
 const dt = new DelayTimer(200, 50);
 const pt = new PassiveTimer(200);
 const mbclient = uniset_createModbusClient();
+const opcua = uniset_createOpcuaClient();
 // ----------------------------------------------------------------------------
 // HTTP server
 startMyHttpServer();
@@ -50,13 +51,25 @@ function uniset_on_step()
     out_JS_AO1_C = in_JS_AI1_AS + 1;
     MyGlobal = in_JS_AI1_AS;
 
-    // mylog.info("Modbus demo read03...");
-    // const reply = mbclient.read03({ slave: 1, reg: 0, count: 2 });
-    // mylog.info("Modbus demo read03:", reply);
-    // const reply4 = mbclient.read04({ slave: 1, reg: 0, count: 2 });
-    // mylog.info("Modbus demo read04:", reply4);
-    // const replyF = mbclient.write0F({ slave: 1, reg: 0, values: [1, 0, 1, 0] });
-    // mylog.info("Modbus demo write0F:", replyF);
+
+    mylog.info("Modbus demo read03...");
+    const reply = mbclient.read03({ slave: 1, reg: 0, count: 2 });
+    mylog.info("Modbus demo read03:", reply);
+    const reply4 = mbclient.read04({ slave: 1, reg: 0, count: 2 });
+    mylog.info("Modbus demo read04:", reply4);
+    const replyF = mbclient.write0F({ slave: 1, reg: 0, values: [1, 0, 1, 0] });
+    mylog.info("Modbus demo write0F:", replyF);
+
+    try
+    {
+        const opcValues = opcua.readValues(["ns=0;i=1001", "ns=0;i=1002"]);
+        mylog.info("OPC UA demo readValues:", opcValues);
+    }
+    catch( e )
+    {
+        mylog.warn("OPC UA read failed:", e.message || e);
+    }
+
 }
 // ----------------------------------------------------------------------------
 function uniset_on_stop()
@@ -64,6 +77,9 @@ function uniset_on_stop()
     mylog.info("=== STOP ===");
     simitator.stop();
     mbclient.disconnect();
+
+    if( opcua )
+        opcua.disconnect();
 }
 // ----------------------------------------------------------------------------
 function uniset_on_start() {
@@ -94,5 +110,21 @@ function uniset_on_start() {
     {
         mylog.crit("Modbus demo failed:", e.message);
     }
+
+    try
+    {
+        if( opcua )
+        {
+            mylog.info("OPC UA client try connect..");
+            opcua.connect({endpoint: "opc.tcp://127.0.0.1:4840"});
+            opcua.write({"ns=0;i=1001": 42});
+            mylog.info("OPC UA demo write ok");
+        }
+    }
+    catch( e )
+    {
+        mylog.warn("OPC UA demo failed:", e.message || e);
+    }
+
 }
 // ----------------------------------------------------------------------------

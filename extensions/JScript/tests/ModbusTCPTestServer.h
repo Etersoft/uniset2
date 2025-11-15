@@ -36,17 +36,17 @@ namespace uniset
             ModbusRTU::mbErrCode readInputStatus( const ModbusRTU::ReadInputStatusMessage& query,
                                                   ModbusRTU::ReadInputStatusRetMessage& reply );
             ModbusRTU::mbErrCode readOutputRegisters( const ModbusRTU::ReadOutputMessage& query,
-                                                       ModbusRTU::ReadOutputRetMessage& reply );
+                    ModbusRTU::ReadOutputRetMessage& reply );
             ModbusRTU::mbErrCode readInputRegisters( const ModbusRTU::ReadInputMessage& query,
-                                                     ModbusRTU::ReadInputRetMessage& reply );
+                    ModbusRTU::ReadInputRetMessage& reply );
             ModbusRTU::mbErrCode forceSingleCoil( const ModbusRTU::ForceSingleCoilMessage& query,
                                                   ModbusRTU::ForceSingleCoilRetMessage& reply );
             ModbusRTU::mbErrCode forceMultipleCoils( const ModbusRTU::ForceCoilsMessage& query,
-                                                     ModbusRTU::ForceCoilsRetMessage& reply );
+                    ModbusRTU::ForceCoilsRetMessage& reply );
             ModbusRTU::mbErrCode writeOutputRegisters( const ModbusRTU::WriteOutputMessage& query,
-                                                       ModbusRTU::WriteOutputRetMessage& reply );
+                    ModbusRTU::WriteOutputRetMessage& reply );
             ModbusRTU::mbErrCode writeOutputSingleRegister( const ModbusRTU::WriteSingleOutputMessage& query,
-                                                            ModbusRTU::WriteSingleOutputRetMessage& reply );
+                    ModbusRTU::WriteSingleOutputRetMessage& reply );
             ModbusRTU::mbErrCode diagnostics( const ModbusRTU::DiagnosticMessage& query,
                                               ModbusRTU::DiagnosticRetMessage& reply );
             ModbusRTU::mbErrCode read4314( const ModbusRTU::MEIMessageRDI& query,
