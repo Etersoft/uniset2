@@ -29,6 +29,7 @@ let uiTestSensor1Value = 0;
 let uiTestSensor2Value = 0;
 let currentTestCommand = 0;
 let testCompleted = false;
+let simExample = null;
 
 // Логгер для отладки
 let testLog = uniset_log_create("ui-tests", true, true);
@@ -249,6 +250,32 @@ function runUiTest(testCommand) {
                 testLog.info("Test 12: Completed successfully");
             }
             break;
+
+        case 13:
+        {
+            // Тест 13: uniset2-simitator
+            testLog.info("Test 13: Testing uniset2-simitator");
+            const resumeSim = simExample && typeof simExample.isRunning === "function" && simExample.isRunning();
+
+            if (simExample && typeof simExample.stop === "function")
+                simExample.stop();
+
+            load("tests-uniset2-simitator.js");
+            const simResults = runSimitatorTests();
+
+            if (simResults.failed === 0) {
+                out_UI_TestResult_C = 1;
+                testLog.info("Test 13: All simitator tests passed");
+            } else {
+                out_UI_TestResult_C = 0;
+                testLog.warn("Test 13: simitator tests failed: " + simResults.failed);
+            }
+
+            if (resumeSim && simExample && typeof simExample.start === "function")
+                simExample.start();
+
+            break;
+        }
 
         default:
             testLog.warn("Unknown test command:", testCommand);
