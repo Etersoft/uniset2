@@ -23,6 +23,9 @@ extern "C" {
 #include "UInterface.h"
 #include "JHttpServer.h"
 #include "JSModbusClient.h"
+#ifdef JS_OPCUA_ENABLED
+#include "JSOPCUAClient.h"
+#endif
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -152,7 +155,13 @@ namespace uniset
             JSValue js_modbus_write10(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_modbus_diag08(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             JSValue js_modbus_read4314(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
-
+#ifdef JS_OPCUA_ENABLED
+            std::shared_ptr<JSOPCUAClient> opcuaClient;
+            JSValue js_opcua_connect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_opcua_disconnect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_opcua_read(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            JSValue js_opcua_write(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+#endif
             // Статические обертки для вызова нестатических методов
             static JSValue jsUiGetValue_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsUiAskSensor_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
@@ -174,7 +183,12 @@ namespace uniset
             static JSValue jsModbusWrite10_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsModbusDiag08_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
             static JSValue jsModbusRead4314_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
-
+#ifdef JS_OPCUA_ENABLED
+            static JSValue jsOpcuaConnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsOpcuaDisconnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsOpcuaRead_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+            static JSValue jsOpcuaWrite_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+#endif
             // http convert
             static JSValue jsMakeRequest(JSContext* ctx, JSValueConst& jsReqProto_, JSReqAtom& atom, const JHttpServer::RequestSnapshot& r);
             static JSValue jsMakeResponse(JSContext* ctx, JSValueConst& jsResProto_, JHttpServer::ResponseAdapter* ad);

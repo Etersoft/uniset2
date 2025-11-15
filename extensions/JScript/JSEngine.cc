@@ -16,6 +16,9 @@
 // -------------------------------------------------------------------------
 #include <vector>
 #include <string>
+#include <cmath>
+#include <algorithm>
+#include <cctype>
 extern "C" {
 #include "quickjs/quickjs-libc.h"
 }
@@ -71,6 +74,10 @@ JSEngine::JSEngine( const std::string& _jsfile,
 
     modbusClient = std::make_shared<JSModbusClient>();
     modbusClient->setLog(mylog);
+#ifdef JS_OPCUA_ENABLED
+    opcuaClient = std::make_shared<JSOPCUAClient>();
+    opcuaClient->setLog(mylog);
+#endif
 
     httpHandleFn = [this](const JHttpServer::RequestSnapshot & request)->JHttpServer::ResponseSnapshot
     {
@@ -800,6 +807,14 @@ void JSEngine::createUnisetObject()
     JS_SetPropertyStr(ctx, modbus_obj, "read4314", JS_NewCFunction(ctx, jsModbusRead4314_wrapper, "read4314", 3));
 
     JS_SetPropertyStr(ctx, uobj, "modbus", modbus_obj);
+#ifdef JS_OPCUA_ENABLED
+    JSValue opcua_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, opcua_obj, "connect", JS_NewCFunction(ctx, jsOpcuaConnect_wrapper, "connect", 3));
+    JS_SetPropertyStr(ctx, opcua_obj, "disconnect", JS_NewCFunction(ctx, jsOpcuaDisconnect_wrapper, "disconnect", 0));
+    JS_SetPropertyStr(ctx, opcua_obj, "read", JS_NewCFunction(ctx, jsOpcuaRead_wrapper, "read", 1));
+    JS_SetPropertyStr(ctx, opcua_obj, "write", JS_NewCFunction(ctx, jsOpcuaWrite_wrapper, "write", 2));
+    JS_SetPropertyStr(ctx, uobj, "opcua", opcua_obj);
+#endif
     JS_SetPropertyStr(ctx, jsGlobal, "uniset", uobj);
 }
 // ----------------------------------------------------------------------------
@@ -1152,6 +1167,61 @@ JSValue JSEngine::jsModbusRead4314_wrapper(JSContext* ctx, JSValueConst this_val
 
     return engine->js_modbus_read4314(ctx, this_val, argc, argv);
 }
+// ----------------------------------------------------------------------------
+#ifdef JS_OPCUA_ENABLED
+JSValue JSEngine::jsOpcuaConnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_connect(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsOpcuaDisconnect_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_disconnect(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsOpcuaRead_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_read(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::jsOpcuaWrite_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+    auto engine = get_engine_from_context(ctx);
+
+    if( !engine )
+    {
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
+    }
+
+    return engine->js_opcua_write(ctx, this_val, argc, argv);
+}
+// ----------------------------------------------------------------------------
+#endif // JS_OPCUA_ENABLED
 // ----------------------------------------------------------------------------
 JSValue JSEngine::js_modbus_connectTCP(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
 {
@@ -1669,6 +1739,461 @@ JSValue JSEngine::js_modbus_read4314(JSContext* jsctx, JSValueConst, int argc, J
         return JS_EXCEPTION;
     }
 }
+// ----------------------------------------------------------------------------
+#ifdef JS_OPCUA_ENABLED
+JSValue JSEngine::js_opcua_connect(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.connect(endpoint [, user, pass])");
+        return JS_EXCEPTION;
+    }
+
+    if( !opcuaClient )
+    {
+        JS_ThrowInternalError(jsctx, "opcua client not initialized");
+        return JS_EXCEPTION;
+    }
+
+    if( !JS_IsString(argv[0]) )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.connect: endpoint must be string");
+        return JS_EXCEPTION;
+    }
+
+    const char* endpoint = JS_ToCString(jsctx, argv[0]);
+
+    if( !endpoint )
+        return JS_EXCEPTION;
+
+    std::string user;
+    std::string pass;
+    bool useAuth = false;
+
+    if( argc >= 2 && !JS_IsUndefined(argv[1]) )
+    {
+        const char* ustr = JS_ToCString(jsctx, argv[1]);
+
+        if( !ustr )
+        {
+            JS_FreeCString(jsctx, endpoint);
+            return JS_EXCEPTION;
+        }
+
+        user = ustr;
+        JS_FreeCString(jsctx, ustr);
+        useAuth = true;
+    }
+
+    if( argc >= 3 && !JS_IsUndefined(argv[2]) )
+    {
+        const char* pstr = JS_ToCString(jsctx, argv[2]);
+
+        if( !pstr )
+        {
+            JS_FreeCString(jsctx, endpoint);
+            return JS_EXCEPTION;
+        }
+
+        pass = pstr;
+        JS_FreeCString(jsctx, pstr);
+        useAuth = true;
+    }
+
+    try
+    {
+        if( useAuth )
+            opcuaClient->connect(endpoint, user, pass);
+        else
+            opcuaClient->connect(endpoint);
+    }
+    catch( const std::exception& ex )
+    {
+        JS_FreeCString(jsctx, endpoint);
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+
+    JS_FreeCString(jsctx, endpoint);
+    return JS_NewBool(jsctx, 1);
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_opcua_disconnect(JSContext* jsctx, JSValueConst, int, JSValueConst*)
+{
+    if( opcuaClient )
+        opcuaClient->disconnect();
+
+    return JS_UNDEFINED;
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_opcua_read(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.read(nodeId or array)");
+        return JS_EXCEPTION;
+    }
+
+    if( !opcuaClient )
+    {
+        JS_ThrowInternalError(jsctx, "opcua client not initialized");
+        return JS_EXCEPTION;
+    }
+
+    std::vector<std::string> nodes;
+
+    auto addNode = [&](JSValueConst val) -> bool
+    {
+        if( !JS_IsString(val) )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.read: nodeId must be string");
+            return false;
+        }
+
+        const char* nid = JS_ToCString(jsctx, val);
+
+        if( !nid )
+            return false;
+
+        nodes.emplace_back(nid);
+        JS_FreeCString(jsctx, nid);
+        return true;
+    };
+
+    if( JS_IsArray(jsctx, argv[0]) )
+    {
+        JSValue lenVal = JS_GetPropertyStr(jsctx, argv[0], "length");
+        uint32_t length = 0;
+
+        if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+        {
+            JS_FreeValue(jsctx, lenVal);
+            JS_ThrowTypeError(jsctx, "opcua.read: invalid array length");
+            return JS_EXCEPTION;
+        }
+
+        JS_FreeValue(jsctx, lenVal);
+
+        for( uint32_t i = 0; i < length; ++i )
+        {
+            JSValue item = JS_GetPropertyUint32(jsctx, argv[0], i);
+
+            if( JS_IsException(item) )
+                return JS_EXCEPTION;
+
+            bool ok = addNode(item);
+            JS_FreeValue(jsctx, item);
+
+            if( !ok )
+                return JS_EXCEPTION;
+        }
+    }
+    else
+    {
+        if( !addNode(argv[0]) )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto results = opcuaClient->read(nodes);
+        JSValue arr = JS_NewArray(jsctx);
+
+        for( size_t i = 0; i < nodes.size(); ++i )
+        {
+            JSValue obj = JS_NewObject(jsctx);
+            JS_SetPropertyStr(jsctx, obj, "nodeId", JS_NewString(jsctx, nodes[i].c_str()));
+
+            UA_StatusCode status = (i < results.size()) ? results[i].status : UA_STATUSCODE_BADUNEXPECTEDERROR;
+            bool ok = (i < results.size()) ? results[i].statusOk() : false;
+            JS_SetPropertyStr(jsctx, obj, "status", JS_NewInt64(jsctx, static_cast<int64_t>(status)));
+            JS_SetPropertyStr(jsctx, obj, "ok", JS_NewBool(jsctx, ok));
+
+            const char* typeStr = "int32";
+
+            if( i < results.size() && results[i].type == JSOPCUAClient::VarType::Float )
+                typeStr = "float";
+
+            JS_SetPropertyStr(jsctx, obj, "type", JS_NewString(jsctx, typeStr));
+
+            JSValue value = JS_NULL;
+
+            if( ok )
+            {
+                if( results[i].type == JSOPCUAClient::VarType::Float )
+                    value = JS_NewFloat64(jsctx, static_cast<double>(results[i].as<float>()));
+                else
+                    value = JS_NewInt32(jsctx, results[i].as<int32_t>());
+            }
+
+            JS_SetPropertyStr(jsctx, obj, "value", value);
+            JS_SetPropertyUint32(jsctx, arr, i, obj);
+        }
+
+        return arr;
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSValueConst* argv)
+{
+    if( argc < 1 )
+    {
+        JS_ThrowTypeError(jsctx, "opcua.write(nodeId, value [, type]) or opcua.write(array)");
+        return JS_EXCEPTION;
+    }
+
+    if( !opcuaClient )
+    {
+        JS_ThrowInternalError(jsctx, "opcua client not initialized");
+        return JS_EXCEPTION;
+    }
+
+    std::vector<JSOPCUAClient::WriteItem> items;
+
+    auto parseValue =
+        [&](JSValueConst valueVal, JSValueConst typeVal, JSOPCUAClient::WriteItem& item) -> bool
+    {
+        enum class ValueKind { Int32, Float, Bool };
+        ValueKind kind = ValueKind::Int32;
+
+        if( !JS_IsUndefined(typeVal) )
+        {
+            if( !JS_IsString(typeVal) )
+            {
+                JS_ThrowTypeError(jsctx, "opcua.write: type must be string");
+                return false;
+            }
+
+            const char* typeStr = JS_ToCString(jsctx, typeVal);
+
+            if( !typeStr )
+                return false;
+
+            std::string t(typeStr);
+            JS_FreeCString(jsctx, typeStr);
+
+            std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c)
+            {
+                return static_cast<char>(std::tolower(c));
+            });
+
+            if( t == "float" || t == "double" )
+                kind = ValueKind::Float;
+            else if( t == "bool" || t == "boolean" )
+                kind = ValueKind::Bool;
+            else
+                kind = ValueKind::Int32;
+        }
+        else
+        {
+            if( JS_IsBool(valueVal) )
+                kind = ValueKind::Bool;
+            else if( JS_IsNumber(valueVal) )
+            {
+                double d = 0;
+
+                if( JS_ToFloat64(jsctx, &d, valueVal) != 0 )
+                {
+                    JS_ThrowTypeError(jsctx, "opcua.write: invalid numeric value");
+                    return false;
+                }
+
+                if( std::floor(d) != d )
+                    kind = ValueKind::Float;
+                else
+                    kind = ValueKind::Int32;
+            }
+            else
+            {
+                JS_ThrowTypeError(jsctx, "opcua.write: value must be number or boolean");
+                return false;
+            }
+        }
+
+        switch( kind )
+        {
+            case ValueKind::Bool:
+            {
+                int32_t bv = JS_ToBool(jsctx, valueVal);
+
+                if( bv < 0 )
+                    return false;
+
+                item.value = (bv != 0);
+                break;
+            }
+            case ValueKind::Float:
+            {
+                double dv = 0;
+
+                if( JS_ToFloat64(jsctx, &dv, valueVal) != 0 )
+                {
+                    JS_ThrowTypeError(jsctx, "opcua.write: invalid float value");
+                    return false;
+                }
+
+                item.value = static_cast<float>(dv);
+                break;
+            }
+            case ValueKind::Int32:
+            default:
+            {
+                int32_t iv = 0;
+
+                if( JS_ToInt32(jsctx, &iv, valueVal) != 0 )
+                {
+                    JS_ThrowTypeError(jsctx, "opcua.write: invalid int32 value");
+                    return false;
+                }
+
+                item.value = iv;
+                break;
+            }
+        }
+
+        return true;
+    };
+
+    auto addItem = [&](const std::string& nodeId, JSValueConst valueVal, JSValueConst typeVal) -> bool
+    {
+        if( nodeId.empty() )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.write: nodeId must be non-empty");
+            return false;
+        }
+
+        JSOPCUAClient::WriteItem item;
+        item.nodeId = nodeId;
+
+        if( !parseValue(valueVal, typeVal, item) )
+            return false;
+
+        items.emplace_back(std::move(item));
+        return true;
+    };
+
+    if( JS_IsArray(jsctx, argv[0]) )
+    {
+        JSValue lenVal = JS_GetPropertyStr(jsctx, argv[0], "length");
+        uint32_t length = 0;
+
+        if( JS_ToUint32(jsctx, &length, lenVal) != 0 )
+        {
+            JS_FreeValue(jsctx, lenVal);
+            JS_ThrowTypeError(jsctx, "opcua.write: invalid array length");
+            return JS_EXCEPTION;
+        }
+
+        JS_FreeValue(jsctx, lenVal);
+
+        for( uint32_t i = 0; i < length; ++i )
+        {
+            JSValue entry = JS_GetPropertyUint32(jsctx, argv[0], i);
+
+            if( JS_IsException(entry) )
+                return JS_EXCEPTION;
+
+            if( !JS_IsObject(entry) )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_ThrowTypeError(jsctx, "opcua.write: array items must be objects");
+                return JS_EXCEPTION;
+            }
+
+            JSValue nodeVal = JS_GetPropertyStr(jsctx, entry, "nodeId");
+            JSValue valueVal = JS_GetPropertyStr(jsctx, entry, "value");
+            JSValue typeVal = JS_GetPropertyStr(jsctx, entry, "type");
+
+            if( JS_IsException(nodeVal) || JS_IsException(valueVal) || JS_IsException(typeVal) )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_FreeValue(jsctx, nodeVal);
+                JS_FreeValue(jsctx, valueVal);
+                JS_FreeValue(jsctx, typeVal);
+                return JS_EXCEPTION;
+            }
+
+            if( JS_IsUndefined(nodeVal) || JS_IsNull(nodeVal) )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_FreeValue(jsctx, nodeVal);
+                JS_FreeValue(jsctx, valueVal);
+                JS_FreeValue(jsctx, typeVal);
+                JS_ThrowTypeError(jsctx, "opcua.write: nodeId is required");
+                return JS_EXCEPTION;
+            }
+
+            const char* nodeStr = JS_ToCString(jsctx, nodeVal);
+
+            if( !nodeStr )
+            {
+                JS_FreeValue(jsctx, entry);
+                JS_FreeValue(jsctx, nodeVal);
+                JS_FreeValue(jsctx, valueVal);
+                JS_FreeValue(jsctx, typeVal);
+                return JS_EXCEPTION;
+            }
+
+            std::string nodeId(nodeStr);
+            JS_FreeCString(jsctx, nodeStr);
+
+            bool ok = addItem(nodeId, valueVal, typeVal);
+
+            JS_FreeValue(jsctx, nodeVal);
+            JS_FreeValue(jsctx, valueVal);
+            JS_FreeValue(jsctx, typeVal);
+            JS_FreeValue(jsctx, entry);
+
+            if( !ok )
+                return JS_EXCEPTION;
+        }
+    }
+    else
+    {
+        if( !JS_IsString(argv[0]) )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.write: nodeId must be string");
+            return JS_EXCEPTION;
+        }
+
+        if( argc < 2 )
+        {
+            JS_ThrowTypeError(jsctx, "opcua.write: value argument required");
+            return JS_EXCEPTION;
+        }
+
+        const char* nodeStr = JS_ToCString(jsctx, argv[0]);
+
+        if( !nodeStr )
+            return JS_EXCEPTION;
+
+        std::string nodeId(nodeStr);
+        JS_FreeCString(jsctx, nodeStr);
+
+        JSValueConst typeVal = (argc >= 3) ? argv[2] : JS_UNDEFINED;
+
+        if( !addItem(nodeId, argv[1], typeVal) )
+            return JS_EXCEPTION;
+    }
+
+    try
+    {
+        auto status = opcuaClient->write(items);
+        return JS_NewInt64(jsctx, static_cast<int64_t>(status));
+    }
+    catch( const std::exception& ex )
+    {
+        JS_ThrowInternalError(jsctx, "%s", ex.what());
+        return JS_EXCEPTION;
+    }
+}
+// ----------------------------------------------------------------------------
+#endif // JS_OPCUA_ENABLED
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeBitsReply( const ModbusRTU::BitsBuffer& buf )
 {

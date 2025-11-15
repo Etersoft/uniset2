@@ -20,7 +20,7 @@ namespace
 }
 
 ModbusTCPServerTest::ModbusTCPServerTest( const std::unordered_set<ModbusRTU::ModbusAddr>& myaddr,
-                                          const std::string& inetaddr, int port, bool verb ):
+        const std::string& inetaddr, int port, bool verb ):
     sslot(nullptr),
     vaddr(myaddr),
     verbose(verb),
