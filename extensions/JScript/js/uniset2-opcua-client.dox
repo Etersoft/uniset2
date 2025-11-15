@@ -1,0 +1,110 @@
+/*!
+\page page_JScript_OPCUAClient (JScript) OPC UA Client helper (uniset2-opcua-client.js)
+
+Вспомогательная обёртка над `uniset.opcua` (реализовано на C++ через open62541/open62541pp).<br>
+Даёт удобный объектный API для подключения к серверу OPC UA, чтения и записи переменных из JScript.
+
+\section sec_OpcuaClient_Load Загрузка и создание клиента
+\code{.js}
+load("uniset2-opcua-client.js");
+
+const client = uniset_createOpcuaClient();
+\endcode
+
+Фабрика проверяет наличие всех нативных методов (`connect`, `disconnect`, `read`, `write`) и кидает исключение, если движок собран без OPC UA.
+
+\section sec_OpcuaClient_API API
+
+\subsection sec_OpcuaClient_connect connect(opts)
+Подключается к OPC UA серверу.
+
+Параметры (объект):
+- `endpoint` / `url` / `address` — строка вида `opc.tcp://host:port`; обязательно;
+- `user` / `username` — (опционально) логин;
+- `pass` / `password` — (опционально) пароль.
+
+Возвращает `true` при успешном установлении сессии, иначе кидает исключение с текстом из нативного клиента.
+
+\subsection sec_OpcuaClient_disconnect disconnect()
+Закрывает текущее соединение, повторные вызовы безопасны.
+
+\subsection sec_OpcuaClient_read read(nodeIds, [options])
+Читает значения узлов.
+
+`nodeIds` может быть строкой (`"ns=1;s=MyVar"`) или массивом строк. Типичный ответ для двух узлов:
+\code{.js}
+[
+  { nodeId: "ns=1;s=TestInt", status: 0, ok: true,  type: "int32", value: 55 },
+  { nodeId: "ns=1;s=TestBool", status: 0, ok: true,  type: "int32", value: 1  }
+]
+\endcode
+
+Опции:
+- `keepArray` — даже если запрошен один nodeId, вернуть массив (как в примере выше), что упрощает унифицированную обработку;
+- `asMap` — вернуть объект вида `{ "nodeId" : result }`.
+
+\subsection sec_OpcuaClient_readValues readValues(nodeIds, [options])
+Упрощённая версия `read`, которая возвращает только `value` (или `undefined`, если `status != GOOD`).
+Пример:
+\code{.js}
+const values = client.readValues(["ns=1;s=TestInt", "ns=1;s=TestBool"], { keepArray: true });
+// values === [55, true]
+\endcode
+Опции (`keepArray`, `asMap`) работают аналогично `read`.
+
+\subsection sec_OpcuaClient_write write(items[, value[, type]])
+Записывает значения.
+
+Допустимые формы аргументов:
+- `write("ns=1;s=TestInt", 123)` — одиночный узел;
+- `write("ns=1;s=TestFloat", 1.23, "float")` — с явным типом (`int32`, `float`, `double`, `bool`);
+- `write([{ nodeId, value, type }, ...])` — массив объектов;
+- `write({ "ns=1;s=Out1": 10, "ns=1;s=Flag": true })` — карта.
+
+Возвращает `UA_StatusCode` (0 при успехе). При первой неудачной записи код ошибки сохраняется в лог `JSOPCUAClient`.
+
+\section sec_OpcuaClient_Examples Примеры
+
+\subsection sec_OpcuaClient_Example_Create Создание и подключение
+\code{.js}
+load("uniset2-opcua-client.js");
+const client = uniset_createOpcuaClient();
+client.connect({ endpoint: "opc.tcp://127.0.0.1:4840", user: "user", pass: "pass" });
+\endcode
+
+\subsection sec_OpcuaClient_Example_Read Чтение значений
+\code{.js}
+const readRes = client.read(["ns=1;s=TestInt", "ns=1;s=TestBool"], { keepArray: true });
+readRes.forEach(function(item){
+  if (item.ok)
+    log.info(item.nodeId, "=", item.value);
+});
+\endcode
+
+\subsection sec_OpcuaClient_Example_Write Запись значений
+\code{.js}
+const status = client.write([
+  { nodeId: "ns=1;s=TestInt", value: 55 },
+  { nodeId: "ns=1;s=TestFloat", value: 18.5, type: "float" },
+  { nodeId: "ns=1;s=TestBool", value: true, type: "bool" }
+]);
+
+if (status !== 0)
+  throw new Error("OPC UA write failed: " + status);
+\endcode
+
+\subsection sec_OpcuaClient_Example_Full Полный цикл
+\code{.js}
+try {
+  client.connect({ endpoint: "opc.tcp://localhost:15480" });
+
+  client.write("ns=1;s=RunFlag", true, "bool");
+  const value = client.read("ns=1;s=Status").value;
+
+  client.disconnect();
+  log.info("Status =", value);
+} catch (e) {
+  log.warn("OPC UA error:", e.message || e);
+}
+\endcode
+*/
