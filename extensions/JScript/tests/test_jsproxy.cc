@@ -354,7 +354,7 @@ TEST_CASE("JSEngine: timers system", "[jscript][ui][11]")
     REQUIRE(ExecuteUITest(11, -1, -1, 8000));
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("JSEngine: mini http", "[jscript][httpserver][12]")
+TEST_CASE("JSEngine: mini http", "[jscript][http][12]")
 {
     InitTest();
     ResetUITestState();
@@ -363,12 +363,20 @@ TEST_CASE("JSEngine: mini http", "[jscript][httpserver][12]")
     REQUIRE(ExecuteUITest(12, -1, -1, 8000));
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("JSEngine: simitator module", "[jscript][ui][13]")
+TEST_CASE("JSEngine: simitator module", "[jscript][simitator][13]")
 {
     InitTest();
     ResetUITestState();
 
     // Тест 13: uniset2-simitator
     REQUIRE(ExecuteUITest(13, -1, -1, 8000));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("JSEngine: modbus client", "[jscript][modbus][14]")
+{
+    InitTest();
+    ResetUITestState();
+
+    REQUIRE(ExecuteUITest(14, 0, 0, 3000));
 }
 // -----------------------------------------------------------------------------

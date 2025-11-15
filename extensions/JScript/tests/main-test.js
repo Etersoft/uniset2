@@ -1,7 +1,10 @@
 load("uniset2-log.js")
 load("local-test.js");
 
+const TEST_MODBUS_PORT=15024
 ModulesTestsRunning = false
+const TEST_MODBUS_PORT = 15024;
+
 
 uniset_inputs = [
     { name: "JS1_S" },
@@ -274,6 +277,26 @@ function runUiTest(testCommand) {
             if (resumeSim && simExample && typeof simExample.start === "function")
                 simExample.start();
 
+            break;
+        }
+
+        case 14:
+        {
+            testLog.info("Test 14: Modbus client full API");
+            load("tests-uniset2-modbus.js");
+
+            const res = runModbusTests(TEST_MODBUS_PORT);
+            if( res.success )
+            {
+                out_UI_TestOutput1 = 0;
+                out_UI_TestOutput2 = 0;
+                out_UI_TestResult_C = 1;
+            }
+            else
+            {
+                out_UI_TestResult_C = 0;
+                testLog.warn("Test 14: error", res.error);
+            }
             break;
         }
 

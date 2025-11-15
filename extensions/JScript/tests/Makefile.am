@@ -3,7 +3,7 @@ if ENABLE_JSCRIPT
 
 noinst_PROGRAMS = tests-with-sm
 
-tests_with_sm_SOURCES = tests.cc test_jsproxy.cc
+tests_with_sm_SOURCES = tests.cc test_jsproxy.cc ModbusTCPTestServer.cc
 tests_with_sm_LDADD  = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(top_builddir)/extensions/JScript/libUniSet2JScript.la \

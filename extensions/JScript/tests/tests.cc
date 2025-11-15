@@ -2,12 +2,14 @@
 #include <catch.hpp>
 
 #include <string>
+#include <unordered_set>
 #include "Debug.h"
 #include "UniSetActivator.h"
 #include "PassiveTimer.h"
 #include "SharedMemory.h"
 #include "JSProxy.h"
 #include "Extensions.h"
+#include "ModbusTCPTestServer.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -15,6 +17,8 @@ using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 std::shared_ptr<SharedMemory> shm;
 std::shared_ptr<JSProxy> js;
+std::shared_ptr<ModbusTCPServerTest> jsModbusServer;
+static const int kModbusTestPort = 15024;
 // --------------------------------------------------------------------------
 int main(int argc, const char* argv[] )
 {
@@ -45,6 +49,27 @@ int main(int argc, const char* argv[] )
         if( !js )
             return 1;
 
+        {
+            std::unordered_set<ModbusRTU::ModbusAddr> maddrs = { 1 };
+            jsModbusServer = std::make_shared<ModbusTCPServerTest>(maddrs, "127.0.0.1", kModbusTestPort, false);
+
+            if( !jsModbusServer->execute() )
+            {
+                cerr << "(tests_with_sm): failed to start ModbusTCPServerTest" << endl;
+                return 1;
+            }
+
+            PassiveTimer pt(2000);
+            while( !pt.checkTime() && !jsModbusServer->isActive() )
+                msleep(100);
+
+            if( !jsModbusServer->isActive() )
+            {
+                cerr << "(tests_with_sm): ModbusTCPServerTest not active" << endl;
+                return 1;
+            }
+        }
+
         auto act = UniSetActivator::Instance();
 
         act->add(shm);
@@ -72,7 +97,15 @@ int main(int argc, const char* argv[] )
             return 1;
         }
 
-        return session.run();
+        int rc = session.run();
+
+        if( jsModbusServer )
+        {
+            jsModbusServer->stop();
+            jsModbusServer.reset();
+        }
+
+        return rc;
     }
     catch( const SystemError& err )
     {
@@ -89,6 +122,12 @@ int main(int argc, const char* argv[] )
     catch(...)
     {
         cerr << "(tests_with_sm): catch(...)" << endl;
+    }
+
+    if( jsModbusServer )
+    {
+        jsModbusServer->stop();
+        jsModbusServer.reset();
     }
 
     return 1;
