@@ -57,6 +57,18 @@
     if (!p || p[0] !== '/') return '/' + (p||'');
     return p.replace(/\/{2,}/g,'/');
   }
+  function stripQuestion(s) {
+    if (!s) return '';
+    return s.charAt(0) === '?' ? s.slice(1) : s;
+  }
+  function mergeQueryObjects(dst, src) {
+    if (!src) return dst;
+    var keys = Object.keys(src);
+    for (var i = 0; i < keys.length; i++) {
+      dst[keys[i]] = src[keys[i]];
+    }
+    return dst;
+  }
   function compilePattern(pattern, kind) {
     if (pattern instanceof RegExp) return { kind: 'regex', re: pattern, params: [] };
     var p = String(pattern);
@@ -266,9 +278,25 @@ function group(prefix, gopts) {
         res.end = function(s){ return res.send(s); };
       }
       req.method = String(req.method || '').toUpperCase();
-      var sp = splitPathAndQuery(req.path || '/');
+      var rawPath = (req && typeof req.path === 'string' && req.path.length)
+        ? req.path
+        : (
+          (req && typeof req.url === 'string' && req.url.length) ? req.url :
+          (req && typeof req.uri === 'string' && req.uri.length) ? req.uri : '/'
+        );
+      var sp = splitPathAndQuery(rawPath || '/');
       req.path = normalizePath(sp.path);
-      req.query = parseQuery(sp.query);
+      var originalQuery = req.query;
+      var queryObj = Object.create(null);
+      if (sp.query) mergeQueryObjects(queryObj, parseQuery(sp.query));
+      var rawQuerySources = [];
+      if (typeof originalQuery === 'string' && originalQuery) rawQuerySources.push(stripQuestion(originalQuery));
+      if (typeof req.search === 'string' && req.search) rawQuerySources.push(stripQuestion(req.search));
+      if (typeof req.queryString === 'string' && req.queryString) rawQuerySources.push(stripQuestion(req.queryString));
+      for (var qi = 0; qi < rawQuerySources.length; qi++) {
+        if (rawQuerySources[qi]) mergeQueryObjects(queryObj, parseQuery(rawQuerySources[qi]));
+      }
+      req.query = queryObj;
       req.params = Object.create(null);
 
       if (typeof res.status === 'function' && !res.__wrappedStatus) {

@@ -45,6 +45,7 @@ function http_info(req, res) {
 // ----------------------------------------------------------------------------
 function http_status(req, res) {
     const id = req.params.id;
-    res.json({ status: id });
+    const qq = req.query.qq;
+    res.json({ status: id, query: req.query, params: req.params });
 }
 // ----------------------------------------------------------------------------

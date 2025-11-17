@@ -136,14 +136,19 @@ function runMiniHttpTests(){
         var r = createRouter();
         r.route('GET', '/api/user/:id', function(req,res){
             // router сам наполняет req.params и req.query
-            res.json({ id: req.params.id, q: req.query });
+            res.json({
+                id: req.params.id,
+                verbose: req.query.verbose,
+                verboseParam: req.params.verbose
+            });
         });
         r.handle(mkReq({ method:'GET', path:'/api/user/42?verbose=1' }), mkRes(function(out){
             assertEqual(out.status, 200);
             assertLike(out.headers['content-type'], /application\/json/i);
             var obj = JSON.parse(out.body);
             assertEqual(obj.id, "42");
-            assertLike(obj.q, /verbose=1/);
+            assertEqual(obj.verbose, "1");
+            assertEqual(obj.verboseParam, "1");
         }));
     });
 
