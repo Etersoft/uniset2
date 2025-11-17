@@ -13,6 +13,10 @@ jobs:
       image: alt:sisyphus
       options: --privileged
     steps:
+      - name: change repo
+        run: |
+             apt-get update && apt-get -y install epm && epm repo change yandex
+
       - name: install packages
         run: |
             apt-get update && apt-get -y install etersoft-build-utils su sudo \
