@@ -190,6 +190,20 @@ r.route('GET', '/files/*', function(req,res){
 });
 \endcode
 
+\section query Объект req.query
+Парсер автоматически формирует объект `req.query` из строки запроса независимо от того, в каком поле сервера лежит URL (`req.path`, `req.url`, `req.uri`, `req.search`). Ключи соответствуют именам параметров, значения — строки или массив строк, если параметр повторяется.
+
+\code{.js}
+// GET /api/v1/status/23?qq=12&tag=foo&tag=bar
+router.route('GET', '/api/v1/status/:id', function(req, res){
+    // req.params.id === "23"
+    // req.query.qq  === "12"
+    // req.query.tag === ["foo","bar"]
+    // Для обратной совместимости значения query также отражаются в req.params.*, если имя ещё не занято.
+    res.json({ id: req.params.id, qq: req.query.qq, tags: req.query.tag });
+});
+\endcode
+
 \section errors Ошибки и 404/405
 Если маршрут не найден, по умолчанию возвращается `404 Not Found`.  
 Для переопределения или добавления универсальной обработки ошибок можно использовать `useError()`.

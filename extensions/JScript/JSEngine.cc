@@ -103,8 +103,6 @@ JSEngine::JSEngine( const std::string& _jsfile,
         else
             jsApplyResponseAdapter(adapter, finalResp);
 
-        JS_FreeValue(ctx, argv[0]);
-        JS_FreeValue(ctx, argv[1]);
         JS_FreeValue(ctx, req);
         JS_FreeValue(ctx, res);
         JS_FreeValue(ctx, ret);
