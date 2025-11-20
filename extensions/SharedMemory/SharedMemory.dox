@@ -15,7 +15,7 @@
 - \ref sec_SM_DBLog
 - \ref sec_SM_ReservSM
 - \ref sec_SM_AccessControl
-- \ref sec_SM_REST_API
+- \ref sec_SM_HTTP_API
 
 \section sec_SM_Conf Определение списка регистрируемых датчиков
 SM позволяет определять список датчиков, которые он будет предоставлять
@@ -317,7 +317,7 @@ ACL объявляются в отдельной секции (по умолча
    uniset2-admin --reloadconfig ShmID
 \endcode
 
-\section sec_SM_REST_API SharedMemory HTTP API
+\section sec_SM_HTTP_API SharedMemory HTTP API
 \code
   /help    - Получение списка доступных команд
   /        - получение стандартной информации
