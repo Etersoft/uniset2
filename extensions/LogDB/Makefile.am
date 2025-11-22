@@ -4,7 +4,7 @@ else
 
 bin_SCRIPTS = @PACKAGE@-logdb-adm
 
-bin_PROGRAMS = @PACKAGE@-logdb @PACKAGE@-logdb-conv
+bin_PROGRAMS = @PACKAGE@-logdb @PACKAGE@-logdb-conv @PACKAGE@-logdb-ws-reader
 @PACKAGE@_logdb_LDADD = $(top_builddir)/extensions/DBServer-SQLite/libUniSet2-sqlite.la $(top_builddir)/lib/libUniSet2.la
 @PACKAGE@_logdb_CXXFLAGS = $(SQLITE3_CFLAGS) -I$(top_builddir)/extensions/DBServer-SQLite -DUNISET_DATA_DIR=@datadir@/@PACKAGE@
 @PACKAGE@_logdb_SOURCES = LogDB.cc main.cc
@@ -12,6 +12,10 @@ bin_PROGRAMS = @PACKAGE@-logdb @PACKAGE@-logdb-conv
 @PACKAGE@_logdb_conv_LDADD = $(top_builddir)/extensions/DBServer-SQLite/libUniSet2-sqlite.la $(top_builddir)/lib/libUniSet2.la
 @PACKAGE@_logdb_conv_CXXFLAGS = $(SQLITE3_CFLAGS) -I$(top_builddir)/extensions/DBServer-SQLite
 @PACKAGE@_logdb_conv_SOURCES = logdb-conv.cc
+
+@PACKAGE@_logdb_ws_reader_LDADD = $(top_builddir)/lib/libUniSet2.la
+@PACKAGE@_logdb_ws_reader_CXXFLAGS = -I$(top_builddir)/extensions/DBServer-SQLite
+@PACKAGE@_logdb_ws_reader_SOURCES = logdb-ws-reader.cc
 
 wsdir = $(datadir)/@PACKAGE@
 ws_DATA = *.html
