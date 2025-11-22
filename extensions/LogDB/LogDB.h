@@ -374,6 +374,7 @@ namespace uniset
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
             size_t wsMaxSend = { 200 };
+            double wsBackpressureTime_sec = { 15.0 };
             bool httpEnabledLogControl = { false };
             bool httpEnabledDownload = { false };
 
@@ -413,10 +414,12 @@ namespace uniset
                     void setHearbeatTime( const double& sec );
                     void setSendPeriod( const double& sec );
                     void setMaxSendCount( size_t val );
+                    void setBackpressureTimeout( const double& sec );
 
                 protected:
 
                     void write();
+                    void handleBackpressure();
 
                     ev::timer iosend;
                     double send_sec = { 0.5 };
@@ -438,6 +441,11 @@ namespace uniset
                     // очередь данных на посылку..
                     std::queue<UTCPCore::Buffer*> wbuf;
                     size_t maxsize; // рассчитывается  исходя из max_send (см. конструктор)
+                    size_t lostByOverflow = { 0 };
+                    size_t backpressureCount = { 0 };
+                    std::chrono::steady_clock::time_point backpressureStart;
+                    bool backpressureActive = { false };
+                    double backpressureTimeout_sec = { 5.0 };
 
                     std::shared_ptr<Log> log;
             };

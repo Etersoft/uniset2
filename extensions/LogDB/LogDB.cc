@@ -259,6 +259,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     wsHeartbeatTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-heartbeat-time", argc, argv, it.getProp("wsPingTime"), wsHeartbeatTime_sec) / 1000.0;
     wsSendTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-send-time", argc, argv, it.getProp("wsSendTime"), wsSendTime_sec) / 1000.0;
     wsMaxSend = uniset::getArgPInt("--" + prefix + "ws-max-send", argc, argv, it.getProp("wsMaxSend"), wsMaxSend);
+    wsBackpressureTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-backpressure-timeout", argc, argv, it.getProp("wsBackpressureTimeout"), wsBackpressureTime_sec * 1000) / 1000.0;
 
     httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
     httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
@@ -561,11 +562,12 @@ void LogDB::help_print()
     cout << "--prefix-db-timestamp-format localtime|utc  - Формат времени в ответе на запросы. По умолчанию: localtime" << endl;
     cout << endl;
     cout << "websockets: " << endl;
-    cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
-    cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-    cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
-    cout << "--prefix-ws-html-template file       - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
+    cout << "--prefix-ws-max num                   - Максимальное количество websocket-ов" << endl;
+    cout << "--prefix-ws-heartbeat-time msec       - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
+    cout << "--prefix-ws-send-time msec            - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+    cout << "--prefix-ws-max num                   - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-ws-backpressure-timeout msec - Таймаут на длительность блокировки сокета при отправке. По умолчанию: 15000 мсек" << endl;
+    cout << "--prefix-ws-html-template file        - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
     cout << endl;
     cout << "logservers: " << endl;
     cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
@@ -992,7 +994,7 @@ Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestH
     if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
         return new LogDBWebSocketRequestHandler(logdb);
 
-    return new LogDBRequestHandler(logdb);
+        return new LogDBRequestHandler(logdb);
 }
 // -----------------------------------------------------------------------------
 void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
@@ -1591,6 +1593,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
         ws->setMaxSendCount(wsMaxSend);
+        ws->setBackpressureTimeout(wsBackpressureTime_sec);
         ws->dblog = dblog;
         wsocks.emplace_back(ws);
     }
@@ -1707,7 +1710,9 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
 
     if( wbuf.size() > maxsize )
     {
-        dbwarn << req->clientAddress().toString() << " lost messages..." << endl;
+        lostByOverflow++;
+        if( (lostByOverflow % 100) == 1 )
+            dbwarn << req->clientAddress().toString() << " lost messages... lost=" << lostByOverflow << endl;
         return;
     }
 
@@ -1752,6 +1757,12 @@ void LogDB::LogWebSocket::write()
         {
             int errnum = errno;
 
+            if( errnum == EAGAIN || errnum == EWOULDBLOCK )
+            {
+                handleBackpressure();
+                return;
+            }
+
             dblog3 << "(websocket): " << req->clientAddress().toString()
                    << "  write to socket error(" << errnum << "): " << strerror(errnum) << endl;
 
@@ -1766,6 +1777,9 @@ void LogDB::LogWebSocket::write()
 
             return;
         }
+
+        backpressureActive = false;
+        backpressureCount = 0;
 
         msg->pos += ret;
 
@@ -1813,6 +1827,14 @@ void LogDB::LogWebSocket::write()
     }
     catch( Poco::IOException& ex )
     {
+        int err = ex.code();
+
+        if( err == EAGAIN || err == EWOULDBLOCK )
+        {
+            handleBackpressure();
+            return;
+        }
+
         dblog3 << "(websocket): IOException: "
                << req->clientAddress().toString()
                << " error: " << ex.displayText()
@@ -1820,6 +1842,28 @@ void LogDB::LogWebSocket::write()
     }
 
     term();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::handleBackpressure()
+{
+    backpressureCount++;
+
+    if( !backpressureActive )
+    {
+        backpressureActive = true;
+        backpressureStart = std::chrono::steady_clock::now();
+        return;
+    }
+
+    auto now = std::chrono::steady_clock::now();
+    auto dur = std::chrono::duration<double>(now - backpressureStart).count();
+
+    if( dur >= backpressureTimeout_sec )
+    {
+        dbwarn << "(websocket): " << req->clientAddress().toString()
+               << " backpressure timeout exceeded (" << dur << "s, tries=" << backpressureCount << ").. terminate" << endl;
+        term();
+    }
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::term()
@@ -1861,6 +1905,12 @@ void LogDB::LogWebSocket::setMaxSendCount( size_t val )
 {
     if( val > 0 )
         maxsend = val;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setBackpressureTimeout( const double& sec )
+{
+    if( sec > 0 )
+        backpressureTimeout_sec = sec;
 }
 // -----------------------------------------------------------------------------
 void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req,
@@ -2172,7 +2222,7 @@ void LogDB::httpWebSocketConnectPage( Poco::Net::HTTPServerRequest& req,
         replaceAll(line, "{{LOGNAME}}", logname);
         replaceAll(line, "{{ADDR}}", serverAddr);
         replaceAll(line, "{{QPARAMS}}", qparams);
-        out << line;
+        out << line << "\n";
     }
 
     out.flush();

@@ -433,6 +433,25 @@
     applySearchToAll();
   }
 
+  function makeWsUrl(logname){
+    const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
+    const base = "{{ADDR}}" && "{{ADDR}}" !== "" ? "{{ADDR}}" : window.location.host;
+    console.log("[ws] build url proto=", proto, "base=", base, "logname=", logname);
+    return proto + base + "/ws/connect/" + logname + "{{QPARAMS}}";
+  }
+
+  function scheduleReconnect(){
+    if(!wsLogname) return;
+    if(reconnectTimer) return;
+    const delay = reconnectDelay;
+    console.warn("[ws] schedule reconnect in", delay, "ms for", wsLogname);
+    reconnectTimer = setTimeout(function(){
+      reconnectTimer = null;
+      WebSocketCreate(wsLogname);
+    }, delay);
+    reconnectDelay = Math.min(reconnectDelay * 1.5, 30000);
+  }
+
   window.WebSocketCreate = function(logname){
     wsLogname = logname;
     titleText().textContent = "'" + logname + "'";
@@ -441,12 +460,24 @@
       alert("This browser does not support WebSockets.");
       return;
     }
+
     if(reconnectTimer){
       clearTimeout(reconnectTimer);
       reconnectTimer = null;
     }
-    ws = new WebSocket("ws://{{ADDR}}/ws/connect/" + logname + "{{QPARAMS}}");
+
+    if(ws){
+      ws.onclose = null;
+      ws.onerror = null;
+      ws.close();
+      ws = null;
+    }
+
+    const url = makeWsUrl(logname);
+    console.log("[ws] connect", url);
+    ws = new WebSocket(url);
     ws.onopen = function(){
+      console.log("[ws] open");
       reconnectDelay = 2000;
     };
     ws.onmessage = function(evt){
@@ -462,20 +493,12 @@
       updateBadges();
     };
     ws.onerror = function(){
-      // при ошибке не шумим, а пробуем переподключиться
-      if(ws) ws.close();
+      console.warn("[ws] error, will reconnect");
+      scheduleReconnect();
     };
     ws.onclose = function(){
-      // Без alert: под нагрузкой будут периодические переподключения
-      if(!wsLogname) return;
-      if(!reconnectTimer){
-        const delay = reconnectDelay;
-        reconnectTimer = setTimeout(function(){
-          reconnectTimer = null;
-          WebSocketCreate(wsLogname);
-        }, delay);
-        reconnectDelay = Math.min(reconnectDelay * 1.5, 30000);
-      }
+      console.warn("[ws] close, will reconnect");
+      scheduleReconnect();
     };
   };
 
