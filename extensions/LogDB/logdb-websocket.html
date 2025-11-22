@@ -136,6 +136,9 @@
   let buffer = [];
   let bufferCount = 0;
   let totalCount = 0;
+  let reconnectDelay = 2000; // ms
+  let reconnectTimer = null;
+  let wsLogname = null;
 
   const searchState = {
     query: "",
@@ -431,13 +434,21 @@
   }
 
   window.WebSocketCreate = function(logname){
+    wsLogname = logname;
     titleText().textContent = "'" + logname + "'";
     titleText().setAttribute("data-logname", logname);
     if(!("WebSocket" in window)){
       alert("This browser does not support WebSockets.");
       return;
     }
+    if(reconnectTimer){
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     ws = new WebSocket("ws://{{ADDR}}/ws/connect/" + logname + "{{QPARAMS}}");
+    ws.onopen = function(){
+      reconnectDelay = 2000;
+    };
     ws.onmessage = function(evt){
       const data = (typeof evt.data === "string") ? evt.data : "";
       if(data !== ".") totalCount++;
@@ -450,8 +461,21 @@
       }
       updateBadges();
     };
+    ws.onerror = function(){
+      // при ошибке не шумим, а пробуем переподключиться
+      if(ws) ws.close();
+    };
     ws.onclose = function(){
-      alert("WebSocket closed.");
+      // Без alert: под нагрузкой будут периодические переподключения
+      if(!wsLogname) return;
+      if(!reconnectTimer){
+        const delay = reconnectDelay;
+        reconnectTimer = setTimeout(function(){
+          reconnectTimer = null;
+          WebSocketCreate(wsLogname);
+        }, delay);
+        reconnectDelay = Math.min(reconnectDelay * 1.5, 30000);
+      }
     };
   };
 

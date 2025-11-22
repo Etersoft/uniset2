@@ -111,7 +111,7 @@ namespace uniset
 
             bool check( bool restart_if_fail = true );
 
-            void init( const std::string& prefix, xmlNode* cnode = 0 );
+            void init( const std::string& prefix, xmlNode* cnode = nullptr, int argc = 0, const char* const argv[] = nullptr );
 
             static std::string help_print( const std::string& prefix );
 

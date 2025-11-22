@@ -737,8 +737,11 @@ bool LogDB::Log::connect() noexcept
                << (p ? p.__cxa_exception_type()->name() : "null") << endl;
     }
 
-    tcp->disconnect();
-    tcp = nullptr;
+    if( tcp )
+    {
+        tcp->disconnect();
+        tcp = nullptr;
+    }
 
     return false;
 }
@@ -836,14 +839,10 @@ void LogDB::Log::read( ev::io& watcher )
     if( !tcp )
         return;
 
-    int n = tcp->available();
-
-    n = std::min(n, (int)buf.size());
+    int n = tcp->receiveBytes(buf.data(), buf.size());
 
     if( n > 0 )
     {
-        tcp->receiveBytes(buf.data(), n);
-
         // нарезаем на строки
         for( int i = 0; i < n; i++ )
         {
@@ -927,10 +926,13 @@ void LogDB::Log::write( ev::io& io )
 // -----------------------------------------------------------------------------
 void LogDB::Log::close()
 {
-    tcp->disconnect();
-    //tcp = nullptr;
+    if( tcp )
+    {
+        tcp->disconnect();
+        tcp = nullptr;
+    }
+
     io.stop();
-    iocheck.stop();
     iocmd.stop();
 }
 // -----------------------------------------------------------------------------
