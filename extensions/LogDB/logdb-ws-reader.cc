@@ -20,7 +20,10 @@ using namespace std::chrono_literals;
 
 static std::atomic_bool stopFlag{false};
 
-void onSignal(int) { stopFlag = true; }
+void onSignal(int)
+{
+    stopFlag = true;
+}
 
 struct Config
 {
@@ -51,12 +54,18 @@ static bool parse_args(int argc, char** argv, Config& cfg)
     for (int i = 1; i < argc; ++i)
     {
         std::string a(argv[i]);
+
         if (a == "-h" || a == "--help")
         {
             print_help();
             return false;
         }
-        if (a == "--ws" && i + 1 < argc) { cfg.wsUrl = argv[++i]; ws_set = true; }
+
+        if (a == "--ws" && i + 1 < argc)
+        {
+            cfg.wsUrl = argv[++i];
+            ws_set = true;
+        }
         else if (a == "--recv-buf" && i + 1 < argc) cfg.recv_buf = std::stoi(argv[++i]);
         else if (a == "--pause-after" && i + 1 < argc) cfg.pause_after_frames = std::stoi(argv[++i]);
         else if (a == "--pause-ms" && i + 1 < argc) cfg.pause_ms = std::stoi(argv[++i]);
@@ -77,8 +86,27 @@ static bool parse_args(int argc, char** argv, Config& cfg)
 int main(int argc, char** argv)
 {
     Config cfg;
+
     if (!parse_args(argc, argv, cfg))
         return 0;
+
+    if (cfg.verbose)
+    {
+        try
+        {
+            Poco::URI u(cfg.wsUrl);
+            std::cout << "connect to: " << u.toString()
+                      << "  scheme=" << u.getScheme()
+                      << "  host=" << u.getHost()
+                      << "  port=" << u.getPort()
+                      << "  path+query=" << (u.getPathAndQuery().empty() ? "/" : u.getPathAndQuery())
+                      << std::endl;
+        }
+        catch(const std::exception& ex)
+        {
+            std::cerr << "parse ws url error: " << ex.what() << std::endl;
+        }
+    }
 
     std::signal(SIGINT, onSignal);
     std::signal(SIGTERM, onSignal);
@@ -86,10 +114,22 @@ int main(int argc, char** argv)
     try
     {
         Poco::URI uri(cfg.wsUrl);
+
         if (uri.getScheme() != "ws" && uri.getScheme() != "http")
             throw std::runtime_error("Only ws:// or http:// schemes are supported");
 
-        std::string path = uri.getPathEtc().empty() ? "/" : uri.getPathEtc();
+        std::string path = uri.getPathAndQuery();
+
+        if (path.empty())
+            path = "/";
+
+        if (cfg.verbose)
+        {
+            std::cout << "HTTP request: host=" << uri.getHost()
+                      << " port=" << uri.getPort()
+                      << " path=" << path
+                      << std::endl;
+        }
 
         HTTPClientSession session(uri.getHost(), uri.getPort());
         HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
@@ -105,10 +145,12 @@ int main(int argc, char** argv)
         WebSocket ws(session, request, response);
 
 #ifdef SO_RCVBUF
+
         if (cfg.recv_buf > 0)
         {
             ws.impl()->setOption(SOL_SOCKET, SO_RCVBUF, cfg.recv_buf);
         }
+
 #endif
 
         Buffer<char> buf(4096);
@@ -126,6 +168,7 @@ int main(int argc, char** argv)
             }
 
             frames++;
+
             // пинговый кадр — пропускаем вывод, но не считаем ошибкой
             if (n == 1 && buf[0] == '.')
                 continue;
@@ -168,5 +211,6 @@ int main(int argc, char** argv)
         std::cerr << "ws-reader error: " << ex.what() << std::endl;
         return 1;
     }
+
     return 0;
 }

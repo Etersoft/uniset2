@@ -994,7 +994,7 @@ Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestH
     if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
         return new LogDBWebSocketRequestHandler(logdb);
 
-        return new LogDBRequestHandler(logdb);
+    return new LogDBRequestHandler(logdb);
 }
 // -----------------------------------------------------------------------------
 void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
@@ -1546,6 +1546,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
     using Poco::Net::HTTPServerRequest;
 
     std::shared_ptr<Log> log;
+    std::string warn2client;
 
     for( const auto& s : logservers )
     {
@@ -1579,6 +1580,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
             else
             {
                 dbwarn << log->peername << ": Ignored set log level '" << p.second << "' because already set in other connection" << endl;
+                warn2client = "Ignored set log level '" + p.second + "' because already set in other connection";
             }
 
             break;
@@ -1595,6 +1597,10 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
         ws->setMaxSendCount(wsMaxSend);
         ws->setBackpressureTimeout(wsBackpressureTime_sec);
         ws->dblog = dblog;
+
+        if( !warn2client.empty() )
+            ws->setPendingNotice(warn2client);
+
         wsocks.emplace_back(ws);
     }
     // wsocksMutex надо отпустить, прежде чем посылать сигнал
@@ -1670,6 +1676,12 @@ void LogDB::LogWebSocket::set( ev::dynamic_loop& loop )
     iosend.start(0, send_sec);
     ioping.start(ping_sec, ping_sec);
 
+    if( !pendingNotice.empty() )
+    {
+        wbuf.emplace(new UTCPCore::Buffer(pendingNotice));
+        pendingNotice.clear();
+    }
+
     if( !log->usercmd.empty() )
         log->setCommand(log->usercmd);
 }
@@ -1711,8 +1723,10 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
     if( wbuf.size() > maxsize )
     {
         lostByOverflow++;
+
         if( (lostByOverflow % 100) == 1 )
             dbwarn << req->clientAddress().toString() << " lost messages... lost=" << lostByOverflow << endl;
+
         return;
     }
 
@@ -1720,6 +1734,11 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
 
     if( ioping.is_active() )
         ioping.stop();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setPendingNotice( const std::string& msg )
+{
+    pendingNotice = msg;
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::write()
@@ -1858,12 +1877,36 @@ void LogDB::LogWebSocket::handleBackpressure()
     auto now = std::chrono::steady_clock::now();
     auto dur = std::chrono::duration<double>(now - backpressureStart).count();
 
-    if( dur >= backpressureTimeout_sec )
+    if( dur < backpressureTimeout_sec )
+        return;
+
+    size_t dropped = 0;
+
+    while( !wbuf.empty() )
     {
-        dbwarn << "(websocket): " << req->clientAddress().toString()
-               << " backpressure timeout exceeded (" << dur << "s, tries=" << backpressureCount << ").. terminate" << endl;
-        term();
+        auto msg = wbuf.front();
+        wbuf.pop();
+
+        if( msg )
+        {
+            dropped++;
+            delete msg;
+        }
     }
+
+    if( dropped > 0 )
+    {
+        const std::string warnmsg = "Slow client.. lost " + std::to_string(dropped) + " messages";
+
+        dbwarn << "(websocket): " << req->clientAddress().toString()
+               << " " << warnmsg << " (backpressure " << dur << "s, tries=" << backpressureCount << ")" << endl;
+
+        wbuf.emplace(new UTCPCore::Buffer(warnmsg));
+    }
+
+    backpressureActive = false;
+    backpressureCount = 0;
+    backpressureStart = std::chrono::steady_clock::now();
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::term()

@@ -415,6 +415,7 @@ namespace uniset
                     void setSendPeriod( const double& sec );
                     void setMaxSendCount( size_t val );
                     void setBackpressureTimeout( const double& sec );
+                    void setPendingNotice( const std::string& msg );
 
                 protected:
 
@@ -446,6 +447,7 @@ namespace uniset
                     std::chrono::steady_clock::time_point backpressureStart;
                     bool backpressureActive = { false };
                     double backpressureTimeout_sec = { 5.0 };
+                    std::string pendingNotice;
 
                     std::shared_ptr<Log> log;
             };

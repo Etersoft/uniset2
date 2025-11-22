@@ -128,6 +128,22 @@
     display: none;
   }
   .to-end.show { display: block; }
+  .status-banner {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    padding: 10px 8px;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  .status-banner.hidden { display: none; }
+  .status-banner.disconnected {
+    background: #b00020;
+    color: #fff;
+    border: 1px solid #ffb3b3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
 </style>
 <script type="text/javascript">
 (function(){
@@ -139,6 +155,7 @@
   let reconnectDelay = 2000; // ms
   let reconnectTimer = null;
   let wsLogname = null;
+  let reconnectAttempts = 0;
 
   const searchState = {
     query: "",
@@ -157,6 +174,7 @@
   const badgeTotal = () => el('totalCount');
   const titleText = () => el('logname');
   const toEndBtn = () => el('btnToEnd');
+  const statusBanner = () => el('wsStatus');
 
   const searchInput = () => el('searchInput');
   const chkRegex = () => el('chkRegex');
@@ -193,6 +211,20 @@
 
   function updateToEndVisibility(){
     toEndBtn().classList.toggle('show', !atBottom() || !autoScroll);
+  }
+
+  function setStatus(msg, type=""){
+    const b = statusBanner();
+    if(!b) return;
+    if(!msg){
+      b.textContent = "";
+      b.classList.add("hidden");
+      b.classList.remove("disconnected");
+      return;
+    }
+    b.textContent = msg;
+    b.classList.remove("hidden");
+    b.classList.toggle("disconnected", type === "disconnected");
   }
 
   function buildMatcher(){
@@ -444,6 +476,8 @@
     if(!wsLogname) return;
     if(reconnectTimer) return;
     const delay = reconnectDelay;
+    const attempt = reconnectAttempts + 1;
+    setStatus("DISCONNECTED - try connect " + attempt + "...", "disconnected");
     console.warn("[ws] schedule reconnect in", delay, "ms for", wsLogname);
     reconnectTimer = setTimeout(function(){
       reconnectTimer = null;
@@ -475,10 +509,14 @@
 
     const url = makeWsUrl(logname);
     console.log("[ws] connect", url);
+    reconnectAttempts++;
+    setStatus("DISCONNECTED - try connect " + reconnectAttempts + "...", "disconnected");
     ws = new WebSocket(url);
     ws.onopen = function(){
       console.log("[ws] open");
       reconnectDelay = 2000;
+      reconnectAttempts = 0;
+      setStatus("");
     };
     ws.onmessage = function(evt){
       const data = (typeof evt.data === "string") ? evt.data : "";
@@ -494,10 +532,12 @@
     };
     ws.onerror = function(){
       console.warn("[ws] error, will reconnect");
+      setStatus("DISCONNECTED - try connect " + (reconnectAttempts + 1) + "...", "disconnected");
       scheduleReconnect();
     };
     ws.onclose = function(){
       console.warn("[ws] close, will reconnect");
+      setStatus("DISCONNECTED - try connect " + (reconnectAttempts + 1) + "...", "disconnected");
       scheduleReconnect();
     };
   };
@@ -526,6 +566,7 @@
 </head>
 <body onload="WebSocketCreate('{{LOGNAME}}')">
   <div class='logtitle'>
+    <div id="wsStatus" class="status-banner hidden"></div>
     <div class="bar">
       <div id='logname' class='title-text' data-logname=""></div>
       <div class="controls">
