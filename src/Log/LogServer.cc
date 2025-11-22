@@ -355,14 +355,23 @@ namespace uniset
         }
     }
     // -------------------------------------------------------------------------
-    void LogServer::init( const std::string& prefix, xmlNode* cnode )
+    void LogServer::init( const std::string& prefix, xmlNode* cnode, int argc, const char* const argv[] )
     {
-        auto conf = uniset_conf();
+        int ac = argc;
+        auto av = argv;
+        if( argv == nullptr ) {
+            auto conf = uniset_conf();
+            if( conf )
+            {
+                ac = conf->getArgc();
+                av = conf->getArgv();
+            }
+        }
 
         // можем на cnode==0 не проверять, т.е. UniXML::iterator корректно отрабатывает эту ситуацию
         UniXML::iterator it(cnode);
 
-        timeout_t cmdTimeout = conf->getArgPInt("--" + prefix + "-cmd-timeout", it.getProp("cmdTimeout"), 2000);
+        timeout_t cmdTimeout = uniset::getArgPInt("--" + prefix + "-cmd-timeout", ac, av, it.getProp("cmdTimeout"), 2000);
         setCmdTimeout(cmdTimeout);
     }
     // -----------------------------------------------------------------------------
