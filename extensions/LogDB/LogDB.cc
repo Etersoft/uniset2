@@ -259,6 +259,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     wsHeartbeatTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-heartbeat-time", argc, argv, it.getProp("wsPingTime"), wsHeartbeatTime_sec) / 1000.0;
     wsSendTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-send-time", argc, argv, it.getProp("wsSendTime"), wsSendTime_sec) / 1000.0;
     wsMaxSend = uniset::getArgPInt("--" + prefix + "ws-max-send", argc, argv, it.getProp("wsMaxSend"), wsMaxSend);
+    wsBackpressureTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-backpressure-timeout", argc, argv, it.getProp("wsBackpressureTimeout"), wsBackpressureTime_sec * 1000) / 1000.0;
 
     httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
     httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
@@ -561,11 +562,12 @@ void LogDB::help_print()
     cout << "--prefix-db-timestamp-format localtime|utc  - Формат времени в ответе на запросы. По умолчанию: localtime" << endl;
     cout << endl;
     cout << "websockets: " << endl;
-    cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
-    cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-    cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
-    cout << "--prefix-ws-html-template file       - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
+    cout << "--prefix-ws-max num                   - Максимальное количество websocket-ов" << endl;
+    cout << "--prefix-ws-heartbeat-time msec       - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
+    cout << "--prefix-ws-send-time msec            - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+    cout << "--prefix-ws-max num                   - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-ws-backpressure-timeout msec - Таймаут на длительность блокировки сокета при отправке. По умолчанию: 15000 мсек" << endl;
+    cout << "--prefix-ws-html-template file        - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
     cout << endl;
     cout << "logservers: " << endl;
     cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
@@ -681,6 +683,7 @@ void LogDB::Log::set( ev::dynamic_loop& loop )
     iocheck.set(loop);
     iocheck.set<LogDB::Log, &LogDB::Log::check>(this);
     iocheck.start(0, checkConnection_sec);
+    iocmd.set<LogDB::Log, &LogDB::Log::oncommand>(this);
     iocmd.set(loop);
     iocmd.start();
 }
@@ -754,13 +757,20 @@ void LogDB::Log::ioprepare()
     io.set<LogDB::Log, &LogDB::Log::event>(this);
     io.start(tcp->getSocket(), ev::READ);
     text.reserve(reservsize);
-    iocmd.set<LogDB::Log, &LogDB::Log::oncommand>(this);
 
     // первый раз при подключении надо послать команды
     if( !usercmd.empty() )
         setCommand(usercmd);
     else
         setCommand(cmd);
+
+    // если есть накопленные команды, шлём сигнал на их обработку
+    if( iocmd.is_active() )
+        iocmd.send();
+
+    // если уже есть команды в очереди, включаем запись в сокет
+    if( !wbuf.empty() )
+        io.set(EV_READ | EV_WRITE);
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::event( ev::io& watcher, int revents )
@@ -804,15 +814,18 @@ void LogDB::Log::setCommand( const std::string& c )
 
     lastcmd = c;
 
-    uniset::uniset_rwmutex_wrlock lock(cmdmut);
-
-    for( const auto& msg : cmdlist )
     {
-        dblog3 << name << ": command: " << msg << endl;
-        cmdbuf.push_back(new UTCPCore::Buffer((unsigned char*) &msg, sizeof(msg)));
+        uniset::uniset_rwmutex_wrlock lock(cmdmut);
+
+        for( const auto& msg : cmdlist )
+        {
+            dblog3 << name << ": command: " << msg << endl;
+            cmdbuf.push_back(new UTCPCore::Buffer((unsigned char*) &msg, sizeof(msg)));
+        }
     }
 
-    iocmd.send();
+    if( iocmd.is_active() )
+        iocmd.send();
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::oncommand( ev::async& watcher, int revents )
@@ -823,7 +836,13 @@ void LogDB::Log::oncommand( ev::async& watcher, int revents )
         return;
     }
 
+    if( !isConnected() )
+        return;
+
     uniset::uniset_rwmutex_wrlock lock(cmdmut);
+
+    if( cmdbuf.empty() )
+        return;
 
     for( const auto& msg : cmdbuf )
     {
@@ -1544,6 +1563,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
     using Poco::Net::HTTPServerRequest;
 
     std::shared_ptr<Log> log;
+    std::string warn2client;
 
     for( const auto& s : logservers )
     {
@@ -1577,6 +1597,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
             else
             {
                 dbwarn << log->peername << ": Ignored set log level '" << p.second << "' because already set in other connection" << endl;
+                warn2client = "Ignored set log level '" + p.second + "' because already set in other connection";
             }
 
             break;
@@ -1591,7 +1612,12 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
         ws->setMaxSendCount(wsMaxSend);
+        ws->setBackpressureTimeout(wsBackpressureTime_sec);
         ws->dblog = dblog;
+
+        if( !warn2client.empty() )
+            ws->setPendingNotice(warn2client);
+
         wsocks.emplace_back(ws);
     }
     // wsocksMutex надо отпустить, прежде чем посылать сигнал
@@ -1667,6 +1693,12 @@ void LogDB::LogWebSocket::set( ev::dynamic_loop& loop )
     iosend.start(0, send_sec);
     ioping.start(ping_sec, ping_sec);
 
+    if( !pendingNotice.empty() )
+    {
+        wbuf.emplace(new UTCPCore::Buffer(pendingNotice));
+        pendingNotice.clear();
+    }
+
     if( !log->usercmd.empty() )
         log->setCommand(log->usercmd);
 }
@@ -1707,7 +1739,11 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
 
     if( wbuf.size() > maxsize )
     {
-        dbwarn << req->clientAddress().toString() << " lost messages..." << endl;
+        lostByOverflow++;
+
+        if( (lostByOverflow % 100) == 1 )
+            dbwarn << req->clientAddress().toString() << " lost messages... lost=" << lostByOverflow << endl;
+
         return;
     }
 
@@ -1715,6 +1751,11 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
 
     if( ioping.is_active() )
         ioping.stop();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setPendingNotice( const std::string& msg )
+{
+    pendingNotice = msg;
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::write()
@@ -1752,6 +1793,12 @@ void LogDB::LogWebSocket::write()
         {
             int errnum = errno;
 
+            if( errnum == EAGAIN || errnum == EWOULDBLOCK )
+            {
+                handleBackpressure();
+                return;
+            }
+
             dblog3 << "(websocket): " << req->clientAddress().toString()
                    << "  write to socket error(" << errnum << "): " << strerror(errnum) << endl;
 
@@ -1766,6 +1813,9 @@ void LogDB::LogWebSocket::write()
 
             return;
         }
+
+        backpressureActive = false;
+        backpressureCount = 0;
 
         msg->pos += ret;
 
@@ -1813,6 +1863,14 @@ void LogDB::LogWebSocket::write()
     }
     catch( Poco::IOException& ex )
     {
+        int err = ex.code();
+
+        if( err == EAGAIN || err == EWOULDBLOCK )
+        {
+            handleBackpressure();
+            return;
+        }
+
         dblog3 << "(websocket): IOException: "
                << req->clientAddress().toString()
                << " error: " << ex.displayText()
@@ -1820,6 +1878,52 @@ void LogDB::LogWebSocket::write()
     }
 
     term();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::handleBackpressure()
+{
+    backpressureCount++;
+
+    if( !backpressureActive )
+    {
+        backpressureActive = true;
+        backpressureStart = std::chrono::steady_clock::now();
+        return;
+    }
+
+    auto now = std::chrono::steady_clock::now();
+    auto dur = std::chrono::duration<double>(now - backpressureStart).count();
+
+    if( dur < backpressureTimeout_sec )
+        return;
+
+    size_t dropped = 0;
+
+    while( !wbuf.empty() )
+    {
+        auto msg = wbuf.front();
+        wbuf.pop();
+
+        if( msg )
+        {
+            dropped++;
+            delete msg;
+        }
+    }
+
+    if( dropped > 0 )
+    {
+        const std::string warnmsg = "Slow client.. lost " + std::to_string(dropped) + " messages";
+
+        dbwarn << "(websocket): " << req->clientAddress().toString()
+               << " " << warnmsg << " (backpressure " << dur << "s, tries=" << backpressureCount << ")" << endl;
+
+        wbuf.emplace(new UTCPCore::Buffer(warnmsg));
+    }
+
+    backpressureActive = false;
+    backpressureCount = 0;
+    backpressureStart = std::chrono::steady_clock::now();
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::term()
@@ -1861,6 +1965,12 @@ void LogDB::LogWebSocket::setMaxSendCount( size_t val )
 {
     if( val > 0 )
         maxsend = val;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setBackpressureTimeout( const double& sec )
+{
+    if( sec > 0 )
+        backpressureTimeout_sec = sec;
 }
 // -----------------------------------------------------------------------------
 void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req,
@@ -2172,7 +2282,7 @@ void LogDB::httpWebSocketConnectPage( Poco::Net::HTTPServerRequest& req,
         replaceAll(line, "{{LOGNAME}}", logname);
         replaceAll(line, "{{ADDR}}", serverAddr);
         replaceAll(line, "{{QPARAMS}}", qparams);
-        out << line;
+        out << line << "\n";
     }
 
     out.flush();
