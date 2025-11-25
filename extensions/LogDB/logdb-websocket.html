@@ -157,6 +157,11 @@
   let wsLogname = null;
   let reconnectAttempts = 0;
 
+  const MAX_LINES = 30000;      // сколько строк держать в DOM
+  const MAX_BUFFER = 8000;      // сколько строк держать в паузе
+  const renderQueue = [];       // очередь строк на отрисовку
+  let renderScheduled = false;
+
   const searchState = {
     query: "",
     regex: false,
@@ -313,37 +318,78 @@
     updateMatchCounter();
   }
 
-  function makeLineElement(msg){
-    const line = document.createElement('div');
-    line.setAttribute('data-raw', msg);
-    const re = buildMatcher();
-    line.appendChild(highlightText(msg, re));
-    if(searchState.showOnlyMatches && re){
-      line.classList.toggle('hidden-by-filter', !re.test(msg));
-      if(re.global) re.lastIndex = 0;
+  function trimLines(){
+    const logs = logsEl();
+    const extra = logs.childElementCount - MAX_LINES;
+    if(extra > 0){
+      for(let i = 0; i < extra; i++){
+        logs.removeChild(logs.firstChild);
+      }
     }
-    return line;
   }
 
-  function appendMessageToDOM(msg){
+  function flushRenderQueue(){
+    if(renderQueue.length === 0) return;
+
+    const frag = document.createDocumentFragment();
+    const re = buildMatcher();
+
+    for(const msg of renderQueue){
+      const line = document.createElement('div');
+      line.setAttribute('data-raw', msg);
+
+      if(re){
+        line.appendChild(highlightText(msg, re));
+        if(searchState.showOnlyMatches && !re.test(msg)){
+          line.classList.add('hidden-by-filter');
+        }
+        if(re.global) re.lastIndex = 0;
+      } else {
+        line.textContent = msg;
+      }
+
+      frag.appendChild(line);
+    }
+
+    renderQueue.length = 0;
+    logsEl().appendChild(frag);
+    trimLines();
+
+    if(searchState.query)
+      updateMatchCounter();
+
+    if(autoScroll)
+      maybeScroll();
+  }
+
+  function scheduleRender(){
+    if(renderScheduled) return;
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+      renderScheduled = false;
+      flushRenderQueue();
+    });
+  }
+
+  function enqueueMessage(msg){
     if(msg === ".") return;
-    const line = makeLineElement(msg);
-    logsEl().appendChild(line);
-    if(searchState.query) updateMatchCounter();
+    renderQueue.push(msg);
+    if(renderQueue.length > MAX_LINES + MAX_BUFFER){
+      renderQueue.shift();
+    }
+    scheduleRender();
   }
 
   function flushBufferToDOM(){
     if(buffer.length === 0) return;
-    const frag = document.createDocumentFragment();
     for(const msg of buffer){
       if(msg === ".") continue;
-      frag.appendChild(makeLineElement(msg));
+      renderQueue.push(msg);
     }
-    logsEl().appendChild(frag);
     buffer = [];
     bufferCount = 0;
     updateBadges();
-    if(searchState.query) updateMatchCounter();
+    scheduleRender();
   }
 
   function maybeScroll(){
@@ -520,12 +566,22 @@
     };
     ws.onmessage = function(evt){
       const data = (typeof evt.data === "string") ? evt.data : "";
-      if(data !== ".") totalCount++;
+      if(data === ".") return;
+      const lines = data.split(/\r?\n/);
+      totalCount += lines.filter(l => l !== "").length;
       if(autoScroll){
-        appendMessageToDOM(data);
-        maybeScroll();
+        for(const line of lines){
+          if(line === "") continue;
+          enqueueMessage(line);
+        }
       } else {
-        buffer.push(data);
+        for(const line of lines){
+          if(line === "") continue;
+          buffer.push(line);
+        }
+        if(buffer.length > MAX_BUFFER){
+          buffer.splice(0, buffer.length - MAX_BUFFER);
+        }
         bufferCount = buffer.length;
       }
       updateBadges();
