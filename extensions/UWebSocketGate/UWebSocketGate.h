@@ -387,6 +387,7 @@ namespace uniset
 
                     std::mutex              finishmut;
                     std::condition_variable finish;
+                    std::mutex              dataMutex; // защита smap/jbuf от параллельных потоков
 
                     std::atomic_bool cancelled = { false };
 

@@ -929,7 +929,16 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
     if( EV_ERROR & revents )
         return;
 
-    while( !jbuf.empty() && !cancelled )
+    std::queue<Poco::JSON::Object::Ptr> local;
+
+    {
+        std::lock_guard<std::mutex> lk(dataMutex);
+
+        if( !jbuf.empty() )
+            std::swap(local, jbuf);
+    }
+
+    while( !local.empty() && !cancelled )
     {
         // сперва формируем очередной пакет(поток байт) из накопившихся данных для отправки
         ostringstream out;
@@ -939,13 +948,13 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
 
         size_t i = 0;
 
-        for( ; !jbuf.empty() && !cancelled; i++ )
+        for( ; !local.empty() && !cancelled; i++ )
         {
             if( i > 0 )
                 out << ",";
 
-            auto json = jbuf.front();
-            jbuf.pop();
+            auto json = local.front();
+            local.pop();
 
             if( !json )
                 continue;
@@ -1172,20 +1181,24 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
     if( cancelled )
         return;
 
-    auto s = smap.find(sm->id);
-
-    if( s == smap.end() )
-        return;
-
-    if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages...(maxsize=" << maxsize << ")" << endl;
-        return;
-    }
+        std::lock_guard<std::mutex> lk(dataMutex);
 
-    auto j = jpoolSM->borrowObject();
-    fill_json(j, sm, s->second);
-    jbuf.emplace(j);
+        auto s = smap.find(sm->id);
+
+        if( s == smap.end() )
+            return;
+
+        if( jbuf.size() > maxsize )
+        {
+            mywarn << req->clientAddress().toString() << " lost messages...(maxsize=" << maxsize << ")" << endl;
+            return;
+        }
+
+        auto j = jpoolSM->borrowObject();
+        fill_json(j, sm, s->second);
+        jbuf.emplace(j);
+    }
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1196,11 +1209,20 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
     if( qcmd.empty() )
         return;
 
-    for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
+    // копируем пачку команд, чтобы не держать mutex на время долгих операций с ui
+    std::vector<std::shared_ptr<sinfo>> local;
     {
-        auto s = qcmd.front();
-        qcmd.pop();
+        std::lock_guard<std::mutex> lk(dataMutex);
 
+        for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
+        {
+            local.push_back(qcmd.front());
+            qcmd.pop();
+        }
+    }
+
+    for( const auto& s : local )
+    {
         try
         {
             if( s->cmd.empty() )
@@ -1217,11 +1239,13 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
                     s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
 
                 ui->askSensor(s->id, UniversalIO::UIONotify);
+                std::lock_guard<std::mutex> lk(dataMutex);
                 smap[s->id] = s;
             }
             else if( s->cmd == "del" )
             {
                 ui->askSensor(s->id, UniversalIO::UIODontNotify);
+                std::lock_guard<std::mutex> lk(dataMutex);
                 auto it = smap.find(s->id);
 
                 if( it != smap.end() )
@@ -1276,9 +1300,12 @@ void UWebSocketGate::UWebSocket::sendShortResponse( const std::shared_ptr<sinfo>
         return;
     }
 
-    auto j = jpoolShortSM->borrowObject();
-    fill_short_json(j, si);
-    jbuf.emplace(j);
+    {
+        std::lock_guard<std::mutex> lk(dataMutex);
+        auto j = jpoolShortSM->borrowObject();
+        fill_short_json(j, si);
+        jbuf.emplace(j);
+    }
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1293,9 +1320,12 @@ void UWebSocketGate::UWebSocket::sendResponse( const std::shared_ptr<sinfo>& si 
     }
 
     uniset::SensorMessage sm(si->id, si->value);
-    auto j = jpoolSM->borrowObject();
-    fill_json(j, &sm, si);
-    jbuf.emplace(j);
+    {
+        std::lock_guard<std::mutex> lk(dataMutex);
+        auto j = jpoolSM->borrowObject();
+        fill_json(j, &sm, si);
+        jbuf.emplace(j);
+    }
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1309,9 +1339,12 @@ void UWebSocketGate::UWebSocket::sendError( std::string_view msg )
         return;
     }
 
-    auto j = jpoolErr->borrowObject();
-    fill_error_json(j, msg);
-    jbuf.emplace(j);
+    {
+        std::lock_guard<std::mutex> lk(dataMutex);
+        auto j = jpoolErr->borrowObject();
+        fill_error_json(j, msg);
+        jbuf.emplace(j);
+    }
 
     if( ioping.is_active() )
         ioping.stop();
