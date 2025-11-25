@@ -157,10 +157,13 @@
   let wsLogname = null;
   let reconnectAttempts = 0;
 
-  const MAX_LINES = 30000;      // сколько строк держать в DOM
-  const MAX_BUFFER = 8000;      // сколько строк держать в паузе
-  const renderQueue = [];       // очередь строк на отрисовку
+  const MAX_LINES = 30000;       // сколько строк держать в DOM
+  const MAX_BUFFER = 8000;       // сколько строк держать в паузе
+  const DOWNLOAD_LIMIT = 200000; // максимум строк для выгрузки
+  const MATCH_RECOUNT_INTERVAL = 300; // мс между пересчётами совпадений
+  const renderQueue = [];        // очередь строк на отрисовку
   let renderScheduled = false;
+  let pendingMatchRecount = false;
 
   const searchState = {
     query: "",
@@ -263,18 +266,23 @@
   }
 
   function updateMatchCounter(){
-    const re = buildMatcher();
-    let total = 0;
-    if(re){
-      const nodes = logsEl().children;
-      for(let i=0;i<nodes.length;i++){
-        const raw = nodes[i].getAttribute('data-raw') || nodes[i].textContent || "";
-        total += countMatchesInText(raw, re);
+    if(pendingMatchRecount) return;
+    pendingMatchRecount = true;
+    setTimeout(()=> {
+      pendingMatchRecount = false;
+      const re = buildMatcher();
+      let total = 0;
+      if(re){
+        const nodes = logsEl().children;
+        for(let i=0;i<nodes.length;i++){
+          const raw = nodes[i].getAttribute('data-raw') || nodes[i].textContent || "";
+          total += countMatchesInText(raw, re);
+        }
       }
-    }
-    const indicator = matchCountEl();
-    indicator.textContent = "Matches: " + total;
-    indicator.classList.toggle('active', total > 0);
+      const indicator = matchCountEl();
+      indicator.textContent = "Matches: " + total;
+      indicator.classList.toggle('active', total > 0);
+    }, MATCH_RECOUNT_INTERVAL);
   }
 
   function highlightText(text, re){
@@ -335,6 +343,11 @@
     const re = buildMatcher();
 
     for(const msg of renderQueue){
+      if(re && searchState.showOnlyMatches && !re.test(msg)){
+        if(re.global) re.lastIndex = 0;
+        continue; // не добавляем скрытые строки в DOM
+      }
+
       const line = document.createElement('div');
       line.setAttribute('data-raw', msg);
 
@@ -430,7 +443,13 @@
       if(m === ".") return;
       (m || "").split(/\r?\n/).forEach(line => { if(line !== "") bufferedLines.push(line); });
     });
-    const allLines = visibleLines.concat(bufferedLines);
+    let allLines = visibleLines.concat(bufferedLines);
+
+    if(allLines.length > DOWNLOAD_LIMIT){
+      alert("Слишком много строк для выгрузки (" + allLines.length + "). Будут сохранены последние " + DOWNLOAD_LIMIT);
+      allLines = allLines.slice(allLines.length - DOWNLOAD_LIMIT);
+    }
+
     const content = (allLines.join("\r\n") + "\r\n");
 
     const logname = titleText().getAttribute("data-logname") || "log";

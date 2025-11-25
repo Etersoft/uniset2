@@ -341,13 +341,14 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     {
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
-        int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
-        int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 10);
+        int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 15);
+        int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), maxT);
 
         httpParams->setMaxQueued(maxQ);
         httpParams->setMaxThreads(maxT);
         httpserv = std::make_shared<Poco::Net::HTTPServer>(new LogDBRequestHandlerFactory(this), Poco::Net::ServerSocket(sa), httpParams );
         httpMaxThreads = maxT;
+        httpMaxQueued = maxQ;
     }
     catch( std::exception& ex )
     {
@@ -583,8 +584,8 @@ void LogDB::help_print()
     cout << "http: " << endl;
     cout << "--prefix-httpserver-host ip                 - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
     cout << "--prefix-httpserver-port num                - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-    cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+    cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: httpserver-max-threads" << endl;
+    cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 15" << endl;
     cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
     cout << "--prefix-httpserver-charset charset         - ContentType charset. Default: 'UTF-8'" << endl;
     cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
@@ -1013,12 +1014,48 @@ class LogDBWebSocketRequestHandler:
         LogDB* logdb;
 };
 // -----------------------------------------------------------------------------
+class LogDBOverloadRequestHandler:
+    public Poco::Net::HTTPRequestHandler
+{
+    public:
+
+        LogDBOverloadRequestHandler( LogDB* l ): logdb(l) {}
+
+        virtual void handleRequest( Poco::Net::HTTPServerRequest& request,
+                                    Poco::Net::HTTPServerResponse& response ) override
+        {
+            logdb->handleOverload(request, response);
+        }
+
+    private:
+        LogDB* logdb;
+};
+// -----------------------------------------------------------------------------
 Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestHandler( const Poco::Net::HTTPServerRequest& req )
 {
     if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
         return new LogDBWebSocketRequestHandler(logdb);
 
+    // если превышен лимит активных запросов, сразу отдаём 429
+    if( logdb->httpActiveRequests.load(std::memory_order_relaxed) >= logdb->httpMaxThreads )
+        return new LogDBOverloadRequestHandler(logdb);
+
     return new LogDBRequestHandler(logdb);
+}
+// -----------------------------------------------------------------------------
+void LogDB::handleOverload(Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp)
+{
+    using Poco::Net::HTTPResponse;
+
+    resp.set("Access-Control-Allow-Methods", "GET");
+    resp.set("Access-Control-Allow-Request-Method", "*");
+    resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
+    resp.setContentType(httpJsonContentType);
+    resp.setStatus(HTTPResponse::HTTP_TOO_MANY_REQUESTS);
+    auto jdata = respError(resp, HTTPResponse::HTTP_TOO_MANY_REQUESTS, "Too many concurrent requests");
+    std::ostream& out = resp.send();
+    jdata->stringify(out);
+    out.flush();
 }
 // -----------------------------------------------------------------------------
 void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
@@ -1031,14 +1068,15 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
     resp.setContentType(httpJsonContentType);
 
     // ограничение на количество одновременно обслуживаемых запросов
-    const size_t currentRequests = ++httpActiveRequests;
+    const size_t prevRequests = httpActiveRequests.fetch_add(1, std::memory_order_relaxed);
     auto httpGuard = std::unique_ptr<void, std::function<void(void*)>>(nullptr, [this](void*)
     {
-        httpActiveRequests--;
+        httpActiveRequests.fetch_sub(1, std::memory_order_relaxed);
     });
 
-    if( currentRequests > httpMaxThreads )
+    if( prevRequests >= httpMaxThreads )
     {
+        httpActiveRequests.fetch_sub(1, std::memory_order_relaxed);
         resp.setStatus(HTTPResponse::HTTP_TOO_MANY_REQUESTS);
         auto jdata = respError(resp, HTTPResponse::HTTP_TOO_MANY_REQUESTS, "Too many concurrent requests");
         std::ostream& out = resp.send();
@@ -1703,6 +1741,7 @@ LogDB::LogWebSocket::~LogWebSocket()
             bufPool->returnObject(wbuf.front());
         else
             delete wbuf.front();
+
         wbuf.pop();
     }
 
@@ -1863,14 +1902,15 @@ void LogDB::LogWebSocket::write()
 
         msg->pos += ret;
 
-    if( msg->nbytes() == 0 )
-    {
-        wbuf.pop();
-        if( bufPool )
-            bufPool->returnObject(msg);
-        else
-            delete msg;
-    }
+        if( msg->nbytes() == 0 )
+        {
+            wbuf.pop();
+
+            if( bufPool )
+                bufPool->returnObject(msg);
+            else
+                delete msg;
+        }
 
         if( !wbuf.empty() )
         {
@@ -1954,6 +1994,7 @@ void LogDB::LogWebSocket::handleBackpressure()
         if( msg )
         {
             dropped++;
+
             if( bufPool )
                 bufPool->returnObject(msg);
             else
@@ -2073,6 +2114,7 @@ void LogDB::LogWebSocket::clearFrames()
             bufPool->returnObject(wbuf.front());
         else
             delete wbuf.front();
+
         wbuf.pop();
     }
 }
@@ -2080,6 +2122,7 @@ void LogDB::LogWebSocket::clearFrames()
 void LogDB::LogWebSocket::logQueueStats( const std::string& reason )
 {
     auto now = std::chrono::steady_clock::now();
+
     if( std::chrono::duration<double>(now - lastDiag).count() < 5.0 )
         return;
 

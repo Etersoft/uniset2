@@ -223,6 +223,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
             virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
             void onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
+            void handleOverload(Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp);
 #endif
 
         protected:
@@ -374,7 +375,8 @@ namespace uniset
             std::string httpHtmlContentType = {"text/html; charset=UTF-8" };
             std::string utf8Code = "UTF-8";
             std::atomic<size_t> httpActiveRequests{0};
-            size_t httpMaxThreads = { 3 };
+            size_t httpMaxThreads = { 15 };
+            size_t httpMaxQueued = { 0 };
 
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
@@ -510,6 +512,8 @@ namespace uniset
                 private:
                     LogDB* logdb;
             };
+
+            friend class LogDBOverloadRequestHandler;
 #endif
 
         private:
