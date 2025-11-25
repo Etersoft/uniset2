@@ -19,9 +19,11 @@
 */
 // --------------------------------------------------------------------------
 #include <sstream>
+#include <functional>
 #include <iomanip>
 #include <unistd.h>
 #include <fstream>
+#include <algorithm>
 
 #include "unisetstd.h"
 #include <Poco/Net/NetException.h>
@@ -260,6 +262,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     wsSendTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-send-time", argc, argv, it.getProp("wsSendTime"), wsSendTime_sec) / 1000.0;
     wsMaxSend = uniset::getArgPInt("--" + prefix + "ws-max-send", argc, argv, it.getProp("wsMaxSend"), wsMaxSend);
     wsBackpressureTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-backpressure-timeout", argc, argv, it.getProp("wsBackpressureTimeout"), wsBackpressureTime_sec * 1000) / 1000.0;
+    wsQueueBytesLimit = uniset::getArgPInt("--" + prefix + "ws-queue-bytes-limit", argc, argv, it.getProp("wsQueueBytesLimit"), wsQueueBytesLimit);
+    wsFrameBytesLimit = uniset::getArgPInt("--" + prefix + "ws-frame-bytes", argc, argv, it.getProp("wsFrameBytes"), wsFrameBytesLimit);
 
     httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
     httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
@@ -338,11 +342,12 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
         int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
-        int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 3);
+        int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 10);
 
         httpParams->setMaxQueued(maxQ);
         httpParams->setMaxThreads(maxT);
         httpserv = std::make_shared<Poco::Net::HTTPServer>(new LogDBRequestHandlerFactory(this), Poco::Net::ServerSocket(sa), httpParams );
+        httpMaxThreads = maxT;
     }
     catch( std::exception& ex )
     {
@@ -567,6 +572,8 @@ void LogDB::help_print()
     cout << "--prefix-ws-send-time msec            - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
     cout << "--prefix-ws-max num                   - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
     cout << "--prefix-ws-backpressure-timeout msec - Таймаут на длительность блокировки сокета при отправке. По умолчанию: 15000 мсек" << endl;
+    cout << "--prefix-ws-queue-bytes-limit bytes   - Максимальный размер очереди сообщений перед отправкой. По умолчанию: 2097152 байт" << endl;
+    cout << "--prefix-ws-frame-bytes bytes         - Максимальный размер одного websocket кадра. По умолчанию: 65536 байт" << endl;
     cout << "--prefix-ws-html-template file        - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
     cout << endl;
     cout << "logservers: " << endl;
@@ -1022,6 +1029,23 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
     resp.set("Access-Control-Allow-Request-Method", "*");
     resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
     resp.setContentType(httpJsonContentType);
+
+    // ограничение на количество одновременно обслуживаемых запросов
+    const size_t currentRequests = ++httpActiveRequests;
+    auto httpGuard = std::unique_ptr<void, std::function<void(void*)>>(nullptr, [this](void*)
+    {
+        httpActiveRequests--;
+    });
+
+    if( currentRequests > httpMaxThreads )
+    {
+        resp.setStatus(HTTPResponse::HTTP_TOO_MANY_REQUESTS);
+        auto jdata = respError(resp, HTTPResponse::HTTP_TOO_MANY_REQUESTS, "Too many concurrent requests");
+        std::ostream& out = resp.send();
+        jdata->stringify(out);
+        out.flush();
+        return;
+    }
 
     try
     {
@@ -1613,6 +1637,8 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
         ws->setSendPeriod(wsSendTime_sec);
         ws->setMaxSendCount(wsMaxSend);
         ws->setBackpressureTimeout(wsBackpressureTime_sec);
+        ws->setQueueBytesLimit(wsQueueBytesLimit);
+        ws->setMaxFrameBytes(wsFrameBytesLimit);
         ws->dblog = dblog;
 
         if( !warn2client.empty() )
@@ -1661,7 +1687,8 @@ LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest* _req,
     ioping.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::ping>(this);
     iosend.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::send>(this);
 
-    maxsize = maxsend * 10; // пока так
+    bufPool = std::make_unique<Poco::ObjectPool<uniset::UTCPCore::Buffer>>(bufPoolCapacity, bufPoolPeak);
+    lastDiag = std::chrono::steady_clock::now();
 }
 // -----------------------------------------------------------------------------
 LogDB::LogWebSocket::~LogWebSocket()
@@ -1672,9 +1699,15 @@ LogDB::LogWebSocket::~LogWebSocket()
     // удаляем всё что осталось
     while(!wbuf.empty())
     {
-        delete wbuf.front();
+        if( bufPool )
+            bufPool->returnObject(wbuf.front());
+        else
+            delete wbuf.front();
         wbuf.pop();
     }
+
+    queuedBytes = 0;
+    msgQueue.clear();
 
     if( log )
         log->usercmd = "";
@@ -1695,7 +1728,7 @@ void LogDB::LogWebSocket::set( ev::dynamic_loop& loop )
 
     if( !pendingNotice.empty() )
     {
-        wbuf.emplace(new UTCPCore::Buffer(pendingNotice));
+        enqueueMessage(pendingNotice);
         pendingNotice.clear();
     }
 
@@ -1708,8 +1741,13 @@ void LogDB::LogWebSocket::send( ev::timer& t, int revents )
     if( EV_ERROR & revents )
         return;
 
+    buildFramesFromMessages();
+
     for( size_t i = 0; !wbuf.empty() && i < maxsend && !cancelled; i++ )
         write();
+
+    if( queuedBytes > (queueBytesLimit / 2) || wbuf.size() > (maxsend * 2) )
+        logQueueStats("queue_pressure");
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::ping( ev::timer& t, int revents )
@@ -1726,7 +1764,14 @@ void LogDB::LogWebSocket::ping( ev::timer& t, int revents )
         return;
     }
 
-    wbuf.emplace(new UTCPCore::Buffer("."));
+    if( bufPool )
+    {
+        auto b = bufPool->borrowObject();
+        b->reset(".");
+        wbuf.emplace(b);
+    }
+    else
+        wbuf.emplace(new UTCPCore::Buffer("."));
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1737,25 +1782,24 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
     if( cancelled || txt.empty())
         return;
 
-    if( wbuf.size() > maxsize )
-    {
-        lostByOverflow++;
-
-        if( (lostByOverflow % 100) == 1 )
-            dbwarn << req->clientAddress().toString() << " lost messages... lost=" << lostByOverflow << endl;
-
-        return;
-    }
-
-    wbuf.emplace(new UTCPCore::Buffer(txt));
-
-    if( ioping.is_active() )
-        ioping.stop();
+    enqueueMessage(txt);
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::setPendingNotice( const std::string& msg )
 {
     pendingNotice = msg;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setQueueBytesLimit( size_t bytes )
+{
+    if( bytes > 0 )
+        queueBytesLimit = bytes;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setMaxFrameBytes( size_t bytes )
+{
+    if( bytes > 1024 ) // минимально 1КБ, чтобы не слишком малый
+        maxFrameBytes = bytes;
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::write()
@@ -1819,11 +1863,14 @@ void LogDB::LogWebSocket::write()
 
         msg->pos += ret;
 
-        if( msg->nbytes() == 0 )
-        {
-            wbuf.pop();
+    if( msg->nbytes() == 0 )
+    {
+        wbuf.pop();
+        if( bufPool )
+            bufPool->returnObject(msg);
+        else
             delete msg;
-        }
+    }
 
         if( !wbuf.empty() )
         {
@@ -1907,8 +1954,18 @@ void LogDB::LogWebSocket::handleBackpressure()
         if( msg )
         {
             dropped++;
-            delete msg;
+            if( bufPool )
+                bufPool->returnObject(msg);
+            else
+                delete msg;
         }
+    }
+
+    if( !msgQueue.empty() )
+    {
+        dropped += msgQueue.size();
+        msgQueue.clear();
+        queuedBytes = 0;
     }
 
     if( dropped > 0 )
@@ -1918,12 +1975,123 @@ void LogDB::LogWebSocket::handleBackpressure()
         dbwarn << "(websocket): " << req->clientAddress().toString()
                << " " << warnmsg << " (backpressure " << dur << "s, tries=" << backpressureCount << ")" << endl;
 
-        wbuf.emplace(new UTCPCore::Buffer(warnmsg));
+        if( bufPool )
+        {
+            auto b = bufPool->borrowObject();
+            b->reset(warnmsg);
+            wbuf.emplace(b);
+        }
+        else
+            wbuf.emplace(new UTCPCore::Buffer(warnmsg));
     }
 
     backpressureActive = false;
     backpressureCount = 0;
     backpressureStart = std::chrono::steady_clock::now();
+    logQueueStats("backpressure_drop");
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::enqueueMessage( const std::string& msg )
+{
+    if( msg.empty() )
+        return;
+
+    const size_t msgSize = msg.size();
+
+    if( queuedBytes + msgSize > queueBytesLimit )
+    {
+        lostByOverflow += msgQueue.size() + 1;
+        clearFrames();
+        msgQueue.clear();
+        queuedBytes = 0;
+        dbwarn << req->clientAddress().toString() << " lost messages due to queue size limit (" << queueBytesLimit
+               << " bytes). total lost=" << lostByOverflow << endl;
+        logQueueStats("overflow");
+        return;
+    }
+
+    msgQueue.emplace_back(msg);
+    queuedBytes += msgSize;
+
+    if( ioping.is_active() )
+        ioping.stop();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::buildFramesFromMessages()
+{
+    if( msgQueue.empty() )
+        return;
+
+    while( !msgQueue.empty() )
+    {
+        std::string batch;
+        batch.reserve(std::min(queuedBytes, maxFrameBytes));
+
+        size_t lines = 0;
+
+        while( !msgQueue.empty() && lines < maxsend )
+        {
+            const auto& s = msgQueue.front();
+            const size_t need = s.size() + (batch.empty() ? 0 : 1);
+
+            if( batch.size() + need > maxFrameBytes )
+                break;
+
+            if( !batch.empty() )
+                batch.push_back('\n');
+
+            batch += s;
+            queuedBytes -= s.size();
+            msgQueue.pop_front();
+            lines++;
+        }
+
+        if( !batch.empty() )
+        {
+            if( bufPool )
+            {
+                auto b = bufPool->borrowObject();
+                b->reset(batch);
+                wbuf.emplace(b);
+            }
+            else
+                wbuf.emplace(new UTCPCore::Buffer(batch));
+        }
+        else
+            break;
+    }
+
+    if( queuedBytes == 0 )
+        msgQueue.clear();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::clearFrames()
+{
+    while( !wbuf.empty() )
+    {
+        if( bufPool )
+            bufPool->returnObject(wbuf.front());
+        else
+            delete wbuf.front();
+        wbuf.pop();
+    }
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::logQueueStats( const std::string& reason )
+{
+    auto now = std::chrono::steady_clock::now();
+    if( std::chrono::duration<double>(now - lastDiag).count() < 5.0 )
+        return;
+
+    lastDiag = now;
+    dblog3 << "(websocket): " << req->clientAddress().toString()
+           << " [" << reason << "] "
+           << "msgs=" << msgQueue.size()
+           << " frames=" << wbuf.size()
+           << " queuedBytes=" << queuedBytes
+           << " maxFrameBytes=" << maxFrameBytes
+           << " limitBytes=" << queueBytesLimit
+           << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::term()

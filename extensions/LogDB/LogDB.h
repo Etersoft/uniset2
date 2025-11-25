@@ -22,14 +22,17 @@
 #define LogDB_H_
 // --------------------------------------------------------------------------
 #include <queue>
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
+#include <atomic>
 #include <ev++.h>
 #include <sigc++/sigc++.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Net/WebSocket.h>
+#include <Poco/ObjectPool.h>
 #include "UniSetTypes.h"
 #include "LogAgregator.h"
 #include "DebugStream.h"
@@ -370,11 +373,15 @@ namespace uniset
             std::string httpJsonContentType = {"text/json; charset=UTF-8" };
             std::string httpHtmlContentType = {"text/html; charset=UTF-8" };
             std::string utf8Code = "UTF-8";
+            std::atomic<size_t> httpActiveRequests{0};
+            size_t httpMaxThreads = { 3 };
 
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
             size_t wsMaxSend = { 200 };
             double wsBackpressureTime_sec = { 15.0 };
+            size_t wsQueueBytesLimit = { 2 * 1024 * 1024 };
+            size_t wsFrameBytesLimit = { 64 * 1024 };
             bool httpEnabledLogControl = { false };
             bool httpEnabledDownload = { false };
 
@@ -416,9 +423,15 @@ namespace uniset
                     void setMaxSendCount( size_t val );
                     void setBackpressureTimeout( const double& sec );
                     void setPendingNotice( const std::string& msg );
+                    void setQueueBytesLimit( size_t bytes );
+                    void setMaxFrameBytes( size_t bytes );
 
                 protected:
 
+                    void enqueueMessage( const std::string& msg );
+                    void buildFramesFromMessages();
+                    void clearFrames();
+                    void logQueueStats( const std::string& reason );
                     void write();
                     void handleBackpressure();
 
@@ -441,13 +454,21 @@ namespace uniset
 
                     // очередь данных на посылку..
                     std::queue<UTCPCore::Buffer*> wbuf;
-                    size_t maxsize; // рассчитывается  исходя из max_send (см. конструктор)
+                    std::deque<std::string> msgQueue;
+                    size_t queuedBytes = { 0 };
+                    size_t queueBytesLimit = { 2 * 1024 * 1024 }; // предел буфера сообщений
+                    size_t maxFrameBytes = { 64 * 1024 }; // ограничение на размер одного фрейма
+                    std::chrono::steady_clock::time_point lastDiag;
                     size_t lostByOverflow = { 0 };
                     size_t backpressureCount = { 0 };
                     std::chrono::steady_clock::time_point backpressureStart;
                     bool backpressureActive = { false };
                     double backpressureTimeout_sec = { 5.0 };
                     std::string pendingNotice;
+
+                    std::unique_ptr<Poco::ObjectPool<uniset::UTCPCore::Buffer>> bufPool;
+                    size_t bufPoolCapacity = { 256 };
+                    size_t bufPoolPeak = { 2000 };
 
                     std::shared_ptr<Log> log;
             };
