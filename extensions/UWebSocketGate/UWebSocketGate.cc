@@ -235,15 +235,25 @@ void UWebSocketGate::checkMessages( ev::timer& t, int revents )
 //--------------------------------------------------------------------------------------------
 void UWebSocketGate::sensorInfo( const SensorMessage* sm )
 {
-    uniset_rwmutex_wrlock lock(wsocksMutex);
-
     myinfoV(5) << myname << "(sensorInfo): sid=" << sm->id << " val=" << sm->value << endl;
 
-    for( auto&& s : wsocks )
+    // Оптимизация: используем READ lock и копируем shared_ptr-ы для минимизации времени блокировки
+    std::vector<std::shared_ptr<UWebSocket>> local;
+
+    {
+        uniset_rwmutex_rlock lock(wsocksMutex);  // READ lock вместо WRITE
+        local.reserve(wsocks.size());
+
+        for( auto&& s : wsocks )
+            local.push_back(s);
+    }
+
+    // Работаем с копией списка без удержания lock
+    for( auto&& s : local )
         s->sensorInfo(sm);
 
     // если нет действующих сокетов, датчик уже не нужный и надо отказаться
-    if( wsocks.empty() )
+    if( local.empty() )
     {
         try
         {
@@ -638,22 +648,6 @@ void UWebSocketGate::onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco
         return;
     }
 
-    {
-        uniset_rwmutex_rlock lk(wsocksMutex);
-
-        if( wsocks.size() >= maxwsocks )
-        {
-            resp.setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
-            resp.setContentType("text/html");
-            resp.setStatusAndReason(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
-            resp.setContentLength(0);
-            std::ostream& err = resp.send();
-            err << "Error: exceeding the maximum number of open connections (" << maxwsocks << ")";
-            err.flush();
-            return;
-        }
-    }
-
     auto qp = uri.getQueryParameters();
     auto ws = newWebSocket(&req, &resp, qp);
 
@@ -777,6 +771,21 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
     auto idlist = uniset::explode(slist);
 
     {
+        uniset_rwmutex_wrlock lock(wsocksMutex);
+
+        // Проверка лимита внутри критической секции для предотвращения race condition
+        if( wsocks.size() >= maxwsocks )
+        {
+            resp->setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+            resp->setContentType("text/html");
+            resp->setStatusAndReason(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+            resp->setContentLength(0);
+            std::ostream& err = resp->send();
+            err << "Error: exceeding the maximum number of open connections (" << maxwsocks << ")";
+            err.flush();
+            return nullptr;
+        }
+
         ws = make_shared<UWebSocket>(req, resp, jpoolCapacity, jpoolPeakCapacity);
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
@@ -791,7 +800,6 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
             ws->ask(i);
         }
 
-        uniset_rwmutex_wrlock lock(wsocksMutex);
         wsocks.emplace_back(ws);
     }
 
