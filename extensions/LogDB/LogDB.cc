@@ -1582,22 +1582,6 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
         return;
     }
 
-    {
-        uniset_rwmutex_rlock lk(wsocksMutex);
-
-        if( wsocks.size() >= maxwsocks )
-        {
-            resp.setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
-            resp.setContentType(httpHtmlContentType);
-            resp.setStatusAndReason(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
-            resp.setContentLength(0);
-            std::ostream& err = resp.send();
-            err << "Error: exceeding the maximum number of open connections (" << maxwsocks << ")";
-            err.flush();
-            return;
-        }
-    }
-
     auto ws = newWebSocket(&req, &resp, seg[2], qp);
 
     if( !ws )
@@ -1670,6 +1654,20 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
 
     {
         uniset_rwmutex_wrlock lock(wsocksMutex);
+
+        // Проверка лимита внутри критической секции для предотвращения race condition
+        if( wsocks.size() >= maxwsocks )
+        {
+            resp->setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+            resp->setContentType(httpHtmlContentType);
+            resp->setStatusAndReason(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+            resp->setContentLength(0);
+            std::ostream& err = resp->send();
+            err << "Error: exceeding the maximum number of open connections (" << maxwsocks << ")";
+            err.flush();
+            return nullptr;
+        }
+
         ws = make_shared<LogWebSocket>(req, resp, log);
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
