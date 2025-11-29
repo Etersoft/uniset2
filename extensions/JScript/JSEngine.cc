@@ -1568,7 +1568,10 @@ JSValue JSEngine::js_modbus_write0F(JSContext* jsctx, JSValueConst, int argc, JS
         JSValue item = JS_GetPropertyUint32(jsctx, argv[2], i);
 
         if( JS_IsException(item) )
+        {
+            JS_FreeValue(jsctx, item);
             return JS_EXCEPTION;
+        }
 
         int32_t val = JS_ToBool(jsctx, item);
         JS_FreeValue(jsctx, item);
@@ -1636,7 +1639,10 @@ JSValue JSEngine::js_modbus_write10(JSContext* jsctx, JSValueConst, int argc, JS
         JSValue item = JS_GetPropertyUint32(jsctx, argv[2], i);
 
         if( JS_IsException(item) )
+        {
+            JS_FreeValue(jsctx, item);
             return JS_EXCEPTION;
+        }
 
         uint32_t val = 0;
 
@@ -1877,7 +1883,10 @@ JSValue JSEngine::js_opcua_read(JSContext* jsctx, JSValueConst, int argc, JSValu
             JSValue item = JS_GetPropertyUint32(jsctx, argv[0], i);
 
             if( JS_IsException(item) )
+            {
+                JS_FreeValue(jsctx, item);
                 return JS_EXCEPTION;
+            }
 
             bool ok = addNode(item);
             JS_FreeValue(jsctx, item);
@@ -2094,7 +2103,10 @@ JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSVal
             JSValue entry = JS_GetPropertyUint32(jsctx, argv[0], i);
 
             if( JS_IsException(entry) )
+            {
+                JS_FreeValue(jsctx, entry);
                 return JS_EXCEPTION;
+            }
 
             if( !JS_IsObject(entry) )
             {
