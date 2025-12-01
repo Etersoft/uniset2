@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2023-03-07+03:00
+// generate timestamp: 2025-12-02+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -410,7 +410,7 @@ uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 	if( logserv /* && userparam < 0 */ )
 	{
 		inf << "LogServer: " << logserv_host << ":" << logserv_port 
-			<< ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" ) << endl;
+			<< ( logserv->isRunning() ? "   [RUNNING]" : "   [STOPPED]" ) << endl;
 
 		inf << "         " << logserv->getShortInfo() << endl;
 	}
@@ -461,7 +461,7 @@ Poco::JSON::Object::Ptr UObject_SK::httpGet( const Poco::URI::QueryParameters& p
 	{
 		jserv->set("host",logserv_host);
 		jserv->set("port",logserv_port);
-		jserv->set("state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" ));
+		jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
 		jserv->set("info", logserv->httpGetShortInfo());
 	}
 
