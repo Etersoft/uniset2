@@ -3,7 +3,9 @@
 ulimit -Sc 1000000
 
 uniset2-start.sh -f ./test --name TestProc --confile test.xml --ulog-add-levels system,warn,crit \
---test-sm-ready-timeout 15000 --test-run-logserver $* 
+--test-sm-ready-timeout 15000 --test-run-logserver \
+--activator-run-httpserver 1 --activator-httpserver-port 9393 \
+$* 
 #--test-log-add-levels any $*
 
 #info,warn,crit,system,level9 > 1.log

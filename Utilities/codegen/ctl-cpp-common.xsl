@@ -615,7 +615,7 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
 	{
 		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
-			&lt;&lt; ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" ) &lt;&lt; endl;
+			&lt;&lt; ( logserv->isRunning() ? "   [RUNNING]" : "   [STOPPED]" ) &lt;&lt; endl;
 
 		inf &lt;&lt; "         " &lt;&lt; logserv->getShortInfo() &lt;&lt; endl;
 	}
@@ -671,7 +671,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const P
 	{
 		jserv->set("host",logserv_host);
 		jserv->set("port",logserv_port);
-		jserv->set("state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" ));
+		jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
 		jserv->set("info", logserv->httpGetShortInfo());
 	}
 <xsl:if test="normalize-space($SIMPLEPROC)=''">
