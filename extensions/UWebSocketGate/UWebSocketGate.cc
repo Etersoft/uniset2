@@ -108,6 +108,7 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
     wsMaxSend = conf->getArgPInt("--" + prefix + "max-send", it.getProp("wsMaxSend"), wsMaxSend);
     wsMaxCmd = conf->getArgPInt("--" + prefix + "max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
     wsPongTimeout_sec = conf->getArgPInt("--" + prefix + "pong-timeout", it.getProp("wsPongTimeout_sec"), wsPongTimeout_sec);
+    wsMaxLifetime_sec = (float)conf->getArgPInt("--" + prefix + "max-lifetime", it.getProp("wsMaxLifetime"), 0) / 1000.0;
 
     myinfoV(1) << myname << "(init): maxSend=" << wsMaxSend
                << " maxCmd=" << wsMaxCmd
@@ -409,7 +410,8 @@ void UWebSocketGate::help_print()
     cout << "--ws-send-time msec           - Период посылки сообщений. По умолчанию: 200 мсек" << endl;
     cout << "--ws-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
     cout << "--ws-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
-    cout << "--ws-pong-timeout msec        - Таймаут, на ответ на сообщение ping. По умолчанию: 5000" << endl;
+    cout << "--ws-pong-timeout msec        - Таймаут на ответ на сообщение ping. По умолчанию: 5000" << endl;
+    cout << "--ws-max-lifetime msec        - Максимальное время жизни соединения. 0 = без ограничений. По умолчанию: 0" << endl;
 
     cout << "http: " << endl;
     cout << "--ws-host ip                  - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
@@ -792,6 +794,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
         ws->setMaxSendCount(wsMaxSend);
         ws->setMaxCmdCount(wsMaxCmd);
         ws->setPongTimeout(wsPongTimeout_sec);
+        ws->setMaxLifetime(wsMaxLifetime_sec);
         ws->mylog = mylog;
 
         for( const auto& i : idlist.ref() )
@@ -845,11 +848,14 @@ UWebSocketGate::UWebSocket::UWebSocket( Poco::Net::HTTPServerRequest* _req,
     iosend.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::send>(this);
     iorecv.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::read>(this);
     iopong.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::pong>(this);
+    iolifetime.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::onLifetimeExpired>(this);
+    sessionStart = std::chrono::steady_clock::now();
 
     maxsize = maxsend * Kbuf;
 
     setReceiveTimeout(uniset::PassiveTimer::millisecToPoco(recvTimeout));
     setMaxPayloadSize(sizeof(rbuf));
+    setKeepAlive(true);
 
     jpoolSM = make_unique<Poco::ObjectPool< Poco::JSON::Object, Poco::JSON::Object::Ptr >>(jpoolCapacity, jpoolPeakCapacity);
     jpoolErr = make_unique<Poco::ObjectPool< Poco::JSON::Object, Poco::JSON::Object::Ptr >>(jpoolCapacity, jpoolPeakCapacity);
@@ -922,9 +928,13 @@ void UWebSocketGate::UWebSocket::set( ev::dynamic_loop& loop, std::shared_ptr<ev
     iosend.set(loop);
     ioping.set(loop);
     iopong.set(loop);
+    iolifetime.set(loop);
 
     iosend.start(0, send_sec);
     ioping.start(ping_sec, ping_sec);
+
+    if( maxLifetime_sec > 0 )
+        iolifetime.start(maxLifetime_sec);
 
     iorecv.set(loop);
     iorecv.start(sockfd(), ev::READ);
@@ -1595,6 +1605,7 @@ void UWebSocketGate::UWebSocket::term()
     iosend.stop();
     iorecv.stop();
     iopong.stop();
+    iolifetime.stop();
     finish.notify_all();
 }
 // -----------------------------------------------------------------------------
@@ -1637,6 +1648,29 @@ void UWebSocketGate::UWebSocket::setPongTimeout( const double& val )
 {
     if( val > 0 )
         pongTimeout_sec = val;
+}
+// -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::setMaxLifetime( const double& sec )
+{
+    if( sec >= 0 )
+        maxLifetime_sec = sec;
+}
+// -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::onLifetimeExpired( ev::timer& t, int revents )
+{
+    if( EV_ERROR & revents )
+        return;
+
+    if( cancelled )
+        return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - sessionStart).count();
+
+    myinfoV(3) << req->clientAddress().toString()
+               << "(onLifetimeExpired): max lifetime " << maxLifetime_sec
+               << " sec reached (session " << elapsed << " sec). Terminate session.." << endl;
+    term();
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
