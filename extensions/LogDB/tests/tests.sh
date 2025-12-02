@@ -39,6 +39,9 @@ atexit() {
 	[ -e "$downloadfile" ] && rm -f "$downloadfile"
 	[ -e "$LOGFILE" ] && rm -f "$LOGFILE"
 	[ -e "/tmp/websocket_output.txt" ] && rm -f "/tmp/websocket_output.txt"
+	[ -e "/tmp/websocket_pong_timeout.txt" ] && rm -f "/tmp/websocket_pong_timeout.txt"
+	[ -e "/tmp/websocket_lifetime.txt" ] && rm -f "/tmp/websocket_lifetime.txt"
+	[ -e "/tmp/websocket_reconnect.txt" ] && rm -f "/tmp/websocket_reconnect.txt"
 
 	exit $RET
 }
@@ -78,7 +81,10 @@ logdb_run() {
 		--logdb-ls-check-connection-sec 1 \
 		--logdb-db-max-records 20000 \
 		--logdb-httpserver-download-enable \
-		--logdb-httpserver-logcontrol-enable &
+		--logdb-httpserver-logcontrol-enable \
+		--logdb-ws-pong-timeout 5000 \
+		--logdb-ws-max-lifetime 15000 \
+		--logdb-ws-heartbeat-time 2000 &
 
 	LOGDB_PID=$!
 
@@ -379,6 +385,91 @@ logdb_test_reconnect() {
 	return 1
 }
 
+# Тест pool exhaustion protection: проверяем, что после закрытия соединений
+# новые клиенты могут подключиться (соединения корректно удаляются из пула)
+# shellcheck disable=SC3043
+logdb_test_websocket_pool_cleanup() {
+	local output_file="/tmp/websocket_pool_test.txt"
+	local i
+
+	# Запускаем несколько соединений и закрываем их
+	for i in 1 2 3; do
+		curl -i -N -s \
+			-H "Connection: Upgrade" \
+			-H "Upgrade: websocket" \
+			-H "Sec-WebSocket-Version: 13" \
+			-H "Sec-WebSocket-Key: $WS_KEY" \
+			--max-time 3 \
+			"$WS_URL" >/dev/null 2>&1 &
+	done
+
+	# Ждем завершения
+	sleep 5
+
+	# Теперь пробуем новое соединение - оно должно успешно установиться
+	# (если cleanup работает, слоты освободились)
+	RESPONSE=$(curl -i -N -s \
+		-H "Connection: Upgrade" \
+		-H "Upgrade: websocket" \
+		-H "Sec-WebSocket-Version: 13" \
+		-H "Sec-WebSocket-Key: $WS_KEY" \
+		--max-time 5 \
+		"$WS_URL" 2>/dev/null)
+
+	if echo "$RESPONSE" | grep -q "101 Switching Protocols"; then
+		echo "✓ WebSocket pool cleanup test passed: new connection accepted after old ones closed"
+		return 0
+	fi
+
+	logdb_error "test_websocket_pool_cleanup" "New connection failed after closing old ones"
+	echo "Response: $RESPONSE"
+	return 1
+}
+
+# Тест max lifetime: проверяем что соединение закрывается по истечении времени жизни
+# shellcheck disable=SC3043
+logdb_test_websocket_max_lifetime() {
+	local output_file="/tmp/websocket_lifetime.txt"
+
+	# Запускаем клиента
+	{
+		curl -i -N -s \
+			-H "Connection: Upgrade" \
+			-H "Upgrade: websocket" \
+			-H "Sec-WebSocket-Version: 13" \
+			-H "Sec-WebSocket-Key: $WS_KEY" \
+			--max-time 25 \
+			"$WS_URL" >"$output_file" 2>&1
+	} &
+	local curl_pid=$!
+
+	# Ждем установления соединения
+	sleep 2
+
+	# Проверяем handshake
+	if ! grep -q "101 Switching Protocols" "$output_file" 2>/dev/null; then
+		logdb_error "test_websocket_max_lifetime" "WebSocket handshake failed"
+		kill $curl_pid 2>/dev/null
+		rm -f "$output_file"
+		return 1
+	fi
+
+	# Ждем истечения max lifetime (сервер запущен с --logdb-ws-max-lifetime 15000)
+	sleep 18
+
+	# Проверяем, что curl процесс завершился
+	if kill -0 $curl_pid 2>/dev/null; then
+		kill $curl_pid 2>/dev/null
+		logdb_error "test_websocket_max_lifetime" "Connection was not closed after max lifetime"
+		rm -f "$output_file"
+		return 1
+	fi
+
+	echo "✓ WebSocket max lifetime test passed: server closed connection after timeout"
+	rm -f "$output_file"
+	return 0
+}
+
 # Тест переподключения WebSocket: закрываем соединение на клиенте и убеждаемся, что новая попытка проходит
 # shellcheck disable=SC3043
 logdb_test_websocket_reconnect() {
@@ -466,6 +557,12 @@ logdb_run_all_tests() {
 	logdb_test_websocket_handshake || RET=1
 	logdb_test_websocket_data || RET=1
 	logdb_test_websocket_reconnect || RET=1
+
+	# WebSocket timeout тесты (занимают больше времени)
+	echo ""
+	echo "Running WebSocket timeout tests..."
+	logdb_test_websocket_pool_cleanup || RET=1
+	logdb_test_websocket_max_lifetime || RET=1
 
 	# ==== finished ===
 	if [ $RET -eq 0 ]; then

@@ -386,6 +386,8 @@ namespace uniset
             size_t wsFrameBytesLimit = { 64 * 1024 };
             bool httpEnabledLogControl = { false };
             bool httpEnabledDownload = { false };
+            double wsPongTimeout_sec = { 10.0 };
+            double wsMaxLifetime_sec = { 0 }; // 0 = unlimited
 
             std::string wsPageTemplate = "";
 
@@ -427,8 +429,12 @@ namespace uniset
                     void setPendingNotice( const std::string& msg );
                     void setQueueBytesLimit( size_t bytes );
                     void setMaxFrameBytes( size_t bytes );
+                    void setPongTimeout( const double& sec );
+                    void setMaxLifetime( const double& sec );
 
                 protected:
+                    void read( ev::io& w, int revents );
+                    void checkPongTimeout( ev::timer& t, int revents );
 
                     void enqueueMessage( const std::string& msg );
                     void buildFramesFromMessages();
@@ -443,6 +449,14 @@ namespace uniset
 
                     ev::timer ioping;
                     double ping_sec = { 3.0 };
+
+                    ev::io ioread;
+                    ev::timer iopongcheck;
+                    double pongTimeout_sec = { 10.0 };
+                    std::atomic_bool waitingPong = { false };
+                    std::chrono::steady_clock::time_point lastPingSent;
+                    std::chrono::steady_clock::time_point sessionStart;
+                    double maxLifetime_sec = { 0 }; // 0 = unlimited
 
                     std::mutex              finishmut;
                     std::condition_variable finish;
