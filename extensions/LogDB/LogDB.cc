@@ -264,6 +264,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     wsBackpressureTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-backpressure-timeout", argc, argv, it.getProp("wsBackpressureTimeout"), wsBackpressureTime_sec * 1000) / 1000.0;
     wsQueueBytesLimit = uniset::getArgPInt("--" + prefix + "ws-queue-bytes-limit", argc, argv, it.getProp("wsQueueBytesLimit"), wsQueueBytesLimit);
     wsFrameBytesLimit = uniset::getArgPInt("--" + prefix + "ws-frame-bytes", argc, argv, it.getProp("wsFrameBytes"), wsFrameBytesLimit);
+    wsPongTimeout_sec = (float)uniset::getArgPInt("--" + prefix + "ws-pong-timeout", argc, argv, it.getProp("wsPongTimeout"), wsPongTimeout_sec * 1000) / 1000.0;
+    wsMaxLifetime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-max-lifetime", argc, argv, it.getProp("wsMaxLifetime"), wsMaxLifetime_sec * 1000) / 1000.0;
 
     httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
     httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
@@ -571,10 +573,12 @@ void LogDB::help_print()
     cout << "--prefix-ws-max num                   - Максимальное количество websocket-ов" << endl;
     cout << "--prefix-ws-heartbeat-time msec       - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-ws-send-time msec            - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-ws-max num                   - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-ws-max-send num              - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
     cout << "--prefix-ws-backpressure-timeout msec - Таймаут на длительность блокировки сокета при отправке. По умолчанию: 15000 мсек" << endl;
     cout << "--prefix-ws-queue-bytes-limit bytes   - Максимальный размер очереди сообщений перед отправкой. По умолчанию: 2097152 байт" << endl;
     cout << "--prefix-ws-frame-bytes bytes         - Максимальный размер одного websocket кадра. По умолчанию: 65536 байт" << endl;
+    cout << "--prefix-ws-pong-timeout msec         - Таймаут ожидания PONG после PING. По умолчанию: 10000 мсек" << endl;
+    cout << "--prefix-ws-max-lifetime msec         - Максимальное время жизни соединения. 0 - без ограничений. По умолчанию: 0" << endl;
     cout << "--prefix-ws-html-template file        - Шаблон websocket страницы. По умолчанию: " << std::string(UNISET_DATADIR) << "logdb-websocket.html" << endl;
     cout << endl;
     cout << "logservers: " << endl;
@@ -1675,6 +1679,8 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
         ws->setBackpressureTimeout(wsBackpressureTime_sec);
         ws->setQueueBytesLimit(wsQueueBytesLimit);
         ws->setMaxFrameBytes(wsFrameBytesLimit);
+        ws->setPongTimeout(wsPongTimeout_sec);
+        ws->setMaxLifetime(wsMaxLifetime_sec);
         ws->dblog = dblog;
 
         if( !warn2client.empty() )
@@ -1713,7 +1719,11 @@ LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest* _req,
 {
     setBlocking(false);
 
+    // Настраиваем TCP keepalive для детекции разорванных соединений
+    setKeepAlive(true);
+
     cancelled = false;
+    sessionStart = std::chrono::steady_clock::now();
 
     con = _log->signal_on_read().connect( sigc::mem_fun(*this, &LogWebSocket::add));
 
@@ -1722,6 +1732,8 @@ LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest* _req,
     // вызываемой из eventloop
     ioping.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::ping>(this);
     iosend.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::send>(this);
+    ioread.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::read>(this);
+    iopongcheck.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::checkPongTimeout>(this);
 
     bufPool = std::make_unique<Poco::ObjectPool<uniset::UTCPCore::Buffer>>(bufPoolCapacity, bufPoolPeak);
     lastDiag = std::chrono::steady_clock::now();
@@ -1759,9 +1771,17 @@ void LogDB::LogWebSocket::set( ev::dynamic_loop& loop )
 {
     iosend.set(loop);
     ioping.set(loop);
+    ioread.set(loop);
+    iopongcheck.set(loop);
 
     iosend.start(0, send_sec);
     ioping.start(ping_sec, ping_sec);
+
+    // Запускаем чтение из сокета для детекции CLOSE/PONG
+    ioread.start(impl()->sockfd(), ev::READ);
+
+    // Запускаем таймер проверки pong (проверяем каждые pongTimeout_sec)
+    iopongcheck.start(pongTimeout_sec, pongTimeout_sec);
 
     if( !pendingNotice.empty() )
     {
@@ -1809,6 +1829,10 @@ void LogDB::LogWebSocket::ping( ev::timer& t, int revents )
     }
     else
         wbuf.emplace(new UTCPCore::Buffer("."));
+
+    // Отмечаем время отправки ping и ожидаем pong
+    waitingPong = true;
+    lastPingSent = std::chrono::steady_clock::now();
 
     if( ioping.is_active() )
         ioping.stop();
@@ -2147,6 +2171,8 @@ void LogDB::LogWebSocket::term()
     con.disconnect();
     ioping.stop();
     iosend.stop();
+    ioread.stop();
+    iopongcheck.stop();
     finish.notify_all();
 }
 // -----------------------------------------------------------------------------
@@ -2180,6 +2206,124 @@ void LogDB::LogWebSocket::setBackpressureTimeout( const double& sec )
 {
     if( sec > 0 )
         backpressureTimeout_sec = sec;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setPongTimeout( const double& sec )
+{
+    if( sec > 0 )
+        pongTimeout_sec = sec;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setMaxLifetime( const double& sec )
+{
+    maxLifetime_sec = sec; // 0 означает без ограничений
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::read( ev::io& w, int revents )
+{
+    if( EV_ERROR & revents )
+        return;
+
+    if( cancelled )
+        return;
+
+    using Poco::Net::WebSocket;
+
+    try
+    {
+        char buf[256];
+        int flags = 0;
+
+        // Неблокирующее чтение - проверяем есть ли данные
+        int n = receiveFrame(buf, sizeof(buf), flags);
+
+        if( n <= 0 )
+        {
+            // Соединение закрыто
+            dblog3 << "(websocket): " << req->clientAddress().toString()
+                   << " connection closed by peer (n=" << n << ")" << endl;
+            term();
+            return;
+        }
+
+        int opcode = flags & WebSocket::FRAME_OP_BITMASK;
+
+        if( opcode == WebSocket::FRAME_OP_CLOSE )
+        {
+            dblog3 << "(websocket): " << req->clientAddress().toString()
+                   << " received CLOSE frame" << endl;
+            term();
+            return;
+        }
+
+        if( opcode == WebSocket::FRAME_OP_PONG )
+        {
+            // Получен PONG - сбрасываем флаг ожидания
+            waitingPong = false;
+            return;
+        }
+
+        // Другие фреймы игнорируем (TEXT, BINARY от клиента)
+    }
+    catch( const Poco::TimeoutException& )
+    {
+        // Таймаут - это нормально для неблокирующего сокета, данных просто нет
+    }
+    catch( const Poco::Net::NetException& e )
+    {
+        dblog3 << "(websocket): " << req->clientAddress().toString()
+               << " read error: " << e.displayText() << endl;
+        term();
+    }
+    catch( const Poco::IOException& e )
+    {
+        int err = e.code();
+        if( err != EAGAIN && err != EWOULDBLOCK )
+        {
+            dblog3 << "(websocket): " << req->clientAddress().toString()
+                   << " read IOException: " << e.displayText() << endl;
+            term();
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::checkPongTimeout( ev::timer& t, int revents )
+{
+    if( EV_ERROR & revents )
+        return;
+
+    if( cancelled )
+        return;
+
+    // Проверяем максимальное время жизни соединения
+    if( maxLifetime_sec > 0 )
+    {
+        auto now = std::chrono::steady_clock::now();
+        auto lifetime = std::chrono::duration<double>(now - sessionStart).count();
+
+        if( lifetime > maxLifetime_sec )
+        {
+            dblog3 << "(websocket): " << req->clientAddress().toString()
+                   << " max lifetime exceeded (" << lifetime << "s > " << maxLifetime_sec << "s)" << endl;
+            term();
+            return;
+        }
+    }
+
+    // Проверяем таймаут pong
+    if( waitingPong )
+    {
+        auto now = std::chrono::steady_clock::now();
+        auto waitTime = std::chrono::duration<double>(now - lastPingSent).count();
+
+        if( waitTime > pongTimeout_sec )
+        {
+            dbwarn << "(websocket): " << req->clientAddress().toString()
+                   << " pong timeout (" << waitTime << "s > " << pongTimeout_sec << "s), closing connection" << endl;
+            term();
+            return;
+        }
+    }
 }
 // -----------------------------------------------------------------------------
 void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req,
