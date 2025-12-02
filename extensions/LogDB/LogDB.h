@@ -250,6 +250,7 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGetList( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpGetLogs( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpGetCount( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpGetStatus( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDownload( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpLogControl(std::ostream& out, Poco::Net::HTTPServerRequest& req,
                                                    Poco::Net::HTTPServerResponse& resp, const std::string& logname, const Poco::URI::QueryParameters& params );
@@ -280,6 +281,7 @@ namespace uniset
             std::string tmsFormat = { "localtime" }; /*!< формат возвращаемого времени */
 
             bool activate = { false };
+            std::chrono::steady_clock::time_point startTime;
 
             typedef std::queue<std::string> QueryBuffer;
             QueryBuffer qbuf;

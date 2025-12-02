@@ -605,6 +605,8 @@ void LogDB::help_print()
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
 {
+    startTime = std::chrono::steady_clock::now();
+
     if( logserv && !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
     {
         dblog->info() << "(run): log server " << logserv_host << ":" << logserv_port << endl;
@@ -1255,6 +1257,9 @@ Poco::JSON::Object::Ptr LogDB::httpGetRequest( Poco::Net::HTTPServerResponse& re
     if( cmd == "count" )
         return httpGetCount(resp, p);
 
+    if( cmd == "status" )
+        return httpGetStatus(resp, p);
+
     return respError(resp, Poco::Net::HTTPResponse::HTTP_BAD_REQUEST, "Unknown command '"  + cmd + "'");
 }
 // -----------------------------------------------------------------------------
@@ -1399,6 +1404,47 @@ Poco::JSON::Object::Ptr LogDB::httpGetCount( Poco::Net::HTTPServerResponse& resp
     size_t count = getCountOfRecords(params[0].first);
     jdata->set("name", params[0].first);
     jdata->set("count", count);
+    return jdata;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr LogDB::httpGetStatus( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& params )
+{
+    Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+
+    // Общее
+    auto now = std::chrono::steady_clock::now();
+    auto uptime = std::chrono::duration<double>(now - startTime).count();
+    jdata->set("uptime_sec", uptime);
+    jdata->set("http_active_requests", httpActiveRequests.load());
+
+    // WebSocket
+    {
+        uniset_rwmutex_rlock lock(wsocksMutex);
+        jdata->set("websockets_active", wsocks.size());
+    }
+    jdata->set("websockets_max", maxwsocks);
+
+    // Log-серверы
+    Poco::JSON::Array::Ptr jlogservers = new Poco::JSON::Array();
+
+    for( const auto& ls : logservers )
+    {
+        Poco::JSON::Object::Ptr jls = new Poco::JSON::Object();
+        jls->set("name", ls->name);
+        jls->set("ip", ls->ip);
+        jls->set("port", ls->port);
+        jls->set("connected", ls->isConnected());
+        jls->set("description", ls->description);
+        jlogservers->add(jls);
+    }
+
+    jdata->set("logservers", jlogservers);
+
+    // База данных
+    jdata->set("db_records", getCountOfRecords());
+    jdata->set("db_buffer_size", qbuf.size());
+    jdata->set("db_max_records", maxdbRecords);
+
     return jdata;
 }
 // -----------------------------------------------------------------------------

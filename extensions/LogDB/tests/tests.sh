@@ -165,6 +165,42 @@ logdb_test_http_list() {
 	return 1
 }
 
+logdb_test_http_status() {
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logdb/status"); then
+		logdb_error "test_http_status" "curl request failed"
+		return 1
+	fi
+
+	# Проверяем наличие основных полей
+	if ! echo "$REQ" | grep -q '"uptime_sec":'; then
+		logdb_error "test_http_status" "missing uptime_sec field. Response: $REQ"
+		return 1
+	fi
+
+	if ! echo "$REQ" | grep -q '"websockets_active":'; then
+		logdb_error "test_http_status" "missing websockets_active field. Response: $REQ"
+		return 1
+	fi
+
+	if ! echo "$REQ" | grep -q '"websockets_max":'; then
+		logdb_error "test_http_status" "missing websockets_max field. Response: $REQ"
+		return 1
+	fi
+
+	if ! echo "$REQ" | grep -q '"logservers":'; then
+		logdb_error "test_http_status" "missing logservers field. Response: $REQ"
+		return 1
+	fi
+
+	if ! echo "$REQ" | grep -q '"db_records":'; then
+		logdb_error "test_http_status" "missing db_records field. Response: $REQ"
+		return 1
+	fi
+
+	echo "✓ HTTP API /status test passed"
+	return 0
+}
+
 logdb_test_http_logcontrol_set() {
 	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?set=crit"); then
 		logdb_error "test_http_set" "curl request failed"
@@ -544,6 +580,7 @@ logdb_run_all_tests() {
 	logdb_test_logfile || RET=1
 	logdb_test_http_count || RET=1
 	logdb_test_http_list || RET=1
+	logdb_test_http_status || RET=1
 	logdb_test_http_download || RET=1
 	logdb_test_http_logcontrol_set || RET=1
 	logdb_test_http_logcontrol_reset || RET=1
