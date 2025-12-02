@@ -1,0 +1,341 @@
+/*!
+    \page page_LogDB База логов (LogDB)
+
+    - \ref sec_LogDB_Comm
+    - \ref sec_LogDB_Conf
+    - \ref sec_LogDB_DB
+    - \ref sec_LogDB_REST
+    - \ref sec_LogDB_STATUS
+    - \ref sec_LogDB_CONTROL
+    - \ref sec_LogDB_WEBSOCK
+    - \ref sec_LogDB_LOGFILE
+    - \ref sec_LogDB_DETAIL
+    - \ref sec_LogDB_ADMIN
+    - \ref sec_LogDB_CLASSES
+    - \ref sec_LogDB_CLI
+
+    \section sec_LogDB_Comm Общее описание работы LogDB
+
+    LogDB — расширение UniSet для сбора, хранения и просмотра логов от множества удалённых log-серверов.
+
+    Основные возможности:
+    - Сбор логов с нескольких удалённых LogServer по TCP
+    - Хранение в SQLite с автоматической ротацией
+    - REST API для запросов к базе логов
+    - WebSocket для просмотра логов в реальном времени
+    - Web-интерфейс для интерактивного просмотра
+    - Утилиты для конвертации и администрирования
+
+    LogDB это сервис, работа которого заключается в подключении к указанным лог-серверам,
+    получении от них логов и сохранении их в БД (sqlite). Помимо этого LogDB выступает в качестве
+    REST сервиса, позволяющего получать логи за указанный период в виде json.
+
+    Реализация намеренно простая, т.к. пока неясно нужно ли это и в каком виде.
+    Ожидается что контролируемых логсерверов будет не очень много (максимум несколько десятков)
+    и каждый лог будет генерировать не более 2-5 мегабайт записей. Поэтому sqlite должно хватить.
+
+    \section sec_LogDB_Conf Конфигурирование LogDB
+
+    Для конфигурования необходимо создать секцию вида:
+    \code
+    <LogDB name="LogDB" dbfile="logs.db">
+      <logserver name="main"
+                 ip="localhost"
+                 port="3333"
+                 cmd="-s info,warn,crit"
+                 description="Main server"
+                 logfile="/var/log/uniset-main.log"/>
+      <logserver name="aux" ip="192.168.1.10" port="3333" cmd="-s warn,crit"/>
+    </LogDB>
+    \endcode
+
+    Атрибуты \b logserver:
+    - \b name — идентификатор лога
+    - \b ip — хост/IP адрес
+    - \b port — порт подключения
+    - \b cmd — команды фильтрации (-s set, -d disable, -a add)
+    - \b description — описание (опционально)
+    - \b logfile — файл для параллельной записи (опционально)
+
+    При этом доступно два способа:
+    - Первый — это использование секции в общем файле проекта (configure.xml).
+    - Второй способ — позволяет создать отдельный xml-файл с одной настроечной секцией и указать его в аргументах командной строки:
+    \code
+    uniset2-logdb --single-confile logdbconf.xml
+    \endcode
+
+    \section sec_LogDB_DB LogDB: Работа с БД
+
+    \b SQLite — единственный поддерживаемый бэкенд.
+
+    Схема таблицы \b logs:
+    \code{.sql}
+    CREATE TABLE logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tms INTEGER,      -- Unix timestamp
+        usec INTEGER,     -- микросекунды
+        name TEXT,        -- имя log-сервера
+        text TEXT         -- текст сообщения
+    );
+    \endcode
+
+    Для оптимизации, запись в БД сделана не по каждому сообщению, а через промежуточный буфер.
+    Т.е. только после того как в буфере скапливается \a qbufSize сообщений (строк) буфер скидывается в базу.
+
+    Помимо этого, встроен механизм "ротации БД". Если задан параметр maxRecords (--prefix-db-max-records),
+    то в БД будет поддерживаться ограниченное количество записей. При этом введён "гистерезис",
+    т.е. фактически удаление старых записей начинается при переполнении БД определяемом коэффициентом
+    переполнения overflowFactor (--prefix-db-overflow-factor). По умолчанию 1.3.
+
+    Параметры командной строки для работы с БД:
+    \code
+    --logdb-dbfile <path>              Путь к файлу БД
+    --logdb-db-buffer-size <N>         Размер буфера перед flush (по умолчанию: 1000)
+    --logdb-db-max-records <N>         Максимум записей в БД (0 = без ограничений)
+    --logdb-db-overflow-factor <float> Коэффициент переполнения (по умолчанию: 1.3)
+    --logdb-db-disable                 Отключить запись в БД
+    --logdb-db-timestamp-format        'localtime' или 'utc'
+    \endcode
+
+    \section sec_LogDB_REST LogDB: REST API
+
+    LogDB предоставляет возможность получения логов через REST API. Для этого запускается
+    http-сервер. Параметры запуска можно указать при помощи:
+    --prefix-httpserver-host и --prefix-httpserver-port.
+
+    А так же --prefix-httpserver-max-queued для указания максимального размера очереди запросов к серверу
+    и --prefix-httpserver-max-threads количество потоков обработки запросов.
+
+    REST API доступен по пути: \b /api/v01/logdb/... (текущая версия v01)
+
+    | Endpoint | Описание |
+    |----------|----------|
+    | /help | Получение списка доступных команд |
+    | /list | Список доступных логов |
+    | /logs?logname&parameters | Получение логов 'logname' |
+    | /count?logname | Получить текущее количество записей |
+    | /status | Текущее состояние сервиса |
+    | /download | Загрузить файл БД. По умолчанию выключено |
+
+    Параметры запроса \b /logs:
+    - \b logname — имя лога
+    - \b offset=N — начиная с N-ой записи
+    - \b limit=M — количество в ответе
+    - \b from='YYYY-MM-DD' — 'с' указанной даты
+    - \b to='YYYY-MM-DD' — 'по' указанную дату
+    - \b last=XX[m|h|d|M] — за последние XX m-минут, h-часов, d-дней, M-месяцев. По умолчанию: минут
+
+    Параметры командной строки для HTTP-сервера:
+    \code
+    --logdb-httpserver-host <IP>            Адрес прослушивания (по умолчанию: localhost)
+    --logdb-httpserver-port <PORT>          Порт (по умолчанию: 8080)
+    --logdb-httpserver-max-threads <N>      Размер пула потоков (по умолчанию: 15)
+    --logdb-httpserver-max-queued <N>       Размер очереди запросов
+    --logdb-httpserver-cors-allow <*>       CORS origin (по умолчанию: *)
+    --logdb-httpserver-logcontrol-enable    Включить API управления уровнями
+    --logdb-httpserver-download-enable      Включить скачивание БД
+    \endcode
+
+    \section sec_LogDB_STATUS LogDB: Status API
+
+    Endpoint \b /api/v01/logdb/status возвращает текущее состояние сервиса:
+
+    \code{.json}
+    {
+      "uptime_sec": 123.45,
+      "http_active_requests": 1,
+      "websockets_active": 2,
+      "websockets_max": 50,
+      "logservers": [
+        {
+          "name": "main",
+          "ip": "localhost",
+          "port": 3333,
+          "connected": true,
+          "description": "Main server"
+        }
+      ],
+      "db_records": 1500,
+      "db_buffer_size": 10,
+      "db_max_records": 200000
+    }
+    \endcode
+
+    Поля ответа:
+    - \b uptime_sec — время работы сервиса в секундах
+    - \b http_active_requests — текущее количество HTTP запросов
+    - \b websockets_active — текущее количество WebSocket соединений
+    - \b websockets_max — максимально допустимое количество WebSocket соединений
+    - \b logservers — массив с информацией о log-серверах
+    - \b db_records — общее количество записей в БД
+    - \b db_buffer_size — количество записей в буфере ожидающих записи
+    - \b db_max_records — лимит записей в БД
+
+    \section sec_LogDB_CONTROL LogDB: Control API
+
+    CONTROL API доступен по пути: \b /api/v01/logcontrol/... (текущая версия v01)
+
+    По умолчанию отключено (см. --logdb-httpserver-logcontrol-enable)
+
+    \code
+    /logcontrol/logname?set=info,warn,crit  - Включить уровень логов для logname
+    /logcontrol/logname?reset               - Вернуть логи к настройкам по умолчанию (из конфига)
+    /logcontrol/logname?get                 - Получить текущие выставленные настройки
+    \endcode
+
+    \section sec_LogDB_WEBSOCK LogDB: Поддержка WebSocket
+
+    В LogDB встроена возможность просмотра логов в реальном времени, через websocket.
+
+    Список лог-серверов доступен по адресу:
+    \code
+    http://host:port/ws/
+    \endcode
+
+    Прямое подключение к websocket-у доступно по адресу:
+    \code
+    ws://host:port/ws/connect/logname?set=info,warn,crit,-level2
+    \endcode
+
+    Где \a logname — это имя логсервера от которого мы хотим получать логи (см. \ref sec_LogDB_Conf).
+    \a set — позволяет установить желаемый уровень логов (не обязательный параметр)
+
+    Количество создаваемых websocket-ов можно ограничить при помощи параметра maxWebsockets (--prefix-ws-max).
+
+    Управлять уровнем логов можно через API:
+    \code
+    http://host:port/ws/logname?set=info,warn,crit,-level2
+    set=loglevel - Установить loglevel для logname. Разрешение на управление должно быть включено.
+    'loglevel'   - задание в формате команды. Пример: info,warn,+level1,-level2
+    \endcode
+
+    Параметры командной строки для WebSocket:
+    \code
+    --logdb-ws-max <N>                    Максимум соединений (по умолчанию: 50)
+    --logdb-ws-heartbeat-time <ms>        Интервал ping (по умолчанию: 3000)
+    --logdb-ws-send-time <ms>             Интервал отправки (по умолчанию: 500)
+    --logdb-ws-max-send <N>               Сообщений за отправку (по умолчанию: 200)
+    --logdb-ws-backpressure-timeout <ms>  Таймаут backpressure (по умолчанию: 15000)
+    --logdb-ws-queue-bytes-limit <bytes>  Лимит очереди (по умолчанию: 2MB)
+    --logdb-ws-pong-timeout <ms>          Таймаут ожидания PONG (по умолчанию: 10000)
+    --logdb-ws-max-lifetime <ms>          Макс. время жизни соединения, 0=без ограничений
+    \endcode
+
+    \section sec_LogDB_LOGFILE LogDB: Файлы логов
+
+    Несмотря на то, что все логи сохраняются в БД, их так же можно писать в файлы.
+    Для этого каждому логу достаточно указать свойство \b logfile в настройках (см. \ref sec_LogDB_Conf)
+
+    \section sec_LogDB_DETAIL LogDB: Технические детали
+
+    Вся реализация построена на "однопоточном" eventloop. В нём происходит
+    чтение данных от логсерверов, посылка сообщений в websockets, запись в БД.
+    При этом обработка запросов REST API реализуется отдельными потоками контролируемыми libpoco.
+
+    Архитектура:
+    \code
+    Log Servers (TCP) → LogDB::Log → signal → addLog() → qbuf (буфер)
+                                                              ↓
+                                                       flushBuffer()
+                                                              ↓
+                                                          SQLite DB
+                                                              ↓
+                                                  REST API / WebSocket
+    \endcode
+
+    - Неблокирующий I/O на базе \b libev
+    - HTTP-сервер на \b Poco с пулом потоков
+    - Транзакционная запись в БД (BEGIN/COMMIT)
+
+    Параметры для log-серверов:
+    \code
+    --logdb-ls-check-connection-sec <N>  Интервал проверки соединения (по умолчанию: 5)
+    --logdb-ls-read-buffer-size <N>      Размер буфера чтения (по умолчанию: 10001)
+    \endcode
+
+    \section sec_LogDB_ADMIN LogDB: Вспомогательные утилиты
+
+    \subsection sec_LogDB_ADMIN_ADM uniset2-logdb-adm
+
+    Для "обслуживания БД" (создание, конвертирование, ротация) имеется специальная утилита uniset2-logdb-adm.
+    Т.к. logdb при своём запуске подразумевает, что БД уже создана, то для создания БД можно воспользоваться командой:
+    \code
+    uniset2-logdb-adm create dbfilename
+    \endcode
+
+    Для того, чтобы конвертировать (загрузить) отдельные лог-файлы в базу, можно воспользоваться командой:
+    \code
+    uniset2-logdb-adm load logfile1 logfile2...logfileN
+    \endcode
+
+    Более детальное описание параметров см. \b uniset2-logdb-adm \b help
+
+    \subsection sec_LogDB_ADMIN_CONV uniset2-logdb-conv
+
+    Конвертация текстовых логов в SQLite:
+    \code
+    uniset2-logdb-conv logs.db main:server.log aux:auxiliary.log
+    \endcode
+
+    Формат лога: DD/MM/YYYY HH:MM:SS(level): text
+
+    \subsection sec_LogDB_ADMIN_WSREADER uniset2-logdb-ws-reader
+
+    WebSocket-клиент для чтения логов:
+    \code
+    uniset2-logdb-ws-reader --ws ws://localhost:8080/ws/connect/main
+    \endcode
+
+    Опции:
+    - \b --recv-buf \<size\> — размер буфера приёма
+    - \b --pause-after \<N\> — пауза после N фреймов
+    - \b --pause-ms \<ms\> — длительность паузы
+    - \b --max-frames \<N\> — максимум фреймов
+
+    \section sec_LogDB_CLASSES Ключевые классы
+
+    \subsection sec_LogDB_CLASS_LOGDB LogDB
+
+    Главный класс, наследует EventLoopServer и Poco::Net::HTTPRequestHandler:
+    - Управляет подключениями к удалённым log-серверам
+    - Буферизует сообщения и пишет в SQLite
+    - Предоставляет REST API и WebSocket
+    - Неблокирующий event loop на базе libev
+
+    \subsection sec_LogDB_CLASS_LOG LogDB::Log
+
+    Представляет соединение с одним log-сервером:
+    - TCP-соединение с автоматическим переподключением
+    - Отправка команд фильтрации (-s, -d, -a)
+    - Сигналы sigc++ при получении логов
+    - Буферизованное чтение
+
+    \subsection sec_LogDB_CLASS_WEBSOCKET LogDB::LogWebSocket
+
+    WebSocket-сессия с браузером:
+    - Очередь сообщений с контролем backpressure
+    - Heartbeat (ping/pong) с таймаутом
+    - Батчинг и троттлинг отправки
+    - Ограничение по объёму очереди
+    - Автоматическое закрытие при отсутствии pong
+
+    \section sec_LogDB_CLI Запуск сервиса
+
+    Основной сервис:
+    \code
+    uniset2-logdb --confile configure.xml --logdb-dbfile logs.db
+    \endcode
+
+    Или с отдельным конфигурационным файлом:
+    \code
+    uniset2-logdb --single-confile logdb-conf.xml
+    \endcode
+
+    \section sec_LogDB_DEPS Зависимости
+
+    - SQLite3
+    - Poco (PocoFoundation, PocoNet, PocoJSON)
+    - libev
+    - sigc++-2.0
+
+*/
