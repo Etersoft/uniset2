@@ -42,6 +42,9 @@ atexit() {
 	[ -e "/tmp/websocket_pong_timeout.txt" ] && rm -f "/tmp/websocket_pong_timeout.txt"
 	[ -e "/tmp/websocket_lifetime.txt" ] && rm -f "/tmp/websocket_lifetime.txt"
 	[ -e "/tmp/websocket_reconnect.txt" ] && rm -f "/tmp/websocket_reconnect.txt"
+	[ -e "/tmp/ws_set_first.txt" ] && rm -f "/tmp/ws_set_first.txt"
+	[ -e "/tmp/ws_set_second.txt" ] && rm -f "/tmp/ws_set_second.txt"
+	[ -e "/tmp/ws_set_third.txt" ] && rm -f "/tmp/ws_set_third.txt"
 
 	exit $RET
 }
@@ -506,6 +509,97 @@ logdb_test_websocket_max_lifetime() {
 	return 0
 }
 
+# Тест эксклюзивного управления уровнем логирования:
+# Только первый подключившийся клиент с ?set= может задать уровень логирования.
+# Второй и третий клиенты должны получить сообщение "Ignored set log level '...' because already set in other connection"
+# shellcheck disable=SC3043
+logdb_test_websocket_set_exclusive() {
+	local output_first="/tmp/ws_set_first.txt"
+	local output_second="/tmp/ws_set_second.txt"
+	local output_third="/tmp/ws_set_third.txt"
+	local first_pid
+	local second_pid
+
+	# Первый клиент подключается с ?set=info и держит соединение
+	curl -i -N -s \
+		-H "Connection: Upgrade" \
+		-H "Upgrade: websocket" \
+		-H "Sec-WebSocket-Version: 13" \
+		-H "Sec-WebSocket-Key: $WS_KEY" \
+		--max-time 20 \
+		"$WS_URL?set=info" >"$output_first" 2>&1 &
+	first_pid=$!
+
+	# Даём время на установление соединения
+	sleep 2
+
+	# Проверяем что первый клиент успешно подключился
+	if ! grep -q "101 Switching Protocols" "$output_first" 2>/dev/null; then
+		logdb_error "test_websocket_set_exclusive" "First client handshake failed"
+		kill $first_pid 2>/dev/null
+		rm -f "$output_first" "$output_second" "$output_third"
+		return 1
+	fi
+
+	# Второй клиент пытается подключиться с ?set=crit (держит соединение)
+	curl -i -N -s \
+		-H "Connection: Upgrade" \
+		-H "Upgrade: websocket" \
+		-H "Sec-WebSocket-Version: 13" \
+		-H "Sec-WebSocket-Key: $WS_KEY" \
+		--max-time 15 \
+		"$WS_URL?set=crit" >"$output_second" 2>&1 &
+	second_pid=$!
+
+	sleep 2
+
+	# Проверяем что второй клиент получил сообщение "Ignored"
+	if ! grep -q "Ignored set log level" "$output_second" 2>/dev/null; then
+		if ! grep -q "101 Switching Protocols" "$output_second" 2>/dev/null; then
+			logdb_error "test_websocket_set_exclusive" "Second client handshake failed"
+			echo "Second client output:"
+			cat "$output_second"
+		else
+			logdb_error "test_websocket_set_exclusive" "Second client did not receive 'Ignored' message"
+			echo "Second client output (first 20 lines):"
+			head -20 "$output_second"
+		fi
+		kill $first_pid $second_pid 2>/dev/null
+		rm -f "$output_first" "$output_second" "$output_third"
+		return 1
+	fi
+
+	# Третий клиент тоже пытается подключиться с ?set=warn
+	curl -i -N -s \
+		-H "Connection: Upgrade" \
+		-H "Upgrade: websocket" \
+		-H "Sec-WebSocket-Version: 13" \
+		-H "Sec-WebSocket-Key: $WS_KEY" \
+		--max-time 5 \
+		"$WS_URL?set=warn" >"$output_third" 2>&1
+
+	# Проверяем что третий клиент тоже получил сообщение "Ignored"
+	if ! grep -q "Ignored set log level" "$output_third" 2>/dev/null; then
+		if ! grep -q "101 Switching Protocols" "$output_third" 2>/dev/null; then
+			logdb_error "test_websocket_set_exclusive" "Third client handshake failed"
+			echo "Third client output:"
+			cat "$output_third"
+		else
+			logdb_error "test_websocket_set_exclusive" "Third client did not receive 'Ignored' message"
+			echo "Third client output (first 20 lines):"
+			head -20 "$output_third"
+		fi
+		kill $first_pid $second_pid 2>/dev/null
+		rm -f "$output_first" "$output_second" "$output_third"
+		return 1
+	fi
+
+	echo "✓ WebSocket set exclusive test passed: second and third clients received 'Ignored' message"
+	kill $first_pid $second_pid 2>/dev/null
+	rm -f "$output_first" "$output_second" "$output_third"
+	return 0
+}
+
 # Тест переподключения WebSocket: закрываем соединение на клиенте и убеждаемся, что новая попытка проходит
 # shellcheck disable=SC3043
 logdb_test_websocket_reconnect() {
@@ -594,6 +688,7 @@ logdb_run_all_tests() {
 	logdb_test_websocket_handshake || RET=1
 	logdb_test_websocket_data || RET=1
 	logdb_test_websocket_reconnect || RET=1
+	logdb_test_websocket_set_exclusive || RET=1
 
 	# WebSocket timeout тесты (занимают больше времени)
 	echo ""
