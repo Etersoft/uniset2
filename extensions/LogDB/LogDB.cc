@@ -343,14 +343,23 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     {
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
-        int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 15);
-        int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), maxT);
+        httpMaxRequests = uniset::getArgPInt("--" + prefix + "http-max-requests", argc, argv, it.getProp("httpMaxRequests"), httpMaxRequests);
+
+        // httpMaxThreads = maxwsocks + httpMaxRequests + reservedForMonitoring
+        // т.к. каждое WebSocket соединение держит поток Poco на всё время жизни
+        httpMaxThreads = maxwsocks + httpMaxRequests + reservedForMonitoring;
+
+        int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), httpMaxThreads);
 
         httpParams->setMaxQueued(maxQ);
-        httpParams->setMaxThreads(maxT);
+        httpParams->setMaxThreads(httpMaxThreads);
         httpserv = std::make_shared<Poco::Net::HTTPServer>(new LogDBRequestHandlerFactory(this), Poco::Net::ServerSocket(sa), httpParams );
-        httpMaxThreads = maxT;
         httpMaxQueued = maxQ;
+
+        dblog1 << myname << "(init): http server threads=" << httpMaxThreads
+               << " (ws-max=" << maxwsocks
+               << " + http-max-requests=" << httpMaxRequests
+               << " + reserved=" << reservedForMonitoring << ")" << endl;
     }
     catch( std::exception& ex )
     {
@@ -588,8 +597,9 @@ void LogDB::help_print()
     cout << "http: " << endl;
     cout << "--prefix-httpserver-host ip                 - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
     cout << "--prefix-httpserver-port num                - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-    cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: httpserver-max-threads" << endl;
-    cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 15" << endl;
+    cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: ws-max + http-max-requests + 2" << endl;
+    cout << "--prefix-http-max-requests num              - Макс. кол-во одновременных HTTP запросов (не WS). По умолчанию: 10" << endl;
+    cout << "                                              HTTP threads = ws-max + http-max-requests + 2 (резерв для мониторинга)" << endl;
     cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
     cout << "--prefix-httpserver-charset charset         - ContentType charset. Default: 'UTF-8'" << endl;
     cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
@@ -1041,14 +1051,14 @@ Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestH
 {
     const size_t activeReqs = logdb->httpActiveRequests.load(std::memory_order_relaxed);
 
-    // Резервируем 1 поток для мониторинговых запросов (/status, /list, /help)
-    // WebSocket и обычные запросы используют лимит с резервом
-    const size_t reservedForMonitoring = 1;
-    const size_t effectiveLimit = (logdb->httpMaxThreads > reservedForMonitoring)
-                                  ? (logdb->httpMaxThreads - reservedForMonitoring)
+    // httpMaxThreads = maxwsocks + httpMaxRequests + reservedForMonitoring
+    // Лимит для обычных запросов (не мониторинг)
+    const size_t effectiveLimit = (logdb->httpMaxThreads > logdb->reservedForMonitoring)
+                                  ? (logdb->httpMaxThreads - logdb->reservedForMonitoring)
                                   : logdb->httpMaxThreads;
 
-    // Для WebSocket — всегда проверяем с резервом
+    // Для WebSocket — проверка лимита wsocks в newWebSocket(),
+    // здесь только ранняя проверка на общую перегрузку
     if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
     {
         if( activeReqs >= effectiveLimit )
@@ -1060,7 +1070,7 @@ Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestH
     // Для обычных HTTP запросов — проверяем, это мониторинговый запрос или нет
     std::string uri = req.getURI();
 
-    // Мониторинговые эндпоинты могут использовать полный лимит
+    // Мониторинговые эндпоинты (/status, /list, /help) могут использовать резерв
     bool isMonitoringRequest = (uri.find("/status") != std::string::npos ||
                                 uri.find("/list") != std::string::npos ||
                                 uri.find("/help") != std::string::npos);
@@ -1441,6 +1451,8 @@ Poco::JSON::Object::Ptr LogDB::httpGetStatus( Poco::Net::HTTPServerResponse& res
     auto uptime = std::chrono::duration<double>(now - startTime).count();
     jdata->set("uptime_sec", uptime);
     jdata->set("http_active_requests", httpActiveRequests.load());
+    jdata->set("http_max_requests", httpMaxRequests);
+    jdata->set("http_max_threads", httpMaxThreads);
 
     // WebSocket
     {

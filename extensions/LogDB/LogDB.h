@@ -231,8 +231,10 @@ namespace uniset
             std::string httpHtmlContentType = {"text/html; charset=UTF-8" };
             std::string utf8Code = "UTF-8";
             std::atomic<size_t> httpActiveRequests{0};
-            size_t httpMaxThreads = { 15 };
+            size_t httpMaxThreads = { 0 };  // рассчитывается автоматически
             size_t httpMaxQueued = { 0 };
+            size_t httpMaxRequests = { 10 };  // максимум одновременных HTTP запросов (не WS)
+            static constexpr size_t reservedForMonitoring = 2;  // резерв для /status, /help и т.п.
 
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
