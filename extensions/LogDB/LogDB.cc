@@ -1039,11 +1039,35 @@ class LogDBOverloadRequestHandler:
 // -----------------------------------------------------------------------------
 Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestHandler( const Poco::Net::HTTPServerRequest& req )
 {
-    if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
-        return new LogDBWebSocketRequestHandler(logdb);
+    const size_t activeReqs = logdb->httpActiveRequests.load(std::memory_order_relaxed);
 
-    // если превышен лимит активных запросов, сразу отдаём 429
-    if( logdb->httpActiveRequests.load(std::memory_order_relaxed) >= logdb->httpMaxThreads )
+    // Резервируем 1 поток для мониторинговых запросов (/status, /list, /help)
+    // WebSocket и обычные запросы используют лимит с резервом
+    const size_t reservedForMonitoring = 1;
+    const size_t effectiveLimit = (logdb->httpMaxThreads > reservedForMonitoring)
+                                  ? (logdb->httpMaxThreads - reservedForMonitoring)
+                                  : logdb->httpMaxThreads;
+
+    // Для WebSocket — всегда проверяем с резервом
+    if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
+    {
+        if( activeReqs >= effectiveLimit )
+            return new LogDBOverloadRequestHandler(logdb);
+
+        return new LogDBWebSocketRequestHandler(logdb);
+    }
+
+    // Для обычных HTTP запросов — проверяем, это мониторинговый запрос или нет
+    std::string uri = req.getURI();
+
+    // Мониторинговые эндпоинты могут использовать полный лимит
+    bool isMonitoringRequest = (uri.find("/status") != std::string::npos ||
+                                uri.find("/list") != std::string::npos ||
+                                uri.find("/help") != std::string::npos);
+
+    size_t limit = isMonitoringRequest ? logdb->httpMaxThreads : effectiveLimit;
+
+    if( activeReqs >= limit )
         return new LogDBOverloadRequestHandler(logdb);
 
     return new LogDBRequestHandler(logdb);
@@ -1075,14 +1099,15 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
     // ограничение на количество одновременно обслуживаемых запросов
     const size_t prevRequests = httpActiveRequests.fetch_add(1, std::memory_order_relaxed);
-    auto httpGuard = std::unique_ptr<void, std::function<void(void*)>>(nullptr, [this](void*)
+    // Используем (void*)1 вместо nullptr, т.к. unique_ptr не вызывает deleter для nullptr
+    auto httpGuard = std::unique_ptr<void, std::function<void(void*)>>((void*)1, [this](void*)
     {
         httpActiveRequests.fetch_sub(1, std::memory_order_relaxed);
     });
 
     if( prevRequests >= httpMaxThreads )
     {
-        httpActiveRequests.fetch_sub(1, std::memory_order_relaxed);
+        // httpGuard уменьшит счётчик при выходе, не нужно делать это вручную
         resp.setStatus(HTTPResponse::HTTP_TOO_MANY_REQUESTS);
         auto jdata = respError(resp, HTTPResponse::HTTP_TOO_MANY_REQUESTS, "Too many concurrent requests");
         std::ostream& out = resp.send();
@@ -1441,9 +1466,16 @@ Poco::JSON::Object::Ptr LogDB::httpGetStatus( Poco::Net::HTTPServerResponse& res
     jdata->set("logservers", jlogservers);
 
     // База данных
-    jdata->set("db_records", getCountOfRecords());
-    jdata->set("db_buffer_size", qbuf.size());
-    jdata->set("db_max_records", maxdbRecords);
+    if( db )
+    {
+        jdata->set("db_records", getCountOfRecords());
+        jdata->set("db_buffer_size", qbuf.size());
+        jdata->set("db_max_records", maxdbRecords);
+    }
+    else
+    {
+        jdata->set("db_disabled", true);
+    }
 
     return jdata;
 }
@@ -1607,6 +1639,15 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
     using Poco::Net::WebSocketException;
     using Poco::Net::HTTPResponse;
     using Poco::Net::HTTPServerRequest;
+
+    // WebSocket сессия занимает поток Poco на всё время жизни,
+    // поэтому учитываем её в счётчике активных запросов
+    httpActiveRequests.fetch_add(1, std::memory_order_relaxed);
+    // Используем (void*)1 вместо nullptr, т.к. unique_ptr не вызывает deleter для nullptr
+    auto httpGuard = std::unique_ptr<void, std::function<void(void*)>>((void*)1, [this](void*)
+    {
+        httpActiveRequests.fetch_sub(1, std::memory_order_relaxed);
+    });
 
     std::vector<std::string> seg;
 
