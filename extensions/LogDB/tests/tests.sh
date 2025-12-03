@@ -353,7 +353,7 @@ logdb_test_websocket_data() {
 	# Проверяем полученные данные
 	if [ -s "$output_file" ]; then
 		# Считаем количество строк с 'INFO'
-		info_count=$(grep -o -w "INFO" "$output_file" | wc -l 2>/dev/null || echo "0")
+		info_count=$(grep -ao -w "INFO" "$output_file" | wc -l 2>/dev/null || echo "0")
 
 		if [ "$info_count" -ge 3 ]; then
 			echo "✓ WebSocket data test passed: found $info_count INFO messages"

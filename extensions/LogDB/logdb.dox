@@ -129,11 +129,16 @@
     \code
     --logdb-httpserver-host <IP>            Адрес прослушивания (по умолчанию: localhost)
     --logdb-httpserver-port <PORT>          Порт (по умолчанию: 8080)
-    --logdb-httpserver-max-threads <N>      Размер пула потоков (по умолчанию: 15)
+    --logdb-http-max-requests <N>           Макс. одновременных HTTP запросов (по умолчанию: 10)
     --logdb-httpserver-max-queued <N>       Размер очереди запросов
     --logdb-httpserver-cors-allow <*>       CORS origin (по умолчанию: *)
     --logdb-httpserver-logcontrol-enable    Включить API управления уровнями
     --logdb-httpserver-download-enable      Включить скачивание БД
+    \endcode
+
+    Количество потоков HTTP-сервера рассчитывается автоматически:
+    \code
+    http_max_threads = ws-max + http-max-requests + 2 (резерв для мониторинга)
     \endcode
 
     \section sec_LogDB_STATUS LogDB: Status API
@@ -144,6 +149,8 @@
     {
       "uptime_sec": 123.45,
       "http_active_requests": 1,
+      "http_max_requests": 10,
+      "http_max_threads": 62,
       "websockets_active": 2,
       "websockets_max": 50,
       "logservers": [
@@ -164,6 +171,8 @@
     Поля ответа:
     - \b uptime_sec — время работы сервиса в секундах
     - \b http_active_requests — текущее количество HTTP запросов
+    - \b http_max_requests — максимум одновременных HTTP запросов (не WS)
+    - \b http_max_threads — общее количество потоков HTTP-сервера
     - \b websockets_active — текущее количество WebSocket соединений
     - \b websockets_max — максимально допустимое количество WebSocket соединений
     - \b logservers — массив с информацией о log-серверах

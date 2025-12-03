@@ -2,8 +2,11 @@
 #
 # Нагрузочный тест для проверки проблемы с pool exhaustion
 # Открывает много WebSocket соединений и проверяет:
-# 1. Что 429 возвращается на правильном количестве соединений
+# 1. Что 429 возвращается когда количество WS >= ws-max
 # 2. Что после закрытия соединений новые могут подключиться
+# 3. Что HTTP запросы работают во время нагрузки WS
+#
+# HTTP threads = ws-max + http-max-requests + 2 (резерв для мониторинга)
 #
 
 set -u
@@ -16,7 +19,8 @@ LOGDB_PID=
 dbfile="load-test.db"
 http_host="localhost"
 http_port=8889
-MAX_THREADS=10
+MAX_WS=8              # максимум WebSocket соединений
+MAX_HTTP_REQUESTS=3   # максимум HTTP запросов (не WS)
 WS_KEY="67+diN4x1mlKAw9fNm4vFQ=="
 
 CURL_PIDS=""
@@ -80,14 +84,15 @@ run_logserver() {
 run_logdb() {
     # Важно: pong timeout + heartbeat = время обнаружения мёртвого соединения
     # heartbeat 1s + pong timeout 3s = ~4 секунды для обнаружения
+    # HTTP threads = ws-max + http-max-requests + 2 (резерв)
     ./uniset2-logdb --logdb-single-confile logdb-tests-conf.xml \
         --logdb-dbfile "$dbfile" \
         --logdb-db-buffer-size 100 \
         --logdb-httpserver-host "$http_host" \
         --logdb-httpserver-port $http_port \
-        --logdb-httpserver-max-threads $MAX_THREADS \
+        --logdb-ws-max $MAX_WS \
+        --logdb-http-max-requests $MAX_HTTP_REQUESTS \
         --logdb-ls-check-connection-sec 1 \
-        --logdb-ws-max 100 \
         --logdb-ws-heartbeat-time 1000 \
         --logdb-ws-pong-timeout 3000 &
 
@@ -97,7 +102,7 @@ run_logdb() {
         echo "ERROR: LogDB failed to start"
         return 1
     fi
-    echo "LogDB started (PID: $LOGDB_PID) with max-threads=$MAX_THREADS"
+    echo "LogDB started (PID: $LOGDB_PID) with ws-max=$MAX_WS, http-max-requests=$MAX_HTTP_REQUESTS"
     return 0
 }
 
@@ -163,9 +168,9 @@ get_status() {
 test_pool_exhaustion() {
     echo ""
     echo "=== Test: Pool Exhaustion ==="
-    echo "Opening $((MAX_THREADS + 5)) WebSocket connections (max threads = $MAX_THREADS)..."
+    echo "Opening $((MAX_WS + 5)) WebSocket connections (ws-max = $MAX_WS)..."
 
-    local total=$((MAX_THREADS + 5))
+    local total=$((MAX_WS + 5))
     local pids=""
     local i=1
 
@@ -186,7 +191,7 @@ test_pool_exhaustion() {
     echo ""
     echo "Status after opening connections:"
     STATUS=$(get_status)
-    echo "$STATUS" | grep -E "http_active_requests|websockets_active" || echo "Full status: $STATUS"
+    echo "$STATUS" | grep -E "http_active_requests|websockets_active|websockets_max|http_max" || echo "Full status: $STATUS"
 
     # Считаем успешные и отклонённые
     local success=0
@@ -207,14 +212,14 @@ test_pool_exhaustion() {
     echo ""
     echo "Results: success=$success, rejected=$rejected, unknown=$unknown"
 
-    # Проверяем что успешных примерно MAX_THREADS (с небольшой погрешностью)
-    local min_expected=$((MAX_THREADS - 2))
-    local max_expected=$((MAX_THREADS + 1))
+    # Проверяем что успешных примерно MAX_WS (с небольшой погрешностью)
+    local min_expected=$((MAX_WS - 1))
+    local max_expected=$((MAX_WS + 1))
 
     if [ $success -ge $min_expected ] && [ $success -le $max_expected ]; then
-        echo "PASS: Pool exhaustion works correctly (success=$success, expected ~$MAX_THREADS)"
+        echo "PASS: Pool exhaustion works correctly (success=$success, expected ~$MAX_WS)"
     else
-        echo "FAIL: Expected ~$MAX_THREADS successful connections, got $success"
+        echo "FAIL: Expected ~$MAX_WS successful connections, got $success"
         RET=1
     fi
 
@@ -255,13 +260,13 @@ test_pool_exhaustion() {
 test_pool_recovery() {
     echo ""
     echo "=== Test: Pool Recovery ==="
-    echo "Opening $MAX_THREADS WebSocket connections, closing them, then opening new ones..."
+    echo "Opening $MAX_WS WebSocket connections, closing them, then opening new ones..."
 
     local pids=""
     local i=1
 
-    # Открываем MAX_THREADS соединений
-    while [ $i -le $MAX_THREADS ]; do
+    # Открываем MAX_WS соединений
+    while [ $i -le $MAX_WS ]; do
         pid=$(open_ws_connection $i)
         pids="$pids $pid"
         CURL_PIDS="$CURL_PIDS $pid"
@@ -270,9 +275,9 @@ test_pool_recovery() {
     done
 
     sleep 2
-    echo "Status with $MAX_THREADS connections:"
+    echo "Status with $MAX_WS connections:"
     STATUS=$(get_status)
-    echo "$STATUS" | grep -E "http_active_requests|websockets_active" || echo "Full status: $STATUS"
+    echo "$STATUS" | grep -E "http_active_requests|websockets_active|websockets_max|http_max" || echo "Full status: $STATUS"
 
     # Закрываем все соединения
     echo "Closing all connections..."
@@ -353,14 +358,13 @@ test_pool_recovery() {
 test_http_during_ws_load() {
     echo ""
     echo "=== Test: HTTP requests during WebSocket load ==="
-    echo "Opening $((MAX_THREADS - 2)) WebSocket connections, then making HTTP requests..."
+    echo "Opening $MAX_WS WebSocket connections (all WS slots), then making HTTP requests..."
 
-    local ws_count=$((MAX_THREADS - 2))
     local pids=""
     local i=1
 
-    # Открываем ws_count соединений (оставляем 2 потока свободными)
-    while [ $i -le $ws_count ]; do
+    # Открываем MAX_WS соединений (все WS слоты заняты)
+    while [ $i -le $MAX_WS ]; do
         pid=$(open_ws_connection $i)
         pids="$pids $pid"
         CURL_PIDS="$CURL_PIDS $pid"
@@ -369,12 +373,12 @@ test_http_during_ws_load() {
     done
 
     sleep 2
-    echo "Status with $ws_count WebSocket connections:"
+    echo "Status with $MAX_WS WebSocket connections:"
     STATUS=$(get_status)
-    echo "$STATUS" | grep -E "http_active_requests|websockets_active" || echo "Full status: $STATUS"
+    echo "$STATUS" | grep -E "http_active_requests|websockets_active|websockets_max|http_max" || echo "Full status: $STATUS"
 
-    # Делаем HTTP запросы к /status (мониторинговый эндпоинт с резервом)
-    echo "Making HTTP requests to /status (monitoring endpoint)..."
+    # Делаем HTTP запросы к /status - должны работать, т.к. HTTP имеет свой пул
+    echo "Making HTTP requests to /status (should work, HTTP has separate pool)..."
     local http_success=0
     for _ in 1 2 3 4 5; do
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "http://$http_host:$http_port/api/v01/logdb/status")
@@ -388,7 +392,7 @@ test_http_during_ws_load() {
     echo "HTTP requests successful: $http_success/5"
 
     if [ $http_success -ge 4 ]; then
-        echo "PASS: HTTP requests work during WebSocket load"
+        echo "PASS: HTTP requests work during full WebSocket load"
     else
         echo "FAIL: HTTP requests blocked during WebSocket load"
         RET=1
