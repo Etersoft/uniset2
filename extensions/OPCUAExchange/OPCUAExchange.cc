@@ -1973,11 +1973,11 @@ namespace uniset
                 rdlist.push_back(it);// Копирование std::shared_ptr
 
                 callbacks.emplace_back(
-                    [&, i](const auto & item, const opcua::DataValue & value)
+                    [this, i, io=it](const auto & item, const opcua::DataValue & value)
                 {
                     opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
 
-                    auto& result = it->rval[i].gr->results[it->rval[i].grNumber][it->rval[i].grIndex];
+                    auto& result = io->rval[i].gr->results[io->rval[i].grNumber][io->rval[i].grIndex];
                     auto data = value.getValue();
 
                     result.status = value.getStatus();

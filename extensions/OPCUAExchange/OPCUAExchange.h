@@ -412,7 +412,7 @@ namespace uniset
             double samplingInterval = { -1.0 };
             uint16_t timeoutIterate = {100};
             uint16_t stopOnError = {0U};                /*!< параметр, для выбора поведения процесса при ошибке в OPCUA */
-            uint32_t connectCount = {0U};               /*!< Считаем количество успешных подключений к серверу */
+            std::atomic<uint32_t> connectCount = {0U};  /*!< Считаем количество успешных подключений к серверу */
             std::atomic_bool subscription_ok = {false};
 
             std::atomic_bool activated = { false };
