@@ -434,7 +434,7 @@ namespace uniset
 
             uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
             IOController::IOStateList::iterator itExchangeMode;
-            long exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
+            std::atomic<long> exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
 
             VMonitor vmon;
 

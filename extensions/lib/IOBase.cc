@@ -439,13 +439,19 @@ namespace uniset
         if( !it->check_depend(shm) )
             return it->d_off_value;
 
-        uniset_rwmutex_rlock lock(it->val_lock);
-        long val = it->value;
+        long val;
 
+        // Чтение/запись value: wrlock только при force
         if( force )
         {
+            uniset_rwmutex_wrlock lock(it->val_lock);
             val = shm->localGetValue(it->ioit, it->si.id);
             it->value = val;
+        }
+        else
+        {
+            uniset_rwmutex_rlock lock(it->val_lock);
+            val = it->value;
         }
 
         if( it->rawdata )
@@ -456,6 +462,9 @@ namespace uniset
         {
             if( it->cdiagram )    // задана специальная калибровочная диаграмма
             {
+                // cdiagram требует wrlock из-за записи cprev/craw
+                uniset_rwmutex_wrlock lock(it->val_lock);
+
                 if( it->cprev != it->value )
                 {
                     it->cprev = it->value;
@@ -467,9 +476,10 @@ namespace uniset
             }
             else
             {
+                // только чтение - блокировка не нужна, val уже получен
                 // сперва "убираем степень", потом калибруем.. (это обратная последовательность для AsAI)
                 if( !it->noprecision && it->cal.precision != 0 )
-                    val = lroundf( (float)it->value / pow(10.0, it->cal.precision) );
+                    val = lroundf( (float)val / pow(10.0, it->cal.precision) );
 
                 IOController_i::CalibrateInfo* cal = &(it->cal);
 
@@ -506,13 +516,19 @@ namespace uniset
         if( !it->check_depend(shm) )
             return (float)it->d_off_value;
 
-        uniset_rwmutex_rlock lock(it->val_lock);
-        long val = it->value;
+        long val;
 
+        // wrlock только при force (запись в value), иначе rlock
         if( force )
         {
+            uniset_rwmutex_wrlock lock(it->val_lock);
             val = shm->localGetValue(it->ioit, it->si.id);
-            it->value = val; // обновим на всякий
+            it->value = val;
+        }
+        else
+        {
+            uniset_rwmutex_rlock lock(it->val_lock);
+            val = it->value;
         }
 
         if( it->rawdata )
@@ -549,13 +565,19 @@ namespace uniset
         if( !it->check_depend(shm) )
             return (double)it->d_off_value;
 
-        uniset_rwmutex_rlock lock(it->val_lock);
-        long val = it->value;
+        long val;
 
+        // wrlock только при force (запись в value), иначе rlock
         if( force )
         {
+            uniset_rwmutex_wrlock lock(it->val_lock);
             val = shm->localGetValue(it->ioit, it->si.id);
-            it->value = val; // обновим на всякий
+            it->value = val;
+        }
+        else
+        {
+            uniset_rwmutex_rlock lock(it->val_lock);
+            val = it->value;
         }
 
         if( it->rawdata )

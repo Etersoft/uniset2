@@ -1886,7 +1886,10 @@ namespace uniset
                 if( it->stype == UniversalIO::AO )
                 {
                     IOBase* ib = static_cast<IOBase*>(it.get());
-                    ib->value = sm->value;
+                    {
+                        uniset::uniset_rwmutex_wrlock lock(ib->val_lock);
+                        ib->value = sm->value;
+                    }
                     {
                         uniset::uniset_rwmutex_wrlock lock(it->vmut);
                         it->val = forceSetBits(it->val, IOBase::processingAsAO(ib, shm, force), it->mask, it->offset);
@@ -1898,7 +1901,10 @@ namespace uniset
                 else if( it->stype == UniversalIO::DO )
                 {
                     IOBase* ib = static_cast<IOBase*>(it.get());
-                    ib->value = sm->value;
+                    {
+                        uniset::uniset_rwmutex_wrlock lock(ib->val_lock);
+                        ib->value = sm->value;
+                    }
                     {
                         uniset::uniset_rwmutex_wrlock lock(it->vmut);
                         it->val = forceSetBits(it->val, IOBase::processingAsDO(ib, shm, force) ? 1 : 0, it->mask, it->offset);
