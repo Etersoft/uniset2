@@ -74,7 +74,7 @@ namespace uniset
     SharedMemory::SharedMemory( ObjectId id,
                                 xmlNode* _confnode,
                                 const std::shared_ptr<IOConfig_XML>& ioconf ):
-        USingleProcess(_confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(),""),
+        USingleProcess(_confnode, uniset_conf()->getArgc(), uniset_conf()->getArgv(), ""),
         IONotifyController(id, static_pointer_cast<IOConfig>(ioconf)),
         heartbeatCheckTime(5000),
         histSaveTime(0),
@@ -114,6 +114,7 @@ namespace uniset
 
         bool ignoreAclErrors = findArgParam("--" + prefix + "-ignore-acl-errors", conf->getArgc(), conf->getArgv()) != -1;
         ioconf->setAclIgnoreError(ignoreAclErrors);
+
         if( ignoreAclErrors )
         {
             smwarn << myname << "(init): 'Ignore ACL error' enabled" << endl;
@@ -121,11 +122,13 @@ namespace uniset
 
         auto defPermission = conf->getArg2Param("--sm-default-sensor-permission", it.getProp("defaultSensorPermission"), "rw");
         auto amask = AccessMask::fromString(defPermission);
+
         if( amask == AccessNone )
         {
             ostringstream err;
             err << myname << "(init): Can't parse permission '" << defPermission << "'";
             ucrit << err.str() << endl;
+
             if( ignoreAclErrors )
                 throw SystemError(err.str());
         }
@@ -177,16 +180,20 @@ namespace uniset
 
 #ifndef DISABLE_REST_API
         disabledHttpSetApi = conf->getArgInt("--http-api-disable-set");
+
         if( disabledHttpSetApi )
             sminfo << myname << "(init): HTTP API 'set' disabled" << endl;
-        
+
         disabledHttpFreezeApi = conf->getArgInt("--http-api-disable-freeze");
+
         if( disabledHttpFreezeApi )
             sminfo << myname << "(init): HTTP API 'freeze/unfreeze' disabled" << endl;
 
         disableHttpAccessControl = conf->getArgInt("--http-api-disable-access-control");
+
         if( disableHttpAccessControl )
             sminfo << myname << "(init): HTTP API 'access control' disabled" << endl;
+
 #endif
 
         e_filter = conf->getArgParam("--e-filter");
@@ -413,12 +420,14 @@ namespace uniset
     void SharedMemory::reloadConfig()
     {
         sminfo << myname << "(reloadConfig): RELOAD ACL CONFIG" << endl;
+
         try
         {
             auto conf = uniset_conf();
             auto xml = std::make_shared<UniXML>(conf->getConfFileName());
             auto amap = AccessConfig::read(conf, xml, "ACLConfig", "ACLConfig");
             auto slist = IOConfig_XML::readACLInfo(conf, xml);
+
             if( !amap.empty() && !slist.empty() )
             {
                 reloadACLConfig(amap, slist);
@@ -620,10 +629,12 @@ namespace uniset
         }
 
         string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
+
         if( cname.empty() )
             cname = ORepHelpers::getShortName( conf->oind->getMapName(ID));
 
         auto confnode = conf->getNode(cname);
+
         if( !confnode )
         {
             cerr << "(smemory): Not found confnode '" << cname << "' in config file" << endl;
@@ -745,6 +756,7 @@ namespace uniset
         }
 
         histSaveTime = it.getIntProp("savetime");
+
         if( histSaveTime <= 0 )
             histSaveTime = 0;
 
@@ -1096,6 +1108,28 @@ namespace uniset
         return false;
     }
     // ----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+    Poco::JSON::Object::Ptr SharedMemory::buildLogServerInfo()
+    {
+        Poco::JSON::Object::Ptr jls = new Poco::JSON::Object();
+        jls->set("host", logserv_host);
+        jls->set("port", logserv_port);
+
+        if( logserv )
+        {
+            jls->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
+            auto info = logserv->httpGetShortInfo();
+
+            if( info )
+                jls->set("info", info);
+        }
+        else
+            jls->set("state", "NOT_CONFIGURED");
+
+        return jls;
+    }
+#endif
+    // ----------------------------------------------------------------------------
     uniset::SimpleInfo* SharedMemory::getInfo( const char* userparam )
     {
         uniset::SimpleInfo_var i = IONotifyController::getInfo(userparam);
@@ -1113,5 +1147,40 @@ namespace uniset
         i->info = inf.str().c_str();
         return i._retn();
     }
+#ifndef DISABLE_REST_API
+    Poco::JSON::Object::Ptr SharedMemory::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+    {
+        // служебный эндпоинт для проверки обработчика
+        auto json = IONotifyController::httpRequest(req, p);
+
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        json->set("LogServer", buildLogServerInfo());
+
+        return json;
+    }
+
+    Poco::JSON::Object::Ptr SharedMemory::httpHelp( const Poco::URI::QueryParameters& p )
+    {
+        auto h = IONotifyController::httpHelp(p);
+        return h;
+    }
+
+    Poco::JSON::Object::Ptr SharedMemory::httpGet( const Poco::URI::QueryParameters& p )
+    {
+        Poco::JSON::Object::Ptr json = IONotifyController::httpGet(p);
+
+        // данные по SharedMemory складываем в секцию с именем объекта
+        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
+        if( !jdata )
+            jdata = uniset::json::make_child(json, myname);
+
+        jdata->set("LogServer", buildLogServerInfo());
+
+        return json;
+    }
+#endif
     // ----------------------------------------------------------------------------
 } // end of namespace uniset
