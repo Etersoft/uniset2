@@ -56,9 +56,18 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     if( ic )
         ic->logAgregator()->add(logAgregator());
 
+    logserv = make_shared<LogServer>(logAgregator());
+    logserv->init(argprefix + "logserver", cnode);
+
     shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 
     UniXML::iterator it(cnode);
+
+    if( findArgParam("--" + argprefix + "run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+    {
+        logserv_host = conf->getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "localhost");
+        logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
+    }
 
     httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
     auto ip = conf->getArgParam("--" + argprefix + "host", "0.0.0.0");
@@ -942,6 +951,26 @@ UA_StatusCode OPCUAServer::UA_setValueMethod(UA_Server* server,
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr OPCUAServer::buildLogServerInfo()
+{
+    Poco::JSON::Object::Ptr jls = new Poco::JSON::Object();
+    jls->set("host", logserv_host);
+    jls->set("port", logserv_port);
+
+    if( logserv )
+    {
+        jls->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
+        auto info = logserv->httpGetShortInfo();
+
+        if( info )
+            jls->set("info", info);
+    }
+    else
+        jls->set("state", "NOT_CONFIGURED");
+
+    return jls;
+}
+// -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr OPCUAServer::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
 {
     if( req == "getparam" )
@@ -953,7 +982,14 @@ Poco::JSON::Object::Ptr OPCUAServer::httpRequest( const std::string& req, const 
     if( req == "status" )
         return httpStatus();
 
-    return UObject_SK::httpRequest(req, p);
+    auto json = UObject_SK::httpRequest(req, p);
+
+    if( !json )
+        json = new Poco::JSON::Object();
+
+    json->set("LogServer", buildLogServerInfo());
+
+    return json;
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr OPCUAServer::httpHelp( const Poco::URI::QueryParameters& p )
@@ -978,6 +1014,26 @@ Poco::JSON::Object::Ptr OPCUAServer::httpHelp( const Poco::URI::QueryParameters&
     }
 
     return myhelp;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpGet( const Poco::URI::QueryParameters& p )
+{
+    Poco::JSON::Object::Ptr json = UObject_SK::httpGet(p);
+
+    if( !json )
+        json = new Poco::JSON::Object();
+
+    Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
+    if( !jdata )
+    {
+        jdata = new Poco::JSON::Object();
+        json->set(myname, jdata);
+    }
+
+    jdata->set("LogServer", buildLogServerInfo());
+
+    return json;
 }
 // -----------------------------------------------------------------------------
 namespace
@@ -1070,6 +1126,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpSetParam( const Poco::URI::QueryParamet
         if( name == "updateTime_msec" )
         {
             long v = to_long(val, name, myname);
+
             if( v < 0 )
                 throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
 
@@ -1098,6 +1155,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
 
     Object::Ptr st = new Object();
     st->set("name", myname);
+    st->set("LogServer", buildLogServerInfo());
 
     auto opcConfig = UA_Server_getConfig(opcServer->handle());
 

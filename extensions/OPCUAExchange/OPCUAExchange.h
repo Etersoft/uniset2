@@ -306,6 +306,7 @@ namespace uniset
             // HTTP API
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
             virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
 #endif
 
         protected:
@@ -339,6 +340,7 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr buildLogServerInfo();
 
             // Защитный флаг: запретить /setparam при false
             bool httpEnabledSetParams { true };

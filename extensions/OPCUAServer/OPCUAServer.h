@@ -29,6 +29,7 @@
 #include "ThreadCreator.h"
 #include "Extensions.h"
 #include "USingleProcess.h"
+#include "LogServer.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -206,6 +207,7 @@ namespace uniset
             // HTTP API
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
             virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
 #endif
 
         protected:
@@ -229,6 +231,7 @@ namespace uniset
 
             // status
             Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr buildLogServerInfo();
 
             // Защитный флаг: разрешить/запретить /setparam (по аналогии с MBExchange/MBSlave)
             bool httpEnabledSetParams { true };
@@ -289,6 +292,9 @@ namespace uniset
             std::string namePrefix;
             uniset::timeout_t updateTime_msec = { 100 };
             std::atomic_bool firstUpdate = false;
+            std::shared_ptr<LogServer> logserv;
+            std::string logserv_host = {""};
+            int logserv_port = {0};
 
             using folderMap  = std::unordered_map<std::string, std::unique_ptr<IONode>>;
             folderMap foldermap; // список тегов

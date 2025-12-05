@@ -13,6 +13,10 @@
 #include "UniSetActivator.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/JSON/Parser.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -554,6 +558,41 @@ TEST_CASE("OPCUAExchange: reconnect test", "[opcua][exchange][reconnect]")
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
+TEST_CASE("OPCUAExchange: HTTP /status includes LogServer", "[http][opcuaex][status]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange/status", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+
+    auto st = root->getObject("status");
+    REQUIRE(st);
+    REQUIRE(st->has("LogServer"));
+
+    auto jls = st->getObject("LogServer");
+    REQUIRE(jls);
+    REQUIRE(jls->has("state"));
+    REQUIRE(jls->has("port"));
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: HTTP /getparam (polltime, updatetime, reconnectPause, timeoutIterate)", "[http][opcuaex][getparam]")
 {
     InitTest();
