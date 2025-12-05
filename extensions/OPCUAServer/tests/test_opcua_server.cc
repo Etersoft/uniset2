@@ -240,7 +240,7 @@ TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
 
     cs.sendRequest(req);
     std::istream& rs = cs.receiveResponse(res);
-        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
 
     std::stringstream ss;
     ss << rs.rdbuf();
@@ -258,6 +258,12 @@ TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
     if( st->has("endpoint") ) REQUIRE(st->getObject("endpoint")->has("url"));
 
     if( st->has("params") )   REQUIRE(st->getObject("params")->has("updateTime_msec"));
+
+    REQUIRE(st->has("LogServer"));
+    auto jls = st->getObject("LogServer");
+    REQUIRE(jls);
+    REQUIRE(jls->has("state"));
+    REQUIRE(jls->has("port"));
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")

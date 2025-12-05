@@ -9,6 +9,10 @@
 #include "OPCUAExchange.h"
 #include "OPCUATestServer.h"
 #include "Extensions.h"
+#include "Poco/Net/HTTPClientSession.h"
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/JSON/Parser.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;

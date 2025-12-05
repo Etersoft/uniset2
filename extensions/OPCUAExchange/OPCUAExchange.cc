@@ -2074,6 +2074,26 @@ namespace uniset
     }
     // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
+    Poco::JSON::Object::Ptr OPCUAExchange::buildLogServerInfo()
+    {
+        Poco::JSON::Object::Ptr jls = new Poco::JSON::Object();
+        jls->set("host", logserv_host);
+        jls->set("port", logserv_port);
+
+        if( logserv )
+        {
+            jls->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
+            auto info = logserv->httpGetShortInfo();
+
+            if( info )
+                jls->set("info", info);
+        }
+        else
+            jls->set("state", "NOT_CONFIGURED");
+
+        return jls;
+    }
+    // -----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr OPCUAExchange::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
     {
         if( req == "getparam" )
@@ -2085,7 +2105,14 @@ namespace uniset
         if( req == "status" )
             return httpStatus();
 
-        return UniSetObject::httpRequest(req, p);
+        auto json = UniSetObject::httpRequest(req, p);
+
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        json->set("LogServer", buildLogServerInfo());
+
+        return json;
     }
     // -----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr OPCUAExchange::httpHelp( const Poco::URI::QueryParameters& p )
@@ -2109,6 +2136,26 @@ namespace uniset
         }
 
         return myhelp;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpGet( const Poco::URI::QueryParameters& p )
+    {
+        Poco::JSON::Object::Ptr json = UniSetObject::httpGet(p);
+
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
+        if( !jdata )
+        {
+            jdata = new Poco::JSON::Object();
+            json->set(myname, jdata);
+        }
+
+        jdata->set("LogServer", buildLogServerInfo());
+
+        return json;
     }
     // -----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr OPCUAExchange::httpSetParam(const Poco::URI::QueryParameters& p)
@@ -2226,18 +2273,7 @@ namespace uniset
         st->set("name", myname);
 
         // 2) LogServer
-        {
-            Object::Ptr log = new Object();
-            log->set("host", logserv_host);
-            log->set("port", (int)logserv_port);
-
-            if( logserv )
-                log->set("short", logserv->getShortInfo());
-            else
-                log->set("short", "No logserver running.");
-
-            st->set("logserver", log);
-        }
+        st->set("LogServer", buildLogServerInfo());
 
         // 3) Каналы: статус + addr
         {
