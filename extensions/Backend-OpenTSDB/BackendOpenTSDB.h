@@ -32,56 +32,80 @@ namespace uniset
 {
     // -----------------------------------------------------------------------------
     /*!
-    \page page_BackendOpenTSDB (DBServer_OpenTSDB) Реализация шлюза к БД поддерживающей интерфейс OpenTSDB
+    \page page_BackendOpenTSDB (DBServer_OpenTSDB) Реализация шлюза к InfluxDB
 
       - \ref sec_OpenTSDB_Comm
       - \ref sec_OpenTSDB_Conf
       - \ref sec_OpenTSDB_Name
       - \ref sec_OpenTSDB_Queue
+      - \ref sec_OpenTSDB_Query
 
-    \section sec_OpenTSDB_Comm Общее описание шлюза к OpenTSDB
+    \section sec_OpenTSDB_Comm Общее описание шлюза к InfluxDB
 
-    "OpenTSDB" - time series database. Специальная БД оптимизированная
-    для хранения временных рядов (по простому: данных с временными метками).
-    Класс реализует пересылку указанных (настроенных) датчиков в БД поддерживающую
-    интерфейс совместимый с OpenTSDB. В текущей реализации используется посылка
-    строк в формате Telnet
+    Класс реализует пересылку указанных (настроенных) датчиков в InfluxDB
+    с использованием Line Protocol через TCP-соединение.
+
+    Формат записи (InfluxDB Line Protocol):
     \code
-    put <metric> <timestamp>.msec <value> <tagk1=tagv1[ tagk2=tagv2 ...tagkN=tagvN]>
+    <measurement>,project=<project>,sensor=<name>[,tags...] value=<value> <timestamp_ms>
     \endcode
-     См. http://opentsdb.net/docs/build/html/user_guide/writing/index.html
+
+    Пример записи:
+    \code
+    sensors,project=theatre,sensor=FC8_Fault_S value=0 1762405075021
+    sensors,project=theatre,sensor=Box1_Temperature_AS value=235 1762405075022
+    \endcode
+
+    Такой формат оптимален для InfluxDB:
+    - Один measurement для всех датчиков (эффективные запросы)
+    - Теги индексируются (быстрый поиск по project, sensor)
+    - Timestamp в миллисекундах
 
     \section sec_OpenTSDB_Conf Настройка BackendOpenTSDB
 
     Пример секции конфигурации:
     \code
-    <BackendOpenTSDB name="BackendOpenTSDB1" host="localhost" port="4242"
+    <BackendOpenTSDB name="BackendOpenTSDB1" host="localhost" port="8089"
       filter_field="tsdb" filter_value="1"
-      prefix="uniset"
-      tags="TAG1=VAL1 TAG2=VAL2 ..."/>
-
+      measurement="sensors"
+      project="theatre"
+      tags="host=server1,env=prod"/>
     \endcode
+
     Где:
-    - \b host - host для связи с TSDB
-    - \b port - port для связи с TSDB. Default: 4242
+    - \b host - host для связи с InfluxDB
+    - \b port - port для связи с InfluxDB (TCP line protocol). Default: 4242
     - \b filter_field - поле у датчика, определяющее, что его нужно сохранять в БД
     - \b filter_value - значение \b filter_field, определяющее, что датчик нужно сохранять в БД
-    - \b prefix - необязательный префикс дописываемый ко всем параметрам (prefix.parameter)
-    - \b tags - теги которые будут записаны для каждой записи, перечисляемые через пробел.
+    - \b measurement - имя measurement в InfluxDB. Default: "sensors"
+    - \b project - значение тега project (например имя подсистемы/проекта)
+    - \b tags - дополнительные теги для каждой записи, через запятую (tag1=val1,tag2=val2)
 
-    При этом в секции <sensors> у датчиков можно задать дополнительные теги.
-    Помимо этого можно переопределить название метрики (tsdb_name="...").
+    Конфигурация датчиков в секции \<sensors\>:
     \code
     <sensors>
     ...
-    <item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" tsdb="1" tsdb_tags=""/>
-    <item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" tsdb="1" tsdb_tags="" tsdb_name="MySpecName"/>
+    <item id="54" iotype="AI" name="Box1_Temperature_AS" textname="Temperature sensor" tsdb="1"/>
+    <item id="55" iotype="DI" name="FC8_Fault_S" textname="Drive fault" tsdb="1" tsdb_tags="unit=drive"/>
+    <item id="56" iotype="AI" name="Pressure_AS" tsdb="1" tsdb_name="MainPressure"/>
     ...
     </sensors>
     \endcode
 
-    \section sec_OpenTSDB_Name Имя значения сохраняемое в БД.
-    По умолчанию в качестве имени берётся name, но при необходимости можно указать определиться специальное имя.
+    Где:
+    - \b tsdb - поле фильтра для включения датчика в запись
+    - \b tsdb_tags - дополнительные теги для конкретного датчика (через запятую)
+    - \b tsdb_name - переопределение имени датчика в теге sensor
+
+    Результат записи для примера выше:
+    \code
+    sensors,project=theatre,sensor=Box1_Temperature_AS,host=server1,env=prod value=235 1762405075021
+    sensors,project=theatre,sensor=FC8_Fault_S,host=server1,env=prod,unit=drive value=0 1762405075022
+    sensors,project=theatre,sensor=MainPressure,host=server1,env=prod value=101 1762405075023
+    \endcode
+
+    \section sec_OpenTSDB_Name Имя датчика в теге sensor
+    По умолчанию в качестве имени берётся name, но при необходимости можно указать специальное имя.
     Для этого достаточно задать поле tsdb_name="...".
 
     \section sec_OpenTSDB_Queue Буфер на запись в БД
@@ -96,7 +120,26 @@ namespace uniset
     - \b sizeOfMessageQueue - Размер очереди сообщений для обработки изменений по датчикам.
      При большом количестве отслеживаемых датчиков, размер должен быть достаточным, чтобы не терять изменения.
 
-    \todo Нужна ли поддержка авторизации для TSDB (возможно придётся перейти на HTTP REST API)
+    \section sec_OpenTSDB_Query Примеры запросов к InfluxDB
+
+    Получение данных конкретного датчика:
+    \code
+    SELECT * FROM sensors WHERE sensor='FC8_Fault_S'
+    SELECT time, value FROM sensors WHERE sensor='Box1_Temperature_AS' AND time > now() - 1h
+    \endcode
+
+    Фильтрация по проекту:
+    \code
+    SELECT * FROM sensors WHERE project='theatre'
+    SELECT mean(value) FROM sensors WHERE project='theatre' GROUP BY sensor
+    \endcode
+
+    Просмотр доступных тегов:
+    \code
+    SHOW TAG VALUES FROM sensors WITH KEY = "sensor"
+    SHOW TAG VALUES FROM sensors WITH KEY = "project"
+    \endcode
+
     \todo Доделать возможность задать политику при переполнении буфера (удалять последние или первые, сколько чистить)
     */
     // -----------------------------------------------------------------------------
@@ -163,8 +206,9 @@ namespace uniset
                     name(_name), tags(_tags) {}
             };
 
-            std::string tsdbPrefix;
-            std::string tsdbTags; // теги в виде строки TAG=VAL TAG2=VAL2 ...
+            std::string tsdbMeasurement = { "sensors" }; // measurement name for InfluxDB
+            std::string tsdbProject; // project tag value (e.g. "theatre")
+            std::string tsdbTags; // additional tags: TAG=VAL TAG2=VAL2 ...
             std::unordered_map<uniset::ObjectId, ParamInfo> tsdbParams;
 
             timeout_t bufSyncTime = { 5000 };

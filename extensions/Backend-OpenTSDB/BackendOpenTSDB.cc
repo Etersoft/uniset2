@@ -59,7 +59,8 @@ void BackendOpenTSDB::init( xmlNode* cnode )
 
     host = conf->getArg2Param("--" + prefix + "-host", it.getProp("host"), "localhost");
     port = conf->getArgPInt("--" + prefix + "-port", it.getProp("port"), port);
-    tsdbPrefix = conf->getArg2Param("--" + prefix + "-prefix", it.getProp("prefix"), "");
+    tsdbMeasurement = conf->getArg2Param("--" + prefix + "-measurement", it.getProp("measurement"), "sensors");
+    tsdbProject = conf->getArg2Param("--" + prefix + "-project", it.getProp("project"), "");
     tsdbTags = conf->getArg2Param("--" + prefix + "-tags", it.getProp("tags"), "");
     reconnectTime = conf->getArgPInt("--" + prefix + "-reconnect-time", it.getProp("reconnectTime"), reconnectTime);
     bufMaxSize = conf->getArgPInt("--" + prefix + "-buf-maxsize", it.getProp("bufMaxSize"), bufMaxSize);
@@ -74,9 +75,10 @@ void BackendOpenTSDB::init( xmlNode* cnode )
     const string ff = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filter_field"), "" );
     const string fv = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filter_value"), "" );
 
-    myinfo << myname << "(init): opentsdb host=" << host << ":" << port
+    myinfo << myname << "(init): influxdb host=" << host << ":" << port
            << " " << ff << "='" << fv << "'"
-           << " prefix='" << tsdbPrefix << "'"
+           << " measurement='" << tsdbMeasurement << "'"
+           << " project='" << tsdbProject << "'"
            << " tags='" << tsdbTags << "'"
            << endl;
 
@@ -150,11 +152,12 @@ void BackendOpenTSDB::help_print( int argc, const char* const* argv )
     cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
     cout << "--run-lock file              - Запустить с защитой от повторного запуска" << endl;
     cout << endl;
-    cout << " OpenTSDB: " << endl;
-    cout << "--prefix-host  ip                         - OpenTSDB: host. Default: localhost" << endl;
-    cout << "--prefix-port  num                        - OpenTSDB: port. Default: 4242" << endl;
-    cout << "--prefix-prefix name                      - OpenTSDB: prefix for data" << endl;
-    cout << "--prefix-tags  'TAG1=VAL1 TAG2=VAL2...'   - OpenTSDB: tags for data" << endl;
+    cout << " InfluxDB (Line Protocol): " << endl;
+    cout << "--prefix-host  ip                         - InfluxDB: host. Default: localhost" << endl;
+    cout << "--prefix-port  num                        - InfluxDB: port. Default: 4242" << endl;
+    cout << "--prefix-measurement name                 - InfluxDB: measurement name. Default: sensors" << endl;
+    cout << "--prefix-project name                     - InfluxDB: project tag value" << endl;
+    cout << "--prefix-tags  'tag1=val1,tag2=val2...'   - InfluxDB: additional tags (comma-separated)" << endl;
     cout << "--prefix-reconnect-time msec              - Time for attempts to connect to DB. Default: 5 sec" << endl;
     cout << endl;
     cout << "--prefix-buf-size  sz        - Buffer before save to DB. Default: 500" << endl;
@@ -264,27 +267,33 @@ void BackendOpenTSDB::sensorInfo( const uniset::SensorMessage* sm )
             }
         }
 
-        // put <metric> <timestamp>.msec <value> <tagk1=tagv1[ tagk2=tagv2 ...tagkN=tagvN]>
+        // InfluxDB Line Protocol:
+        // <measurement>,<tag_key>=<tag_value>,... <field_key>=<field_value> <timestamp_ns>
+        // Example: sensors,project=theatre,sensor=FC8_Fault_S value=0 1762405075021
 
         ostringstream s;
 
-        s << "put ";
+        s << tsdbMeasurement;
 
-        if( !tsdbPrefix.empty() )
-            s << tsdbPrefix << ".";
+        // tags (comma-separated, no spaces)
+        if( !tsdbProject.empty() )
+            s << ",project=" << tsdbProject;
 
-        s << it->second.name
-          << " " << setw(10) << setfill('0') << sm->sm_tv.tv_sec
-          << setw(3) << setfill('0') << std::round( sm->sm_tv.tv_nsec / 1e6 )
-          << " "
-          << sm->value;
+        s << ",sensor=" << it->second.name;
 
         if( !tsdbTags.empty() )
-            s << " " << tsdbTags;
+            s << "," << tsdbTags;
 
-        s << " "
-          << it->second.tags
-          << endl;
+        if( !it->second.tags.empty() )
+            s << "," << it->second.tags;
+
+        // field value
+        s << " value=" << sm->value;
+
+        // timestamp in milliseconds
+        s << " " << sm->sm_tv.tv_sec << setw(3) << setfill('0') << sm->sm_tv.tv_nsec / 1000000;
+
+        s << "\n";
 
         buf.push_back(s.str());
 
@@ -439,8 +448,9 @@ std::string BackendOpenTSDB::getMonitInfo() const
         << " reconnect=" << reconnectTime
         << " bufSyncTime=" << bufSyncTime
         << " bufSize=" << bufSize
-        << " tsdbPrefix: '" << tsdbPrefix << "'"
-        << " tsdbTags: '" << tsdbTags << "'"
+        << " measurement: '" << tsdbMeasurement << "'"
+        << " project: '" << tsdbProject << "'"
+        << " tags: '" << tsdbTags << "'"
         << " ]" << endl
         << "  connection: " << ( tcp && tcp->isConnected() ? "OK" : "FAILED") << endl
         << " buffer size: " << buf.size() << endl
