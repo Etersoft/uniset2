@@ -45,22 +45,22 @@ namespace uniset
             ModbusRTU::ReadCoilRetMessage read01( ModbusRTU::ModbusAddr addr,
                                                   ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
             ModbusRTU::ReadInputStatusRetMessage read02( ModbusRTU::ModbusAddr addr,
-                                                         ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
+                    ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
             ModbusRTU::ReadOutputRetMessage read03( ModbusRTU::ModbusAddr addr,
                                                     ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
             ModbusRTU::ReadInputRetMessage read04( ModbusRTU::ModbusAddr addr,
                                                    ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
 
             ModbusRTU::ForceSingleCoilRetMessage write05( ModbusRTU::ModbusAddr addr,
-                                                          ModbusRTU::ModbusData reg, bool state );
+                    ModbusRTU::ModbusData reg, bool state );
             ModbusRTU::WriteSingleOutputRetMessage write06( ModbusRTU::ModbusAddr addr,
-                                                            ModbusRTU::ModbusData reg, ModbusRTU::ModbusData value );
+                    ModbusRTU::ModbusData reg, ModbusRTU::ModbusData value );
             ModbusRTU::ForceCoilsRetMessage write0F( ModbusRTU::ModbusAddr addr,
-                                                     ModbusRTU::ModbusData start,
-                                                     const std::vector<uint8_t>& values );
+                    ModbusRTU::ModbusData start,
+                    const std::vector<uint8_t>& values );
             ModbusRTU::WriteOutputRetMessage write10( ModbusRTU::ModbusAddr addr,
-                                                      ModbusRTU::ModbusData start,
-                                                      const std::vector<ModbusRTU::ModbusData>& values );
+                    ModbusRTU::ModbusData start,
+                    const std::vector<ModbusRTU::ModbusData>& values );
 
             ModbusRTU::DiagnosticRetMessage diag08( ModbusRTU::ModbusAddr addr,
                                                     ModbusRTU::DiagnosticsSubFunction subfunc,

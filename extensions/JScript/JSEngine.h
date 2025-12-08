@@ -29,6 +29,10 @@ extern "C" {
 // --------------------------------------------------------------------------
 namespace uniset
 {
+    namespace jshelper
+    {
+        struct JSPrivateData;
+    }
     // ----------------------------------------------------------------------
     struct JSOptions
     {
@@ -87,7 +91,6 @@ namespace uniset
             void createRequestAtoms(JSContext* ctx);
             void createRequestPrototype(JSContext* ctx);
             void jsLoop();
-            void preStop();
 
         private:
             JSValue jsReqProto_ = { JS_UNDEFINED };
@@ -100,6 +103,7 @@ namespace uniset
             } reqAtoms_{};
 
             std::atomic_bool activated = { false };
+            std::atomic_bool stopped = { false };
             std::shared_ptr<DebugStream> mylog;
             std::string jsfile;
             std::vector<std::string> searchPaths;
@@ -107,6 +111,7 @@ namespace uniset
             JSRuntime* rt = { nullptr };
             JSContext* ctx = { nullptr };
             uint8_t* jsbuf = { nullptr };
+            jshelper::JSPrivateData* moduleLoaderData = { nullptr };
             std::shared_ptr<DebugStream> jslog = { nullptr };
             std::shared_ptr<uniset::JHttpServer> httpserv = { nullptr };
             JSOptions opts;
