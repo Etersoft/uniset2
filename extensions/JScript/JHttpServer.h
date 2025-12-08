@@ -113,6 +113,7 @@ namespace uniset
                     {
                         RequestSnapshot req;
                         std::promise<ResponseSnapshot> prom;
+                        std::shared_ptr<std::atomic<bool>> cancelled = std::make_shared<std::atomic<bool>>(false);
                     };
 
                     bool push(Job&& j)
@@ -170,6 +171,35 @@ namespace uniset
                         cv_.notify_all();
                     }
 
+                    void clear(int status, const std::string& reason, const std::string& body)
+                    {
+                        std::lock_guard<std::mutex> lk(m_);
+
+                        while (!q_.empty())
+                        {
+                            auto& job = q_.front();
+                            ResponseSnapshot resp;
+                            resp.status = status;
+                            resp.reason = reason;
+                            resp.headers = { {"Content-Type", "text/plain"} };
+                            resp.body = body;
+
+                            try
+                            {
+                                job.prom.set_value(std::move(resp));
+                            }
+                            catch (...) {}
+
+                            q_.pop();
+                        }
+                    }
+
+                    void reset()
+                    {
+                        std::lock_guard<std::mutex> lk(m_);
+                        stop_ = false;
+                    }
+
                 private:
                     mutable std::mutex m_;
                     std::condition_variable cv_;
@@ -192,7 +222,6 @@ namespace uniset
             std::chrono::milliseconds processTimeout_{std::chrono::seconds(10)};
 
             // lifecycle
-            std::atomic_bool started_{false};
             std::atomic_bool workerRunning_{false};
             std::atomic_bool softStopping_{false};
             std::atomic_bool workerBusy_{false};

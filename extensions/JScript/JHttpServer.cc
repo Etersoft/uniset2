@@ -49,8 +49,12 @@ void JHttpServer::stop()
     if( !started.load() )
         return;
 
-    //    if( std::this_thread::get_id() != startThreadId_ )
-    //        throw SystemError("JHttpServer::stop must be called from the same thread as start()");
+    started.store(false);
+
+    // Clear pending requests with error response
+    queue_.clear(503, "Service Unavailable", "Server is stopping");
+    queue_.shutdown();
+    workerRunning_.store(false);
 
     if( http )
     {
@@ -62,19 +66,16 @@ void JHttpServer::stop()
         {
             mylog->crit() << "(JHttpServer::stop): error: " << ex.displayText() << endl;
         }
-
-        started.store(false);
     }
-
-    // stop worker
-    queue_.shutdown();
-    workerRunning_.store(false);
 }
 // ----------------------------------------------------------------------------
 void JHttpServer::start( const std::string& _host, int _port )
 {
     if( started.load() )
         return;
+
+    softStopping_.store(false);
+    queue_.reset();
 
     if( !http )
     {
@@ -153,6 +154,7 @@ class JHttpServer::Handler : public Poco::Net::HTTPRequestHandler
             RequestQueue::Job job;
             job.req = std::move(snap);
             auto fut = job.prom.get_future();
+            auto cancelled = job.cancelled;
 
             if (!owner_.queue_.push(std::move(job)))
             {
@@ -187,9 +189,11 @@ class JHttpServer::Handler : public Poco::Net::HTTPRequestHandler
                 return;
             }
 
-            // Timeout: reply 504 and close
-            response.setStatus(Poco::Net::HTTPResponse::HTTP_REQUEST_TIMEOUT);
-            response.setReason("Request Timeout");
+            // Timeout: mark as cancelled and reply 504
+            cancelled->store(true, std::memory_order_relaxed);
+
+            response.setStatus(Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT);
+            response.setReason("Gateway Timeout");
             response.set("Content-Type", "text/plain");
             response.set("Connection", "close");
             static const char* msg = "Processing timeout";
@@ -215,6 +219,20 @@ void JHttpServer::softStop(std::chrono::milliseconds timeout)
     // mark soft-stopping: refuse new jobs in handler
     softStopping_.store(true, std::memory_order_relaxed);
 
+    // wait until queue is empty and worker is idle (or timeout)
+    {
+        std::unique_lock<std::mutex> lk(cvStopMutex_);
+        cvStop_.wait_for(lk, timeout, [this]
+        {
+            return queue_.empty() && !workerBusy_.load(std::memory_order_relaxed);
+        });
+    }
+
+    // Clear any remaining requests
+    queue_.clear(503, "Service Unavailable", "Server is shutting down");
+    queue_.shutdown();
+    workerRunning_.store(false);
+
     if (http)
     {
         try
@@ -235,18 +253,7 @@ void JHttpServer::softStop(std::chrono::milliseconds timeout)
         }
     }
 
-    // wait until queue is empty and worker is idle (or timeout)
-    {
-        std::unique_lock<std::mutex> lk(cvStopMutex_);
-        cvStop_.wait_for(lk, timeout, [this]
-        {
-            return queue_.empty() && !workerBusy_.load(std::memory_order_relaxed);
-        });
-    }
-
-    // stop worker
-    queue_.shutdown();
-    workerRunning_.store(false);
+    started.store(false);
 }
 // ----------------------------------------------------------------------------
 void JHttpServer::httpLoop( HandlerFn& fn, size_t count, std::chrono::milliseconds& timeout )
@@ -259,6 +266,10 @@ void JHttpServer::httpLoop( HandlerFn& fn, size_t count, std::chrono::millisecon
         RequestQueue::Job job;
 
         if (!queue_.pop(job, timeout)) break;
+
+        // Skip cancelled requests (timed out on client side)
+        if (job.cancelled->load(std::memory_order_relaxed))
+            continue;
 
         workerBusy_.store(true, std::memory_order_relaxed);
 
@@ -283,7 +294,9 @@ void JHttpServer::httpLoop( HandlerFn& fn, size_t count, std::chrono::millisecon
             resp.body = "Unknown error";
         }
 
-        job.prom.set_value(std::move(resp));
+        // Check again before set_value (Handler might have timed out while we were processing)
+        if (!job.cancelled->load(std::memory_order_relaxed))
+            job.prom.set_value(std::move(resp));
 
         workerBusy_.store(false, std::memory_order_relaxed);
         cvStop_.notify_one();

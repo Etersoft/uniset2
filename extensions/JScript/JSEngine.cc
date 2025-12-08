@@ -85,7 +85,8 @@ JSEngine::JSEngine( const std::string& _jsfile,
         {
             JHttpServer::ResponseSnapshot resp;
             resp.headers = { {"Content-Type", "application/json"} };
-            resp.status = Poco::Net::HTTPResponse::HTTP_FOUND;
+            resp.status = Poco::Net::HTTPResponse::HTTP_NOT_IMPLEMENTED;
+            resp.body = R"({"error": "HTTP handler not configured"})";
             return resp;
         }
 
@@ -159,12 +160,12 @@ void JSEngine::initJS()
     js_init_module_std(ctx, "std");
     js_init_module_os(ctx, "os");
 
-    auto private_data = new jshelper::JSPrivateData{searchPaths};
+    moduleLoaderData = new jshelper::JSPrivateData{searchPaths};
 
     if( opts.esmModuleMode )
-        JS_SetModuleLoaderFunc(rt, jshelper::qjs_module_normalize, jshelper::qjs_module_loader, private_data);
+        JS_SetModuleLoaderFunc(rt, jshelper::qjs_module_normalize, jshelper::qjs_module_loader, moduleLoaderData);
     else
-        JS_SetModuleLoaderFunc(rt, NULL, jshelper::module_loader_with_path, private_data);
+        JS_SetModuleLoaderFunc(rt, NULL, jshelper::module_loader_with_path, moduleLoaderData);
 
     jsGlobal = JS_GetGlobalObject(ctx);
 
@@ -391,27 +392,9 @@ void JSEngine::initJS()
     js_std_loop(ctx);
 }
 // ----------------------------------------------------------------------------
-void JSEngine::preStop()
-{
-    for( const auto& cb : stopFunctions )
-        jshelper::safe_function_call(ctx, jsGlobal, cb, 0, nullptr);
-
-    jsLoop();
-}
-// ----------------------------------------------------------------------------
 void JSEngine::freeJS()
 {
     myinfo << "(freeJS): freeing JS resources..." << endl;
-
-    try
-    {
-        if( activated )
-            preStop();
-    }
-    catch( Poco::Exception& ex )
-    {
-        mycrit << "(freeJS): preStop error: " << ex.displayText() << endl;
-    }
 
     if( activated )
         stop();
@@ -492,34 +475,43 @@ void JSEngine::freeJS()
         rt = nullptr;
     }
 
+    if (moduleLoaderData)
+    {
+        delete moduleLoaderData;
+        moduleLoaderData = nullptr;
+    }
+
     myinfo << "(freeJS): done" << endl;
 }
 // ----------------------------------------------------------------------------
 JSEngine::~JSEngine()
 {
-    if (!JS_IsUndefined(jsResProto_))
+    if (ctx)
     {
-        JS_FreeValue(ctx, jsResProto_);
-        jsResProto_ = JS_UNDEFINED;
-    }
+        if (!JS_IsUndefined(jsResProto_))
+        {
+            JS_FreeValue(ctx, jsResProto_);
+            jsResProto_ = JS_UNDEFINED;
+        }
 
-    if (reqAtomsInited_)
-    {
-        JS_FreeAtom(ctx, reqAtoms_.method);
-        JS_FreeAtom(ctx, reqAtoms_.uri);
-        JS_FreeAtom(ctx, reqAtoms_.version);
-        JS_FreeAtom(ctx, reqAtoms_.url);
-        JS_FreeAtom(ctx, reqAtoms_.path);
-        JS_FreeAtom(ctx, reqAtoms_.query);
-        JS_FreeAtom(ctx, reqAtoms_.headers);
-        JS_FreeAtom(ctx, reqAtoms_.body);
-        reqAtomsInited_ = false;
-    }
+        if (reqAtomsInited_)
+        {
+            JS_FreeAtom(ctx, reqAtoms_.method);
+            JS_FreeAtom(ctx, reqAtoms_.uri);
+            JS_FreeAtom(ctx, reqAtoms_.version);
+            JS_FreeAtom(ctx, reqAtoms_.url);
+            JS_FreeAtom(ctx, reqAtoms_.path);
+            JS_FreeAtom(ctx, reqAtoms_.query);
+            JS_FreeAtom(ctx, reqAtoms_.headers);
+            JS_FreeAtom(ctx, reqAtoms_.body);
+            reqAtomsInited_ = false;
+        }
 
-    if (!JS_IsUndefined(jsReqProto_))
-    {
-        JS_FreeValue(ctx, jsReqProto_);
-        jsReqProto_ = JS_UNDEFINED;
+        if (!JS_IsUndefined(jsReqProto_))
+        {
+            JS_FreeValue(ctx, jsReqProto_);
+            jsReqProto_ = JS_UNDEFINED;
+        }
     }
 
     freeJS();
@@ -550,6 +542,11 @@ void JSEngine::start()
 // ----------------------------------------------------------------------------
 void JSEngine::stop()
 {
+    if( stopped )
+        return;
+
+    stopped = true;
+
     if( httpserv->isRunning() )
     {
         try
@@ -558,9 +555,12 @@ void JSEngine::stop()
         }
         catch( Poco::Exception& ex )
         {
-            mycrit << "(preStop): http server error: " << ex.displayText() << endl;
+            mycrit << "(stop): http server error: " << ex.displayText() << endl;
         }
     }
+
+    for( const auto& cb : stopFunctions )
+        jshelper::safe_function_call(ctx, jsGlobal, cb, 0, nullptr);
 
     if( !JS_IsUndefined(jsFnStop) )
     {
@@ -819,195 +819,106 @@ void JSEngine::createUnisetObject()
 // Статические обертки для вызова нестатических методов
 JSValue JSEngine::jsUiAskSensor_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    // Получаем указатель на экземпляр JSEngine из глобального объекта
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_ui_askSensor(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_ui_askSensor(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsUiGetValue_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue result = engine->js_ui_getValue(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return result;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_NewInt64(ctx, 0);
+    return engine->js_ui_getValue(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsUiSetValue_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_ui_setValue(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_ui_setValue(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsUniSetStepCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_uniset_StepCb(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_uniset_StepCb(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsUniSetStopCb_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_uniset_StopCb(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_uniset_StopCb(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsUniSetHttpStart_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_uniset_httpStart(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_uniset_httpStart(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsLog_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_log(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_log(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsLogLevel_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-    JSValue global = JS_GetGlobalObject(ctx);
-    JSValue engine_ptr_val = JS_GetPropertyStr(ctx, global, "__js_engine_instance");
-    JS_FreeValue(ctx, global);
+    auto engine = get_engine_from_context(ctx);
 
-    if( JS_IsNumber(engine_ptr_val) )
+    if( !engine )
     {
-        int64_t ptr_int;
-        JS_ToInt64(ctx, &ptr_int, engine_ptr_val);
-        JSEngine* engine = reinterpret_cast<JSEngine*>(ptr_int);
-
-        if( engine )
-        {
-            JSValue ret = engine->js_log_level(ctx, this_val, argc, argv);
-            JS_FreeValue(ctx, engine_ptr_val);
-            return ret;
-        }
+        JS_ThrowInternalError(ctx, "JS engine undefined");
+        return JS_EXCEPTION;
     }
 
-    JS_FreeValue(ctx, engine_ptr_val);
-    return JS_UNDEFINED;
+    return engine->js_log_level(ctx, this_val, argc, argv);
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsModbusConnectTCP_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
@@ -1963,7 +1874,7 @@ JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSVal
     std::vector<JSOPCUAClient::WriteItem> items;
 
     auto parseValue =
-        [&](JSValueConst valueVal, JSValueConst typeVal, JSOPCUAClient::WriteItem& item) -> bool
+        [&](JSValueConst valueVal, JSValueConst typeVal, JSOPCUAClient::WriteItem & item) -> bool
     {
         enum class ValueKind { Int32, Float, Bool };
         ValueKind kind = ValueKind::Int32;
@@ -2034,6 +1945,7 @@ JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSVal
                 item.value = (bv != 0);
                 break;
             }
+
             case ValueKind::Float:
             {
                 double dv = 0;
@@ -2047,6 +1959,7 @@ JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSVal
                 item.value = static_cast<float>(dv);
                 break;
             }
+
             case ValueKind::Int32:
             default:
             {
@@ -2066,7 +1979,7 @@ JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSVal
         return true;
     };
 
-    auto addItem = [&](const std::string& nodeId, JSValueConst valueVal, JSValueConst typeVal) -> bool
+    auto addItem = [&](const std::string & nodeId, JSValueConst valueVal, JSValueConst typeVal) -> bool
     {
         if( nodeId.empty() )
         {
@@ -2207,6 +2120,9 @@ JSValue JSEngine::js_opcua_write(JSContext* jsctx, JSValueConst, int argc, JSVal
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeBitsReply( const ModbusRTU::BitsBuffer& buf )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "byteCount", JS_NewInt32(ctx, buf.bcnt));
     JSValue arr = JS_NewArray(ctx);
@@ -2220,6 +2136,9 @@ JSValue JSEngine::jsMakeBitsReply( const ModbusRTU::BitsBuffer& buf )
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadOutputRetMessage& msg )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
     JSValue arr = JS_NewArray(ctx);
@@ -2233,6 +2152,9 @@ JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadOutputRetMessage& ms
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadInputRetMessage& msg )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
     JSValue arr = JS_NewArray(ctx);
@@ -2246,6 +2168,9 @@ JSValue JSEngine::jsMakeRegisterReply( const ModbusRTU::ReadInputRetMessage& msg
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeDiagReply( const ModbusRTU::DiagnosticRetMessage& msg )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "subfunc", JS_NewInt32(ctx, msg.subf));
     JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, msg.count));
@@ -2261,6 +2186,9 @@ JSValue JSEngine::jsMakeDiagReply( const ModbusRTU::DiagnosticRetMessage& msg )
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeWriteAck( ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, start));
     JS_SetPropertyStr(ctx, result, "count", JS_NewInt32(ctx, count));
@@ -2269,6 +2197,9 @@ JSValue JSEngine::jsMakeWriteAck( ModbusRTU::ModbusData start, ModbusRTU::Modbus
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeWriteSingleAck( const ModbusRTU::WriteSingleOutputRetMessage& msg )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, msg.start));
     JS_SetPropertyStr(ctx, result, "value", JS_NewInt32(ctx, msg.data));
@@ -2277,6 +2208,9 @@ JSValue JSEngine::jsMakeWriteSingleAck( const ModbusRTU::WriteSingleOutputRetMes
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMakeModbusBoolAck( const ModbusRTU::ForceSingleCoilRetMessage& msg )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "start", JS_NewInt32(ctx, msg.start));
     JS_SetPropertyStr(ctx, result, "value", JS_NewBool(ctx, msg.cmd()));
@@ -2285,6 +2219,9 @@ JSValue JSEngine::jsMakeModbusBoolAck( const ModbusRTU::ForceSingleCoilRetMessag
 // ----------------------------------------------------------------------------
 JSValue JSEngine::jsMake4314Reply( const ModbusRTU::MEIMessageRetRDI& msg )
 {
+    if( !ctx )
+        return JS_UNDEFINED;
+
     JSValue result = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, result, "deviceId", JS_NewInt32(ctx, msg.devID));
     JS_SetPropertyStr(ctx, result, "conformity", JS_NewInt32(ctx, msg.conformity));
@@ -2316,8 +2253,8 @@ JSValue JSEngine::js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int arg
     // argv[1] - команда (number)
     if( argc < 2 )
     {
-        JS_ThrowTypeError(ctx, "askSensor expects 2 argument (sensor ID, value)");
-        return JS_UNDEFINED;
+        JS_ThrowTypeError(ctx, "askSensor expects 2 arguments (sensor ID, cmd)");
+        return JS_EXCEPTION;
     }
 
     int64_t sid = DefaultObjectId;
@@ -2337,14 +2274,14 @@ JSValue JSEngine::js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int arg
         if (JS_ToInt64(ctx, &sid, argv[0]) != 0)
         {
             JS_ThrowTypeError(ctx, "Invalid sensor ID");
-            return JS_UNDEFINED;
+            return JS_EXCEPTION;
         }
     }
 
     if( sid == uniset::DefaultObjectId )
     {
         JS_ThrowTypeError(ctx, "Invalid sensor ID or name");
-        return JS_UNDEFINED;
+        return JS_EXCEPTION;
     }
 
     int64_t cmd;
@@ -2352,7 +2289,7 @@ JSValue JSEngine::js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int arg
     if (JS_ToInt64(ctx, &cmd, argv[1]) != 0)
     {
         JS_ThrowTypeError(ctx, "Invalid cmd");
-        return JS_UNDEFINED;
+        return JS_EXCEPTION;
     }
 
     try
@@ -2366,8 +2303,8 @@ JSValue JSEngine::js_ui_askSensor(JSContext* ctx, JSValueConst this_val, int arg
         mycrit << "(js_ui_askSensor): " << ex.what() << endl;
     }
 
-    JS_ThrowTypeError(ctx, "askSensor catch exception");
-    return JS_UNDEFINED;
+    JS_ThrowInternalError(ctx, "askSensor failed");
+    return JS_EXCEPTION;
 
 }
 // ----------------------------------------------------------------------------
@@ -2378,7 +2315,7 @@ JSValue JSEngine::js_ui_getValue( JSContext* ctx, JSValueConst this_val, int arg
     if( argc < 1 )
     {
         JS_ThrowTypeError(ctx, "getValue expects 1 argument (sensor ID)");
-        return JS_UNDEFINED;
+        return JS_EXCEPTION;
     }
 
     int64_t sid = DefaultObjectId;
@@ -2395,18 +2332,17 @@ JSValue JSEngine::js_ui_getValue( JSContext* ctx, JSValueConst this_val, int arg
     }
     else
     {
-
         if (JS_ToInt64(ctx, &sid, argv[0]) != 0)
         {
             JS_ThrowTypeError(ctx, "Invalid sensor ID");
-            return JS_UNDEFINED;
+            return JS_EXCEPTION;
         }
     }
 
     if( sid == uniset::DefaultObjectId )
     {
         JS_ThrowTypeError(ctx, "Invalid sensor ID or name");
-        return JS_UNDEFINED;
+        return JS_EXCEPTION;
     }
 
     try
@@ -2420,8 +2356,8 @@ JSValue JSEngine::js_ui_getValue( JSContext* ctx, JSValueConst this_val, int arg
         mycrit << "(js_ui_getValue): " << ex.what() << endl;
     }
 
-    JS_ThrowTypeError(ctx, "getValue catch exception");
-    return JS_UNDEFINED;
+    JS_ThrowInternalError(ctx, "getValue failed");
+    return JS_EXCEPTION;
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
@@ -2431,8 +2367,8 @@ JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc
     // argv[1] - значение (number)
     if( argc < 2 )
     {
-        JS_ThrowTypeError(ctx, "setValue expects 2 argument (sensor ID, value)");
-        return JS_UNDEFINED;
+        JS_ThrowTypeError(ctx, "setValue expects 2 arguments (sensor ID, value)");
+        return JS_EXCEPTION;
     }
 
     int64_t sid = DefaultObjectId;
@@ -2452,14 +2388,14 @@ JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc
         if (JS_ToInt64(ctx, &sid, argv[0]) != 0)
         {
             JS_ThrowTypeError(ctx, "Invalid sensor ID");
-            return JS_UNDEFINED;
+            return JS_EXCEPTION;
         }
     }
 
     if( sid == uniset::DefaultObjectId )
     {
         JS_ThrowTypeError(ctx, "Invalid sensor ID or name");
-        return JS_UNDEFINED;
+        return JS_EXCEPTION;
     }
 
     int64_t value;
@@ -2467,7 +2403,7 @@ JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc
     if (JS_ToInt64(ctx, &value, argv[1]) != 0)
     {
         JS_ThrowTypeError(ctx, "Invalid value");
-        return JS_UNDEFINED;
+        return JS_EXCEPTION;
     }
 
     try
@@ -2490,8 +2426,8 @@ JSValue JSEngine::js_ui_setValue(JSContext* ctx, JSValueConst this_val, int argc
         mycrit << "(js_ui_setValue): " << ex.what() << endl;
     }
 
-    JS_ThrowTypeError(ctx, "setValue catch exception");
-    return JS_UNDEFINED;
+    JS_ThrowInternalError(ctx, "setValue failed");
+    return JS_EXCEPTION;
 }
 // ----------------------------------------------------------------------------
 JSValue JSEngine::js_uniset_StepCb(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)

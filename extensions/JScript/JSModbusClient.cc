@@ -150,7 +150,7 @@ WriteSingleOutputRetMessage JSModbusClient::write06( ModbusAddr addr, ModbusData
 }
 // --------------------------------------------------------------------------
 ForceCoilsRetMessage JSModbusClient::write0F( ModbusAddr addr, ModbusData start,
-                                              const vector<uint8_t>& values )
+        const vector<uint8_t>& values )
 {
     ensureConnection();
 
@@ -166,7 +166,7 @@ ForceCoilsRetMessage JSModbusClient::write0F( ModbusAddr addr, ModbusData start,
 }
 // --------------------------------------------------------------------------
 WriteOutputRetMessage JSModbusClient::write10( ModbusAddr addr, ModbusData start,
-                                               const vector<ModbusData>& values )
+        const vector<ModbusData>& values )
 {
     ensureConnection();
 
@@ -182,7 +182,7 @@ WriteOutputRetMessage JSModbusClient::write10( ModbusAddr addr, ModbusData start
 }
 // --------------------------------------------------------------------------
 DiagnosticRetMessage JSModbusClient::diag08( ModbusAddr addr, DiagnosticsSubFunction subfunc,
-                                             ModbusData data )
+        ModbusData data )
 {
     ensureConnection();
     return tcp->diag08(addr, subfunc, data);
