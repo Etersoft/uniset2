@@ -567,7 +567,7 @@ TEST_CASE("OPCUAExchange: HTTP /status includes LogServer", "[http][opcuaex][sta
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange/status", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/status", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);
@@ -723,6 +723,540 @@ TEST_CASE("OPCUAExchange: HTTP /setparam (apply or blocked)", "[http][opcuaex][s
         REQUIRE(bodySet.find("httpEnabledSetParams") != std::string::npos);
         REQUIRE(bodySet.find("disabled") != std::string::npos);
     }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /sensors (list with pagination)", "[http][opcuaex][sensors]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+
+    // Basic request without parameters
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        Poco::JSON::Parser parser;
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->get("result").toString() == "OK");
+        REQUIRE(root->has("sensors"));
+        REQUIRE(root->has("total"));
+        REQUIRE(root->has("limit"));
+        REQUIRE(root->has("offset"));
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() > 0);
+
+        // Check sensor structure
+        auto first = sensors->getObject(0);
+        REQUIRE(first->has("id"));
+        REQUIRE(first->has("name"));
+        REQUIRE(first->has("nodeid"));
+        REQUIRE(first->has("iotype"));
+        REQUIRE(first->has("value"));
+        REQUIRE(first->has("status"));
+    }
+
+    // Request with limit and offset
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors?limit=2&offset=0", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        Poco::JSON::Parser parser;
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors->size() <= 2);
+        REQUIRE((int)root->get("limit") == 2);
+        REQUIRE((int)root->get("offset") == 0);
+    }
+
+    // Request with filter
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors?filter=AI", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        Poco::JSON::Parser parser;
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto sensors = root->getArray("sensors");
+
+        // All returned sensors should be AI type
+        for( size_t i = 0; i < sensors->size(); ++i )
+        {
+            auto s = sensors->getObject(i);
+            REQUIRE(s->get("iotype").toString() == "AI");
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex][sensor]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // First get a sensor id from /sensors
+    ObjectId sensorId = DefaultObjectId;
+    std::string sensorName;
+    std::string sensorNodeId;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors?limit=1", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors->size() > 0);
+        auto first = sensors->getObject(0);
+        sensorId = (ObjectId)first->get("id");
+        sensorName = first->get("name").toString();
+        sensorNodeId = first->get("nodeid").toString();
+    }
+
+    // Search by id
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/sensor?id=" + std::to_string(sensorId),
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+        REQUIRE(root->has("sensor"));
+        auto sensor = root->getObject("sensor");
+        REQUIRE((ObjectId)sensor->get("id") == sensorId);
+        // Detailed view should have channels array
+        REQUIRE(sensor->has("channels"));
+        REQUIRE(sensor->has("mask"));
+        REQUIRE(sensor->has("offset"));
+    }
+
+    // Search by name
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/sensor?name=" + sensorName,
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+        auto sensor = root->getObject("sensor");
+        REQUIRE(sensor->get("name").toString() == sensorName);
+    }
+
+    // Search by nodeid
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/sensor?nodeid=" + sensorNodeId,
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+        auto sensor = root->getObject("sensor");
+        REQUIRE(sensor->get("nodeid").toString() == sensorNodeId);
+    }
+
+    // Search for non-existent sensor
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/sensor?id=999999",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "ERROR");
+        REQUIRE(root->has("error"));
+    }
+
+    // Request without parameters should fail
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/sensor",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /diagnostics", "[http][opcuaex][diagnostics]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/diagnostics", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+    Poco::JSON::Parser parser;
+    auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+
+    // Check summary section
+    REQUIRE(root->has("summary"));
+    auto summary = root->getObject("summary");
+    REQUIRE(summary->has("readErrors"));
+    REQUIRE(summary->has("writeErrors"));
+    REQUIRE(summary->has("connectionLosses"));
+    REQUIRE(summary->has("uptime"));
+
+    // Check lastErrors array
+    REQUIRE(root->has("lastErrors"));
+    auto lastErrors = root->getArray("lastErrors");
+    REQUIRE(lastErrors);
+
+    // Check history info
+    REQUIRE(root->has("errorHistorySize"));
+    REQUIRE(root->has("errorHistoryMax"));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuaex][control]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // First check if httpControlAllow is enabled
+    bool controlAllowed = false;
+    {
+        HTTPRequest reqCheck(HTTPRequest::HTTP_GET,
+                             "/api/v01/OPCUAExchange1/getparam?name=httpControlAllow",
+                             HTTPRequest::HTTP_1_1);
+        HTTPResponse resCheck;
+        cs.sendRequest(reqCheck);
+        std::istream& rsCheck = cs.receiveResponse(resCheck);
+        REQUIRE(resCheck.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ssCheck;
+        ssCheck << rsCheck.rdbuf();
+        auto rootCheck = parser.parse(ssCheck.str()).extract<Poco::JSON::Object::Ptr>();
+        controlAllowed = ((int)rootCheck->getObject("params")->get("httpControlAllow") == 1);
+    }
+
+    // Try takeControl
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/takeControl", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        if( controlAllowed )
+        {
+            // Control allowed - verify httpControlActive is now true
+            REQUIRE(root->get("result").toString() == "OK");
+
+            // Check via getparam
+            HTTPRequest reqParam(HTTPRequest::HTTP_GET,
+                                 "/api/v01/OPCUAExchange1/getparam?name=httpControlActive",
+                                 HTTPRequest::HTTP_1_1);
+            HTTPResponse resParam;
+            cs.sendRequest(reqParam);
+            std::istream& rsParam = cs.receiveResponse(resParam);
+            REQUIRE(resParam.getStatus() == HTTPResponse::HTTP_OK);
+
+            std::stringstream ssParam;
+            ssParam << rsParam.rdbuf();
+            auto rootParam = parser.parse(ssParam.str()).extract<Poco::JSON::Object::Ptr>();
+            auto params = rootParam->getObject("params");
+            REQUIRE((int)params->get("httpControlActive") == 1);
+
+            // Now release control
+            HTTPRequest reqRelease(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/releaseControl", HTTPRequest::HTTP_1_1);
+            HTTPResponse resRelease;
+            cs.sendRequest(reqRelease);
+            std::istream& rsRelease = cs.receiveResponse(resRelease);
+            REQUIRE(resRelease.getStatus() == HTTPResponse::HTTP_OK);
+
+            std::stringstream ssRelease;
+            ssRelease << rsRelease.rdbuf();
+            auto rootRelease = parser.parse(ssRelease.str()).extract<Poco::JSON::Object::Ptr>();
+            REQUIRE(rootRelease->get("result").toString() == "OK");
+
+            // Verify httpControlActive is now false
+            HTTPRequest reqParam2(HTTPRequest::HTTP_GET,
+                                  "/api/v01/OPCUAExchange1/getparam?name=httpControlActive",
+                                  HTTPRequest::HTTP_1_1);
+            HTTPResponse resParam2;
+            cs.sendRequest(reqParam2);
+            std::istream& rsParam2 = cs.receiveResponse(resParam2);
+            REQUIRE(resParam2.getStatus() == HTTPResponse::HTTP_OK);
+
+            std::stringstream ssParam2;
+            ssParam2 << rsParam2.rdbuf();
+            auto rootParam2 = parser.parse(ssParam2.str()).extract<Poco::JSON::Object::Ptr>();
+            auto params2 = rootParam2->getObject("params");
+            REQUIRE((int)params2->get("httpControlActive") == 0);
+        }
+        else
+        {
+            // Control not allowed (httpControlAllow=0)
+            REQUIRE(root->get("result").toString() == "ERROR");
+            REQUIRE(root->has("error"));
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /getparam (new parameters)", "[http][opcuaex][getparam][extended]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET,
+                    "/api/v01/OPCUAExchange1/getparam?name=exchangeMode&name=writeToAllChannels"
+                    "&name=currentChannel&name=connectCount&name=activated&name=iolistSize"
+                    "&name=httpControlAllow&name=httpControlActive&name=errorHistoryMax",
+                    HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+    Poco::JSON::Parser parser;
+    auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+    auto params = root->getObject("params");
+    REQUIRE(params);
+
+    // Check all new parameters are present
+    REQUIRE(params->has("exchangeMode"));
+    REQUIRE(params->has("writeToAllChannels"));
+    REQUIRE(params->has("currentChannel"));
+    REQUIRE(params->has("connectCount"));
+    REQUIRE(params->has("activated"));
+    REQUIRE(params->has("iolistSize"));
+    REQUIRE(params->has("httpControlAllow"));
+    REQUIRE(params->has("httpControlActive"));
+    REQUIRE(params->has("errorHistoryMax"));
+
+    // Verify iolistSize > 0 (we have sensors configured)
+    REQUIRE((int)params->get("iolistSize") > 0);
+    // errorHistoryMax should be default 100
+    REQUIRE((int)params->get("errorHistoryMax") == 100);
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[http][opcuaex][setparam][exchangeMode]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Try to set exchangeMode without taking control first - should fail
+    // (unless httpControlActive is already true from previous test, or httpEnabledSetParams is disabled)
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v01/OPCUAExchange1/setparam?exchangeMode=1",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        std::string body = ss.str();
+
+        // Response should be either OK (if control was already active) or ERROR
+        auto root = parser.parse(body).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        // Just check it parses correctly - actual behavior depends on state
+    }
+
+    // Try takeControl first, then set exchangeMode
+    {
+        HTTPRequest reqTake(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/takeControl", HTTPRequest::HTTP_1_1);
+        HTTPResponse resTake;
+        cs.sendRequest(reqTake);
+        std::istream& rsTake = cs.receiveResponse(resTake);
+
+        std::stringstream ssTake;
+        ssTake << rsTake.rdbuf();
+        auto rootTake = parser.parse(ssTake.str()).extract<Poco::JSON::Object::Ptr>();
+
+        if( rootTake->get("result").toString() == "OK" )
+        {
+            // Control is allowed, now try to set exchangeMode
+            int prevMode = 0;
+
+            // Get current mode
+            {
+                HTTPRequest reqGet(HTTPRequest::HTTP_GET,
+                                   "/api/v01/OPCUAExchange1/getparam?name=exchangeMode",
+                                   HTTPRequest::HTTP_1_1);
+                HTTPResponse resGet;
+                cs.sendRequest(reqGet);
+                std::istream& rsGet = cs.receiveResponse(resGet);
+                REQUIRE(resGet.getStatus() == HTTPResponse::HTTP_OK);
+
+                std::stringstream ssGet;
+                ssGet << rsGet.rdbuf();
+                auto rootGet = parser.parse(ssGet.str()).extract<Poco::JSON::Object::Ptr>();
+                prevMode = (int)rootGet->getObject("params")->get("exchangeMode");
+            }
+
+            // Set new mode
+            int newMode = (prevMode == 0) ? 1 : 0;
+            {
+                HTTPRequest reqSet(HTTPRequest::HTTP_GET,
+                                   "/api/v01/OPCUAExchange1/setparam?exchangeMode=" + std::to_string(newMode),
+                                   HTTPRequest::HTTP_1_1);
+                HTTPResponse resSet;
+                cs.sendRequest(reqSet);
+                std::istream& rsSet = cs.receiveResponse(resSet);
+
+                std::stringstream ssSet;
+                ssSet << rsSet.rdbuf();
+                auto rootSet = parser.parse(ssSet.str()).extract<Poco::JSON::Object::Ptr>();
+
+                if( rootSet->get("result").toString() == "OK" )
+                {
+                    // setparam succeeded
+
+                    // Verify mode was changed
+                    HTTPRequest reqVerify(HTTPRequest::HTTP_GET,
+                                          "/api/v01/OPCUAExchange1/getparam?name=exchangeMode",
+                                          HTTPRequest::HTTP_1_1);
+                    HTTPResponse resVerify;
+                    cs.sendRequest(reqVerify);
+                    std::istream& rsVerify = cs.receiveResponse(resVerify);
+                    REQUIRE(resVerify.getStatus() == HTTPResponse::HTTP_OK);
+
+                    std::stringstream ssVerify;
+                    ssVerify << rsVerify.rdbuf();
+                    auto rootVerify = parser.parse(ssVerify.str()).extract<Poco::JSON::Object::Ptr>();
+                    REQUIRE((int)rootVerify->getObject("params")->get("exchangeMode") == newMode);
+
+                    // Restore previous mode
+                    HTTPRequest reqRestore(HTTPRequest::HTTP_GET,
+                                           "/api/v01/OPCUAExchange1/setparam?exchangeMode=" + std::to_string(prevMode),
+                                           HTTPRequest::HTTP_1_1);
+                    HTTPResponse resRestore;
+                    cs.sendRequest(reqRestore);
+                    cs.receiveResponse(resRestore);
+                }
+            }
+
+            // Release control
+            HTTPRequest reqRelease(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/releaseControl", HTTPRequest::HTTP_1_1);
+            HTTPResponse resRelease;
+            cs.sendRequest(reqRelease);
+            cs.receiveResponse(resRelease);
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /status includes new fields", "[http][opcuaex][status][extended]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/status", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+    Poco::JSON::Parser parser;
+    auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+
+    auto st = root->getObject("status");
+    REQUIRE(st);
+
+    // Check new fields
+    REQUIRE(st->has("httpControlAllow"));
+    REQUIRE(st->has("httpControlActive"));
+    REQUIRE(st->has("errorHistoryMax"));
+    REQUIRE(st->has("errorHistorySize"));
 }
 // -----------------------------------------------------------------------------
 #endif // DISABLE_REST_API

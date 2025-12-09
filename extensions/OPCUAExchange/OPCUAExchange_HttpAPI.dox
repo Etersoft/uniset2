@@ -4,6 +4,9 @@
 - \ref sec_OPCUAEX_HTTP_API_help
 - \ref sec_OPCUAEX_HTTP_API_status
 - \ref sec_OPCUAEX_HTTP_API_params
+- \ref sec_OPCUAEX_HTTP_API_sensors
+- \ref sec_OPCUAEX_HTTP_API_diagnostics
+- \ref sec_OPCUAEX_HTTP_API_control
 
 \par Базовый URL
 
@@ -19,7 +22,7 @@ GET /<object>/help
 
 \section sec_OPCUAEX_HTTP_API_status /status
 
-Возвращает текущее состояние объекта обмена OPC UA (эквивалентно содержанию getInfo()).
+Текущее состояние объекта обмена OPC UA (эквивалентно getInfo(), дополнено полями расширения).
 
 \code
 GET /api/v01/OPCUAExchange1/status
@@ -31,22 +34,19 @@ GET /api/v01/OPCUAExchange1/status
   "result": "OK",
   "status": {
     "name": "OPCUAExchange1",
-    "logserver": {
-      "host": "127.0.0.1",
-      "port": 5510,
-      "short": "LogServer: OK"
-    },
+    "LogServer": { "host": "127.0.0.1", "port": 5510, "state": "RUNNING", "info": {...} },
     "channels": [
       { "index": 0, "disabled": 0, "ok": 1, "addr": "opc.tcp://127.0.0.1:4840" },
       { "index": 1, "disabled": 1 }
     ],
     "iolist_size": 32,
-    "subscription": {
-      "enabled": 1,
-      "items": 120
-    },
+    "subscription": { "enabled": 1, "items": 120 },
     "monitor": "vmon: OK",
-    "httpEnabledSetParams": 1
+    "httpEnabledSetParams": 1,
+    "httpControlAllow": 1,
+    "httpControlActive": 0,
+    "errorHistoryMax": 100,
+    "errorHistorySize": 3
   }
 }
 \endcode
@@ -79,41 +79,151 @@ GET /api/v01/OPCUAExchange1/status
 - \b updatetime (ms) — период обновления данных в SM
 - \b reconnectPause (ms) — пауза между попытками переподключения
 - \b timeoutIterate (ms) — таймаут итерации цикла
+- \b exchangeMode (0..4) — режим обмена, изменяется только при активном HTTP-контроле
+- \b writeToAllChannels (0|1) — писать во все каналы
+- \b currentChannel — индекс активного канала
+- \b connectCount — число успешных подключений
+- \b activated (0|1) — флаг активации процесса
+- \b iolistSize — количество сенсоров
+- \b httpControlAllow (0|1) — разрешён ли перехват управления
+- \b httpControlActive (0|1) — активен ли перехват управления
+- \b errorHistoryMax — максимальный размер истории ошибок
 
 \par Чтение параметров
 \code
-GET /api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate
-Response
+GET /api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate&name=exchangeMode
 {
   "result": "OK",
   "params": {
     "polltime": 100,
     "updatetime": 500,
     "reconnectPause": 2000,
-    "timeoutIterate": 50
+    "timeoutIterate": 50,
+    "exchangeMode": 0
   }
 }
 \endcode
 
 \par Изменение параметров
 \code
-GET /api/v01/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=3000&timeoutIterate=60
-Response
+GET /api/v01/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=3000&timeoutIterate=60&writeToAllChannels=1
 {
   "result": "OK",
   "updated": {
     "polltime": 200,
     "updatetime": 700,
     "reconnectPause": 3000,
-    "timeoutIterate": 60
+    "timeoutIterate": 60,
+    "writeToAllChannels": 1
   }
 }
 \endcode
 
 \par Ограничения
 - Изменение может быть заблокировано флагом \c httpEnabledSetParams.
+- \c exchangeMode доступен к записи только при \c httpControlActive=1 (см. \ref sec_OPCUAEX_HTTP_API_control).
 
 \par Коды ошибок
-- 400/5xx: некорректные значения (например, \c timeoutIterate="abc" или \c < 0)
-- 400: пустой запрос \c /setparam (нет key=value) или \c /getparam (нет \c name)
+- 400: пустой запрос \c /setparam (нет key=value) или \c /getparam (нет \c name), некорректные значения
+- 403: \c /setparam запрещён (httpEnabledSetParams=0) или попытка задать \c exchangeMode без активного HTTP-контроля
+- 404/500: внутренние ошибки
+
+\section sec_OPCUAEX_HTTP_API_sensors /sensors и /sensor
+
+\par Список сенсоров
+\code
+GET /api/v01/OPCUAExchange1/sensors?limit=100&offset=0&filter=AI
+{
+  "result": "OK",
+  "sensors": [
+    { "id": 1000, "name": "Temp_AS", "nodeid": "ns=2;s=Temp", "iotype": "AI", "value": 2350, "tick": 1, "vtype": "int32", "precision": 2, "status": "OK" }
+  ],
+  "total": 32,
+  "limit": 100,
+  "offset": 0
+}
+\endcode
+
+\par Детали сенсора
+\code
+GET /api/v01/OPCUAExchange1/sensor?id=1000
+{
+  "result": "OK",
+  "sensor": {
+    "id": 1000,
+    "name": "Temp_AS",
+    "nodeid": "ns=2;s=Temp",
+    "iotype": "AI",
+    "value": 2350,
+    "tick": 1,
+    "mask": 255,
+    "offset": 0,
+    "vtype": "int32",
+    "precision": 2,
+    "status": "OK",
+    "channels": [
+      { "index": 0, "status": "OK", "statusCode": "UA_STATUSCODE_GOOD" },
+      { "index": 1, "disabled": true }
+    ]
+  }
+}
+\endcode
+
+Если сенсор не найден: HTTP 404 + \c {"result":"ERROR","error":"sensor not found","query":{...}}.
+
+\section sec_OPCUAEX_HTTP_API_diagnostics /diagnostics
+
+Диагностика и история ошибок OPC UA.
+\code
+GET /api/v01/OPCUAExchange1/diagnostics
+{
+  "result": "OK",
+  "summary": {
+    "readErrors": 15,
+    "writeErrors": 2,
+    "connectionLosses": 1,
+    "uptime": 3600
+  },
+  "lastErrors": [
+    { "time": "2025-12-09T10:15:30", "channel": 0, "operation": "read", "statusCode": "UA_STATUSCODE_BADCONNECTIONCLOSED", "nodeid": "ns=2;s=Temp" }
+  ],
+  "errorHistorySize": 1,
+  "errorHistoryMax": 100
+}
+\endcode
+
+Параметры запроса \c /sensors:
+- \c limit — максимум записей (0 = все, default 50)
+- \c offset — смещение (default 0)
+- \c filter — фильтр по типу: AI|AO|DI|DO
+
+Дополнительно в разделе \c object базового \c /help присутствует поле \c extensionType="OPCUAExchange" (переопределённый \c httpGetMyInfo()).
+
+\section sec_OPCUAEX_HTTP_API_control /takeControl и /releaseControl
+
+Перехват/возврат управления режимом обмена через HTTP.
+
+\par Взять управление
+\code
+GET /api/v01/OPCUAExchange1/takeControl
+{
+  "result": "OK",
+  "message": "HTTP control enabled",
+  "previousMode": 0
+}
+\endcode
+
+Требует \c httpControlAllow=1, иначе HTTP 403 + \c {"result":"ERROR","error":"HTTP control not allowed (httpControlAllow=0)"}.
+
+\par Вернуть управление сенсору
+\code
+GET /api/v01/OPCUAExchange1/releaseControl
+{
+  "result": "OK",
+  "message": "control returned to sensor",
+  "currentMode": 0
+}
+\endcode
+
+При активном HTTP-контроле \c exchangeMode задаётся через \c /setparam, при возврате восстанавливается последнее значение от датчика/SM.
 */

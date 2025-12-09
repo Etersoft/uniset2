@@ -27,6 +27,7 @@
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
 	    <OPCUAExchange1 name="OPCUAExchange1" addr1="opc.tcp://127.0.0.1:4840" addr2="opc.tcp://127.0.0.1:4841" timeout="1000"
 			respond1_s="OPCUA1_Respond1_S" respond2_s="OPCUA1_Respond2_S" respond_s="OPCUA1_Respond_S" exchangeModeID="OPCUA1_Mode_AS"
+			httpControlAllow="1"
 		/>
   	</settings>
 	<ObjectsMap idfromfile="1">
