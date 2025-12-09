@@ -2712,26 +2712,30 @@ namespace uniset
         return myhelp;
     }
     // ----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBExchange::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr MBExchange::httpRequest( const UHttp::HttpRequestContext& ctx )
     {
-        mbinfo << myname << "(httpRequest): " << req << endl;
+        if( ctx.depth() > 0 )
+        {
+            const std::string& req = ctx[0];
+            mbinfo << myname << "(httpRequest): " << req << endl;
 
-        if( req == "mode" )
-            return httpMode(p);
+            if( req == "mode" )
+                return httpMode(ctx.params);
 
-        if( req == "reload" )
-            return httpReload(p);
+            if( req == "reload" )
+                return httpReload(ctx.params);
 
-        if( req == "getparam" )
-            return httpGetParam(p);
+            if( req == "getparam" )
+                return httpGetParam(ctx.params);
 
-        if( req == "setparam" )
-            return httpSetParam(p);
+            if( req == "setparam" )
+                return httpSetParam(ctx.params);
 
-        if( req == "status" )
-            return httpStatus();
+            if( req == "status" )
+                return httpStatus();
+        }
 
-        return UniSetObject::httpRequest(req, p);
+        return UniSetObject::httpRequest(ctx);
     }
     // ----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBExchange::httpMode(const Poco::URI::QueryParameters& p )
@@ -3086,6 +3090,13 @@ namespace uniset
         out->set("result", "OK");
         out->set("status", st);
         return out;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+    {
+        auto my = UniSetObject::httpGetMyInfo(root);
+        my->set("extensionType", "MBExchange");
+        return my;
     }
     // ----------------------------------------------------------------------------
 #endif

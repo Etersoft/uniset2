@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2025-12-02+03:00
+// generate timestamp: 2025-12-09+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -448,80 +448,81 @@ uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 // -----------------------------------------------------------------------------
 
 #ifndef DISABLE_REST_API
-Poco::JSON::Object::Ptr UObject_SK::httpGet( const Poco::URI::QueryParameters& params )
+Poco::JSON::Object::Ptr UObject_SK::httpRequest( const uniset::UHttp::HttpRequestContext& ctx )
 {
-	Poco::JSON::Object::Ptr json = UniSetObject::httpGet(params);
-	
-	Poco::JSON::Object::Ptr jdata = json->getObject(myname);
-	if( !jdata )
-		jdata = uniset::json::make_child(json,myname);
+	// Обработка команды /log
+	if( ctx.depth() > 0 && ctx[0] == "log" )
+		return httpRequestLog(ctx.params);
 
-	Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
-	if( logserv )
+	// Базовая обработка из родительского класса
+	Poco::JSON::Object::Ptr json = UniSetObject::httpRequest(ctx);
+
+	// Если запрос к корню объекта (depth==0), добавляем расширенную информацию
+	if( ctx.depth() == 0 )
 	{
-		jserv->set("host",logserv_host);
-		jserv->set("port",logserv_port);
-		jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
-		jserv->set("info", logserv->httpGetShortInfo());
-	}
+		Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+		if( !jdata )
+			jdata = uniset::json::make_child(json,myname);
 
-	auto timers = getTimersList();
-	auto jtm = uniset::json::make_child(jdata,"Timers");
+		Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
+		if( logserv )
+		{
+			jserv->set("host",logserv_host);
+			jserv->set("port",logserv_port);
+			jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
+			jserv->set("info", logserv->httpGetShortInfo());
+		}
 
-	jtm->set("count",timers.size());
-	for( const auto& t: timers )
-	{
-		auto jt = uniset::json::make_child(jtm,to_string(t.id));
-		jt->set("id", t.id);
-		jt->set("name", getTimerName(t.id));
-		jt->set("msec", t.tmr.getInterval());
-		jt->set("timeleft", t.curTimeMS);
-		jt->set("tick", ( t.curTick>=0 ? t.curTick : -1 ));
-	}
+		auto timers = getTimersList();
+		auto jtm = uniset::json::make_child(jdata,"Timers");
 
-	auto vlist = vmon.getList();
-	auto jvmon = uniset::json::make_child(jdata,"Variables");
-	
-	for( const auto& v: vlist )
-		jvmon->set(v.first,v.second);
+		jtm->set("count",timers.size());
+		for( const auto& t: timers )
+		{
+			auto jt = uniset::json::make_child(jtm,to_string(t.id));
+			jt->set("id", t.id);
+			jt->set("name", getTimerName(t.id));
+			jt->set("msec", t.tmr.getInterval());
+			jt->set("timeleft", t.curTimeMS);
+			jt->set("tick", ( t.curTick>=0 ? t.curTick : -1 ));
+		}
 
-	
-	auto jstat = uniset::json::make_child(jdata,"Statistics");
-	jstat->set("processingMessageCatchCount", processingMessageCatchCount);
+		auto vlist = vmon.getList();
+		auto jvmon = uniset::json::make_child(jdata,"Variables");
 
-	auto jsens = uniset::json::make_child(jstat,"sensors");
-	for( const auto& s: smStat )
-	{
-		std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
-		auto js = uniset::json::make_child(jsens,sname);
-		js->set("id", s.first);
-		js->set("name", sname);
-		js->set("count", s.second);
-	}
-	
+		for( const auto& v: vlist )
+			jvmon->set(v.first,v.second);
+
 		
-	httpGetUserData(jdata);
+		auto jstat = uniset::json::make_child(jdata,"Statistics");
+		jstat->set("processingMessageCatchCount", processingMessageCatchCount);
+
+		auto jsens = uniset::json::make_child(jstat,"sensors");
+		for( const auto& s: smStat )
+		{
+			std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
+			auto js = uniset::json::make_child(jsens,sname);
+			js->set("id", s.first);
+			js->set("name", sname);
+			js->set("count", s.second);
+		}
+		
+
+		httpGetUserData(jdata);
+	}
 
 	return json;
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UObject_SK::httpHelp( const Poco::URI::QueryParameters& params )
 {
-	uniset::json::help::object myhelp(myname, UniSetObject::httpGet(params));
+	uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(params));
 
 	// 'log'
 	uniset::json::help::item cmd("log","show log level");
 	myhelp.add(cmd);
 
 	return myhelp;
-}
-// -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr UObject_SK::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
-{
-	if( req == "log" )
-		return httpRequestLog(p);
-	
-	return UniSetObject::httpRequest(req,p);
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UObject_SK::httpRequestLog( const Poco::URI::QueryParameters& p )

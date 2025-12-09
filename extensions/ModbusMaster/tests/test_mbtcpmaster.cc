@@ -893,42 +893,63 @@ TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaste
 {
     InitTest();
 
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
     // default reconfigure
-    std::string request = "/api/v01/reload";
-    uniset::SimpleInfo_var ret = mbm->apiRequest(request.c_str());
+    {
+        HTTPClientSession cs(httpAddr, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/reload", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
 
-    ostringstream sinfo;
-    sinfo << ret->info;
-    std::string info = sinfo.str();
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
 
-    REQUIRE( ret->id == mbm->getId() );
-    REQUIRE_FALSE( info.empty() );
-    REQUIRE( info.find("OK") != std::string::npos );
+        std::ostringstream oss;
+        oss << rs.rdbuf();
+        std::string info = oss.str();
 
+        REQUIRE( res.getStatus() == HTTPResponse::HTTP_OK );
+        REQUIRE_FALSE( info.empty() );
+        REQUIRE( info.find("OK") != std::string::npos );
+    }
 
     // reconfigure from other file
-    request = "/api/v01/reload?confile=" + confile2;
-    ret = mbm->apiRequest(request.c_str());
+    {
+        HTTPClientSession cs(httpAddr, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/reload?confile=" + confile2, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
 
-    sinfo.str("");
-    sinfo << ret->info;
-    info = sinfo.str();
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
 
-    REQUIRE( ret->id == mbm->getId() );
-    REQUIRE_FALSE( info.empty() );
-    REQUIRE( info.find("OK") != std::string::npos );
-    REQUIRE( info.find(confile2) != std::string::npos );
+        std::ostringstream oss;
+        oss << rs.rdbuf();
+        std::string info = oss.str();
+
+        REQUIRE( res.getStatus() == HTTPResponse::HTTP_OK );
+        REQUIRE_FALSE( info.empty() );
+        REQUIRE( info.find("OK") != std::string::npos );
+        REQUIRE( info.find(confile2) != std::string::npos );
+    }
 
     // reconfigure FAIL
-    request = "/api/v01/reload?confile=BADFILE";
-    ret = mbm->apiRequest(request.c_str());
-    sinfo.str("");
-    sinfo << ret->info;
-    info = sinfo.str();
+    {
+        HTTPClientSession cs(httpAddr, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/reload?confile=BADFILE", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
 
-    REQUIRE( ret->id == mbm->getId() );
-    REQUIRE_FALSE( info.empty() );
-    REQUIRE( info.find("OK") == std::string::npos );
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+
+        std::ostringstream oss;
+        oss << rs.rdbuf();
+        std::string info = oss.str();
+
+        REQUIRE_FALSE( info.empty() );
+        REQUIRE( info.find("OK") == std::string::npos );
+    }
 }
 // -----------------------------------------------------------------------------
 #if 0
@@ -1038,7 +1059,7 @@ TEST_CASE("MBTCPMaster: HTTP /mode?supported", "[http][rest][mbtcpmaster][suppor
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "api/v01/MBTCPMaster1/mode?supported=1", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/mode?supported=1", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     try
@@ -1075,7 +1096,7 @@ TEST_CASE("MBTCPMaster: HTTP /mode?get", "[http][rest][mbtcpmaster][get]")
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "api/v01/MBTCPMaster1/mode?get", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/mode?get", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);
@@ -1103,7 +1124,7 @@ TEST_CASE("MBTCPMaster: HTTP /mode?set=writeOnly (sensor-bound -> error)", "[htt
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "api/v01/MBTCPMaster1/mode?set=writeOnly", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/mode?set=writeOnly", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);
@@ -1134,7 +1155,7 @@ TEST_CASE("MBTCPMaster: HTTP /getparam (force, force_out, maxHeartBeat)", "[http
 
     HTTPClientSession cs(httpAddr, httpPort);
     HTTPRequest req(HTTPRequest::HTTP_GET,
-                    "api/v01/MBTCPMaster1/getparam?name=force&name=force_out&name=maxHeartBeat",
+                    "/api/v2/MBTCPMaster1/getparam?name=force&name=force_out&name=maxHeartBeat",
                     HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
@@ -1172,7 +1193,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (force & force_out)", "[http][rest][mbtcp
     {
         HTTPClientSession cs(httpAddr, httpPort);
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "api/v01/MBTCPMaster1/getparam?name=force&name=force_out",
+                        "/api/v2/MBTCPMaster1/getparam?name=force&name=force_out",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
 
@@ -1196,7 +1217,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (force & force_out)", "[http][rest][mbtcp
         // Устанавливаем новые
         {
             HTTPRequest reqSet(HTTPRequest::HTTP_GET,
-                               std::string("api/v01/MBTCPMaster1/setparam?force=")
+                               std::string("/api/v2/MBTCPMaster1/setparam?force=")
                                + std::to_string(new_force)
                                + "&force_out=" + std::to_string(new_force_out),
                                HTTPRequest::HTTP_1_1);
@@ -1216,7 +1237,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (force & force_out)", "[http][rest][mbtcp
         // Проверяем, что применилось
         {
             HTTPRequest reqGet2(HTTPRequest::HTTP_GET,
-                                "api/v01/MBTCPMaster1/getparam?name=force&name=force_out",
+                                "/api/v2/MBTCPMaster1/getparam?name=force&name=force_out",
                                 HTTPRequest::HTTP_1_1);
             HTTPResponse resGet2;
             cs.sendRequest(reqGet2);
@@ -1236,7 +1257,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (force & force_out)", "[http][rest][mbtcp
         // Возвращаем исходные значения
         {
             HTTPRequest reqBack(HTTPRequest::HTTP_GET,
-                                std::string("api/v01/MBTCPMaster1/setparam?force=")
+                                std::string("/api/v2/MBTCPMaster1/setparam?force=")
                                 + std::to_string(prev_force)
                                 + "&force_out=" + std::to_string(prev_force_out),
                                 HTTPRequest::HTTP_1_1);
@@ -1264,7 +1285,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (maxHeartBeat)", "[http][rest][mbtcpmaste
     int prev_mhb = [&]()
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "api/v01/MBTCPMaster1/getparam?name=maxHeartBeat",
+                        "/api/v2/MBTCPMaster1/getparam?name=maxHeartBeat",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1284,7 +1305,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (maxHeartBeat)", "[http][rest][mbtcpmaste
     int new_mhb = prev_mhb + 1234;
     {
         HTTPRequest reqSet(HTTPRequest::HTTP_GET,
-                           std::string("api/v01/MBTCPMaster1/setparam?maxHeartBeat=") + std::to_string(new_mhb),
+                           std::string("/api/v2/MBTCPMaster1/setparam?maxHeartBeat=") + std::to_string(new_mhb),
                            HTTPRequest::HTTP_1_1);
         HTTPResponse resSet;
         cs.sendRequest(reqSet);
@@ -1301,7 +1322,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (maxHeartBeat)", "[http][rest][mbtcpmaste
     // проверяем новое значение
     {
         HTTPRequest reqGet2(HTTPRequest::HTTP_GET,
-                            "api/v01/MBTCPMaster1/getparam?name=maxHeartBeat",
+                            "/api/v2/MBTCPMaster1/getparam?name=maxHeartBeat",
                             HTTPRequest::HTTP_1_1);
         HTTPResponse resGet2;
         cs.sendRequest(reqGet2);
@@ -1319,7 +1340,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (maxHeartBeat)", "[http][rest][mbtcpmaste
     // возвращаем исходное
     {
         HTTPRequest reqBack(HTTPRequest::HTTP_GET,
-                            std::string("api/v01/MBTCPMaster1/setparam?maxHeartBeat=") + std::to_string(prev_mhb),
+                            std::string("/api/v2/MBTCPMaster1/setparam?maxHeartBeat=") + std::to_string(prev_mhb),
                             HTTPRequest::HTTP_1_1);
         HTTPResponse resBack;
         cs.sendRequest(reqBack);
@@ -1344,7 +1365,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) recv_timeout & polltime", "[h
     int prev_recv_to = 0, prev_polltime = 0;
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "api/v01/MBTCPMaster1/getparam?name=recv_timeout&name=polltime",
+                        "/api/v2/MBTCPMaster1/getparam?name=recv_timeout&name=polltime",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1367,7 +1388,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) recv_timeout & polltime", "[h
     // 2) устанавливаем новые
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        std::string("api/v01/MBTCPMaster1/setparam?recv_timeout=") + std::to_string(new_recv_to) +
+                        std::string("/api/v2/MBTCPMaster1/setparam?recv_timeout=") + std::to_string(new_recv_to) +
                         "&polltime=" + std::to_string(new_polltime),
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
@@ -1385,7 +1406,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) recv_timeout & polltime", "[h
     // 3) проверяем, что применилось
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "api/v01/MBTCPMaster1/getparam?name=recv_timeout&name=polltime",
+                        "/api/v2/MBTCPMaster1/getparam?name=recv_timeout&name=polltime",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1404,7 +1425,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) recv_timeout & polltime", "[h
     // 4) возвращаем исходные
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        std::string("api/v01/MBTCPMaster1/setparam?recv_timeout=") + std::to_string(prev_recv_to) +
+                        std::string("/api/v2/MBTCPMaster1/setparam?recv_timeout=") + std::to_string(prev_recv_to) +
                         "&polltime=" + std::to_string(prev_polltime),
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
@@ -1430,7 +1451,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) sleepPause_msec & default_tim
     int prev_sleep = 0, prev_default_to = 0;
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "api/v01/MBTCPMaster1/getparam?name=sleepPause_msec&name=default_timeout",
+                        "/api/v2/MBTCPMaster1/getparam?name=sleepPause_msec&name=default_timeout",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1453,7 +1474,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) sleepPause_msec & default_tim
     // 2) устанавливаем новые
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        std::string("api/v01/MBTCPMaster1/setparam?sleepPause_msec=") + std::to_string(new_sleep) +
+                        std::string("/api/v2/MBTCPMaster1/setparam?sleepPause_msec=") + std::to_string(new_sleep) +
                         "&default_timeout=" + std::to_string(new_default_to),
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
@@ -1471,7 +1492,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) sleepPause_msec & default_tim
     // 3) проверяем, что применилось
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "api/v01/MBTCPMaster1/getparam?name=sleepPause_msec&name=default_timeout",
+                        "/api/v2/MBTCPMaster1/getparam?name=sleepPause_msec&name=default_timeout",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1490,7 +1511,7 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) sleepPause_msec & default_tim
     // 4) возвращаем исходные
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        std::string("api/v01/MBTCPMaster1/setparam?sleepPause_msec=") + std::to_string(prev_sleep) +
+                        std::string("/api/v2/MBTCPMaster1/setparam?sleepPause_msec=") + std::to_string(prev_sleep) +
                         "&default_timeout=" + std::to_string(prev_default_to),
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
@@ -1510,7 +1531,7 @@ TEST_CASE("MBTCPMaster: HTTP /status extended fields", "[http][rest][mbtcpmaster
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/MBTCPMaster1/status", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/status", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);

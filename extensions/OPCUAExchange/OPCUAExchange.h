@@ -317,8 +317,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
             // HTTP API
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
-            virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
-            virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override;
             virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root ) override;
 #endif
 
@@ -351,16 +350,16 @@ namespace uniset
 #ifndef DISABLE_REST_API
             // Публичные HTTP-обработчики параметров
             Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpSetParam( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpStatus();
             Poco::JSON::Object::Ptr buildLogServerInfo();
 
             // Новые HTTP endpoints
             Poco::JSON::Object::Ptr httpSensors( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpSensor( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpSensor( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDiagnostics( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpTakeControl( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpReleaseControl( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpTakeControl( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpReleaseControl( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
 
             // Вспомогательные методы
             std::string formatTime( const std::chrono::system_clock::time_point& tp ) const;

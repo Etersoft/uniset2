@@ -424,11 +424,39 @@ namespace uniset
     }
     // ------------------------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-    Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr UniSetObject::httpRequest( const UHttp::HttpRequestContext& ctx )
     {
-        Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-        httpGetMyInfo(jret);
-        return jret;
+        // /api/v2/ObjectName — базовая информация об объекте
+        if( ctx.depth() == 0 )
+        {
+            Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+            httpGetMyInfo(jret);
+            return jret;
+        }
+
+        // /api/v2/ObjectName/params/get или /api/v2/ObjectName/params/set
+        if( ctx[0] == "params" )
+        {
+            if( ctx.depth() >= 2 )
+                return request_params(ctx[1], ctx.params);
+
+            ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+            throw uniset::SystemError("params: expected 'get' or 'set'");
+        }
+
+        // /api/v2/ObjectName/configure/get
+        if( ctx[0] == "configure" )
+        {
+            if( ctx.depth() >= 2 )
+                return request_configure(ctx[1], ctx.params);
+
+            ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+            throw uniset::SystemError("configure: expected 'get'");
+        }
+
+        // Неизвестный путь
+        ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
+        throw uniset::SystemError("Unknown path: " + ctx.pathString());
     }
     // ------------------------------------------------------------------------------------------
     Poco::JSON::Object::Ptr UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
@@ -1016,113 +1044,19 @@ namespace uniset
     // ------------------------------------------------------------------------------------------
     SimpleInfo* UniSetObject::apiRequest( const char* request )
     {
-#ifdef DISABLE_REST_API
-        return getInfo(request);
-#else
+        // DEPRECATED: apiRequest via CORBA is deprecated.
+        // Use HTTP API instead: /api/v2/ObjectName/...
         SimpleInfo* ret = new SimpleInfo();
         ret->id = getId();
-        ostringstream err;
-
-        try
-        {
-            Poco::URI uri(request);
-
-            if( ulog()->is_level9() )
-                ulog()->level9() << myname << "(apiRequest): request: " << request << endl;
-
-            ostringstream out;
-            std::string query = "";
-
-            // Пока не будем требовать обязательно использовать формат /api/vesion/query..
-            // но если указан, то проверяем..
-            std::vector<std::string> seg;
-            uri.getPathSegments(seg);
-
-            size_t qind = 0;
-
-            if( seg.size() > 0 && seg[0] == "api" )
-            {
-                // проверка: /api/version/query[?params]..
-                if( seg.size() < 2 || seg[1] != UHttp::UHTTP_API_VERSION )
-                {
-                    Poco::JSON::Object jdata;
-                    jdata.set("error", Poco::Net::HTTPServerResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST));
-                    jdata.set("ecode", (int)Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
-                    jdata.set("message", "BAD REQUEST STRUCTURE");
-                    jdata.stringify(out);
-                    ret->info = out.str().c_str(); // CORBA::string_dup(..)
-                    return ret;
-                }
-
-                if( seg.size() > 2 )
-                    qind = 2;
-            }
-            else if( seg.size() == 1 )
-                qind = 0;
-
-            query = seg.empty() ? "" : seg[qind];
-
-            // обработка запроса..
-            if( query == "help" )
-            {
-                // запрос вида: /help?params
-                auto reply = httpHelp(uri.getQueryParameters());
-                reply->stringify(out);
-            }
-            else if( query == "configure" )
-            {
-                // запрос вида: /configure/query?params
-                string qconf = ( seg.size() > (qind + 1) ) ? seg[qind + 1] : "";
-                auto reply = request_configure(qconf, uri.getQueryParameters());
-                reply->stringify(out);
-            }
-            else if( query == "params" )
-            {
-                // запрос вида: /params/query?params
-                string qconf = ( seg.size() > (qind + 1) ) ? seg[qind + 1] : "";
-                auto reply = request_params(qconf, uri.getQueryParameters());
-                reply->stringify(out);
-            }
-            else if( !query.empty() )
-            {
-                // запрос вида: /cmd?params
-                auto reply = httpRequest(query, uri.getQueryParameters());
-                reply->stringify(out);
-            }
-            else
-            {
-                // запрос без команды /?params
-                auto reply = httpGet(uri.getQueryParameters());
-                reply->stringify(out);
-            }
-
-            ret->info = out.str().c_str(); // CORBA::string_dup(..)
-            return ret;
-        }
-        catch( Poco::SyntaxException& ex )
-        {
-            err << ex.displayText();
-        }
-        catch( uniset::SystemError& ex )
-        {
-            err << ex;
-        }
-        catch( std::exception& ex )
-        {
-            err << ex.what();
-        }
 
         Poco::JSON::Object jdata;
-        jdata.set("error", err.str());
-        jdata.set("ecode", (int)Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
-        //      jdata.set("ename", Poco::Net::HTTPResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR));
+        jdata.set("error", "apiRequest via CORBA is deprecated. Use HTTP API instead.");
+        jdata.set("ecode", 501);  // Not Implemented
 
         ostringstream out;
         jdata.stringify(out);
-        ret->info = out.str().c_str(); // CORBA::string_dup(..)
+        ret->info = out.str().c_str();
         return ret;
-
-#endif
     }
     // ------------------------------------------------------------------------------------------
     ostream& operator<<(ostream& os, UniSetObject& obj )

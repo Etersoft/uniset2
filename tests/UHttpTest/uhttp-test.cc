@@ -15,14 +15,21 @@ class UTestSupplier:
         UTestSupplier() {}
         virtual ~UTestSupplier() {}
 
-        virtual Poco::JSON::Object::Ptr  httpGet( const Poco::URI::QueryParameters& params ) override
+        virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override
         {
             Poco::JSON::Object::Ptr j = new Poco::JSON::Object();
 
-            for( const auto& p : params )
-                j->set(p.first, p.second);
+            // Если путь пустой — возвращаем базовую информацию
+            if( ctx.depth() == 0 )
+            {
+                for( const auto& p : ctx.params )
+                    j->set(p.first, p.second);
+                j->set("test", 42);
+                return j;
+            }
 
-            j->set("test", 42);
+            // Иначе обрабатываем команду из пути
+            j->set(ctx[0], "OK");
             return j;
         }
 
@@ -47,13 +54,6 @@ class UTestSupplier:
 
             return myhelp;
         }
-
-        virtual Poco::JSON::Object::Ptr  httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override
-        {
-            Poco::JSON::Object::Ptr j = new Poco::JSON::Object();
-            j->set(req, "OK");
-            return j;
-        }
 };
 // --------------------------------------------------------------------------
 class UTestRequestRegistry:
@@ -63,15 +63,14 @@ class UTestRequestRegistry:
         UTestRequestRegistry() {}
         virtual ~UTestRequestRegistry() {}
 
-
-        virtual Poco::JSON::Object::Ptr  httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
+        virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override
         {
-            Poco::JSON::Object::Ptr j = sup.httpGet(p);
-            j->set("name", name);
+            Poco::JSON::Object::Ptr j = sup.httpRequest(ctx);
+            j->set("name", ctx.objectName);
             return j;
         }
 
-        virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) override
+        virtual Poco::JSON::Array::Ptr httpGetObjectsList( const UHttp::HttpRequestContext& ctx ) override
         {
             Poco::JSON::Array::Ptr j = new Poco::JSON::Array();
             j->add("TestObject");
@@ -80,16 +79,10 @@ class UTestRequestRegistry:
             return j;
         }
 
-        virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
+        virtual Poco::JSON::Object::Ptr httpHelp( const UHttp::HttpRequestContext& ctx ) override
         {
-            return sup.httpHelp(p);
+            return sup.httpHelp(ctx.params);
         }
-
-        virtual Poco::JSON::Object::Ptr httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override
-        {
-            return sup.httpRequest(req, p);
-        }
-
 
     private:
         UTestSupplier sup;

@@ -1248,15 +1248,17 @@ Poco::JSON::Object::Ptr IONotifyController::httpHelp(const Poco::URI::QueryParam
 	return myhelp;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr IONotifyController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr IONotifyController::httpRequest( const UHttp::HttpRequestContext& ctx )
 {
-	if( req == "consumers" )
-		return request_consumers(req, p);
+	// /api/v2/ObjectName/consumers?...
+	if( ctx.depth() >= 1 && ctx[0] == "consumers" )
+		return request_consumers(ctx[0], ctx.params);
 
-	if( req == "lost" )
-		return request_lost(req, p);
+	// /api/v2/ObjectName/lost
+	if( ctx.depth() >= 1 && ctx[0] == "lost" )
+		return request_lost(ctx[0], ctx.params);
 
-	return IOController::httpRequest(req, p);
+	return IOController::httpRequest(ctx);
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req, const Poco::URI::QueryParameters& p )

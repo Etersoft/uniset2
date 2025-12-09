@@ -235,7 +235,7 @@ TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAServer/status", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAServer/status", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);
@@ -281,7 +281,7 @@ TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
     int prev_ut = 0;
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAServer/getparam?name=updateTime_msec",
+                        "/api/v2/OPCUAServer/getparam?name=updateTime_msec",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -300,7 +300,7 @@ TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
 
     // 2) пробуем применить
     HTTPRequest reqSet(HTTPRequest::HTTP_GET,
-                       std::string("/api/v01/OPCUAServer/setparam?")
+                       std::string("/api/v2/OPCUAServer/setparam?")
                        + "updateTime_msec=" + std::to_string(new_ut),
                        HTTPRequest::HTTP_1_1);
     HTTPResponse resSet;
@@ -319,7 +319,7 @@ TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
 
         // 3) проверяем
         HTTPRequest req2(HTTPRequest::HTTP_GET,
-                         "/api/v01/OPCUAServer/getparam?name=updateTime_msec",
+                         "/api/v2/OPCUAServer/getparam?name=updateTime_msec",
                          HTTPRequest::HTTP_1_1);
         HTTPResponse res2;
         cs.sendRequest(req2);
@@ -335,7 +335,7 @@ TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
 
         // 4) возвращаем
         HTTPRequest reqBack(HTTPRequest::HTTP_GET,
-                            std::string("/api/v01/OPCUAServer/setparam?")
+                            std::string("/api/v2/OPCUAServer/setparam?")
                             + "sessionTimeout=" + std::to_string(prev_ut),
                             HTTPRequest::HTTP_1_1);
         HTTPResponse resBack;

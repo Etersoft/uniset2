@@ -2248,21 +2248,26 @@ namespace uniset
         return myhelp;
     }
     // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBSlave::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr MBSlave::httpRequest( const UHttp::HttpRequestContext& ctx )
     {
-        if( req == "regs" )
-            return request_regs(req, p);
+        if( ctx.depth() > 0 )
+        {
+            const std::string& req = ctx[0];
 
-        if( req == "getparam" )
-            return httpGetParam(p);
+            if( req == "regs" )
+                return request_regs(req, ctx.params);
 
-        if( req == "setparam" )
-            return httpSetParam(p);
+            if( req == "getparam" )
+                return httpGetParam(ctx.params);
 
-        if( req == "status" )
-            return httpStatus();
+            if( req == "setparam" )
+                return httpSetParam(ctx.params);
 
-        return UniSetObject::httpRequest(req, p);
+            if( req == "status" )
+                return httpStatus();
+        }
+
+        return UniSetObject::httpRequest(ctx);
     }
     // -------------------------------------------------------------------------
     static long to_long(const std::string& s, const std::string& what, const std::string& myname)
@@ -2510,7 +2515,13 @@ namespace uniset
         out->set("status", js);
         return out;
     }
-
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+    {
+        auto my = UniSetObject::httpGetMyInfo(root);
+        my->set("extensionType", "MBSlave");
+        return my;
+    }
 #endif
     // -------------------------------------------------------------------------
     ModbusRTU::mbErrCode MBSlave::much_read(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,

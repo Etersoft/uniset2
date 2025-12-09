@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2025-12-02+03:00
+// generate timestamp: 2025-12-09+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -97,8 +97,7 @@ class UObject_SK:
 
 #ifndef DISABLE_REST_API
         // HTTP API
-        virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
-        virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+        virtual Poco::JSON::Object::Ptr httpRequest( const uniset::UHttp::HttpRequestContext& ctx ) override;
         virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
 #endif
 
