@@ -37,7 +37,7 @@ TEST_CASE("HttpResolver: cli resolve", "[httpresolver][cli]")
 
     UHttp::UHttpClient cli;
 
-    auto ret = cli.get("localhost", 8008, "api/v01/resolve/text?" + std::to_string(TestProc));
+    auto ret = cli.get("localhost", 8008, "api/v2/resolve/text?" + std::to_string(TestProc));
     REQUIRE_FALSE( ret.empty() );
 }
 // -----------------------------------------------------------------------------

@@ -567,7 +567,7 @@ TEST_CASE("OPCUAExchange: HTTP /status includes LogServer", "[http][opcuaex][sta
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/status", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/status", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);
@@ -603,7 +603,7 @@ TEST_CASE("OPCUAExchange: HTTP /getparam (polltime, updatetime, reconnectPause, 
 
     HTTPClientSession cs(httpAddr, httpPort);
     HTTPRequest req(HTTPRequest::HTTP_GET,
-                    "/api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
+                    "/api/v2/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
                     HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
@@ -641,7 +641,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam (apply or blocked)", "[http][opcuaex][s
     int prev_poll = 0, prev_update = 0, prev_reconn = 0, prev_iter = 0;
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
+                        "/api/v2/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -666,7 +666,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam (apply or blocked)", "[http][opcuaex][s
 
     // 3) пытаемся применить
     HTTPRequest reqSet(HTTPRequest::HTTP_GET,
-                       std::string("/api/v01/OPCUAExchange1/setparam?")
+                       std::string("/api/v2/OPCUAExchange1/setparam?")
                        + "polltime=" + std::to_string(new_poll)
                        + "&updatetime=" + std::to_string(new_update)
                        + "&reconnectPause=" + std::to_string(new_reconn)
@@ -686,7 +686,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam (apply or blocked)", "[http][opcuaex][s
         REQUIRE(jSet->get("result").toString() == "OK");
 
         HTTPRequest req2(HTTPRequest::HTTP_GET,
-                         "/api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
+                         "/api/v2/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate",
                          HTTPRequest::HTTP_1_1);
         HTTPResponse res2;
         cs.sendRequest(req2);
@@ -705,7 +705,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam (apply or blocked)", "[http][opcuaex][s
 
         // 4) возвращаем исходные значения, чтобы не ломать окружение
         HTTPRequest reqBack(HTTPRequest::HTTP_GET,
-                            std::string("/api/v01/OPCUAExchange1/setparam?")
+                            std::string("/api/v2/OPCUAExchange1/setparam?")
                             + "polltime=" + std::to_string(prev_poll)
                             + "&updatetime=" + std::to_string(prev_update)
                             + "&reconnectPause=" + std::to_string(prev_reconn)
@@ -737,7 +737,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensors (list with pagination)", "[http][opcuaex
 
     // Basic request without parameters
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -770,7 +770,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensors (list with pagination)", "[http][opcuaex
 
     // Request with limit and offset
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors?limit=2&offset=0", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?limit=2&offset=0", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -788,7 +788,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensors (list with pagination)", "[http][opcuaex
 
     // Request with filter
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors?filter=AI", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=AI", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -825,7 +825,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex
     std::string sensorName;
     std::string sensorNodeId;
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/sensors?limit=1", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?limit=1", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -845,7 +845,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex
     // Search by id
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/sensor?id=" + std::to_string(sensorId),
+                        "/api/v2/OPCUAExchange1/sensor?id=" + std::to_string(sensorId),
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -868,7 +868,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex
     // Search by name
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/sensor?name=" + sensorName,
+                        "/api/v2/OPCUAExchange1/sensor?name=" + sensorName,
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -886,7 +886,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex
     // Search by nodeid
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/sensor?nodeid=" + sensorNodeId,
+                        "/api/v2/OPCUAExchange1/sensor?nodeid=" + sensorNodeId,
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -904,7 +904,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex
     // Search for non-existent sensor
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/sensor?id=999999",
+                        "/api/v2/OPCUAExchange1/sensor?id=999999",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -920,7 +920,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex
     // Request without parameters should fail
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/sensor",
+                        "/api/v2/OPCUAExchange1/sensor",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -938,7 +938,7 @@ TEST_CASE("OPCUAExchange: HTTP /diagnostics", "[http][opcuaex][diagnostics]")
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/diagnostics", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/diagnostics", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);
@@ -985,7 +985,7 @@ TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuae
     bool controlAllowed = false;
     {
         HTTPRequest reqCheck(HTTPRequest::HTTP_GET,
-                             "/api/v01/OPCUAExchange1/getparam?name=httpControlAllow",
+                             "/api/v2/OPCUAExchange1/getparam?name=httpControlAllow",
                              HTTPRequest::HTTP_1_1);
         HTTPResponse resCheck;
         cs.sendRequest(reqCheck);
@@ -1000,7 +1000,7 @@ TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuae
 
     // Try takeControl
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/takeControl", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/takeControl", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -1017,7 +1017,7 @@ TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuae
 
             // Check via getparam
             HTTPRequest reqParam(HTTPRequest::HTTP_GET,
-                                 "/api/v01/OPCUAExchange1/getparam?name=httpControlActive",
+                                 "/api/v2/OPCUAExchange1/getparam?name=httpControlActive",
                                  HTTPRequest::HTTP_1_1);
             HTTPResponse resParam;
             cs.sendRequest(reqParam);
@@ -1031,7 +1031,7 @@ TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuae
             REQUIRE((int)params->get("httpControlActive") == 1);
 
             // Now release control
-            HTTPRequest reqRelease(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/releaseControl", HTTPRequest::HTTP_1_1);
+            HTTPRequest reqRelease(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/releaseControl", HTTPRequest::HTTP_1_1);
             HTTPResponse resRelease;
             cs.sendRequest(reqRelease);
             std::istream& rsRelease = cs.receiveResponse(resRelease);
@@ -1044,7 +1044,7 @@ TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuae
 
             // Verify httpControlActive is now false
             HTTPRequest reqParam2(HTTPRequest::HTTP_GET,
-                                  "/api/v01/OPCUAExchange1/getparam?name=httpControlActive",
+                                  "/api/v2/OPCUAExchange1/getparam?name=httpControlActive",
                                   HTTPRequest::HTTP_1_1);
             HTTPResponse resParam2;
             cs.sendRequest(reqParam2);
@@ -1076,7 +1076,7 @@ TEST_CASE("OPCUAExchange: HTTP /getparam (new parameters)", "[http][opcuaex][get
 
     HTTPClientSession cs(httpAddr, httpPort);
     HTTPRequest req(HTTPRequest::HTTP_GET,
-                    "/api/v01/OPCUAExchange1/getparam?name=exchangeMode&name=writeToAllChannels"
+                    "/api/v2/OPCUAExchange1/getparam?name=exchangeMode&name=writeToAllChannels"
                     "&name=currentChannel&name=connectCount&name=activated&name=iolistSize"
                     "&name=httpControlAllow&name=httpControlActive&name=errorHistoryMax",
                     HTTPRequest::HTTP_1_1);
@@ -1127,7 +1127,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
     // (unless httpControlActive is already true from previous test, or httpEnabledSetParams is disabled)
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/OPCUAExchange1/setparam?exchangeMode=1",
+                        "/api/v2/OPCUAExchange1/setparam?exchangeMode=1",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1145,7 +1145,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
 
     // Try takeControl first, then set exchangeMode
     {
-        HTTPRequest reqTake(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/takeControl", HTTPRequest::HTTP_1_1);
+        HTTPRequest reqTake(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/takeControl", HTTPRequest::HTTP_1_1);
         HTTPResponse resTake;
         cs.sendRequest(reqTake);
         std::istream& rsTake = cs.receiveResponse(resTake);
@@ -1162,7 +1162,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
             // Get current mode
             {
                 HTTPRequest reqGet(HTTPRequest::HTTP_GET,
-                                   "/api/v01/OPCUAExchange1/getparam?name=exchangeMode",
+                                   "/api/v2/OPCUAExchange1/getparam?name=exchangeMode",
                                    HTTPRequest::HTTP_1_1);
                 HTTPResponse resGet;
                 cs.sendRequest(reqGet);
@@ -1179,7 +1179,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
             int newMode = (prevMode == 0) ? 1 : 0;
             {
                 HTTPRequest reqSet(HTTPRequest::HTTP_GET,
-                                   "/api/v01/OPCUAExchange1/setparam?exchangeMode=" + std::to_string(newMode),
+                                   "/api/v2/OPCUAExchange1/setparam?exchangeMode=" + std::to_string(newMode),
                                    HTTPRequest::HTTP_1_1);
                 HTTPResponse resSet;
                 cs.sendRequest(reqSet);
@@ -1195,7 +1195,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
 
                     // Verify mode was changed
                     HTTPRequest reqVerify(HTTPRequest::HTTP_GET,
-                                          "/api/v01/OPCUAExchange1/getparam?name=exchangeMode",
+                                          "/api/v2/OPCUAExchange1/getparam?name=exchangeMode",
                                           HTTPRequest::HTTP_1_1);
                     HTTPResponse resVerify;
                     cs.sendRequest(reqVerify);
@@ -1209,7 +1209,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
 
                     // Restore previous mode
                     HTTPRequest reqRestore(HTTPRequest::HTTP_GET,
-                                           "/api/v01/OPCUAExchange1/setparam?exchangeMode=" + std::to_string(prevMode),
+                                           "/api/v2/OPCUAExchange1/setparam?exchangeMode=" + std::to_string(prevMode),
                                            HTTPRequest::HTTP_1_1);
                     HTTPResponse resRestore;
                     cs.sendRequest(reqRestore);
@@ -1218,7 +1218,7 @@ TEST_CASE("OPCUAExchange: HTTP /setparam exchangeMode (requires control)", "[htt
             }
 
             // Release control
-            HTTPRequest reqRelease(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/releaseControl", HTTPRequest::HTTP_1_1);
+            HTTPRequest reqRelease(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/releaseControl", HTTPRequest::HTTP_1_1);
             HTTPResponse resRelease;
             cs.sendRequest(reqRelease);
             cs.receiveResponse(resRelease);
@@ -1235,7 +1235,7 @@ TEST_CASE("OPCUAExchange: HTTP /status includes new fields", "[http][opcuaex][st
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/OPCUAExchange1/status", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/status", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);

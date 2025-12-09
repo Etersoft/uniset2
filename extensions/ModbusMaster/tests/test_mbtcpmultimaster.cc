@@ -4,11 +4,17 @@
 #include <limits>
 #include <unordered_set>
 #include <Poco/Net/NetException.h>
+#include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 #include "UniSetTypes.h"
 #include "MBTCPMultiMaster.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
+using Poco::Net::HTTPClientSession;
+using Poco::Net::HTTPRequest;
+using Poco::Net::HTTPResponse;
 // -----------------------------------------------------------------------------
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
@@ -284,45 +290,68 @@ TEST_CASE("MBTCPMultiMaster: reload config", "[modbus][reload][mbmaster][mbtcpmu
     REQUIRE( ui->getValue(1080) == 160 );
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 TEST_CASE("MBTCPMultiMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaster][mbtcpmaster]")
 {
     InitTest();
 
+    const std::string httpHost = "127.0.0.1";
+    const int httpPort = 9191;
+
     // default reconfigure
-    std::string request = "/api/v01/reload";
-    uniset::SimpleInfo_var ret = mbmm->apiRequest(request.c_str());
+    {
+        HTTPClientSession cs(httpHost, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMultiMaster1/reload", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
 
-    ostringstream sinfo;
-    sinfo << ret->info;
-    std::string info = sinfo.str();
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
 
-    REQUIRE( ret->id == mbmm->getId() );
-    REQUIRE_FALSE( info.empty() );
-    REQUIRE( info.find("OK") != std::string::npos );
+        std::ostringstream oss;
+        oss << rs.rdbuf();
+        std::string info = oss.str();
+
+        REQUIRE( res.getStatus() == HTTPResponse::HTTP_OK );
+        REQUIRE_FALSE( info.empty() );
+        REQUIRE( info.find("OK") != std::string::npos );
+    }
 
 
     // reconfigure from other file
-    request = "/api/v01/reload?confile=" + confile2;
-    ret = mbmm->apiRequest(request.c_str());
+    {
+        HTTPClientSession cs(httpHost, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMultiMaster1/reload?confile=" + confile2, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
 
-    sinfo.str("");
-    sinfo << ret->info;
-    info = sinfo.str();
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
 
-    REQUIRE( ret->id == mbmm->getId() );
-    REQUIRE_FALSE( info.empty() );
-    REQUIRE( info.find("OK") != std::string::npos );
-    REQUIRE( info.find(confile2) != std::string::npos );
+        std::ostringstream oss;
+        oss << rs.rdbuf();
+        std::string info = oss.str();
+
+        REQUIRE( res.getStatus() == HTTPResponse::HTTP_OK );
+        REQUIRE_FALSE( info.empty() );
+        REQUIRE( info.find("OK") != std::string::npos );
+        REQUIRE( info.find(confile2) != std::string::npos );
+    }
 
     // reconfigure FAIL
-    request = "/api/v01/reload?confile=BADFILE";
-    ret = mbmm->apiRequest(request.c_str());
-    sinfo.str("");
-    sinfo << ret->info;
-    info = sinfo.str();
+    {
+        HTTPClientSession cs(httpHost, httpPort);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMultiMaster1/reload?confile=BADFILE", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
 
-    REQUIRE( ret->id == mbmm->getId() );
-    REQUIRE_FALSE( info.empty() );
-    REQUIRE( info.find("OK") == std::string::npos );
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+
+        std::ostringstream oss;
+        oss << rs.rdbuf();
+        std::string info = oss.str();
+
+        REQUIRE_FALSE( info.empty() );
+        REQUIRE( info.find("OK") == std::string::npos );
+    }
 }
+#endif // DISABLE_REST_API
 // -----------------------------------------------------------------------------

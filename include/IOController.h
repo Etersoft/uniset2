@@ -114,9 +114,9 @@ namespace uniset
             virtual IOController_i::ShortMapSeq* getSensors( const uniset::ObjectId consumer_id ) override;
 
 #ifndef DISABLE_REST_API
-            // http API
+            // HTTP API (IHttpRequest)
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
-            virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override;
 #endif
 
         public:

@@ -263,8 +263,7 @@
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
         // HTTP API
-        virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters&amp; p ) override;
-        virtual Poco::JSON::Object::Ptr httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
+        virtual Poco::JSON::Object::Ptr httpRequest( const uniset::UHttp::HttpRequestContext&amp; ctx ) override;
         virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters&amp; p ) override;
 #endif
 </xsl:if>       
@@ -657,62 +656,71 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
-Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI::QueryParameters&amp; params )
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const uniset::UHttp::HttpRequestContext&amp; ctx )
 {
-	<xsl:if test="not(normalize-space($BASECLASS)='')">Poco::JSON::Object::Ptr json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">Poco::JSON::Object::Ptr json = UniSetObject::httpGet(params);</xsl:if>
-	
-	Poco::JSON::Object::Ptr jdata = json->getObject(myname);
-	if( !jdata )
-		jdata = uniset::json::make_child(json,myname);
+	// Обработка команды /log
+	if( ctx.depth() > 0 &amp;&amp; ctx[0] == "log" )
+		return httpRequestLog(ctx.params);
 
-	Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
-	if( logserv )
+	// Базовая обработка из родительского класса
+	<xsl:if test="not(normalize-space($BASECLASS)='')">Poco::JSON::Object::Ptr json = <xsl:value-of select="$BASECLASS"/>::httpRequest(ctx);</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">Poco::JSON::Object::Ptr json = UniSetObject::httpRequest(ctx);</xsl:if>
+
+	// Если запрос к корню объекта (depth==0), добавляем расширенную информацию
+	if( ctx.depth() == 0 )
 	{
-		jserv->set("host",logserv_host);
-		jserv->set("port",logserv_port);
-		jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
-		jserv->set("info", logserv->httpGetShortInfo());
-	}
+		Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+		if( !jdata )
+			jdata = uniset::json::make_child(json,myname);
+
+		Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
+		if( logserv )
+		{
+			jserv->set("host",logserv_host);
+			jserv->set("port",logserv_port);
+			jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
+			jserv->set("info", logserv->httpGetShortInfo());
+		}
 <xsl:if test="normalize-space($SIMPLEPROC)=''">
-	jdata->set("io", httpDumpIO());
+		jdata->set("io", httpDumpIO());
 </xsl:if>
-	auto timers = getTimersList();
-	auto jtm = uniset::json::make_child(jdata,"Timers");
+		auto timers = getTimersList();
+		auto jtm = uniset::json::make_child(jdata,"Timers");
 
-	jtm->set("count",timers.size());
-	for( const auto&amp; t: timers )
-	{
-		auto jt = uniset::json::make_child(jtm,to_string(t.id));
-		jt->set("id", t.id);
-		jt->set("name", getTimerName(t.id));
-		jt->set("msec", t.tmr.getInterval());
-		jt->set("timeleft", t.curTimeMS);
-		jt->set("tick", ( t.curTick>=0 ? t.curTick : -1 ));
+		jtm->set("count",timers.size());
+		for( const auto&amp; t: timers )
+		{
+			auto jt = uniset::json::make_child(jtm,to_string(t.id));
+			jt->set("id", t.id);
+			jt->set("name", getTimerName(t.id));
+			jt->set("msec", t.tmr.getInterval());
+			jt->set("timeleft", t.curTimeMS);
+			jt->set("tick", ( t.curTick>=0 ? t.curTick : -1 ));
+		}
+
+		auto vlist = vmon.getList();
+		auto jvmon = uniset::json::make_child(jdata,"Variables");
+
+		for( const auto&amp; v: vlist )
+			jvmon->set(v.first,v.second);
+
+		<xsl:if test="normalize-space($STAT)='1'">
+		auto jstat = uniset::json::make_child(jdata,"Statistics");
+		jstat->set("processingMessageCatchCount", processingMessageCatchCount);
+
+		auto jsens = uniset::json::make_child(jstat,"sensors");
+		for( const auto&amp; s: smStat )
+		{
+			std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
+			auto js = uniset::json::make_child(jsens,sname);
+			js->set("id", s.first);
+			js->set("name", sname);
+			js->set("count", s.second);
+		}
+		</xsl:if>
+
+		httpGetUserData(jdata);
 	}
-
-	auto vlist = vmon.getList();
-	auto jvmon = uniset::json::make_child(jdata,"Variables");
-	
-	for( const auto&amp; v: vlist )
-		jvmon->set(v.first,v.second);
-
-	<xsl:if test="normalize-space($STAT)='1'">
-	auto jstat = uniset::json::make_child(jdata,"Statistics");
-	jstat->set("processingMessageCatchCount", processingMessageCatchCount);
-
-	auto jsens = uniset::json::make_child(jstat,"sensors");
-	for( const auto&amp; s: smStat )
-	{
-		std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
-		auto js = uniset::json::make_child(jsens,sname);
-		js->set("id", s.first);
-		js->set("name", sname);
-		js->set("count", s.second);
-	}
-	</xsl:if>
-		
-	httpGetUserData(jdata);
 
 	return json;
 }
@@ -720,22 +728,13 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const P
 Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpHelp( const Poco::URI::QueryParameters&amp; params )
 {
 	<xsl:if test="not(normalize-space($BASECLASS)='')">uniset::json::help::object myhelp(myname, <xsl:value-of select="$BASECLASS"/>::httpHelp(params));</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">uniset::json::help::object myhelp(myname, UniSetObject::httpGet(params));</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(params));</xsl:if>
 
 	// 'log'
 	uniset::json::help::item cmd("log","show log level");
 	myhelp.add(cmd);
 
 	return myhelp;
-}
-// -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p )
-{
-	if( req == "log" )
-		return httpRequestLog(p);
-	
-	<xsl:if test="not(normalize-space($BASECLASS)='')">return <xsl:value-of select="$BASECLASS"/>::httpRequest(req,p);</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">return UniSetObject::httpRequest(req,p);</xsl:if>
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )

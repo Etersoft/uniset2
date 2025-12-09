@@ -114,7 +114,7 @@ wait_for_service() {
 
 	echo "Waiting for service to become available..."
 	while [ $attempt -le $max_attempts ]; do
-		if curl -s "http://$http_host:$http_port/api/v01/logdb/count" >/dev/null 2>&1; then
+		if curl -s "http://$http_host:$http_port/api/v2/logdb/count" >/dev/null 2>&1; then
 			echo "✓ Service is now available after $attempt seconds"
 			return 0
 		fi
@@ -139,7 +139,7 @@ logdb_test_count() {
 }
 
 logdb_test_http_count() {
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logdb/count?logserver1"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logdb/count?logserver1"); then
 		logdb_error "test_http_count" "curl request failed"
 		return 1
 	fi
@@ -154,7 +154,7 @@ logdb_test_http_count() {
 }
 
 logdb_test_http_list() {
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logdb/list"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logdb/list"); then
 		logdb_error "test_http_list" "curl request failed"
 		return 1
 	fi
@@ -169,7 +169,7 @@ logdb_test_http_list() {
 }
 
 logdb_test_http_status() {
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logdb/status"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logdb/status"); then
 		logdb_error "test_http_status" "curl request failed"
 		return 1
 	fi
@@ -205,7 +205,7 @@ logdb_test_http_status() {
 }
 
 logdb_test_http_logcontrol_set() {
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?set=crit"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logcontrol/logserver1?set=crit"); then
 		logdb_error "test_http_set" "curl request failed"
 		return 1
 	fi
@@ -227,7 +227,7 @@ logdb_test_http_logcontrol_set() {
 }
 
 logdb_test_http_logcontrol_reset() {
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?reset"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logcontrol/logserver1?reset"); then
 		logdb_error "test_http_reset" "curl request failed"
 		return 1
 	fi
@@ -249,7 +249,7 @@ logdb_test_http_logcontrol_reset() {
 }
 
 logdb_test_http_logcontrol_get() {
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?get"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logcontrol/logserver1?get"); then
 		logdb_error "test_http_get" "curl request failed"
 		return 1
 	fi
@@ -274,7 +274,7 @@ logdb_test_logfile() {
 }
 
 logdb_test_http_download() {
-	if ! curl -s --fail --max-time 30 -o "$downloadfile" --request GET "http://$http_host:$http_port/api/v01/logdb/download"; then
+	if ! curl -s --fail --max-time 30 -o "$downloadfile" --request GET "http://$http_host:$http_port/api/v2/logdb/download"; then
 		logdb_error "test_http_download" "curl download failed"
 		return 1
 	fi
@@ -321,7 +321,7 @@ logdb_test_websocket_data() {
 	local info_count=0
 	local output_file="/tmp/websocket_output.txt"
 
-	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v01/logcontrol/logserver1?set=info"); then
+	if ! REQ=$(curl -s --fail --max-time 10 --request GET "http://$http_host:$http_port/api/v2/logcontrol/logserver1?set=info"); then
 		logdb_error "test_websocket_data" "curl request failed"
 		return 1
 	fi

@@ -2140,38 +2140,55 @@ namespace uniset
         return jls;
     }
     // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr OPCUAExchange::httpRequest( const UHttp::HttpRequestContext& ctx )
     {
-        if( req == "getparam" )
-            return httpGetParam(p);
+        if( ctx.depth() > 0 )
+        {
+            const std::string& req = ctx[0];
 
-        if( req == "setparam" )
-            return httpSetParam(p);
+            if( req == "getparam" )
+                return httpGetParam(ctx.params);
 
-        if( req == "status" )
-            return httpStatus();
+            if( req == "setparam" )
+                return httpSetParam(ctx.response, ctx.params);
 
-        if( req == "sensors" )
-            return httpSensors(p);
+            if( req == "status" )
+                return httpStatus();
 
-        if( req == "sensor" )
-            return httpSensor(p);
+            if( req == "sensors" )
+                return httpSensors(ctx.params);
 
-        if( req == "diagnostics" )
-            return httpDiagnostics(p);
+            if( req == "sensor" )
+                return httpSensor(ctx.response, ctx.params);
 
-        if( req == "takeControl" )
-            return httpTakeControl(p);
+            if( req == "diagnostics" )
+                return httpDiagnostics(ctx.params);
 
-        if( req == "releaseControl" )
-            return httpReleaseControl(p);
+            if( req == "takeControl" )
+                return httpTakeControl(ctx.response, ctx.params);
 
-        auto json = UniSetObject::httpRequest(req, p);
+            if( req == "releaseControl" )
+                return httpReleaseControl(ctx.response, ctx.params);
+        }
 
-        if( !json )
-            json = new Poco::JSON::Object();
+        auto json = UniSetObject::httpRequest(ctx);
 
-        json->set("LogServer", buildLogServerInfo());
+        // Если запрос к корню объекта (depth==0), добавляем информацию о LogServer
+        if( ctx.depth() == 0 )
+        {
+            if( !json )
+                json = new Poco::JSON::Object();
+
+            Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
+            if( !jdata )
+            {
+                jdata = new Poco::JSON::Object();
+                json->set(myname, jdata);
+            }
+
+            jdata->set("LogServer", buildLogServerInfo());
+        }
 
         return json;
     }
@@ -2233,33 +2250,19 @@ namespace uniset
         return myhelp;
     }
     // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::httpGet( const Poco::URI::QueryParameters& p )
-    {
-        Poco::JSON::Object::Ptr json = UniSetObject::httpGet(p);
-
-        if( !json )
-            json = new Poco::JSON::Object();
-
-        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
-
-        if( !jdata )
-        {
-            jdata = new Poco::JSON::Object();
-            json->set(myname, jdata);
-        }
-
-        jdata->set("LogServer", buildLogServerInfo());
-
-        return json;
-    }
-    // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::httpSetParam(const Poco::URI::QueryParameters& p)
+    Poco::JSON::Object::Ptr OPCUAExchange::httpSetParam( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p )
     {
         if( p.empty() )
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
             throw uniset::SystemError(myname + "(/setparam): pass key=value pairs");
+        }
 
         if( !httpEnabledSetParams )
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
             throw uniset::SystemError(myname + "(/setparam): disabled by httpEnabledSetParams");
+        }
 
         Poco::JSON::Object::Ptr out = new Poco::JSON::Object();
         Poco::JSON::Object::Ptr updated = new Poco::JSON::Object();
@@ -2745,7 +2748,7 @@ namespace uniset
         return out;
     }
     // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::httpSensor( const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr OPCUAExchange::httpSensor( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p )
     {
         using Poco::JSON::Object;
 
@@ -2766,7 +2769,10 @@ namespace uniset
         }
 
         if( searchId == DefaultObjectId && searchName.empty() && searchNodeId.empty() )
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
             throw uniset::SystemError(myname + "(/sensor): specify one of: id, name, nodeid");
+        }
 
         // Resolve name to id if possible
         if( searchId == DefaultObjectId && !searchName.empty() )
@@ -2797,6 +2803,8 @@ namespace uniset
         }
 
         // Not found
+        resp.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
+
         Object::Ptr out = new Object();
         out->set("result", "ERROR");
         out->set("error", "sensor not found");
@@ -2862,7 +2870,7 @@ namespace uniset
         return out;
     }
     // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::httpTakeControl( const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr OPCUAExchange::httpTakeControl( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p )
     {
         using Poco::JSON::Object;
 
@@ -2870,6 +2878,7 @@ namespace uniset
 
         if( !httpControlAllow )
         {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
             out->set("result", "ERROR");
             out->set("error", "HTTP control not allowed (httpControlAllow=0)");
             return out;
@@ -2893,7 +2902,7 @@ namespace uniset
         return out;
     }
     // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::httpReleaseControl( const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr OPCUAExchange::httpReleaseControl( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p )
     {
         using Poco::JSON::Object;
 

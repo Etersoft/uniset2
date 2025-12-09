@@ -19,6 +19,8 @@
 #define UHttpRequesrHandler_H_
 // -------------------------------------------------------------------------
 #include <memory>
+#include <vector>
+#include <string>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
 #include <Poco/Net/HTTPServerRequest.h>
@@ -28,20 +30,24 @@
 #include "ujson.h"
 #include "DebugStream.h"
 // -------------------------------------------------------------------------
-/*! \page pg_UHttpServer HTTP API (базовая реализация)
+/*! \page pg_UHttpServer HTTP API v2
  *
- * Формат запроса: /api/version/xxx
+ * Формат запроса: /api/v2/ObjectName[/path...]
  *
- * <br>Пока поддерживается только метод GET
+ * <br>Поддерживаются методы GET и POST
  * <br>Ответ в формате JSON
- * <br>В текущем API не подразумеваются запросы глубже '/api/version/ObjectName/xxxx'
+ * <br>Поддерживаются вложенные пути: /api/v2/ObjectName/sensors/count
  *
- * Версия API: \b v01
- * - /api/version/list              - Получение списка доступных объектов
- * - /api/version/help              - Получение списка доступных команд
- * - /api/version/ObjectName        - получение информации об объекте ObjectName
- * - /api/version/ObjectName/help   - получение списка доступных команд для объекта ObjectName
- * - /api/version/ObjectName/xxxx   - 'xxx' запрос к объекту ObjectName
+ * Версия API: \b v2
+ * - /api/v2/list                     - Получение списка доступных объектов
+ * - /api/v2/help                     - Получение списка доступных команд
+ * - /api/v2/ObjectName               - получение информации об объекте ObjectName
+ * - /api/v2/ObjectName/help          - получение списка доступных команд для объекта ObjectName
+ * - /api/v2/ObjectName/path/to/cmd   - запрос к объекту ObjectName с вложенным путём
+ *
+ * Авторизация:
+ * - Header: Authorization: Bearer <token>
+ *
  *\code
  *  HELP FORMAT:
  *  myname {
@@ -53,34 +59,14 @@
  *                  {
  *                   "name": "p1",
  *                   "desc": " description of p1"
- *                  },
- *                  {
- *                   "name": "p2",
- *                   "desc": " description of p2"
- *                  },
- *                  {
- *                   "name": "p3",
- *                   "desc": " description of p3"
  *                  }
  *             ]}
- *          },
- *          {
- *             "name": "command2",
- *             "desc": "text",
- *             "parameters": [
- *                  {
- *                   "name": "p1",
- *                   "desc": " description of p1"
- *                  }
- *             ]}
- *          },
- *          ...
+ *          }
  *      ]
  *  }
  *\endcode
  *
  * \sa \ref act_HttpAPI
- * \todo подумать над /api/version/tree - получение "дерева" объектов (древовидный список с учётом подчинения Manager/Objects)
 */
 // -------------------------------------------------------------------------
 namespace uniset
@@ -88,37 +74,77 @@ namespace uniset
     namespace UHttp
     {
         // текущая версия API
-        const std::string UHTTP_API_VERSION = "v01";
+        const std::string UHTTP_API_VERSION = "v2";
 
-        /*! интерфейс для объекта выдающего json-данные */
+        // -------------------------------------------------------------------------
+        /*! Контекст HTTP запроса.
+         *  Простая data-структура с public полями.
+         *  Создаётся один раз в handleRequest и передаётся во все handlers.
+         */
+        struct HttpRequestContext
+        {
+            // Ссылки на Poco объекты (всегда существуют)
+            Poco::Net::HTTPServerRequest& request;
+            Poco::Net::HTTPServerResponse& response;
+
+            // Распарсенные данные (заполняются в конструкторе один раз)
+            std::vector<std::string> path;      // путь после ObjectName: ["sensors", "count"]
+            Poco::URI::QueryParameters params;  // query string параметры
+            std::string objectName;             // имя объекта из URL
+
+            // Конструктор — парсит URI один раз
+            HttpRequestContext(Poco::Net::HTTPServerRequest& req,
+                               Poco::Net::HTTPServerResponse& resp);
+
+            // Минимум хелперов
+            size_t depth() const { return path.size(); }
+
+            const std::string& operator[](size_t i) const
+            {
+                static const std::string empty;
+                return (i < path.size()) ? path[i] : empty;
+            }
+
+            // Для логов и сообщений об ошибках
+            std::string pathString() const;
+        };
+
+        // -------------------------------------------------------------------------
+        /*! Интерфейс для объекта, обрабатывающего HTTP запросы */
         class IHttpRequest
         {
             public:
                 IHttpRequest() {}
                 virtual ~IHttpRequest() {}
 
+                // Основной метод обработки запросов
                 // throw SystemError
-                virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) = 0;
-                virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) = 0;
+                virtual Poco::JSON::Object::Ptr httpRequest(const HttpRequestContext& ctx) = 0;
 
-                // не обязательная функция.
-                virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p );
+                // Справка по командам объекта (отдельно, чтобы не забыть реализовать)
+                // throw SystemError
+                virtual Poco::JSON::Object::Ptr httpHelp(const Poco::URI::QueryParameters& p) = 0;
         };
+
         // -------------------------------------------------------------------------
-        /*! интерфейс для обработки запросов к объектам */
+        /*! Интерфейс реестра объектов (маршрутизация запросов) */
         class IHttpRequestRegistry
         {
             public:
                 IHttpRequestRegistry() {}
                 virtual ~IHttpRequestRegistry() {}
 
+                // Основной метод — берёт objectName из ctx
                 // throw SystemError, NameNotFound
-                virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
+                virtual Poco::JSON::Object::Ptr httpRequest(const HttpRequestContext& ctx) = 0;
 
+                // Список объектов
                 // throw SystemError
-                virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) = 0;
-                virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
-                virtual Poco::JSON::Object::Ptr httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
+                virtual Poco::JSON::Array::Ptr httpGetObjectsList(const HttpRequestContext& ctx) = 0;
+
+                // Справка по объекту
+                // throw SystemError, NameNotFound
+                virtual Poco::JSON::Object::Ptr httpHelp(const HttpRequestContext& ctx) = 0;
         };
 
         // -------------------------------------------------------------------------

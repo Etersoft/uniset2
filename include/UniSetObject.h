@@ -116,8 +116,8 @@ namespace uniset
                                       ::CORBA::Long consumer ) override;
 
 #ifndef DISABLE_REST_API
-            // HTTP API
-            virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
+            // HTTP API (IHttpRequest)
+            virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override;
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
 #endif
             // -------------- вспомогательные --------------

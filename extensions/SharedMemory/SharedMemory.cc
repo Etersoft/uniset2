@@ -1148,15 +1148,22 @@ namespace uniset
         return i._retn();
     }
 #ifndef DISABLE_REST_API
-    Poco::JSON::Object::Ptr SharedMemory::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr SharedMemory::httpRequest( const UHttp::HttpRequestContext& ctx )
     {
-        // служебный эндпоинт для проверки обработчика
-        auto json = IONotifyController::httpRequest(req, p);
+        // Базовая обработка из IONotifyController
+        auto json = IONotifyController::httpRequest(ctx);
 
-        if( !json )
-            json = new Poco::JSON::Object();
+        // Если запрос к корню объекта (depth==0), добавляем информацию о LogServer
+        if( ctx.depth() == 0 )
+        {
+            // данные по SharedMemory складываем в секцию с именем объекта
+            Poco::JSON::Object::Ptr jdata = json->getObject(myname);
 
-        json->set("LogServer", buildLogServerInfo());
+            if( !jdata )
+                jdata = uniset::json::make_child(json, myname);
+
+            jdata->set("LogServer", buildLogServerInfo());
+        }
 
         return json;
     }
@@ -1166,20 +1173,12 @@ namespace uniset
         auto h = IONotifyController::httpHelp(p);
         return h;
     }
-
-    Poco::JSON::Object::Ptr SharedMemory::httpGet( const Poco::URI::QueryParameters& p )
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr SharedMemory::httpGetMyInfo( Poco::JSON::Object::Ptr root )
     {
-        Poco::JSON::Object::Ptr json = IONotifyController::httpGet(p);
-
-        // данные по SharedMemory складываем в секцию с именем объекта
-        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
-
-        if( !jdata )
-            jdata = uniset::json::make_child(json, myname);
-
-        jdata->set("LogServer", buildLogServerInfo());
-
-        return json;
+        auto my = IONotifyController::httpGetMyInfo(root);
+        my->set("extensionType", "SharedMemory");
+        return my;
     }
 #endif
     // ----------------------------------------------------------------------------

@@ -1271,7 +1271,7 @@ TEST_CASE("MBSlave: HTTP /getparam (force, sockTimeout, sessTimeout, updateStatT
 
     HTTPClientSession cs(httpAddr, httpPort);
     HTTPRequest req(HTTPRequest::HTTP_GET,
-                    "/api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
+                    "/api/v2/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
                     HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
@@ -1313,7 +1313,7 @@ TEST_CASE("MBSlave: HTTP /setparam (force & timeouts) with httpEnabledSetParams 
     int prev_force = 0, prev_sock = 0, prev_sess = 0, prev_upd = 0;
     {
         HTTPRequest req(HTTPRequest::HTTP_GET,
-                        "/api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
+                        "/api/v2/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
                         HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
@@ -1339,7 +1339,7 @@ TEST_CASE("MBSlave: HTTP /setparam (force & timeouts) with httpEnabledSetParams 
 
     // Пытаемся применить новые значения
     HTTPRequest reqSet(HTTPRequest::HTTP_GET,
-                       std::string("/api/v01/MBSlave1/setparam?")
+                       std::string("/api/v2/MBSlave1/setparam?")
                        + "force=" + std::to_string(new_force)
                        + "&sockTimeout=" + std::to_string(new_sock)
                        + "&sessTimeout=" + std::to_string(new_sess)
@@ -1364,7 +1364,7 @@ TEST_CASE("MBSlave: HTTP /setparam (force & timeouts) with httpEnabledSetParams 
 
         // читаем снова и проверяем
         HTTPRequest reqGet2(HTTPRequest::HTTP_GET,
-                            "/api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
+                            "/api/v2/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime",
                             HTTPRequest::HTTP_1_1);
         HTTPResponse resGet2;
         cs.sendRequest(reqGet2);
@@ -1384,7 +1384,7 @@ TEST_CASE("MBSlave: HTTP /setparam (force & timeouts) with httpEnabledSetParams 
 
         // Возвращаем исходные значения (чтобы тест не менял глобальное состояние)
         HTTPRequest reqBack(HTTPRequest::HTTP_GET,
-                            std::string("/api/v01/MBSlave1/setparam?")
+                            std::string("/api/v2/MBSlave1/setparam?")
                             + "force=" + std::to_string(prev_force)
                             + "&sockTimeout=" + std::to_string(prev_sock)
                             + "&sessTimeout=" + std::to_string(prev_sess)
@@ -1414,7 +1414,7 @@ TEST_CASE("MBSlave: HTTP /status returns info", "[http][mbslave][status]")
     using Poco::Net::HTTPResponse;
 
     HTTPClientSession cs(httpAddr, httpPort);
-    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v01/MBSlave1/status", HTTPRequest::HTTP_1_1);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBSlave1/status", HTTPRequest::HTTP_1_1);
     HTTPResponse res;
 
     cs.sendRequest(req);

@@ -399,23 +399,30 @@ namespace uniset
     }
     // ------------------------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-    Poco::JSON::Object::Ptr UniSetActivator::httpGetByName( const string& name, const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr UniSetActivator::httpRequest( const UHttp::HttpRequestContext& ctx )
     {
+        const std::string& name = ctx.objectName;
+
+        // Системная команда: configure
+        if( name == "configure" )
+            return request_configure(ctx.pathString(), ctx.params);
+
+        // Запрос к самому активатору
         if( name == myname )
-            return httpGet(p);
+            return UniSetObject::httpRequest(ctx);
 
+        // Поиск объекта по имени
         auto obj = deepFindObject(name);
-
         if( obj )
-            return obj->httpGet(p);
+            return obj->httpRequest(ctx);
 
+        ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
         ostringstream err;
         err << "Object '" << name << "' not found";
-
         throw uniset::NameNotFound(err.str());
     }
     // ------------------------------------------------------------------------------------------
-    Poco::JSON::Array::Ptr UniSetActivator::httpGetObjectsList( const Poco::URI::QueryParameters& p )
+    Poco::JSON::Array::Ptr UniSetActivator::httpGetObjectsList( const UHttp::HttpRequestContext& ctx )
     {
         Poco::JSON::Array::Ptr jdata = new Poco::JSON::Array();
 
@@ -432,36 +439,18 @@ namespace uniset
         return jdata;
     }
     // ------------------------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr UniSetActivator::httpHelpByName( const string& name, const Poco::URI::QueryParameters& p )
+    Poco::JSON::Object::Ptr UniSetActivator::httpHelp( const UHttp::HttpRequestContext& ctx )
     {
+        const std::string& name = ctx.objectName;
+
         if( name == myname )
-            return httpHelp(p);
+            return UniSetObject::httpHelp(ctx.params);
 
         auto obj = deepFindObject(name);
-
         if( obj )
-            return obj->httpHelp(p);
+            return obj->httpHelp(ctx.params);
 
-        ostringstream err;
-        err << "Object '" << name << "' not found";
-        throw uniset::NameNotFound(err.str());
-    }
-    // ------------------------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr UniSetActivator::httpRequestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
-    {
-        if( name == myname )
-            return httpRequest(req, p);
-
-        // а вдруг встретится объект с именем "conf" а мы перекрываем имя?!
-        // (пока считаем что такого не будет)
-        if( name == "configure" )
-            return request_configure(req, p);
-
-        auto obj = deepFindObject(name);
-
-        if( obj )
-            return obj->httpRequest(req, p);
-
+        ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
         ostringstream err;
         err << "Object '" << name << "' not found";
         throw uniset::NameNotFound(err.str());

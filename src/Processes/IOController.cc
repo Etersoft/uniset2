@@ -1177,24 +1177,29 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
     return myhelp;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr IOController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr IOController::httpRequest( const UHttp::HttpRequestContext& ctx )
 {
-    if( req == "get" )
-        return request_get(req, p);
+    // /api/v2/ObjectName/get?...
+    if( ctx.depth() >= 1 && ctx[0] == "get" )
+        return request_get(ctx[0], ctx.params);
 
-    if( req == "set" )
-        return request_set(req, p);
+    // /api/v2/ObjectName/set?...
+    if( ctx.depth() >= 1 && ctx[0] == "set" )
+        return request_set(ctx[0], ctx.params);
 
-    if( req == "freeze" )
-        return request_freeze(req, p, true);
+    // /api/v2/ObjectName/freeze?...
+    if( ctx.depth() >= 1 && ctx[0] == "freeze" )
+        return request_freeze(ctx[0], ctx.params, true);
 
-    if( req == "unfreeze" )
-        return request_freeze(req, p, false);
+    // /api/v2/ObjectName/unfreeze?...
+    if( ctx.depth() >= 1 && ctx[0] == "unfreeze" )
+        return request_freeze(ctx[0], ctx.params, false);
 
-    if( req == "sensors" )
-        return request_sensors(req, p);
+    // /api/v2/ObjectName/sensors?...
+    if( ctx.depth() >= 1 && ctx[0] == "sensors" )
+        return request_sensors(ctx[0], ctx.params);
 
-    return UniSetManager::httpRequest(req, p);
+    return UniSetObject::httpRequest(ctx);
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )

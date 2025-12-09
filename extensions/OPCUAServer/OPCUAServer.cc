@@ -971,23 +971,40 @@ Poco::JSON::Object::Ptr OPCUAServer::buildLogServerInfo()
     return jls;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr OPCUAServer::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr OPCUAServer::httpRequest( const UHttp::HttpRequestContext& ctx )
 {
-    if( req == "getparam" )
-        return httpGetParam(p);
+    if( ctx.depth() > 0 )
+    {
+        const std::string& req = ctx[0];
 
-    if( req == "setparam" )
-        return httpSetParam(p);
+        if( req == "getparam" )
+            return httpGetParam(ctx.params);
 
-    if( req == "status" )
-        return httpStatus();
+        if( req == "setparam" )
+            return httpSetParam(ctx.params);
 
-    auto json = UObject_SK::httpRequest(req, p);
+        if( req == "status" )
+            return httpStatus();
+    }
 
-    if( !json )
-        json = new Poco::JSON::Object();
+    auto json = UObject_SK::httpRequest(ctx);
 
-    json->set("LogServer", buildLogServerInfo());
+    // Если запрос к корню объекта (depth==0), добавляем информацию о LogServer
+    if( ctx.depth() == 0 )
+    {
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
+        if( !jdata )
+        {
+            jdata = new Poco::JSON::Object();
+            json->set(myname, jdata);
+        }
+
+        jdata->set("LogServer", buildLogServerInfo());
+    }
 
     return json;
 }
@@ -1014,26 +1031,6 @@ Poco::JSON::Object::Ptr OPCUAServer::httpHelp( const Poco::URI::QueryParameters&
     }
 
     return myhelp;
-}
-// -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr OPCUAServer::httpGet( const Poco::URI::QueryParameters& p )
-{
-    Poco::JSON::Object::Ptr json = UObject_SK::httpGet(p);
-
-    if( !json )
-        json = new Poco::JSON::Object();
-
-    Poco::JSON::Object::Ptr jdata = json->getObject(myname);
-
-    if( !jdata )
-    {
-        jdata = new Poco::JSON::Object();
-        json->set(myname, jdata);
-    }
-
-    jdata->set("LogServer", buildLogServerInfo());
-
-    return json;
 }
 // -----------------------------------------------------------------------------
 namespace
@@ -1190,6 +1187,13 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
     out->set("result", "OK");
     out->set("status", st);
     return out;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+    auto my = UObject_SK::httpGetMyInfo(root);
+    my->set("extensionType", "OPCUAServer");
+    return my;
 }
 // -----------------------------------------------------------------------------
 #endif // DISABLE_REST_API
