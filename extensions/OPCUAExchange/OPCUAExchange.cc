@@ -272,6 +272,8 @@ namespace uniset
 
             if( default_emode > 0 && default_emode < emLastNumber )
                 exchangeMode = default_emode;
+
+            sensorExchangeMode = exchangeMode.load();
         }
 
         // -----------------------
@@ -308,6 +310,22 @@ namespace uniset
 
         vmonit(maxReadItems);
         vmonit(maxWriteItems);
+
+#ifndef DISABLE_REST_API
+
+        // HTTP API: разрешение перехвата управления
+        if( findArgParam("--" + argprefix + "http-control-allow", conf->getArgc(), conf->getArgv()) != -1 )
+            httpControlAllow = true;
+        else
+            httpControlAllow = conf->getArgInt(it.getProp("httpControlAllow"), "0");
+
+        // Размер истории ошибок
+        errorHistoryMax = conf->getArgPInt("--" + argprefix + "error-history-max", it.getProp("errorHistoryMax"), 100);
+        vmonit(errorHistoryMax);
+#endif
+
+        // Время запуска для uptime
+        startTime = std::chrono::steady_clock::now();
 
         if( !shm->isLocalwork() ) // ic
         {
@@ -445,6 +463,7 @@ namespace uniset
                 if( !tryConnect(ch) )
                 {
                     opccrit << myname << "(channel" << ch->num << "Thread): no connection to " << ch->addr << endl;
+                    addError(ch->idx, "connect", UA_STATUSCODE_BADCONNECTIONREJECTED);
                     ch->status = false;
                     msleep(reconnectPause);
                     continue;
@@ -550,8 +569,11 @@ namespace uniset
                         auto ret = ch->client->write32(it);
 
                         if( ret != UA_STATUSCODE_GOOD )
+                        {
                             opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
                                     << " write error: " << UA_StatusCode_name(ret) << endl;
+                            addError(ch->idx, "write", ret);
+                        }
 
                         if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
                         {
@@ -605,8 +627,11 @@ namespace uniset
                             auto ret = ch->client->read(it, *rit++);
 
                             if( ret != UA_STATUSCODE_GOOD )
+                            {
                                 opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
                                         << " read error: " << UA_StatusCode_name(ret) << endl;
+                                addError(ch->idx, "read", ret);
+                            }
 
                             if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED )
                             {
@@ -633,7 +658,13 @@ namespace uniset
             return;
 
         if( sidExchangeMode != DefaultObjectId )
-            exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
+        {
+            auto modeVal = shm->localGetValue(itExchangeMode, sidExchangeMode);
+            sensorExchangeMode = modeVal;
+
+            if( !httpControlActive.load() )
+                exchangeMode = modeVal;
+        }
 
         if( !isUpdateSM(true) )
             return;
@@ -775,6 +806,8 @@ namespace uniset
                             else
                                 io->val = getBits(io->rval[ch->idx].get(), io->mask, io->offset);
                         }
+                        else
+                            addError(ch->idx, "read", io->rval[ch->idx].status(), io->attrName);
                     }
                 }
                 else if( io->stype == UniversalIO::DI )
@@ -790,6 +823,8 @@ namespace uniset
 
                         if( io->rval[ch->idx].statusOk() )
                             io->val = getBits(io->rval[ch->idx].get() ? 1 : 0, io->mask, io->offset);
+                        else
+                            addError(ch->idx, "read", io->rval[ch->idx].status(), io->attrName);
                     }
                 }
             }
@@ -1875,8 +1910,13 @@ namespace uniset
 
         if( sm->id == sidExchangeMode )
         {
-            exchangeMode = sm->value;
-            opclog3 << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
+            sensorExchangeMode = sm->value;
+
+            if( !httpControlActive.load() )
+            {
+                exchangeMode = sm->value;
+                opclog3 << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
+            }
         }
 
         for( auto&& it : iolist )
@@ -1973,7 +2013,7 @@ namespace uniset
                 rdlist.push_back(it);// Копирование std::shared_ptr
 
                 callbacks.emplace_back(
-                    [this, i, io=it](const auto & item, const opcua::DataValue & value)
+                    [this, i, io = it](const auto & item, const opcua::DataValue & value)
                 {
                     opclog5 << myname << "item: " << item.itemToMonitor.getNodeId().toString() << " - new value: " << (*(UA_Int32*) value.getValue().data() ) << endl;
 
@@ -2111,6 +2151,21 @@ namespace uniset
         if( req == "status" )
             return httpStatus();
 
+        if( req == "sensors" )
+            return httpSensors(p);
+
+        if( req == "sensor" )
+            return httpSensor(p);
+
+        if( req == "diagnostics" )
+            return httpDiagnostics(p);
+
+        if( req == "takeControl" )
+            return httpTakeControl(p);
+
+        if( req == "releaseControl" )
+            return httpReleaseControl(p);
+
         auto json = UniSetObject::httpRequest(req, p);
 
         if( !json )
@@ -2128,7 +2183,7 @@ namespace uniset
         {
             uniset::json::help::item cmd("getparam", "read runtime parameters");
             cmd.param("name", "parameter to read; can be repeated");
-            cmd.param("note", "supported: polltime | updatetime | reconnectPause | timeoutIterate");
+            cmd.param("note", "supported: polltime|updatetime|reconnectPause|timeoutIterate|exchangeMode|writeToAllChannels|currentChannel|connectCount|activated|iolistSize|httpControlAllow|httpControlActive|errorHistoryMax");
             myhelp.add(cmd);
         }
         {
@@ -2137,7 +2192,41 @@ namespace uniset
             cmd.param("updatetime", "ms");
             cmd.param("reconnectPause", "ms");
             cmd.param("timeoutIterate", "ms");
+            cmd.param("writeToAllChannels", "0|1");
+            cmd.param("exchangeMode", "0-4 (requires httpControlActive)");
             cmd.param("note", "may be disabled by httpEnabledSetParams");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("sensors", "list all sensors with pagination");
+            cmd.param("limit", "max records (default: 50, 0 = all)");
+            cmd.param("offset", "offset from start (default: 0)");
+            cmd.param("filter", "filter by iotype: AI|AO|DI|DO");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("sensor", "get single sensor details");
+            cmd.param("id", "sensor ObjectId");
+            cmd.param("name", "sensor name");
+            cmd.param("nodeid", "OPC UA NodeId");
+            cmd.param("note", "specify one of: id, name, nodeid");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("diagnostics", "error statistics and history");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("takeControl", "enable HTTP control of exchangeMode");
+            cmd.param("note", "requires httpControlAllow=1");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("releaseControl", "return control to sensor");
+            myhelp.add(cmd);
+        }
+        {
+            uniset::json::help::item cmd("status", "current exchange status");
             myhelp.add(cmd);
         }
 
@@ -2208,6 +2297,22 @@ namespace uniset
                     timeoutIterate = static_cast<uint16_t>(v);
                     updated->set(name, (int)timeoutIterate);
                 }
+                else if( name == "writeToAllChannels" )
+                {
+                    writeToAllChannels = (v != 0);
+                    updated->set(name, writeToAllChannels ? 1 : 0);
+                }
+                else if( name == "exchangeMode" )
+                {
+                    if( !httpControlActive.load() )
+                        throw uniset::SystemError(myname + "(/setparam): exchangeMode can only be set when HTTP control is active (use /takeControl first)");
+
+                    if( v < 0 || v >= emLastNumber )
+                        throw uniset::SystemError(myname + "(/setparam): exchangeMode must be 0-" + std::to_string(emLastNumber - 1));
+
+                    exchangeMode = v;
+                    updated->set(name, (int)exchangeMode.load());
+                }
                 else
                 {
                     unknown->add(name);
@@ -2256,6 +2361,24 @@ namespace uniset
                 params->set(n, (int)reconnectPause);
             else if( n == "timeoutIterate" )
                 params->set(n, (int)timeoutIterate);
+            else if( n == "exchangeMode" )
+                params->set(n, (int)exchangeMode.load());
+            else if( n == "writeToAllChannels" )
+                params->set(n, writeToAllChannels ? 1 : 0);
+            else if( n == "currentChannel" )
+                params->set(n, (int)currentChannel.load());
+            else if( n == "connectCount" )
+                params->set(n, (int)connectCount.load());
+            else if( n == "activated" )
+                params->set(n, activated.load() ? 1 : 0);
+            else if( n == "iolistSize" )
+                params->set(n, (int)iolist.size());
+            else if( n == "httpControlAllow" )
+                params->set(n, httpControlAllow ? 1 : 0);
+            else if( n == "httpControlActive" )
+                params->set(n, httpControlActive.load() ? 1 : 0);
+            else if( n == "errorHistoryMax" )
+                params->set(n, (int)errorHistoryMax);
             else
                 unknown->add(n);
         }
@@ -2387,6 +2510,17 @@ namespace uniset
         else
             st->set("httpEnabledSetParams", 0);
 
+        // 7) HTTP control flags
+        st->set("httpControlAllow", httpControlAllow ? 1 : 0);
+        st->set("httpControlActive", httpControlActive.load() ? 1 : 0);
+
+        // 8) Error history info
+        {
+            std::lock_guard<std::mutex> lock(errorHistoryMutex);
+            st->set("errorHistoryMax", (int)errorHistoryMax);
+            st->set("errorHistorySize", (int)errorHistory.size());
+        }
+
         // final
         Poco::JSON::Object::Ptr out = new Object();
         out->set("result", "OK");
@@ -2394,7 +2528,414 @@ namespace uniset
         return out;
     }
     // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+    {
+        auto my = UniSetObject::httpGetMyInfo(root);
+        my->set("extensionType", "OPCUAExchange");
+        return my;
+    }
+    // -----------------------------------------------------------------------------
+    std::string OPCUAExchange::formatTime( const std::chrono::system_clock::time_point& tp ) const
+    {
+        auto time_t_val = std::chrono::system_clock::to_time_t(tp);
+        std::tm tm_val;
+        gmtime_r(&time_t_val, &tm_val);
+        std::ostringstream oss;
+        oss << std::put_time(&tm_val, "%Y-%m-%dT%H:%M:%S");
+        return oss.str();
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::sensorToJson( const std::shared_ptr<OPCAttribute>& attr, bool detailed ) const
+    {
+        using Poco::JSON::Object;
+        using Poco::JSON::Array;
+
+        auto conf = uniset_conf();
+        Object::Ptr js = new Object();
+
+        js->set("id", (int)attr->si.id);
+        js->set("name", conf->oind->getMapName(attr->si.id));
+        js->set("nodeid", attr->attrName);
+
+        std::string ioTypeStr;
+
+        switch( attr->stype )
+        {
+            case UniversalIO::AI:
+                ioTypeStr = "AI";
+                break;
+
+            case UniversalIO::AO:
+                ioTypeStr = "AO";
+                break;
+
+            case UniversalIO::DI:
+                ioTypeStr = "DI";
+                break;
+
+            case UniversalIO::DO:
+                ioTypeStr = "DO";
+                break;
+
+            default:
+                ioTypeStr = "Unknown";
+                break;
+        }
+
+        js->set("iotype", ioTypeStr);
+
+        {
+            uniset::uniset_rwmutex_rlock lock(attr->vmut);
+            js->set("value", attr->val);
+        }
+
+        js->set("tick", (int)attr->tick);
+
+        std::string vtypeStr;
+
+        switch( attr->vtype )
+        {
+            case OPCUAClient::VarType::Int32:
+                vtypeStr = "int32";
+                break;
+
+            case OPCUAClient::VarType::Float:
+                vtypeStr = "float";
+                break;
+
+            default:
+                vtypeStr = "unknown";
+                break;
+        }
+
+        js->set("vtype", vtypeStr);
+        js->set("precision", attr->cal.precision);
+
+        // Status from current channel
+        auto ch = currentChannel.load();
+
+        if( ch < numChannels )
+        {
+            bool isOk = attr->rval[ch].statusOk();
+            js->set("status", isOk ? "OK" : UA_StatusCode_name(attr->rval[ch].status()));
+        }
+        else
+        {
+            js->set("status", "Unknown");
+        }
+
+        if( detailed )
+        {
+            js->set("mask", (int)attr->mask);
+            js->set("offset", (int)attr->offset);
+
+            Array::Ptr chArr = new Array();
+
+            for( size_t i = 0; i < numChannels; ++i )
+            {
+                Object::Ptr chObj = new Object();
+                chObj->set("index", (int)i);
+
+                if( channels[i].addr.empty() )
+                {
+                    chObj->set("disabled", true);
+                }
+                else
+                {
+                    bool isOk = attr->rval[i].statusOk();
+                    chObj->set("status", isOk ? "OK" : "ERROR");
+                    chObj->set("statusCode", UA_StatusCode_name(attr->rval[i].status()));
+                }
+
+                chArr->add(chObj);
+            }
+
+            js->set("channels", chArr);
+        }
+
+        return js;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpSensors( const Poco::URI::QueryParameters& p )
+    {
+        using Poco::JSON::Object;
+        using Poco::JSON::Array;
+
+        int limit = 50;
+        int offset = 0;
+        std::string filter;
+
+        for( const auto& kv : p )
+        {
+            if( kv.first == "limit" && !kv.second.empty() )
+                limit = std::stoi(kv.second);
+            else if( kv.first == "offset" && !kv.second.empty() )
+                offset = std::stoi(kv.second);
+            else if( kv.first == "filter" && !kv.second.empty() )
+                filter = kv.second;
+        }
+
+        Object::Ptr out = new Object();
+        Array::Ptr sensors = new Array();
+
+        int total = 0;
+        int added = 0;
+        int skipped = 0;
+
+        for( const auto& attr : iolist )
+        {
+            if( !attr )
+                continue;
+
+            // Apply filter
+            if( !filter.empty() )
+            {
+                std::string ioTypeStr;
+
+                switch( attr->stype )
+                {
+                    case UniversalIO::AI:
+                        ioTypeStr = "AI";
+                        break;
+
+                    case UniversalIO::AO:
+                        ioTypeStr = "AO";
+                        break;
+
+                    case UniversalIO::DI:
+                        ioTypeStr = "DI";
+                        break;
+
+                    case UniversalIO::DO:
+                        ioTypeStr = "DO";
+                        break;
+
+                    default:
+                        ioTypeStr = "Unknown";
+                        break;
+                }
+
+                if( ioTypeStr != filter )
+                    continue;
+            }
+
+            total++;
+
+            // Apply offset
+            if( skipped < offset )
+            {
+                skipped++;
+                continue;
+            }
+
+            // Apply limit (0 = no limit)
+            if( limit > 0 && added >= limit )
+                continue;
+
+            sensors->add(sensorToJson(attr, false));
+            added++;
+        }
+
+        out->set("result", "OK");
+        out->set("sensors", sensors);
+        out->set("total", total);
+        out->set("limit", limit);
+        out->set("offset", offset);
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpSensor( const Poco::URI::QueryParameters& p )
+    {
+        using Poco::JSON::Object;
+
+        auto conf = uniset_conf();
+
+        ObjectId searchId = DefaultObjectId;
+        std::string searchName;
+        std::string searchNodeId;
+
+        for( const auto& kv : p )
+        {
+            if( kv.first == "id" && !kv.second.empty() )
+                searchId = std::stol(kv.second);
+            else if( kv.first == "name" && !kv.second.empty() )
+                searchName = kv.second;
+            else if( kv.first == "nodeid" && !kv.second.empty() )
+                searchNodeId = kv.second;
+        }
+
+        if( searchId == DefaultObjectId && searchName.empty() && searchNodeId.empty() )
+            throw uniset::SystemError(myname + "(/sensor): specify one of: id, name, nodeid");
+
+        // Resolve name to id if possible
+        if( searchId == DefaultObjectId && !searchName.empty() )
+            searchId = conf->getSensorID(searchName);
+
+        // Search
+        for( const auto& attr : iolist )
+        {
+            if( !attr )
+                continue;
+
+            bool found = false;
+
+            if( searchId != DefaultObjectId && attr->si.id == searchId )
+                found = true;
+            else if( !searchName.empty() && conf->oind->getMapName(attr->si.id) == searchName )
+                found = true;
+            else if( !searchNodeId.empty() && attr->attrName == searchNodeId )
+                found = true;
+
+            if( found )
+            {
+                Object::Ptr out = new Object();
+                out->set("result", "OK");
+                out->set("sensor", sensorToJson(attr, true));
+                return out;
+            }
+        }
+
+        // Not found
+        Object::Ptr out = new Object();
+        out->set("result", "ERROR");
+        out->set("error", "sensor not found");
+
+        Object::Ptr query = new Object();
+
+        if( searchId != DefaultObjectId )
+            query->set("id", (int)searchId);
+
+        if( !searchName.empty() )
+            query->set("name", searchName);
+
+        if( !searchNodeId.empty() )
+            query->set("nodeid", searchNodeId);
+
+        out->set("query", query);
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpDiagnostics( const Poco::URI::QueryParameters& p )
+    {
+        using Poco::JSON::Object;
+        using Poco::JSON::Array;
+
+        Object::Ptr out = new Object();
+        out->set("result", "OK");
+
+        // Summary
+        Object::Ptr summary = new Object();
+        summary->set("readErrors", (uint64_t)totalReadErrors.load());
+        summary->set("writeErrors", (uint64_t)totalWriteErrors.load());
+        summary->set("connectionLosses", (uint64_t)totalConnectionLosses.load());
+
+        auto now = std::chrono::steady_clock::now();
+        auto uptimeSec = std::chrono::duration_cast<std::chrono::seconds>(now - startTime).count();
+        summary->set("uptime", (int64_t)uptimeSec);
+
+        out->set("summary", summary);
+
+        // Last errors
+        Array::Ptr errors = new Array();
+        {
+            std::lock_guard<std::mutex> lock(errorHistoryMutex);
+
+            for( auto it = errorHistory.rbegin(); it != errorHistory.rend(); ++it )
+            {
+                Object::Ptr err = new Object();
+                err->set("time", formatTime(it->time));
+                err->set("channel", (int)it->channel);
+                err->set("operation", it->operation);
+                err->set("statusCode", UA_StatusCode_name(it->statusCode));
+                err->set("nodeid", it->nodeid);
+                errors->add(err);
+            }
+
+            out->set("errorHistorySize", (int)errorHistory.size());
+            out->set("errorHistoryMax", (int)errorHistoryMax);
+        }
+
+        out->set("lastErrors", errors);
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpTakeControl( const Poco::URI::QueryParameters& p )
+    {
+        using Poco::JSON::Object;
+
+        Object::Ptr out = new Object();
+
+        if( !httpControlAllow )
+        {
+            out->set("result", "ERROR");
+            out->set("error", "HTTP control not allowed (httpControlAllow=0)");
+            return out;
+        }
+
+        if( httpControlActive.load() )
+        {
+            out->set("result", "OK");
+            out->set("message", "HTTP control already active");
+            out->set("currentMode", (int)exchangeMode.load());
+            return out;
+        }
+
+        int prevMode = exchangeMode.load();
+        httpControlActive = true;
+
+        out->set("result", "OK");
+        out->set("message", "HTTP control enabled");
+        out->set("previousMode", prevMode);
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpReleaseControl( const Poco::URI::QueryParameters& p )
+    {
+        using Poco::JSON::Object;
+
+        Object::Ptr out = new Object();
+
+        httpControlActive = false;
+
+        if( sidExchangeMode != DefaultObjectId )
+            exchangeMode = sensorExchangeMode.load();
+
+        out->set("result", "OK");
+        out->set("message", "control returned to sensor");
+        out->set("currentMode", (int)exchangeMode.load());
+
+        return out;
+    }
+    // -----------------------------------------------------------------------------
 
 #endif // DISABLE_REST_API
+    // -----------------------------------------------------------------------------
+    void OPCUAExchange::addError( size_t channel, const std::string& operation, UA_StatusCode status, const std::string& nodeid )
+    {
+        if( operation == "read" )
+            totalReadErrors++;
+        else if( operation == "write" )
+            totalWriteErrors++;
+        else if( operation == "connect" )
+            totalConnectionLosses++;
+
+        std::lock_guard<std::mutex> lock(errorHistoryMutex);
+
+        ErrorRecord rec;
+        rec.time = std::chrono::system_clock::now();
+        rec.channel = channel;
+        rec.operation = operation;
+        rec.statusCode = status;
+        rec.nodeid = nodeid;
+
+        errorHistory.push_back(std::move(rec));
+
+        while( errorHistory.size() > errorHistoryMax )
+            errorHistory.pop_front();
+    }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset

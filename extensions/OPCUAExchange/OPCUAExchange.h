@@ -23,6 +23,8 @@
 #include <string>
 #include <regex>
 #include <optional>
+#include <chrono>
+#include <mutex>
 #include "UniXML.h"
 #include "ThreadCreator.h"
 #include "PassiveTimer.h"
@@ -297,6 +299,16 @@ namespace uniset
                 smLastNumber
             };
 
+            /*! Запись об ошибке для диагностики */
+            struct ErrorRecord
+            {
+                std::chrono::system_clock::time_point time;
+                size_t channel;
+                std::string operation;  // "read" | "write" | "connect"
+                UA_StatusCode statusCode;
+                std::string nodeid;     // опционально, для read/write
+            };
+
             typedef std::list<IOBase> ThresholdList;
             // т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
             // и отдельно его проверяем потом
@@ -307,6 +319,7 @@ namespace uniset
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
             virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
             virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
+            virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root ) override;
 #endif
 
         protected:
@@ -342,10 +355,27 @@ namespace uniset
             Poco::JSON::Object::Ptr httpStatus();
             Poco::JSON::Object::Ptr buildLogServerInfo();
 
+            // Новые HTTP endpoints
+            Poco::JSON::Object::Ptr httpSensors( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpSensor( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpDiagnostics( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpTakeControl( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpReleaseControl( const Poco::URI::QueryParameters& p );
+
+            // Вспомогательные методы
+            std::string formatTime( const std::chrono::system_clock::time_point& tp ) const;
+            Poco::JSON::Object::Ptr sensorToJson( const std::shared_ptr<OPCAttribute>& attr, bool detailed = false ) const;
+
             // Защитный флаг: запретить /setparam при false
             bool httpEnabledSetParams { true };
 #endif
 
+            // Вспомогательные методы
+            void addError( size_t channel, const std::string& operation, UA_StatusCode status, const std::string& nodeid = "" );
+
+            // Флаги управления режимом через HTTP (используются и вне REST API)
+            bool httpControlAllow { false };              /*!< разрешён перехват управления (из конфига) */
+            std::atomic_bool httpControlActive { false }; /*!< перехват активен (runtime) */
 
             // чтение файла конфигурации
             void readConfiguration();
@@ -435,8 +465,22 @@ namespace uniset
             uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
             IOController::IOStateList::iterator itExchangeMode;
             std::atomic<long> exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
+            std::atomic<long> sensorExchangeMode = { emNone }; /*!< последнее значение режима от датчика/SM */
 
             VMonitor vmon;
+
+            // Диагностика: кольцевой буфер ошибок
+            mutable std::deque<ErrorRecord> errorHistory;
+            size_t errorHistoryMax { 100 };  /*!< максимальный размер истории ошибок */
+            mutable std::mutex errorHistoryMutex;
+
+            // Счётчики ошибок (не сбрасываются)
+            std::atomic<uint64_t> totalReadErrors { 0 };
+            std::atomic<uint64_t> totalWriteErrors { 0 };
+            std::atomic<uint64_t> totalConnectionLosses { 0 };
+
+            // Время запуска для uptime
+            std::chrono::steady_clock::time_point startTime;
 
         private:
     };
