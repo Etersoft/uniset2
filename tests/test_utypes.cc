@@ -464,3 +464,26 @@ TEST_CASE("UniSetTypes: timespec_to_nanosec", "[utypes][timespec_to_nanosec]" )
     REQUIRE(uniset::timespec_to_nanosec(tm) == 10 * 1e9 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: containsIgnoreCase", "[utypes][containsIgnoreCase]" )
+{
+    // Exact match
+    CHECK( containsIgnoreCase("Hello", "Hello") );
+    CHECK( containsIgnoreCase("Hello", "hello") );
+    CHECK( containsIgnoreCase("hello", "HELLO") );
+
+    // Substring match
+    CHECK( containsIgnoreCase("Hello World", "world") );
+    CHECK( containsIgnoreCase("Hello World", "WORLD") );
+    CHECK( containsIgnoreCase("SensorAI1_Test", "ai1") );
+    CHECK( containsIgnoreCase("SensorAI1_Test", "AI1") );
+
+    // No match
+    CHECK_FALSE( containsIgnoreCase("Hello", "xyz") );
+    CHECK_FALSE( containsIgnoreCase("Hello", "HelloWorld") );
+
+    // Edge cases
+    CHECK( containsIgnoreCase("", "") );  // empty pattern matches empty text
+    CHECK( containsIgnoreCase("Hello", "") );  // empty pattern matches anything
+    CHECK_FALSE( containsIgnoreCase("", "x") );  // non-empty pattern doesn't match empty text
+}
+// -----------------------------------------------------------------------------

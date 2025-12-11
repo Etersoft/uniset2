@@ -345,6 +345,13 @@ namespace uniset
     bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
     bool check_filter_re( UniXML::iterator& it, const std::string& f_prop, const std::regex& re ) noexcept;
 
+    /*! Поиск подстроки без учёта регистра (case-insensitive substring search)
+     * \param text - строка в которой ищем
+     * \param pattern - искомая подстрока
+     * \return true если pattern найден в text (без учёта регистра)
+     */
+    bool containsIgnoreCase( const std::string& text, const std::string& pattern ) noexcept;
+
     // RAII для флагов форматирования ostream..
     class ios_fmt_restorer
     {

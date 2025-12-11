@@ -1572,22 +1572,6 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
         }
     }
 
-    // Convert filter to lowercase for case-insensitive search
-    std::string filterLower;
-    if( !filter.empty() )
-    {
-        filterLower = filter;
-        std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
-    }
-
-    // Case-insensitive substring search comparator
-    auto caseInsensitiveFind = [](const std::string& text, const std::string& pattern) -> bool {
-        auto it = std::search(text.begin(), text.end(), pattern.begin(), pattern.end(),
-            [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) ==
-                                        std::tolower(static_cast<unsigned char>(b)); });
-        return it != text.end();
-    };
-
     auto conf = uniset_conf();
     size_t total = 0;
     size_t skipped = 0;
@@ -1602,10 +1586,10 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
             continue;
 
         // Apply text filter (case-insensitive substring match by name)
-        if( !filterLower.empty() )
+        if( !filter.empty() )
         {
             std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(s->si.id));
-            if( !caseInsensitiveFind(sensorName, filterLower) )
+            if( !uniset::containsIgnoreCase(sensorName, filter) )
                 continue;
         }
 
