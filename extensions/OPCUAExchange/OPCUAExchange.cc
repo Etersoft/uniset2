@@ -2549,7 +2549,7 @@ namespace uniset
         return oss.str();
     }
     // -----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr OPCUAExchange::sensorToJson( const std::shared_ptr<OPCAttribute>& attr, bool detailed ) const
+    Poco::JSON::Object::Ptr OPCUAExchange::sensorToJson( const std::shared_ptr<OPCAttribute>& attr, bool detailed, const std::string& cachedName ) const
     {
         using Poco::JSON::Object;
         using Poco::JSON::Array;
@@ -2558,35 +2558,10 @@ namespace uniset
         Object::Ptr js = new Object();
 
         js->set("id", (int)attr->si.id);
-        js->set("name", conf->oind->getMapName(attr->si.id));
+        js->set("name", cachedName.empty() ? ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id)) : cachedName);
         js->set("nodeid", attr->attrName);
 
-        std::string ioTypeStr;
-
-        switch( attr->stype )
-        {
-            case UniversalIO::AI:
-                ioTypeStr = "AI";
-                break;
-
-            case UniversalIO::AO:
-                ioTypeStr = "AO";
-                break;
-
-            case UniversalIO::DI:
-                ioTypeStr = "DI";
-                break;
-
-            case UniversalIO::DO:
-                ioTypeStr = "DO";
-                break;
-
-            default:
-                ioTypeStr = "Unknown";
-                break;
-        }
-
-        js->set("iotype", ioTypeStr);
+        js->set("iotype", uniset::iotype2str(attr->stype));
 
         {
             uniset::uniset_rwmutex_rlock lock(attr->vmut);
@@ -2711,10 +2686,14 @@ namespace uniset
             if( iotypeFilter != UniversalIO::UnknownIOType && attr->stype != iotypeFilter )
                 continue;
 
+            // Get sensor name (lazy - only if needed for filter or JSON)
+            std::string sensorName;
+
             // Apply text filter (case-insensitive substring match by name)
             if( !filter.empty() )
             {
-                std::string sensorName = conf->oind->getNameById(attr->si.id);
+                sensorName = ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id));
+
                 if( !uniset::containsIgnoreCase(sensorName, filter) )
                     continue;
             }
@@ -2732,7 +2711,8 @@ namespace uniset
             if( limit > 0 && added >= limit )
                 continue;
 
-            sensors->add(sensorToJson(attr, false));
+            // Pass cached name to avoid second lookup
+            sensors->add(sensorToJson(attr, false, sensorName));
             added++;
         }
 

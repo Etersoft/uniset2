@@ -268,6 +268,9 @@ namespace uniset
         protected:
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
             virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
+#ifndef DISABLE_REST_API
+            virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root ) override;
+#endif
             virtual bool deactivateObject() override;
             virtual bool reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& mbconf ) override;
 

@@ -279,3 +279,14 @@ bool MBTCPMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const
     return true;
 }
 // ----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// ----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr MBTCPMaster::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+    auto my = MBExchange::httpGetMyInfo(root);
+    my->set("transportType", "tcp");
+    return my;
+}
+// ----------------------------------------------------------------------------
+#endif
+// ----------------------------------------------------------------------------

@@ -45,6 +45,9 @@ namespace uniset
             static void help_print( int argc, const char* const* argv );
 
         protected:
+#ifndef DISABLE_REST_API
+            virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root ) override;
+#endif
             std::shared_ptr<ModbusRTUMaster> mbrtu = nullptr;
             std::mutex mbMutex;
             std::string devname;

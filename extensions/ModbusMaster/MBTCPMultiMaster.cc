@@ -810,4 +810,14 @@ bool MBTCPMultiMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, 
     return false;
 }
 // ----------------------------------------------------------------------------
-
+#ifndef DISABLE_REST_API
+// ----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr MBTCPMultiMaster::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+    auto my = MBExchange::httpGetMyInfo(root);
+    my->set("transportType", "multi");
+    return my;
+}
+// ----------------------------------------------------------------------------
+#endif
+// ----------------------------------------------------------------------------
