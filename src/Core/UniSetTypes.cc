@@ -18,6 +18,8 @@
  *  \author Pavel Vainerman
 */
 // -----------------------------------------------------------------------------
+#include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <iomanip>
 #include <sstream>
@@ -695,6 +697,20 @@ bool uniset::check_filter( UniXML::iterator& it, const std::string& f_prop, cons
         return false;
 
     return true;
+}
+// ------------------------------------------------------------------------------------------
+bool uniset::containsIgnoreCase( const std::string& text, const std::string& pattern ) noexcept
+{
+    // Empty pattern matches any string (including empty)
+    if( pattern.empty() )
+        return true;
+
+    auto it = std::search(text.begin(), text.end(), pattern.begin(), pattern.end(),
+        [](char a, char b) {
+            return std::tolower(static_cast<unsigned char>(a)) ==
+                   std::tolower(static_cast<unsigned char>(b));
+        });
+    return it != text.end();
 }
 // ------------------------------------------------------------------------------------------
 string uniset::timeToString(time_t tm, const std::string& brk ) noexcept

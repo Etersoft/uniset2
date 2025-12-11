@@ -2693,22 +2693,6 @@ namespace uniset
             }
         }
 
-        // Convert filter to lowercase for case-insensitive search
-        std::string filterLower;
-        if( !filter.empty() )
-        {
-            filterLower = filter;
-            std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
-        }
-
-        // Case-insensitive substring search
-        auto caseInsensitiveFind = [](const std::string& text, const std::string& pattern) -> bool {
-            auto it = std::search(text.begin(), text.end(), pattern.begin(), pattern.end(),
-                [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) ==
-                                            std::tolower(static_cast<unsigned char>(b)); });
-            return it != text.end();
-        };
-
         Object::Ptr out = new Object();
         Array::Ptr sensors = new Array();
 
@@ -2728,10 +2712,10 @@ namespace uniset
                 continue;
 
             // Apply text filter (case-insensitive substring match by name)
-            if( !filterLower.empty() )
+            if( !filter.empty() )
             {
                 std::string sensorName = conf->oind->getNameById(attr->si.id);
-                if( !caseInsensitiveFind(sensorName, filterLower) )
+                if( !uniset::containsIgnoreCase(sensorName, filter) )
                     continue;
             }
 
