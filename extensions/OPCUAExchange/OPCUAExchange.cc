@@ -2215,10 +2215,11 @@ namespace uniset
             myhelp.add(cmd);
         }
         {
-            uniset::json::help::item cmd("sensors", "list all sensors with pagination");
+            uniset::json::help::item cmd("sensors", "list all sensors with pagination and filtering");
             cmd.param("limit", "max records (default: 50, 0 = all)");
             cmd.param("offset", "offset from start (default: 0)");
-            cmd.param("filter", "filter by iotype: AI|AO|DI|DO");
+            cmd.param("filter", "text filter by sensor name (case-insensitive substring)");
+            cmd.param("iotype", "filter by type: AI|AO|DI|DO");
             myhelp.add(cmd);
         }
         {
@@ -2666,7 +2667,8 @@ namespace uniset
 
         int limit = 50;
         int offset = 0;
-        std::string filter;
+        std::string filter;  // text filter by name (substring, case-insensitive)
+        UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
 
         for( const auto& kv : p )
         {
@@ -2676,7 +2678,36 @@ namespace uniset
                 offset = std::stoi(kv.second);
             else if( kv.first == "filter" && !kv.second.empty() )
                 filter = kv.second;
+            else if( kv.first == "iotype" && !kv.second.empty() )
+                iotypeFilter = uniset::getIOType(kv.second);
         }
+
+        // For backward compatibility: if filter is AI/AO/DI/DO and iotype is empty, treat as iotype
+        if( iotypeFilter == UniversalIO::UnknownIOType && !filter.empty() )
+        {
+            auto t = uniset::getIOType(filter);
+            if( t != UniversalIO::UnknownIOType )
+            {
+                iotypeFilter = t;
+                filter.clear();
+            }
+        }
+
+        // Convert filter to lowercase for case-insensitive search
+        std::string filterLower;
+        if( !filter.empty() )
+        {
+            filterLower = filter;
+            std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
+        }
+
+        // Case-insensitive substring search
+        auto caseInsensitiveFind = [](const std::string& text, const std::string& pattern) -> bool {
+            auto it = std::search(text.begin(), text.end(), pattern.begin(), pattern.end(),
+                [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) ==
+                                            std::tolower(static_cast<unsigned char>(b)); });
+            return it != text.end();
+        };
 
         Object::Ptr out = new Object();
         Array::Ptr sensors = new Array();
@@ -2685,40 +2716,22 @@ namespace uniset
         int added = 0;
         int skipped = 0;
 
+        auto conf = uniset_conf();
+
         for( const auto& attr : iolist )
         {
             if( !attr )
                 continue;
 
-            // Apply filter
-            if( !filter.empty() )
+            // Apply iotype filter (enum comparison - fast)
+            if( iotypeFilter != UniversalIO::UnknownIOType && attr->stype != iotypeFilter )
+                continue;
+
+            // Apply text filter (case-insensitive substring match by name)
+            if( !filterLower.empty() )
             {
-                std::string ioTypeStr;
-
-                switch( attr->stype )
-                {
-                    case UniversalIO::AI:
-                        ioTypeStr = "AI";
-                        break;
-
-                    case UniversalIO::AO:
-                        ioTypeStr = "AO";
-                        break;
-
-                    case UniversalIO::DI:
-                        ioTypeStr = "DI";
-                        break;
-
-                    case UniversalIO::DO:
-                        ioTypeStr = "DO";
-                        break;
-
-                    default:
-                        ioTypeStr = "Unknown";
-                        break;
-                }
-
-                if( ioTypeStr != filter )
+                std::string sensorName = conf->oind->getNameById(attr->si.id);
+                if( !caseInsensitiveFind(sensorName, filterLower) )
                     continue;
             }
 
