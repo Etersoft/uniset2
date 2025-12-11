@@ -809,6 +809,134 @@ TEST_CASE("OPCUAExchange: HTTP /sensors (list with pagination)", "[http][opcuaex
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /sensors filtering", "[http][opcuaex][sensors][filter]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Test text filter by sensor name (case-insensitive substring)
+    SECTION("filter by name (text search)")
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=attr", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors->size() > 0);
+
+        // All returned sensors should contain "attr" (case-insensitive) in name
+        for( size_t i = 0; i < sensors->size(); ++i )
+        {
+            auto s = sensors->getObject(i);
+            std::string name = s->get("name").toString();
+            std::string nameLower = name;
+            std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+            REQUIRE(nameLower.find("attr") != std::string::npos);
+        }
+    }
+
+    // Test iotype filter
+    SECTION("iotype filter")
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?iotype=AO", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors->size() > 0);
+
+        // All returned sensors should be AO type
+        for( size_t i = 0; i < sensors->size(); ++i )
+        {
+            auto s = sensors->getObject(i);
+            REQUIRE(s->get("iotype").toString() == "AO");
+        }
+    }
+
+    // Test combination of filter and iotype
+    SECTION("combined filter and iotype")
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=Attr&iotype=AI", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto sensors = root->getArray("sensors");
+
+        // All returned sensors should match both criteria
+        for( size_t i = 0; i < sensors->size(); ++i )
+        {
+            auto s = sensors->getObject(i);
+            std::string name = s->get("name").toString();
+            std::string nameLower = name;
+            std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+            REQUIRE(nameLower.find("attr") != std::string::npos);
+            REQUIRE(s->get("iotype").toString() == "AI");
+        }
+    }
+
+    // Test backward compatibility: filter=AI should work as iotype filter
+    SECTION("backward compatibility: filter=AI as iotype")
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=AI", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        auto sensors = root->getArray("sensors");
+
+        // All returned sensors should be AI type (backward compatibility)
+        for( size_t i = 0; i < sensors->size(); ++i )
+        {
+            auto s = sensors->getObject(i);
+            REQUIRE(s->get("iotype").toString() == "AI");
+        }
+    }
+
+    // Test filter with no matches
+    SECTION("filter with no matches")
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=nonexistent_xyz_123", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto root = parser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors->size() == 0);
+        REQUIRE((int)root->get("total") == 0);
+    }
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: HTTP /sensor (single sensor details)", "[http][opcuaex][sensor]")
 {
     InitTest();

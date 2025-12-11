@@ -132,7 +132,7 @@ GET /api/v01/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=
 
 \par Список сенсоров
 \code
-GET /api/v01/OPCUAExchange1/sensors?limit=100&offset=0&filter=AI
+GET /api/v01/OPCUAExchange1/sensors?limit=100&offset=0&filter=Temp&iotype=AI
 {
   "result": "OK",
   "sensors": [
@@ -143,6 +143,15 @@ GET /api/v01/OPCUAExchange1/sensors?limit=100&offset=0&filter=AI
   "offset": 0
 }
 \endcode
+
+\par Параметры запроса /sensors
+- \c limit — максимум записей (0 = все, default 50)
+- \c offset — смещение (default 0)
+- \c filter — текстовый фильтр по имени сенсора (подстрока, регистронезависимый)
+- \c iotype — фильтр по типу: AI|AO|DI|DO
+
+\note Для обратной совместимости: если \c filter равен AI/AO/DI/DO и \c iotype не задан,
+то \c filter интерпретируется как фильтр по типу.
 
 \par Детали сенсора
 \code
@@ -191,11 +200,6 @@ GET /api/v01/OPCUAExchange1/diagnostics
   "errorHistoryMax": 100
 }
 \endcode
-
-Параметры запроса \c /sensors:
-- \c limit — максимум записей (0 = все, default 50)
-- \c offset — смещение (default 0)
-- \c filter — фильтр по типу: AI|AO|DI|DO
 
 Дополнительно в разделе \c object базового \c /help присутствует поле \c extensionType="OPCUAExchange" (переопределённый \c httpGetMyInfo()).
 
