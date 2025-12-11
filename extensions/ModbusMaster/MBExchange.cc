@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <cmath>
 #include <limits>
+#include <set>
 #include <sstream>
 #include "Exceptions.h"
 #include "UniSetTypes.h"
@@ -125,7 +126,8 @@ namespace uniset
         vmonit(force);
         vmonit(force_out);
 
-        httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
+        httpEnabledSetParams = conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
+        httpControlAllow = conf->getArgPInt("--" + prefix + "-http-control-allow", it.getProp("httpControlAllow"), 0);
 
         mbconf->defaultMBtype = conf->getArg2Param("--" + prefix + "-default-mbtype", it.getProp("default_mbtype"), "rtu");
         mbconf->defaultMBaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
@@ -2366,8 +2368,13 @@ namespace uniset
     {
         if( sm->id == sidExchangeMode )
         {
-            exchangeMode.store( (MBConfig::ExchangeMode) sm->value);
-            mblog3 << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
+            sensorExchangeMode.store( (MBConfig::ExchangeMode) sm->value);
+
+            if( !httpControlActive )
+                exchangeMode.store( (MBConfig::ExchangeMode) sm->value);
+
+            mblog3 << myname << "(sensorInfo): exchange MODE=" << sm->value
+                   << " (httpControlActive=" << httpControlActive << ")" << std::endl;
             //return; // этот датчик может встречаться и в списке обмена.. поэтому делать return нельзя.
         }
 
@@ -2709,6 +2716,31 @@ namespace uniset
             myhelp.add(cmd);
         }
 
+        {
+            uniset::json::help::item cmd("registers", "get list of registers (sensors)");
+            cmd.param("offset", "skip first N items");
+            cmd.param("limit", "max items to return (0 = unlimited)");
+            cmd.param("filter", "filter by name (case-insensitive substring)");
+            cmd.param("iotype", "filter by type: AI|AO|DI|DO");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("devices", "get list of slave devices");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("takeControl", "take HTTP control over sensor values");
+            cmd.param("note", "requires httpControlAllow=1 in config");
+            myhelp.add(cmd);
+        }
+
+        {
+            uniset::json::help::item cmd("releaseControl", "release HTTP control, return to sensor mode");
+            myhelp.add(cmd);
+        }
+
         return myhelp;
     }
     // ----------------------------------------------------------------------------
@@ -2733,6 +2765,18 @@ namespace uniset
 
             if( req == "status" )
                 return httpStatus();
+
+            if( req == "registers" )
+                return httpRegisters(ctx.params);
+
+            if( req == "devices" )
+                return httpDevices(ctx.params);
+
+            if( req == "takeControl" )
+                return httpTakeControl(ctx.params);
+
+            if( req == "releaseControl" )
+                return httpReleaseControl(ctx.params);
         }
 
         return UniSetObject::httpRequest(ctx);
@@ -3075,6 +3119,11 @@ namespace uniset
         st->set("reopenTimeout",   static_cast<int>(ptReopen.getInterval()));
         st->set("notUseExchangeTimer", notUseExchangeTimer ? 1 : 0);
 
+        // HTTP Control
+        st->set("httpControlAllow", httpControlAllow ? 1 : 0);
+        st->set("httpControlActive", httpControlActive ? 1 : 0);
+        st->set("httpEnabledSetParams", httpEnabledSetParams ? 1 : 0);
+
         // Текущие значимые параметры конфигурации (как числа, без перегенерации короткой строки)
         {
             Poco::JSON::Object::Ptr cfg = new Poco::JSON::Object();
@@ -3092,10 +3141,214 @@ namespace uniset
         return out;
     }
     // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpRegisters( const Poco::URI::QueryParameters& params )
+    {
+        using Poco::JSON::Array;
+        using Poco::JSON::Object;
+
+        size_t offset = 0;
+        size_t limit = 0;
+        std::string filter;
+        UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
+
+        for( const auto& p : params )
+        {
+            if( p.first == "offset" )
+                offset = uni_atoi(p.second);
+            else if( p.first == "limit" )
+                limit = uni_atoi(p.second);
+            else if( p.first == "filter" && !p.second.empty() )
+                filter = p.second;
+            else if( p.first == "iotype" && !p.second.empty() )
+                iotypeFilter = uniset::getIOType(p.second);
+        }
+
+        Object::Ptr out = new Object();
+        Array::Ptr regs = new Array();
+        Object::Ptr devicesDict = new Object();
+
+        auto conf = uniset_conf();
+        size_t total = 0;
+        size_t skipped = 0;
+        size_t count = 0;
+
+        // Track which devices are used in results
+        std::set<ModbusRTU::ModbusAddr> usedDevices;
+
+        for( const auto& dev : mbconf->devices )
+        {
+            for( const auto& pollmap : dev.second->pollmap )
+            {
+                for( const auto& regIt : *pollmap.second )
+                {
+                    const auto& reg = regIt.second;
+
+                    for( const auto& prop : reg->slst )
+                    {
+                        // Apply iotype filter
+                        if( iotypeFilter != UniversalIO::UnknownIOType && prop.stype != iotypeFilter )
+                            continue;
+
+                        // Get sensor name (lazy - only if needed for filter or JSON)
+                        std::string sensorName;
+
+                        // Apply text filter
+                        if( !filter.empty() )
+                        {
+                            sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
+
+                            if( !uniset::containsIgnoreCase(sensorName, filter) )
+                                continue;
+                        }
+
+                        total++;
+
+                        if( skipped < offset )
+                        {
+                            skipped++;
+                            continue;
+                        }
+
+                        if( limit > 0 && count >= limit )
+                            continue;
+
+                        // Get name if not already cached (for JSON output)
+                        if( sensorName.empty() )
+                            sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
+
+                        Object::Ptr r = new Object();
+                        r->set("id", static_cast<int>(prop.si.id));
+                        r->set("name", sensorName);
+                        r->set("iotype", uniset::iotype2str(prop.stype));
+                        r->set("value", static_cast<long>(prop.value));
+                        r->set("vtype", VTypes::type2str(prop.vType));
+
+                        // Device reference (just addr, details in devices dict)
+                        r->set("device", static_cast<int>(dev.second->mbaddr));
+                        usedDevices.insert(dev.second->mbaddr);
+
+                        // Register info
+                        Object::Ptr ri = new Object();
+                        ri->set("mbreg", static_cast<int>(reg->mbreg));
+                        ri->set("mbfunc", static_cast<int>(reg->mbfunc));
+                        ri->set("mbval", static_cast<int>(reg->mbval));
+                        r->set("register", ri);
+
+                        r->set("nbit", static_cast<int>(prop.nbit));
+                        r->set("mask", static_cast<int>(prop.mask));
+                        r->set("precision", static_cast<int>(prop.cal.precision));
+
+                        regs->add(r);
+                        count++;
+                    }
+                }
+            }
+        }
+
+        // Build devices dictionary (only used devices)
+        for( const auto& dev : mbconf->devices )
+        {
+            if( usedDevices.find(dev.second->mbaddr) == usedDevices.end() )
+                continue;
+
+            Object::Ptr d = new Object();
+            d->set("respond", dev.second->resp_state);
+            std::string dtypeStr = (dev.second->dtype == MBConfig::dtRTU ? "rtu" :
+                                   dev.second->dtype == MBConfig::dtMTR ? "mtr" :
+                                   dev.second->dtype == MBConfig::dtRTU188 ? "rtu188" : "unknown");
+            d->set("dtype", dtypeStr);
+            d->set("mode", static_cast<int>(dev.second->mode));
+            d->set("safeMode", static_cast<int>(dev.second->safeMode));
+
+            devicesDict->set(std::to_string(dev.second->mbaddr), d);
+        }
+
+        out->set("result", "OK");
+        out->set("devices", devicesDict);
+        out->set("registers", regs);
+        out->set("total", static_cast<int>(total));
+        out->set("count", static_cast<int>(count));
+        out->set("offset", static_cast<int>(offset));
+        out->set("limit", static_cast<int>(limit));
+        return out;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpDevices( const Poco::URI::QueryParameters& params )
+    {
+        using Poco::JSON::Array;
+        using Poco::JSON::Object;
+
+        Object::Ptr out = new Object();
+        Array::Ptr devs = new Array();
+
+        for( const auto& dev : mbconf->devices )
+        {
+            Object::Ptr d = new Object();
+            d->set("addr", static_cast<int>(dev.second->mbaddr));
+            d->set("respond", dev.second->resp_state);
+            std::string dtypeStr = (dev.second->dtype == MBConfig::dtRTU ? "rtu" :
+                                   dev.second->dtype == MBConfig::dtMTR ? "mtr" :
+                                   dev.second->dtype == MBConfig::dtRTU188 ? "rtu188" : "unknown");
+            d->set("dtype", dtypeStr);
+
+            // Count registers
+            size_t regCount = 0;
+            for( const auto& pollmap : dev.second->pollmap )
+                regCount += pollmap.second->size();
+            d->set("regCount", static_cast<int>(regCount));
+
+            // Mode
+            d->set("mode", static_cast<int>(dev.second->mode));
+
+            // Safe mode
+            d->set("safeMode", static_cast<int>(dev.second->safeMode));
+
+            devs->add(d);
+        }
+
+        out->set("result", "OK");
+        out->set("devices", devs);
+        out->set("count", static_cast<int>(mbconf->devices.size()));
+        return out;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpTakeControl( const Poco::URI::QueryParameters& /*p*/ )
+    {
+        Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+
+        if( !httpControlAllow )
+        {
+            json->set("result", "ERROR");
+            json->set("error", "HTTP control is not allowed. Set httpControlAllow=1 in config.");
+            return json;
+        }
+
+        httpControlActive = true;
+        json->set("result", "OK");
+        json->set("httpControlActive", 1);
+        json->set("currentMode", static_cast<int>(exchangeMode.load()));
+        return json;
+    }
+    // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpReleaseControl( const Poco::URI::QueryParameters& /*p*/ )
+    {
+        Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+        httpControlActive = false;
+
+        // Восстанавливаем режим от датчика (если он задан)
+        if( sidExchangeMode != DefaultObjectId )
+            exchangeMode.store(sensorExchangeMode.load());
+
+        json->set("result", "OK");
+        json->set("httpControlActive", 0);
+        json->set("currentMode", static_cast<int>(exchangeMode.load()));
+        return json;
+    }
+    // ----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBExchange::httpGetMyInfo( Poco::JSON::Object::Ptr root )
     {
         auto my = UniSetObject::httpGetMyInfo(root);
-        my->set("extensionType", "MBExchange");
+        my->set("extensionType", "ModbusMaster");
         return my;
     }
     // ----------------------------------------------------------------------------

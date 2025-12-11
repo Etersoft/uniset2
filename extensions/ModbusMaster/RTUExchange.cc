@@ -444,3 +444,14 @@ std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange(int argc, const char*
     return make_shared<RTUExchange>(ID, confnode, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr RTUExchange::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+    auto my = MBExchange::httpGetMyInfo(root);
+    my->set("transportType", "rtu");
+    return my;
+}
+// -----------------------------------------------------------------------------
+#endif
+// -----------------------------------------------------------------------------

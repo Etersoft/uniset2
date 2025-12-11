@@ -1521,7 +1521,6 @@ TEST_CASE("MBTCPMaster: HTTP /setparam (/getparam) sleepPause_msec & default_tim
     }
 }
 // -----------------------------------------------------------------------------
-#ifndef DISABLE_REST_API
 TEST_CASE("MBTCPMaster: HTTP /status extended fields", "[http][rest][mbtcpmaster][status][extended]")
 {
     InitTest();
@@ -1590,7 +1589,372 @@ TEST_CASE("MBTCPMaster: HTTP /status extended fields", "[http][rest][mbtcpmaster
         REQUIRE(cfg->has("default_timeout"));
     }
 }
-#endif // DISABLE_REST_API
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /registers (basic)", "[http][rest][mbtcpmaster][registers]")
+{
+    InitTest();
 
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+    REQUIRE(root->has("registers"));
+    REQUIRE(root->has("devices"));
+    REQUIRE(root->has("total"));
+    REQUIRE(root->has("count"));
+    REQUIRE(root->has("offset"));
+    REQUIRE(root->has("limit"));
+
+    auto registers = root->getArray("registers");
+    REQUIRE(registers);
+
+    auto devices = root->getObject("devices");
+    REQUIRE(devices);
+
+    // Проверяем структуру первого регистра (если есть)
+    if(registers->size() > 0)
+    {
+        auto reg = registers->getObject(0);
+        REQUIRE(reg);
+        REQUIRE(reg->has("id"));
+        REQUIRE(reg->has("name"));
+        REQUIRE(reg->has("iotype"));
+        REQUIRE(reg->has("value"));
+        REQUIRE(reg->has("device"));
+        REQUIRE(reg->has("register"));
+
+        // device is now just addr (int), details in devices dict
+        int deviceAddr = reg->getValue<int>("device");
+        REQUIRE(deviceAddr > 0);
+
+        // Check device details in devices dictionary
+        std::string addrKey = std::to_string(deviceAddr);
+        REQUIRE(devices->has(addrKey));
+        auto deviceInfo = devices->getObject(addrKey);
+        REQUIRE(deviceInfo);
+        REQUIRE(deviceInfo->has("respond"));
+        REQUIRE(deviceInfo->has("dtype"));
+
+        auto regInfo = reg->getObject("register");
+        REQUIRE(regInfo);
+        REQUIRE(regInfo->has("mbreg"));
+        REQUIRE(regInfo->has("mbfunc"));
+        REQUIRE(regInfo->has("mbval"));
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /registers (pagination)", "[http][rest][mbtcpmaster][registers][pagination]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Сначала получаем общее количество
+    int total = 0;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        total = root->getValue<int>("total");
+    }
+
+    // Теперь проверяем пагинацию с limit=2
+    if(total > 2)
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?offset=0&limit=2", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE(root->getValue<int>("count") == 2);
+        REQUIRE(root->getValue<int>("limit") == 2);
+        REQUIRE(root->getValue<int>("offset") == 0);
+        REQUIRE(root->getValue<int>("total") == total);
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers->size() == 2);
+    }
+
+    // Проверяем offset
+    if(total > 3)
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?offset=1&limit=2", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE(root->getValue<int>("offset") == 1);
+        REQUIRE(root->getValue<int>("count") <= 2);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /registers (filter by iotype)", "[http][rest][mbtcpmaster][registers][filter]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Фильтруем по типу AI
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?iotype=AI", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+
+        auto registers = root->getArray("registers");
+        // Все записи должны быть типа AI
+        for(size_t i = 0; i < registers->size(); ++i)
+        {
+            auto reg = registers->getObject(i);
+            REQUIRE(reg->getValue<std::string>("iotype") == "AI");
+        }
+    }
+
+    // Фильтруем по типу DI
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?iotype=DI", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root->get("result").toString() == "OK");
+
+        auto registers = root->getArray("registers");
+        for(size_t i = 0; i < registers->size(); ++i)
+        {
+            auto reg = registers->getObject(i);
+            REQUIRE(reg->getValue<std::string>("iotype") == "DI");
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /devices", "[http][rest][mbtcpmaster][devices]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/devices", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+    REQUIRE(root->has("devices"));
+    REQUIRE(root->has("count"));
+
+    auto devices = root->getArray("devices");
+    REQUIRE(devices);
+
+    int count = root->getValue<int>("count");
+    REQUIRE(devices->size() == (size_t)count);
+
+    // Проверяем структуру первого устройства (если есть)
+    if(devices->size() > 0)
+    {
+        auto dev = devices->getObject(0);
+        REQUIRE(dev);
+        REQUIRE(dev->has("addr"));
+        REQUIRE(dev->has("respond"));
+        REQUIRE(dev->has("dtype"));
+        REQUIRE(dev->has("regCount"));
+        REQUIRE(dev->has("mode"));
+        REQUIRE(dev->has("safeMode"));
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /info extensionType and transportType", "[http][rest][mbtcpmaster][extensionType]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+
+    // httpGetMyInfo возвращает данные в поле "object"
+    REQUIRE(root->has("object"));
+    auto obj = root->getObject("object");
+    REQUIRE(obj);
+
+    // Проверяем extensionType
+    REQUIRE(obj->has("extensionType"));
+    REQUIRE(obj->get("extensionType").toString() == "ModbusMaster");
+
+    // Проверяем transportType (для MBTCPMaster должен быть "tcp")
+    REQUIRE(obj->has("transportType"));
+    REQUIRE(obj->get("transportType").toString() == "tcp");
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /status httpControl fields", "[http][rest][mbtcpmaster][httpControl]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/status", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->has("status"));
+
+    auto status = root->getObject("status");
+    REQUIRE(status);
+
+    // Проверяем наличие httpControl полей
+    REQUIRE(status->has("httpControlAllow"));
+    REQUIRE(status->has("httpControlActive"));
+    REQUIRE(status->has("httpEnabledSetParams"));
+
+    // По умолчанию httpControlActive должен быть 0
+    REQUIRE(status->getValue<int>("httpControlActive") == 0);
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /takeControl and /releaseControl", "[http][rest][mbtcpmaster][httpControl][takeRelease]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // 1) Пытаемся взять контроль (httpControlAllow=0 в тесте, должен вернуть ошибку)
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/takeControl", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->has("result"));
+        // httpControlAllow=0 в тесте, поэтому result == "ERROR"
+        REQUIRE(root->get("result").toString() == "ERROR");
+        REQUIRE(root->has("error"));
+    }
+
+    // 2) releaseControl всегда работает
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/releaseControl", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->has("result"));
+        REQUIRE(root->get("result").toString() == "OK");
+        REQUIRE(root->has("httpControlActive"));
+        REQUIRE(root->getValue<int>("httpControlActive") == 0);
+    }
+}
 // -----------------------------------------------------------------------------
 #endif // DISABLE_REST_API

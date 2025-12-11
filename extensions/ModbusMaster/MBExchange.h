@@ -124,8 +124,14 @@ namespace uniset
             virtual Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
             virtual Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
             virtual Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr httpRegisters( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpDevices( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpTakeControl( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpReleaseControl( const Poco::URI::QueryParameters& p );
 
-            bool httpEnabledSetParams = { false };
+            bool httpControlAllow = { false };      /*!< разрешён ли HTTP контроль (из конфига) */
+            bool httpControlActive = { false };     /*!< активен ли сейчас HTTP контроль */
+            bool httpEnabledSetParams = { false };  /*!< разрешено ли менять параметры через HTTP */
 #endif
             void firstInitRegisters();
             bool preInitRead( MBConfig::InitList::iterator& p );
@@ -178,6 +184,7 @@ namespace uniset
             uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
             IOController::IOStateList::iterator itExchangeMode;
             std::atomic<MBConfig::ExchangeMode> exchangeMode = { MBConfig::emNone }; /*!< режим работы см. ExchangeMode */
+            std::atomic<MBConfig::ExchangeMode> sensorExchangeMode = { MBConfig::emNone }; /*!< значение от датчика (сохраняется при httpControl) */
 
             std::atomic_bool activated = { false };
             std::atomic_bool canceled = { false };

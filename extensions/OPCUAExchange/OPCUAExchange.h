@@ -363,7 +363,7 @@ namespace uniset
 
             // Вспомогательные методы
             std::string formatTime( const std::chrono::system_clock::time_point& tp ) const;
-            Poco::JSON::Object::Ptr sensorToJson( const std::shared_ptr<OPCAttribute>& attr, bool detailed = false ) const;
+            Poco::JSON::Object::Ptr sensorToJson( const std::shared_ptr<OPCAttribute>& attr, bool detailed = false, const std::string& cachedName = "" ) const;
 
             // Защитный флаг: запретить /setparam при false
             bool httpEnabledSetParams { true };
