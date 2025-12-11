@@ -1166,10 +1166,12 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
     {
         // 'sensors'
-        uniset::json::help::item cmd("sensors", "get all sensors");
+        uniset::json::help::item cmd("sensors", "get all sensors with filtering and pagination");
         cmd.param("nameonly", "get only name sensors");
         cmd.param("offset=N", "get from N record");
         cmd.param("limit=M", "limit of records");
+        cmd.param("filter", "text filter by sensor name (case-insensitive substring)");
+        cmd.param("iotype", "filter by type: AI|AO|DI|DO");
 //        cmd.param("supplier", "[optional] But required for access control");
         myhelp.add(cmd);
     }
@@ -1542,10 +1544,10 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
     Poco::JSON::Array::Ptr jsens = uniset::json::make_child_array(jdata, "sensors");
     auto my = httpGetMyInfo(jdata);
 
-    size_t num = 0;
     size_t offset = 0;
     size_t limit = 0;
-    size_t count = 0;
+    std::string filter;  // text filter by name (substring, case-insensitive)
+    UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
 
     for( const auto& p : params )
     {
@@ -1553,16 +1555,71 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
             offset = uni_atoi(p.second);
         else if( p.first == "limit" )
             limit = uni_atoi(p.second);
+        else if( p.first == "filter" && !p.second.empty() )
+            filter = p.second;
+        else if( p.first == "iotype" && !p.second.empty() )
+            iotypeFilter = uniset::getIOType(p.second);
     }
 
-    size_t endnum = offset + limit;
-
-    for( auto it = myioBegin(); it != myioEnd(); ++it, num++ )
+    // For backward compatibility: if filter is AI/AO/DI/DO and iotype is empty, treat as iotype
+    if( iotypeFilter == UniversalIO::UnknownIOType && !filter.empty() )
     {
-        if( limit > 0 && num >= endnum )
-            break;
+        auto t = uniset::getIOType(filter);
+        if( t != UniversalIO::UnknownIOType )
+        {
+            iotypeFilter = t;
+            filter.clear();
+        }
+    }
 
-        if( offset > 0 && num < offset )
+    // Convert filter to lowercase for case-insensitive search
+    std::string filterLower;
+    if( !filter.empty() )
+    {
+        filterLower = filter;
+        std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
+    }
+
+    // Case-insensitive substring search comparator
+    auto caseInsensitiveFind = [](const std::string& text, const std::string& pattern) -> bool {
+        auto it = std::search(text.begin(), text.end(), pattern.begin(), pattern.end(),
+            [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) ==
+                                        std::tolower(static_cast<unsigned char>(b)); });
+        return it != text.end();
+    };
+
+    auto conf = uniset_conf();
+    size_t total = 0;
+    size_t skipped = 0;
+    size_t count = 0;
+
+    for( auto it = myioBegin(); it != myioEnd(); ++it )
+    {
+        auto& s = it->second;
+
+        // Apply iotype filter (enum comparison - fast)
+        if( iotypeFilter != UniversalIO::UnknownIOType && s->type != iotypeFilter )
+            continue;
+
+        // Apply text filter (case-insensitive substring match by name)
+        if( !filterLower.empty() )
+        {
+            std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(s->si.id));
+            if( !caseInsensitiveFind(sensorName, filterLower) )
+                continue;
+        }
+
+        total++;
+
+        // Apply offset
+        if( skipped < offset )
+        {
+            skipped++;
+            continue;
+        }
+
+        // Apply limit (0 = no limit)
+        if( limit > 0 && count >= limit )
             continue;
 
         getSensorInfo(jsens, it->second, false);
@@ -1570,6 +1627,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
     }
 
     jdata->set("count", count);
+    jdata->set("total", total);
     jdata->set("size", ioCount());
     return jdata;
 }
