@@ -17,6 +17,7 @@
 #include <cmath>
 #include <limits>
 #include <set>
+#include <unordered_set>
 #include <sstream>
 #include "Exceptions.h"
 #include "UniSetTypes.h"
@@ -2717,10 +2718,17 @@ namespace uniset
         }
 
         {
+            uniset::json::help::item cmd("get", "get values for specific sensors");
+            cmd.param("filter", "filter by id/name (comma-separated, e.g. filter=100,SensorName,200)");
+            myhelp.add(cmd);
+        }
+
+        {
             uniset::json::help::item cmd("registers", "get list of registers (sensors)");
             cmd.param("offset", "skip first N items");
             cmd.param("limit", "max items to return (0 = unlimited)");
-            cmd.param("filter", "filter by name (case-insensitive substring)");
+            cmd.param("filter", "filter by id/name (comma-separated, e.g. filter=100,SensorName,200)");
+            cmd.param("search", "search by name (case-insensitive substring)");
             cmd.param("iotype", "filter by type: AI|AO|DI|DO");
             myhelp.add(cmd);
         }
@@ -2765,6 +2773,9 @@ namespace uniset
 
             if( req == "status" )
                 return httpStatus();
+
+            if( req == "get" )
+                return httpGet(ctx.params);
 
             if( req == "registers" )
                 return httpRegisters(ctx.params);
@@ -3141,6 +3152,105 @@ namespace uniset
         return out;
     }
     // ----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBExchange::httpGet( const Poco::URI::QueryParameters& params )
+    {
+        using Poco::JSON::Array;
+        using Poco::JSON::Object;
+
+        auto conf = uniset_conf();
+
+        // Parse filter parameter
+        std::string filterParam;
+        for( const auto& p : params )
+        {
+            if( p.first == "filter" && !p.second.empty() )
+                filterParam = p.second;
+        }
+
+        if( filterParam.empty() )
+        {
+            Object::Ptr out = new Object();
+            out->set("error", "filter parameter required. Use: get?filter=id1,SensorName,id2");
+            return out;
+        }
+
+        // Parse filter string to get original names (for error reporting)
+        auto requestedNames = uniset::explode_str(filterParam, ',');
+
+        auto slist = uniset::getSInfoList(filterParam, conf);
+
+        // Build set of requested IDs for fast lookup
+        std::unordered_set<uniset::ObjectId> filterIds;
+        filterIds.reserve(slist.size());
+        for( const auto& s : slist )
+            filterIds.insert(s.si.id);
+
+        // Track resolved names to find unresolved ones
+        std::set<std::string> resolvedNames;
+        for( const auto& s : slist )
+            resolvedNames.insert(s.fname);
+
+        Object::Ptr out = new Object();
+        Array::Ptr sensors = new Array();
+
+        for( const auto& dev : mbconf->devices )
+        {
+            for( const auto& pollmap : dev.second->pollmap )
+            {
+                for( const auto& regIt : *pollmap.second )
+                {
+                    const auto& reg = regIt.second;
+
+                    for( const auto& prop : reg->slst )
+                    {
+                        if( filterIds.find(prop.si.id) == filterIds.end() )
+                            continue;
+
+                        std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
+
+                        Object::Ptr r = new Object();
+                        r->set("id", static_cast<int>(prop.si.id));
+                        r->set("name", sensorName);
+                        r->set("value", static_cast<long>(prop.value));
+                        r->set("iotype", uniset::iotype2str(prop.stype));
+
+                        sensors->add(r);
+
+                        // Remove from set to track not found sensors
+                        filterIds.erase(prop.si.id);
+                    }
+                }
+            }
+        }
+
+        // Add not found sensors with error (resolved but not in registers)
+        for( const auto& s : slist )
+        {
+            if( filterIds.find(s.si.id) != filterIds.end() )
+            {
+                Object::Ptr r = new Object();
+                r->set("name", s.fname);
+                r->set("error", "not found");
+                sensors->add(r);
+            }
+        }
+
+        // Add unresolved names with error (couldn't be resolved at all)
+        for( const auto& name : requestedNames )
+        {
+            if( resolvedNames.find(name) == resolvedNames.end() )
+            {
+                Object::Ptr r = new Object();
+                r->set("name", name);
+                r->set("error", "not found");
+                sensors->add(r);
+            }
+        }
+
+        out->set("sensors", sensors);
+        return out;
+    }
+    // ----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBExchange::httpRegisters( const Poco::URI::QueryParameters& params )
     {
         using Poco::JSON::Array;
@@ -3148,8 +3258,11 @@ namespace uniset
 
         size_t offset = 0;
         size_t limit = 0;
-        std::string filter;
+        std::string search;
         UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
+        std::unordered_set<uniset::ObjectId> filterIds;
+
+        auto conf = uniset_conf();
 
         for( const auto& p : params )
         {
@@ -3157,17 +3270,23 @@ namespace uniset
                 offset = uni_atoi(p.second);
             else if( p.first == "limit" )
                 limit = uni_atoi(p.second);
-            else if( p.first == "filter" && !p.second.empty() )
-                filter = p.second;
+            else if( p.first == "search" && !p.second.empty() )
+                search = p.second;
             else if( p.first == "iotype" && !p.second.empty() )
                 iotypeFilter = uniset::getIOType(p.second);
+            else if( p.first == "filter" && !p.second.empty() )
+            {
+                auto slist = uniset::getSInfoList(p.second, conf);
+                filterIds.reserve(slist.size());
+                for( const auto& s : slist )
+                    filterIds.insert(s.si.id);
+            }
         }
 
         Object::Ptr out = new Object();
         Array::Ptr regs = new Array();
         Object::Ptr devicesDict = new Object();
 
-        auto conf = uniset_conf();
         size_t total = 0;
         size_t skipped = 0;
         size_t count = 0;
@@ -3185,19 +3304,26 @@ namespace uniset
 
                     for( const auto& prop : reg->slst )
                     {
+                        // Apply filter by id/name (if specified)
+                        if( !filterIds.empty() )
+                        {
+                            if( filterIds.find(prop.si.id) == filterIds.end() )
+                                continue;
+                        }
+
                         // Apply iotype filter
                         if( iotypeFilter != UniversalIO::UnknownIOType && prop.stype != iotypeFilter )
                             continue;
 
-                        // Get sensor name (lazy - only if needed for filter or JSON)
+                        // Get sensor name (lazy - only if needed for search or JSON)
                         std::string sensorName;
 
-                        // Apply text filter
-                        if( !filter.empty() )
+                        // Apply text search
+                        if( !search.empty() )
                         {
                             sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
 
-                            if( !uniset::containsIgnoreCase(sensorName, filter) )
+                            if( !uniset::containsIgnoreCase(sensorName, search) )
                                 continue;
                         }
 

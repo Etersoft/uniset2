@@ -355,6 +355,7 @@ namespace uniset
             Poco::JSON::Object::Ptr buildLogServerInfo();
 
             // Новые HTTP endpoints
+            Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpSensors( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpSensor( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDiagnostics( const Poco::URI::QueryParameters& p );

@@ -124,6 +124,7 @@ namespace uniset
             virtual Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
             virtual Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
             virtual Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpRegisters( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDevices( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpTakeControl( const Poco::URI::QueryParameters& p );

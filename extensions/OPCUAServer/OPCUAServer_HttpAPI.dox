@@ -7,7 +7,7 @@
 
 \par Базовый URL
 
- /api/v01/<object>/
+ /api/v2/<object>/
 
 \section sec_OPCUA_HTTP_API_help /help
 
@@ -22,7 +22,7 @@ GET /<object>/help
 Возвращает текущее состояние OPC UA сервера.
 
 \code
-GET /api/v01/OPCUAServer1/status
+GET /api/v2/OPCUAServer1/status
 \endcode
 
 \par Response
@@ -53,7 +53,7 @@ GET /api/v01/OPCUAServer1/status
 
 \par Чтение параметров
 \code
-GET /api/v01/OPCUAServer1/getparam?name=updateTime_msec
+GET /api/v2/OPCUAServer1/getparam?name=updateTime_msec
 Response:
 {
   "result": "OK",
@@ -63,7 +63,7 @@ Response:
 
 \par Изменение параметров
 \code
-GET /api/v01/OPCUAServer1/setparam?updateTime_msec=6000
+GET /api/v2/OPCUAServer1/setparam?updateTime_msec=6000
 Response:
 {
   "result": "OK",

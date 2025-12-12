@@ -10,11 +10,12 @@
 - \ref sec_MBTCP_HTTP_API_status
 - \ref sec_MBTCP_HTTP_API_registers
 - \ref sec_MBTCP_HTTP_API_devices
+- \ref sec_MBTCP_HTTP_API_get
 - \ref sec_MBTCP_HTTP_API_control
 
 \par Базовый URL
 
- /api/v01/<object>/
+ /api/v2/<object>/
 
  /help
   Получение списка доступных команд и параметров.
@@ -35,12 +36,12 @@
 
  \par Примеры
  \code
- GET /api/v01/MBTCPMaster1/help
- GET /api/v01/MBTCPMaster1/
- GET /api/v01/MBTCPMaster1/reload
- GET /api/v01/MBTCPMaster1/mode?get
- GET /api/v01/MBTCPMaster1/mode?supported=1
- GET /api/v01/MBTCPMaster1/mode?set=writeOnly
+ GET /api/v2/MBTCPMaster1/help
+ GET /api/v2/MBTCPMaster1/
+ GET /api/v2/MBTCPMaster1/reload
+ GET /api/v2/MBTCPMaster1/mode?get
+ GET /api/v2/MBTCPMaster1/mode?supported=1
+ GET /api/v2/MBTCPMaster1/mode?set=writeOnly
  \endcode
 
  \note При привязке режима к датчику \c ?set вернёт ошибку:
@@ -124,7 +125,7 @@ GET /<object>/mode?set=writeOnly
 \section sec_MBTCP_HTTP_API_params /getparam и /setparam
 
 Чтение и изменение выбранных runtime-параметров процесса обмена.
-Базовый путь: \c /api/v01/<object>/...
+Базовый путь: \c /api/v2/<object>/...
 
 Поддерживаемые параметры:
 - \b force (0|1) — принудительный режим (bool)
@@ -137,7 +138,7 @@ GET /<object>/mode?set=writeOnly
 
 \par Чтение параметров
 \code
-GET /api/v01/MBTCPMaster1/getparam?name=force&name=recv_timeout&name=polltime
+GET /api/v2/MBTCPMaster1/getparam?name=force&name=recv_timeout&name=polltime
 Response:
 {
   "result": "OK",
@@ -156,7 +157,7 @@ Response:
 
 \par Изменение параметров
 \code
-GET /api/v01/MBTCPMaster1/setparam?recv_timeout=3000&polltime=2000
+GET /api/v2/MBTCPMaster1/setparam?recv_timeout=3000&polltime=2000
 Response:
 {
   "result": "OK",
@@ -187,7 +188,7 @@ Response:
 Возвращает текущее состояние объекта в формате JSON (аналогично getInfo()).
 
 \code
-GET /api/v01/MBTCPMaster1/status
+GET /api/v2/MBTCPMaster1/status
 \endcode
 
 \par Response
@@ -269,15 +270,17 @@ GET /api/v01/MBTCPMaster1/status
 Возвращает список регистров (датчиков) с поддержкой пагинации и фильтрации.
 
 \code
-GET /api/v01/MBTCPMaster1/registers
-GET /api/v01/MBTCPMaster1/registers?offset=0&limit=50
-GET /api/v01/MBTCPMaster1/registers?filter=Sensor&iotype=AI
+GET /api/v2/MBTCPMaster1/registers
+GET /api/v2/MBTCPMaster1/registers?offset=0&limit=50
+GET /api/v2/MBTCPMaster1/registers?search=Sensor&iotype=AI
+GET /api/v2/MBTCPMaster1/registers?filter=1003,Sensor1_AI,1005
 \endcode
 
 \par Параметры
 - \b offset — пропустить первые N записей (default: 0)
 - \b limit — максимальное количество записей в ответе (0 = без ограничений)
-- \b filter — фильтр по имени датчика (подстрока, без учёта регистра)
+- \b search — текстовый поиск по имени датчика (подстрока, без учёта регистра)
+- \b filter — фильтр по ID или именам датчиков через запятую (смешанный формат, совместим с IONC /get)
 - \b iotype — фильтр по типу: AI, AO, DI, DO
 
 \par Response
@@ -337,7 +340,7 @@ GET /api/v01/MBTCPMaster1/registers?filter=Sensor&iotype=AI
 Возвращает список slave устройств.
 
 \code
-GET /api/v01/MBTCPMaster1/devices
+GET /api/v2/MBTCPMaster1/devices
 \endcode
 
 \par Response
@@ -375,6 +378,52 @@ GET /api/v01/MBTCPMaster1/devices
 - \b safeMode — режим безопасного состояния
 - \b count — общее количество устройств
 
+\section sec_MBTCP_HTTP_API_get /get
+
+Возвращает указанные датчики по ID или именам. Унифицированный формат, совместимый с IONC /get.
+
+\code
+GET /api/v2/MBTCPMaster1/get?filter=1003,1004,1005
+GET /api/v2/MBTCPMaster1/get?filter=Sensor1_AI,Sensor2_AO
+GET /api/v2/MBTCPMaster1/get?filter=1003,Sensor1_AI,1005
+\endcode
+
+\par Параметры
+- \b filter — список ID или имён датчиков через запятую (смешанный формат)
+
+\par Response
+\code
+{
+  "result": "OK",
+  "registers": [
+    {
+      "id": 1003,
+      "name": "Sensor1_AI",
+      "iotype": "AI",
+      "value": 42,
+      "vtype": "signed",
+      "device": {
+        "addr": 1,
+        "respond": true
+      },
+      "register": {
+        "mbreg": 10,
+        "mbfunc": 3,
+        "mbval": 42
+      },
+      "nbit": -1,
+      "mask": 0,
+      "precision": 1
+    }
+  ],
+  "count": 1
+}
+\endcode
+
+\par Описание
+Формат параметра \c filter совместим с IONC: можно указывать числовые ID и текстовые имена датчиков через запятую.
+Числовые строки интерпретируются как ID, остальные — как имена датчиков.
+
 \section sec_MBTCP_HTTP_API_control /takeControl и /releaseControl
 
 Управление режимом обмена через HTTP API.
@@ -398,7 +447,7 @@ GET /api/v01/MBTCPMaster1/devices
 \par /takeControl — перехват управления
 
 \code
-GET /api/v01/MBTCPMaster1/takeControl
+GET /api/v2/MBTCPMaster1/takeControl
 \endcode
 
 При успешном перехвате:
@@ -421,7 +470,7 @@ GET /api/v01/MBTCPMaster1/takeControl
 \par /releaseControl — возврат управления
 
 \code
-GET /api/v01/MBTCPMaster1/releaseControl
+GET /api/v2/MBTCPMaster1/releaseControl
 \endcode
 
 Response:
