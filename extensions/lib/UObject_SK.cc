@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2025-12-09+03:00
+// generate timestamp: 2025-12-13+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -500,7 +500,7 @@ Poco::JSON::Object::Ptr UObject_SK::httpRequest( const uniset::UHttp::HttpReques
 		auto jsens = uniset::json::make_child(jstat,"sensors");
 		for( const auto& s: smStat )
 		{
-			std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
+			std::string sname(uniset_conf()->oind->getShortName(s.first));
 			auto js = uniset::json::make_child(jsens,sname);
 			js->set("id", s.first);
 			js->set("name", sname);

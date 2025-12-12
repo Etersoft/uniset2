@@ -2482,7 +2482,7 @@ namespace uniset
                 if( filterIds.find(prop.si.id) == filterIds.end() )
                     continue;
 
-                std::string sensorName = ORepHelpers::getShortName(oind->getMapName(prop.si.id));
+                std::string sensorName = oind->getShortName(prop.si.id);
 
                 Object::Ptr r = new Object();
                 r->set("id", static_cast<int>(prop.si.id));
@@ -2606,7 +2606,7 @@ namespace uniset
 
                 if( !search.empty() )
                 {
-                    sensorName = ORepHelpers::getShortName(oind->getMapName(prop.si.id));
+                    sensorName = oind->getShortName(prop.si.id);
 
                     if( !uniset::containsIgnoreCase(sensorName, search) )
                         continue;
@@ -2627,7 +2627,7 @@ namespace uniset
 
                 // Формирование JSON записи
                 if( sensorName.empty() )
-                    sensorName = ORepHelpers::getShortName(oind->getMapName(prop.si.id));
+                    sensorName = oind->getShortName(prop.si.id);
 
                 Object::Ptr r = new Object();
                 r->set("id", static_cast<int>(prop.si.id));

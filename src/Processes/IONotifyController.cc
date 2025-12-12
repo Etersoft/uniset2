@@ -179,7 +179,7 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 		for( const auto& s : stat )
 		{
 			inf << "        " << "(" << setw(6) << s.sid << ") "
-				<< setw(35) << ORepHelpers::getShortName(oind->getMapName(s.sid))
+				<< setw(35) << oind->getShortName(s.sid)
 				<< " ["
 				<< " lostEvents: " << setw(3) << s.inf.lostEvents
 				<< " attempt: " << setw(3) << s.inf.attempt
@@ -215,7 +215,7 @@ void IONotifyController::showStatisticsForLostConsumers( ostringstream& inf )
 	for( const auto& l : lostConsumers )
 	{
 		inf << "        " << "(" << setw(6) << l.first << ") "
-			<< setw(35) << std::left << ORepHelpers::getShortName(oind->getMapName(l.first))
+			<< setw(35) << std::left << oind->getShortName(l.first)
 			<< " lostCount=" << l.second.count
 			<< endl;
 	}
@@ -242,7 +242,7 @@ void IONotifyController::showStatisticsForConsusmers( ostringstream& inf )
 		for( const auto& c : i.clst )
 		{
 			inf << "        " << "(" << setw(6) << c.id << ")"
-				<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+				<< setw(35) << oind->getShortName(c.id)
 				<< " ["
 				<< " lostEvents=" << c.lostEvents
 				<< " attempt=" << c.attempt
@@ -298,7 +298,7 @@ void IONotifyController::showStatisticsForConsumersWithLostEvent( ostringstream&
 			if( c.lostEvents > 0 )
 			{
 				inf << "        " << "(" << setw(6) << c.id << ")"
-					<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+					<< setw(35) << oind->getShortName(c.id)
 					<< " ["
 					<< " lostEvents=" << c.lostEvents
 					<< " attempt=" << c.attempt
@@ -352,7 +352,7 @@ void IONotifyController::showStatisticsForSensor( ostringstream& inf, const stri
 	for( const auto& c : clist->clst )
 	{
 		inf << "        (" << setw(6) << c.id << ")"
-			<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+			<< setw(35) << oind->getShortName(c.id)
 			<< " ["
 			<< " lostEvents=" << c.lostEvents
 			<< " attempt=" << c.attempt
@@ -1341,7 +1341,7 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers(ObjectId sid, ConsumerL
 	auto oind = uniset_conf()->oind;
 	auto jsens = uniset::json::make_child(jret, "sensor");
 	jsens->set("id", sid);
-	jsens->set("name", ORepHelpers::getShortName(oind->getMapName(sid)));
+	jsens->set("name", oind->getShortName(sid));
 
 	auto jcons = uniset::json::make_child_array(jret, "consumers");
 
@@ -1349,7 +1349,7 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers(ObjectId sid, ConsumerL
 	{
 		Poco::JSON::Object::Ptr consumer = new Poco::JSON::Object();
 		consumer->set("id", c.id);
-		consumer->set("name", ORepHelpers::getShortName(oind->getMapName(c.id)));
+		consumer->set("name", oind->getShortName(c.id));
 		consumer->set("node", c.node);
 		consumer->set("node_name", oind->getNodeName(c.node));
 		consumer->set("lostEvents", c.lostEvents);
@@ -1375,7 +1375,7 @@ Poco::JSON::Object::Ptr IONotifyController::request_lost( const string& req, con
 	{
 		Poco::JSON::Object::Ptr jcons = new Poco::JSON::Object();
 		jcons->set("id", c.first);
-		jcons->set("name",  ORepHelpers::getShortName(oind->getMapName(c.first)));
+		jcons->set("name",  oind->getShortName(c.first));
 		jcons->set("lostCount",  c.second.count);
 		jcons->set("lost", c.second.lost);
 		jdata->add(jcons);

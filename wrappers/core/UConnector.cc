@@ -173,7 +173,7 @@ string UConnector::getName( long id )
 string UConnector::getShortName( long id )
 {
     if( conf )
-        return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
+        return conf->oind->getShortName(id);
 
     return "";
 }

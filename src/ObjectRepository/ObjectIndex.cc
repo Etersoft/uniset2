@@ -58,6 +58,12 @@ std::string ObjectIndex::getBaseName( const std::string& fname ) noexcept
 	return fname;
 }
 // -----------------------------------------------------------------------------------------
+std::string ObjectIndex::getShortName( const ObjectId id ) const noexcept
+{
+	const ObjectInfo* info = getObjectInfo(id);
+	return info ? info->name : "";
+}
+// -----------------------------------------------------------------------------------------
 void ObjectIndex::initLocalNode( const ObjectId nodeid ) noexcept
 {
 	nmLocalNode = getMapName(nodeid);
