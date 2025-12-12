@@ -17,6 +17,7 @@
 #include <sstream>
 #include <limits>
 #include <iomanip>
+#include <unordered_set>
 #include <open62541/client_highlevel.h>
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
@@ -2155,6 +2156,9 @@ namespace uniset
             if( req == "status" )
                 return httpStatus();
 
+            if( req == "get" )
+                return httpGet(ctx.params);
+
             if( req == "sensors" )
                 return httpSensors(ctx.params);
 
@@ -2215,10 +2219,16 @@ namespace uniset
             myhelp.add(cmd);
         }
         {
+            uniset::json::help::item cmd("get", "get values for specific sensors");
+            cmd.param("filter", "filter by id/name (comma-separated, e.g. filter=100,SensorName,200)");
+            myhelp.add(cmd);
+        }
+        {
             uniset::json::help::item cmd("sensors", "list all sensors with pagination and filtering");
             cmd.param("limit", "max records (default: 50, 0 = all)");
             cmd.param("offset", "offset from start (default: 0)");
-            cmd.param("filter", "text filter by sensor name (case-insensitive substring)");
+            cmd.param("filter", "filter by id/name (comma-separated, e.g. filter=100,SensorName,200)");
+            cmd.param("search", "search by name (case-insensitive substring)");
             cmd.param("iotype", "filter by type: AI|AO|DI|DO");
             myhelp.add(cmd);
         }
@@ -2635,6 +2645,97 @@ namespace uniset
         return js;
     }
     // -----------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr OPCUAExchange::httpGet( const Poco::URI::QueryParameters& p )
+    {
+        using Poco::JSON::Object;
+        using Poco::JSON::Array;
+
+        auto conf = uniset_conf();
+
+        // Parse filter parameter
+        std::string filterParam;
+        for( const auto& kv : p )
+        {
+            if( kv.first == "filter" && !kv.second.empty() )
+                filterParam = kv.second;
+        }
+
+        if( filterParam.empty() )
+        {
+            Object::Ptr out = new Object();
+            out->set("error", "filter parameter required. Use: get?filter=id1,SensorName,id2");
+            return out;
+        }
+
+        // Parse filter string to get original names (for error reporting)
+        auto requestedNames = uniset::explode_str(filterParam, ',');
+
+        auto slist = uniset::getSInfoList(filterParam, conf);
+
+        // Build set of requested IDs for fast lookup
+        std::unordered_set<uniset::ObjectId> filterIds;
+        filterIds.reserve(slist.size());
+        for( const auto& s : slist )
+            filterIds.insert(s.si.id);
+
+        // Track resolved names to find unresolved ones
+        std::set<std::string> resolvedNames;
+        for( const auto& s : slist )
+            resolvedNames.insert(s.fname);
+
+        Object::Ptr out = new Object();
+        Array::Ptr sensors = new Array();
+
+        for( const auto& attr : iolist )
+        {
+            if( !attr )
+                continue;
+
+            if( filterIds.find(attr->si.id) == filterIds.end() )
+                continue;
+
+            std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id));
+
+            Object::Ptr r = new Object();
+            r->set("id", static_cast<int>(attr->si.id));
+            r->set("name", sensorName);
+            r->set("value", static_cast<long>(attr->value));
+            r->set("iotype", uniset::iotype2str(attr->stype));
+
+            sensors->add(r);
+
+            // Remove from set to track not found sensors
+            filterIds.erase(attr->si.id);
+        }
+
+        // Add not found sensors with error (resolved but not in iolist)
+        for( const auto& s : slist )
+        {
+            if( filterIds.find(s.si.id) != filterIds.end() )
+            {
+                Object::Ptr r = new Object();
+                r->set("name", s.fname);
+                r->set("error", "not found");
+                sensors->add(r);
+            }
+        }
+
+        // Add unresolved names with error (couldn't be resolved at all)
+        for( const auto& name : requestedNames )
+        {
+            if( resolvedNames.find(name) == resolvedNames.end() )
+            {
+                Object::Ptr r = new Object();
+                r->set("name", name);
+                r->set("error", "not found");
+                sensors->add(r);
+            }
+        }
+
+        out->set("sensors", sensors);
+        return out;
+    }
+    // -----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr OPCUAExchange::httpSensors( const Poco::URI::QueryParameters& p )
     {
         using Poco::JSON::Object;
@@ -2642,8 +2743,11 @@ namespace uniset
 
         int limit = 50;
         int offset = 0;
-        std::string filter;  // text filter by name (substring, case-insensitive)
+        std::string search;  // text search by name (substring, case-insensitive)
         UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
+        std::unordered_set<uniset::ObjectId> filterIds;
+
+        auto conf = uniset_conf();
 
         for( const auto& kv : p )
         {
@@ -2651,20 +2755,27 @@ namespace uniset
                 limit = std::stoi(kv.second);
             else if( kv.first == "offset" && !kv.second.empty() )
                 offset = std::stoi(kv.second);
-            else if( kv.first == "filter" && !kv.second.empty() )
-                filter = kv.second;
+            else if( kv.first == "search" && !kv.second.empty() )
+                search = kv.second;
             else if( kv.first == "iotype" && !kv.second.empty() )
                 iotypeFilter = uniset::getIOType(kv.second);
+            else if( kv.first == "filter" && !kv.second.empty() )
+            {
+                auto slist = uniset::getSInfoList(kv.second, conf);
+                filterIds.reserve(slist.size());
+                for( const auto& s : slist )
+                    filterIds.insert(s.si.id);
+            }
         }
 
-        // For backward compatibility: if filter is AI/AO/DI/DO and iotype is empty, treat as iotype
-        if( iotypeFilter == UniversalIO::UnknownIOType && !filter.empty() )
+        // For backward compatibility: if search is AI/AO/DI/DO and iotype is empty, treat as iotype
+        if( iotypeFilter == UniversalIO::UnknownIOType && !search.empty() )
         {
-            auto t = uniset::getIOType(filter);
+            auto t = uniset::getIOType(search);
             if( t != UniversalIO::UnknownIOType )
             {
                 iotypeFilter = t;
-                filter.clear();
+                search.clear();
             }
         }
 
@@ -2675,26 +2786,31 @@ namespace uniset
         int added = 0;
         int skipped = 0;
 
-        auto conf = uniset_conf();
-
         for( const auto& attr : iolist )
         {
             if( !attr )
                 continue;
 
+            // Apply filter by id/name (if specified)
+            if( !filterIds.empty() )
+            {
+                if( filterIds.find(attr->si.id) == filterIds.end() )
+                    continue;
+            }
+
             // Apply iotype filter (enum comparison - fast)
             if( iotypeFilter != UniversalIO::UnknownIOType && attr->stype != iotypeFilter )
                 continue;
 
-            // Get sensor name (lazy - only if needed for filter or JSON)
+            // Get sensor name (lazy - only if needed for search or JSON)
             std::string sensorName;
 
-            // Apply text filter (case-insensitive substring match by name)
-            if( !filter.empty() )
+            // Apply text search (case-insensitive substring match by name)
+            if( !search.empty() )
             {
                 sensorName = ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id));
 
-                if( !uniset::containsIgnoreCase(sensorName, filter) )
+                if( !uniset::containsIgnoreCase(sensorName, search) )
                     continue;
             }
 

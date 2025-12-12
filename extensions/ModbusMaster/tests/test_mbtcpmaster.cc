@@ -1957,4 +1957,263 @@ TEST_CASE("MBTCPMaster: HTTP /takeControl and /releaseControl", "[http][rest][mb
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /registers (filter by id/name)", "[http][rest][mbtcpmaster][registers][filter]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Сначала получаем список всех регистров чтобы узнать реальные ID и имена
+    std::vector<int> allIds;
+    std::vector<std::string> allNames;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?limit=0", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers);
+        REQUIRE(registers->size() >= 2);
+
+        for(size_t i = 0; i < registers->size() && i < 3; i++)
+        {
+            auto reg = registers->getObject(i);
+            allIds.push_back(reg->getValue<int>("id"));
+            allNames.push_back(reg->getValue<std::string>("name"));
+        }
+    }
+
+    // Запрос с filter по двум ID
+    REQUIRE(allIds.size() >= 2);
+    std::string filterParam = std::to_string(allIds[0]) + "," + std::to_string(allIds[1]);
+
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?filter=" + filterParam, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->get("result").toString() == "OK");
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers);
+        REQUIRE(registers->size() == 2);
+
+        // Проверяем что вернулись именно запрошенные ID
+        std::set<int> returnedIds;
+        for(size_t i = 0; i < registers->size(); i++)
+        {
+            auto reg = registers->getObject(i);
+            returnedIds.insert(reg->getValue<int>("id"));
+        }
+
+        REQUIRE(returnedIds.count(allIds[0]) == 1);
+        REQUIRE(returnedIds.count(allIds[1]) == 1);
+    }
+
+    // Запрос с filter по имени (mixed id/name)
+    REQUIRE(allNames.size() >= 2);
+    {
+        // Смешанный фильтр: первый по ID, второй по имени
+        std::string mixedFilter = std::to_string(allIds[0]) + "," + allNames[1];
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?filter=" + mixedFilter, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers);
+        REQUIRE(registers->size() == 2);
+    }
+
+    // Проверяем запрос с одним ID
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?filter=" + std::to_string(allIds[0]), HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers);
+        REQUIRE(registers->size() == 1);
+        REQUIRE(registers->getObject(0)->getValue<int>("id") == allIds[0]);
+    }
+
+    // Проверяем запрос с несуществующим ID
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?filter=999999999", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers);
+        REQUIRE(registers->size() == 0);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: HTTP /get endpoint", "[http][rest][mbtcpmaster][get]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Сначала получаем список всех регистров
+    std::vector<int> allIds;
+    std::vector<std::string> allNames;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/registers?limit=3", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto registers = root->getArray("registers");
+        REQUIRE(registers);
+        REQUIRE(registers->size() >= 2);
+
+        for(size_t i = 0; i < registers->size(); i++)
+        {
+            auto reg = registers->getObject(i);
+            allIds.push_back(reg->getValue<int>("id"));
+            allNames.push_back(reg->getValue<std::string>("name"));
+        }
+    }
+
+    // Тест /get с filter по ID
+    {
+        std::string filterParam = std::to_string(allIds[0]) + "," + std::to_string(allIds[1]);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/get?filter=" + filterParam, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->has("sensors"));
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 2);
+
+        // Проверяем структуру ответа
+        auto sensor = sensors->getObject(0);
+        REQUIRE(sensor->has("id"));
+        REQUIRE(sensor->has("name"));
+        REQUIRE(sensor->has("value"));
+        REQUIRE(sensor->has("iotype"));
+    }
+
+    // Тест /get с filter по имени
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/get?filter=" + allNames[0], HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 1);
+        REQUIRE(sensors->getObject(0)->getValue<std::string>("name") == allNames[0]);
+    }
+
+    // Тест /get без filter - должен вернуть ошибку
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/get", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->has("error"));
+    }
+
+    // Тест /get с несуществующим сенсором - должен вернуть error в элементе
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/get?filter=NonExistentSensor123", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 1);
+        REQUIRE(sensors->getObject(0)->has("error"));
+    }
+}
+// -----------------------------------------------------------------------------
 #endif // DISABLE_REST_API

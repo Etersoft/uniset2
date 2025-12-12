@@ -536,6 +536,7 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpRegisters( const Poco::URI::QueryParameters& p );
 
             bool httpEnabledSetParams = { false };

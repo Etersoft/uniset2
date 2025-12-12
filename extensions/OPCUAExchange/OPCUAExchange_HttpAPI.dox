@@ -5,12 +5,13 @@
 - \ref sec_OPCUAEX_HTTP_API_status
 - \ref sec_OPCUAEX_HTTP_API_params
 - \ref sec_OPCUAEX_HTTP_API_sensors
+- \ref sec_OPCUAEX_HTTP_API_get
 - \ref sec_OPCUAEX_HTTP_API_diagnostics
 - \ref sec_OPCUAEX_HTTP_API_control
 
 \par Базовый URL
 
- /api/v01/<object>/
+ /api/v2/<object>/
 
 \section sec_OPCUAEX_HTTP_API_help /help
 
@@ -25,7 +26,7 @@ GET /<object>/help
 Текущее состояние объекта обмена OPC UA (эквивалентно getInfo(), дополнено полями расширения).
 
 \code
-GET /api/v01/OPCUAExchange1/status
+GET /api/v2/OPCUAExchange1/status
 \endcode
 
 \par Response
@@ -91,7 +92,7 @@ GET /api/v01/OPCUAExchange1/status
 
 \par Чтение параметров
 \code
-GET /api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate&name=exchangeMode
+GET /api/v2/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnectPause&name=timeoutIterate&name=exchangeMode
 {
   "result": "OK",
   "params": {
@@ -106,7 +107,7 @@ GET /api/v01/OPCUAExchange1/getparam?name=polltime&name=updatetime&name=reconnec
 
 \par Изменение параметров
 \code
-GET /api/v01/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=3000&timeoutIterate=60&writeToAllChannels=1
+GET /api/v2/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=3000&timeoutIterate=60&writeToAllChannels=1
 {
   "result": "OK",
   "updated": {
@@ -132,7 +133,8 @@ GET /api/v01/OPCUAExchange1/setparam?polltime=200&updatetime=700&reconnectPause=
 
 \par Список сенсоров
 \code
-GET /api/v01/OPCUAExchange1/sensors?limit=100&offset=0&filter=Temp&iotype=AI
+GET /api/v2/OPCUAExchange1/sensors?limit=100&offset=0&search=Temp&iotype=AI
+GET /api/v2/OPCUAExchange1/sensors?filter=1000,Temp_AS,1002
 {
   "result": "OK",
   "sensors": [
@@ -147,15 +149,13 @@ GET /api/v01/OPCUAExchange1/sensors?limit=100&offset=0&filter=Temp&iotype=AI
 \par Параметры запроса /sensors
 - \c limit — максимум записей (0 = все, default 50)
 - \c offset — смещение (default 0)
-- \c filter — текстовый фильтр по имени сенсора (подстрока, регистронезависимый)
+- \c search — текстовый поиск по имени сенсора (подстрока, регистронезависимый)
+- \c filter — фильтр по ID или именам датчиков через запятую (смешанный формат, совместим с IONC /get)
 - \c iotype — фильтр по типу: AI|AO|DI|DO
-
-\note Для обратной совместимости: если \c filter равен AI/AO/DI/DO и \c iotype не задан,
-то \c filter интерпретируется как фильтр по типу.
 
 \par Детали сенсора
 \code
-GET /api/v01/OPCUAExchange1/sensor?id=1000
+GET /api/v2/OPCUAExchange1/sensor?id=1000
 {
   "result": "OK",
   "sensor": {
@@ -180,11 +180,49 @@ GET /api/v01/OPCUAExchange1/sensor?id=1000
 
 Если сенсор не найден: HTTP 404 + \c {"result":"ERROR","error":"sensor not found","query":{...}}.
 
+\section sec_OPCUAEX_HTTP_API_get /get
+
+Возвращает указанные датчики по ID или именам. Унифицированный формат, совместимый с IONC /get.
+
+\code
+GET /api/v2/OPCUAExchange1/get?filter=1000,1001,1002
+GET /api/v2/OPCUAExchange1/get?filter=Temp_AS,Pressure_AS
+GET /api/v2/OPCUAExchange1/get?filter=1000,Temp_AS,1002
+\endcode
+
+\par Параметры
+- \b filter — список ID или имён датчиков через запятую (смешанный формат)
+
+\par Response
+\code
+{
+  "result": "OK",
+  "sensors": [
+    {
+      "id": 1000,
+      "name": "Temp_AS",
+      "nodeid": "ns=2;s=Temp",
+      "iotype": "AI",
+      "value": 2350,
+      "tick": 1,
+      "vtype": "int32",
+      "precision": 2,
+      "status": "OK"
+    }
+  ],
+  "count": 1
+}
+\endcode
+
+\par Описание
+Формат параметра \c filter совместим с IONC: можно указывать числовые ID и текстовые имена датчиков через запятую.
+Числовые строки интерпретируются как ID, остальные — как имена датчиков.
+
 \section sec_OPCUAEX_HTTP_API_diagnostics /diagnostics
 
 Диагностика и история ошибок OPC UA.
 \code
-GET /api/v01/OPCUAExchange1/diagnostics
+GET /api/v2/OPCUAExchange1/diagnostics
 {
   "result": "OK",
   "summary": {
@@ -209,7 +247,7 @@ GET /api/v01/OPCUAExchange1/diagnostics
 
 \par Взять управление
 \code
-GET /api/v01/OPCUAExchange1/takeControl
+GET /api/v2/OPCUAExchange1/takeControl
 {
   "result": "OK",
   "message": "HTTP control enabled",
@@ -221,7 +259,7 @@ GET /api/v01/OPCUAExchange1/takeControl
 
 \par Вернуть управление сенсору
 \code
-GET /api/v01/OPCUAExchange1/releaseControl
+GET /api/v2/OPCUAExchange1/releaseControl
 {
   "result": "OK",
   "message": "control returned to sensor",

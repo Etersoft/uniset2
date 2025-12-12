@@ -106,7 +106,7 @@
     А так же --prefix-httpserver-max-queued для указания максимального размера очереди запросов к серверу
     и --prefix-httpserver-max-threads количество потоков обработки запросов.
 
-    REST API доступен по пути: \b /api/v01/logdb/... (текущая версия v01)
+    REST API доступен по пути: \b /api/v2/logdb/... (текущая версия v2)
 
     | Endpoint | Описание |
     |----------|----------|
@@ -143,7 +143,7 @@
 
     \section sec_LogDB_STATUS LogDB: Status API
 
-    Endpoint \b /api/v01/logdb/status возвращает текущее состояние сервиса:
+    Endpoint \b /api/v2/logdb/status возвращает текущее состояние сервиса:
 
     \code{.json}
     {
@@ -182,7 +182,7 @@
 
     \section sec_LogDB_CONTROL LogDB: Control API
 
-    CONTROL API доступен по пути: \b /api/v01/logcontrol/... (текущая версия v01)
+    CONTROL API доступен по пути: \b /api/v2/logcontrol/... (текущая версия v2)
 
     По умолчанию отключено (см. --logdb-httpserver-logcontrol-enable)
 

@@ -1661,6 +1661,71 @@ TEST_CASE("MBSlave: HTTP /registers with iotype filter", "[http][mbslave][regist
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBSlave: HTTP /registers with ids filter", "[http][mbslave][registers]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    // Сначала получаем все регистры чтобы узнать какие ID есть
+    HTTPClientSession cs1(httpAddr, httpPort);
+    HTTPRequest req1(HTTPRequest::HTTP_GET, "/api/v2/MBSlave1/registers?limit=10", HTTPRequest::HTTP_1_1);
+    HTTPResponse res1;
+
+    cs1.sendRequest(req1);
+    std::istream& rs1 = cs1.receiveResponse(res1);
+    REQUIRE(res1.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss1;
+    ss1 << rs1.rdbuf();
+
+    Poco::JSON::Parser parser1;
+    auto parsed1 = parser1.parse(ss1.str());
+    Poco::JSON::Object::Ptr root1 = parsed1.extract<Poco::JSON::Object::Ptr>();
+    auto regs1 = root1->getArray("registers");
+    REQUIRE(regs1);
+    REQUIRE(regs1->size() >= 2);
+
+    // Берём ID первых двух регистров
+    int id1 = regs1->getObject(0)->getValue<int>("id");
+    int id2 = regs1->getObject(1)->getValue<int>("id");
+
+    // Теперь фильтруем по этим ID
+    HTTPClientSession cs2(httpAddr, httpPort);
+    std::string url = "/api/v2/MBSlave1/registers?filter=" + std::to_string(id1) + "," + std::to_string(id2);
+    HTTPRequest req2(HTTPRequest::HTTP_GET, url, HTTPRequest::HTTP_1_1);
+    HTTPResponse res2;
+
+    cs2.sendRequest(req2);
+    std::istream& rs2 = cs2.receiveResponse(res2);
+    REQUIRE(res2.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss2;
+    ss2 << rs2.rdbuf();
+
+    Poco::JSON::Parser parser2;
+    auto parsed2 = parser2.parse(ss2.str());
+    Poco::JSON::Object::Ptr root2 = parsed2.extract<Poco::JSON::Object::Ptr>();
+    auto regs2 = root2->getArray("registers");
+    REQUIRE(regs2);
+
+    // Должны вернуться только регистры с указанными ID
+    REQUIRE(regs2->size() == 2);
+
+    std::set<int> expectedIds = {id1, id2};
+    std::set<int> actualIds;
+
+    for( size_t i = 0; i < regs2->size(); i++ )
+    {
+        auto reg = regs2->getObject(i);
+        actualIds.insert(reg->getValue<int>("id"));
+    }
+
+    REQUIRE(actualIds == expectedIds);
+}
+// -----------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API
 
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

@@ -21,6 +21,7 @@
 //#include <stream.h>
 #include <sstream>
 #include <cmath>
+#include <unordered_set>
 #include "UInterface.h"
 #include "IOController.h"
 #include "ORepHelpers.h"
@@ -1134,7 +1135,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
     {
         // 'get'
         uniset::json::help::item cmd("get", "get value for sensor");
-        cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
+        cmd.param("filter=id1,name2,id3", "get value for id1,name2,id3 sensors (mixed ID/name format)");
         cmd.param("shortInfo", "[optional] get short information for sensors");
 //        cmd.param("supplier", "[optional] But required for access control");
         myhelp.add(cmd);
@@ -1170,7 +1171,8 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
         cmd.param("nameonly", "get only name sensors");
         cmd.param("offset=N", "get from N record");
         cmd.param("limit=M", "limit of records");
-        cmd.param("filter", "text filter by sensor name (case-insensitive substring)");
+        cmd.param("search", "text search by sensor name (case-insensitive substring)");
+        cmd.param("filter=id1,name2,id3", "filter by ID or name (mixed format, comma-separated)");
         cmd.param("iotype", "filter by type: AI|AO|DI|DO");
 //        cmd.param("supplier", "[optional] But required for access control");
         myhelp.add(cmd);
@@ -1211,24 +1213,34 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
     if( p.empty() )
     {
         ostringstream err;
-        err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,...";
+        err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?filter=ID1,name2,ID3,...";
         throw uniset::SystemError(err.str());
     }
 
     auto conf = uniset_conf();
-    auto slist = uniset::getSInfoList( p[0].first, conf );
+    std::string filterParam;
+    bool shortInfo = false;
+
+    for( const auto& param : p )
+    {
+        if( param.first == "filter" && !param.second.empty() )
+            filterParam = param.second;
+        else if( param.first == "shortInfo" )
+            shortInfo = true;
+    }
+
+    // backward compatibility: if filter= not found, use first key as filter
+    if( filterParam.empty() )
+        filterParam = p[0].first;
+
+    auto slist = uniset::getSInfoList( filterParam, conf );
 
     if( slist.empty() )
     {
         ostringstream err;
-        err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,...";
+        err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?filter=ID1,name2,ID3,...";
         throw uniset::SystemError(err.str());
     }
-
-    bool shortInfo = false;
-
-    if( p.size() > 1 && p[1].first == "shortInfo" )
-        shortInfo = true;
 
     // {
     //   "sensors" [
@@ -1546,7 +1558,8 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 
     size_t offset = 0;
     size_t limit = 0;
-    std::string filter;  // text filter by name (substring, case-insensitive)
+    std::string search;  // text search by name (substring, case-insensitive)
+    std::string filter;  // filter by ID/name (comma-separated list)
     UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
 
     for( const auto& p : params )
@@ -1555,24 +1568,37 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
             offset = uni_atoi(p.second);
         else if( p.first == "limit" )
             limit = uni_atoi(p.second);
+        else if( p.first == "search" && !p.second.empty() )
+            search = p.second;
         else if( p.first == "filter" && !p.second.empty() )
             filter = p.second;
         else if( p.first == "iotype" && !p.second.empty() )
             iotypeFilter = uniset::getIOType(p.second);
     }
 
-    // For backward compatibility: if filter is AI/AO/DI/DO and iotype is empty, treat as iotype
-    if( iotypeFilter == UniversalIO::UnknownIOType && !filter.empty() )
+    // For backward compatibility: if search is AI/AO/DI/DO and iotype is empty, treat as iotype
+    if( iotypeFilter == UniversalIO::UnknownIOType && !search.empty() )
     {
-        auto t = uniset::getIOType(filter);
+        auto t = uniset::getIOType(search);
         if( t != UniversalIO::UnknownIOType )
         {
             iotypeFilter = t;
-            filter.clear();
+            search.clear();
         }
     }
 
     auto conf = uniset_conf();
+
+    // Build filter set from filter parameter (ID/name list)
+    std::unordered_set<uniset::ObjectId> filterIds;
+    if( !filter.empty() )
+    {
+        auto slist = uniset::getSInfoList(filter, conf);
+        filterIds.reserve(slist.size());
+        for( const auto& s : slist )
+            filterIds.insert(s.si.id);
+    }
+
     size_t total = 0;
     size_t skipped = 0;
     size_t count = 0;
@@ -1581,15 +1607,19 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
     {
         auto& s = it->second;
 
+        // Apply filter by ID/name (if specified)
+        if( !filterIds.empty() && filterIds.find(s->si.id) == filterIds.end() )
+            continue;
+
         // Apply iotype filter (enum comparison - fast)
         if( iotypeFilter != UniversalIO::UnknownIOType && s->type != iotypeFilter )
             continue;
 
-        // Apply text filter (case-insensitive substring match by name)
-        if( !filter.empty() )
+        // Apply text search (case-insensitive substring match by name)
+        if( !search.empty() )
         {
             std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(s->si.id));
-            if( !uniset::containsIgnoreCase(sensorName, filter) )
+            if( !uniset::containsIgnoreCase(sensorName, search) )
                 continue;
         }
 

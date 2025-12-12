@@ -1387,5 +1387,264 @@ TEST_CASE("OPCUAExchange: HTTP /status includes new fields", "[http][opcuaex][st
     REQUIRE(st->has("errorHistorySize"));
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /sensors (filter by id/name)", "[http][opcuaex][sensors][filter]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Сначала получаем список всех сенсоров чтобы узнать реальные ID и имена
+    std::vector<int> allIds;
+    std::vector<std::string> allNames;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?limit=0", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() >= 2);
+
+        for(size_t i = 0; i < sensors->size() && i < 3; i++)
+        {
+            auto sensor = sensors->getObject(i);
+            allIds.push_back(sensor->getValue<int>("id"));
+            allNames.push_back(sensor->getValue<std::string>("name"));
+        }
+    }
+
+    // Запрос с filter по двум ID
+    REQUIRE(allIds.size() >= 2);
+    std::string filterParam = std::to_string(allIds[0]) + "," + std::to_string(allIds[1]);
+
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=" + filterParam, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->get("result").toString() == "OK");
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 2);
+
+        // Проверяем что вернулись именно запрошенные ID
+        std::set<int> returnedIds;
+        for(size_t i = 0; i < sensors->size(); i++)
+        {
+            auto sensor = sensors->getObject(i);
+            returnedIds.insert(sensor->getValue<int>("id"));
+        }
+
+        REQUIRE(returnedIds.count(allIds[0]) == 1);
+        REQUIRE(returnedIds.count(allIds[1]) == 1);
+    }
+
+    // Запрос с filter по имени (mixed id/name)
+    REQUIRE(allNames.size() >= 2);
+    {
+        // Смешанный фильтр: первый по ID, второй по имени
+        std::string mixedFilter = std::to_string(allIds[0]) + "," + allNames[1];
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=" + mixedFilter, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 2);
+    }
+
+    // Проверяем запрос с одним ID
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=" + std::to_string(allIds[0]), HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 1);
+        REQUIRE(sensors->getObject(0)->getValue<int>("id") == allIds[0]);
+    }
+
+    // Проверяем запрос с несуществующим ID
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=999999999", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 0);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAExchange: HTTP /get endpoint", "[http][opcuaex][get]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Сначала получаем список всех сенсоров
+    std::vector<int> allIds;
+    std::vector<std::string> allNames;
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?limit=3", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() >= 2);
+
+        for(size_t i = 0; i < sensors->size(); i++)
+        {
+            auto sensor = sensors->getObject(i);
+            allIds.push_back(sensor->getValue<int>("id"));
+            allNames.push_back(sensor->getValue<std::string>("name"));
+        }
+    }
+
+    // Тест /get с filter по ID
+    {
+        std::string filterParam = std::to_string(allIds[0]) + "," + std::to_string(allIds[1]);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/get?filter=" + filterParam, HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->has("sensors"));
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 2);
+
+        // Проверяем структуру ответа
+        auto sensor = sensors->getObject(0);
+        REQUIRE(sensor->has("id"));
+        REQUIRE(sensor->has("name"));
+        REQUIRE(sensor->has("value"));
+        REQUIRE(sensor->has("iotype"));
+    }
+
+    // Тест /get с filter по имени
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/get?filter=" + allNames[0], HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 1);
+        REQUIRE(sensors->getObject(0)->getValue<std::string>("name") == allNames[0]);
+    }
+
+    // Тест /get без filter - должен вернуть ошибку
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/get", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+        REQUIRE(root->has("error"));
+    }
+
+    // Тест /get с несуществующим сенсором - должен вернуть error в элементе
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/get?filter=NonExistentSensor123", HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto parsed = parser.parse(ss.str());
+        Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(root);
+
+        auto sensors = root->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() == 1);
+        REQUIRE(sensors->getObject(0)->has("error"));
+    }
+}
+// -----------------------------------------------------------------------------
 #endif // DISABLE_REST_API
 // -----------------------------------------------------------------------------

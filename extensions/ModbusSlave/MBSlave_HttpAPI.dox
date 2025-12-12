@@ -4,12 +4,13 @@
 - \ref sec_MBSLAVE_HTTP_API_help
 - \ref sec_MBSLAVE_HTTP_API_root
 - \ref sec_MBSLAVE_HTTP_API_registers
+- \ref sec_MBSLAVE_HTTP_API_get
 - \ref sec_MBSLAVE_HTTP_API_status
 - \ref sec_MBSLAVE_HTTP_API_params
 
 \par Базовый URL
 
- /api/v01/<object>/
+ /api/v2/<object>/
 
 \section sec_MBSLAVE_HTTP_API_help /help
 
@@ -33,16 +34,18 @@ GET /<object>/
 Унифицированный формат, совместимый с ModbusMaster.
 
 \code
-GET /api/v01/MBSlave1/registers
-GET /api/v01/MBSlave1/registers?offset=0&limit=50
-GET /api/v01/MBSlave1/registers?filter=Sensor&iotype=AI
-GET /api/v01/MBSlave1/registers?addr=1,2&regs=10,20
+GET /api/v2/MBSlave1/registers
+GET /api/v2/MBSlave1/registers?offset=0&limit=50
+GET /api/v2/MBSlave1/registers?search=Sensor&iotype=AI
+GET /api/v2/MBSlave1/registers?addr=1,2&regs=10,20
+GET /api/v2/MBSlave1/registers?filter=1003,Sensor1_AI,1005
 \endcode
 
 \par Параметры
 - \b offset — пропустить первые N записей (default: 0)
 - \b limit — максимальное количество записей в ответе (0 = без ограничений)
-- \b filter — фильтр по имени датчика (подстрока, без учёта регистра)
+- \b search — текстовый поиск по имени датчика (подстрока, без учёта регистра)
+- \b filter — фильтр по ID или именам датчиков через запятую (смешанный формат, совместим с IONC /get)
 - \b iotype — фильтр по типу: AI, AO, DI, DO
 - \b addr — фильтр по Modbus адресам (через запятую)
 - \b regs — фильтр по номерам регистров (через запятую)
@@ -87,11 +90,48 @@ GET /api/v01/MBSlave1/registers?addr=1,2&regs=10,20
 - \b count — количество датчиков в ответе
 - \b offset, \b limit — параметры пагинации
 
+\section sec_MBSLAVE_HTTP_API_get /get
+
+Возвращает указанные датчики по ID или именам. Унифицированный формат, совместимый с IONC /get.
+
+\code
+GET /api/v2/MBSlave1/get?filter=1003,1004,1005
+GET /api/v2/MBSlave1/get?filter=Sensor1_AI,Sensor2_AO
+GET /api/v2/MBSlave1/get?filter=1003,Sensor1_AI,1005
+\endcode
+
+\par Параметры
+- \b filter — список ID или имён датчиков через запятую (смешанный формат)
+
+\par Response
+\code
+{
+  "result": "OK",
+  "registers": [
+    {
+      "id": 1003,
+      "name": "Sensor1_AI",
+      "iotype": "AI",
+      "value": 42,
+      "vtype": "signed",
+      "device": 1,
+      "mbreg": 10,
+      "amode": "rw"
+    }
+  ],
+  "count": 1
+}
+\endcode
+
+\par Описание
+Формат параметра \c filter совместим с IONC: можно указывать числовые ID и текстовые имена датчиков через запятую.
+Числовые строки интерпретируются как ID, остальные — как имена датчиков.
+
 \section sec_MBSLAVE_HTTP_API_params /getparam и /setparam
 
 Чтение и изменение выбранных runtime-параметров процесса.
 
-Базовый путь: \c /api/v01/<object>/...
+Базовый путь: \c /api/v2/<object>/...
 
 Поддерживаемые параметры:
 - \b force (0|1)
@@ -101,7 +141,7 @@ GET /api/v01/MBSlave1/registers?addr=1,2&regs=10,20
 
 \par Чтение параметров
 \code
-GET /api/v01/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime
+GET /api/v2/MBSlave1/getparam?name=force&name=sockTimeout&name=sessTimeout&name=updateStatTime
 Response:
 {
   "result": "OK",
@@ -117,7 +157,7 @@ Response:
 
 \par Изменение параметров
 \code
-GET /api/v01/MBSlave1/setparam?force=1&sockTimeout=45000&sessTimeout=2500&updateStatTime=5000
+GET /api/v2/MBSlave1/setparam?force=1&sockTimeout=45000&sessTimeout=2500&updateStatTime=5000
 Response:
 {
   "result": "OK",
@@ -145,7 +185,7 @@ Response:
 Возвращает текущее состояние объекта в JSON (аналогично getInfo()).
 
 \code
-GET /api/v01/MBSlave1/status
+GET /api/v2/MBSlave1/status
 \endcode
 
 Ответ содержит поля:
@@ -156,7 +196,7 @@ GET /api/v01/MBSlave1/status
 - sockTimeout, sessTimeout, updateStatTime, force
 
 \code
-GET /api/v01/MBSlave1/status
+GET /api/v2/MBSlave1/status
 Response:
 {
   "result": "OK",
