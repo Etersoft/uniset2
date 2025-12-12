@@ -1250,12 +1250,12 @@ int sinfo(const string& args, UInterface& ui )
             print_help(w, "blocked", std::to_string(sinf.blocked) + "\n", " ", " : ");
 
             if( sinf.depend_sid != DefaultObjectId )
-                print_help(w, "depend_sensor", "(" + to_string(sinf.depend_sid) + ")" + ORepHelpers::getShortName(conf->oind->getMapName(sinf.depend_sid)) + "\n", " ", " : ");
+                print_help(w, "depend_sensor", "(" + to_string(sinf.depend_sid) + ")" + conf->oind->getShortName(sinf.depend_sid) + "\n", " ", " : ");
 
             if( sinf.supplier == uniset::AdminID )
                 print_help(w, "supplier", "admin\n", " ", " : ");
             else
-                print_help(w, "supplier", ORepHelpers::getShortName(conf->oind->getMapName(sinf.supplier)) + "\n", " ", " : ");
+                print_help(w, "supplier", conf->oind->getShortName(sinf.supplier) + "\n", " ", " : ");
 
             ostringstream ts;
             ts << dateToString(sinf.tv_sec) << " " << timeToString(sinf.tv_sec) << "." << sinf.tv_nsec << "\n";

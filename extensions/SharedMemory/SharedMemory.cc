@@ -628,10 +628,10 @@ namespace uniset
             return nullptr;
         }
 
-        string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
+        string cname = conf->getArgParam("--smemory--confnode", conf->oind->getShortName(ID) );
 
         if( cname.empty() )
-            cname = ORepHelpers::getShortName( conf->oind->getMapName(ID));
+            cname = conf->oind->getShortName(ID);
 
         auto confnode = conf->getNode(cname);
 

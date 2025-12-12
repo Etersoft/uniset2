@@ -1254,7 +1254,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             if( s->cmd == "ask" )
             {
                 if( s->name.empty() )
-                    s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
+                    s->name = uniset_conf()->oind->getShortName(s->id);
 
                 ui->askSensor(s->id, UniversalIO::UIONotify);
                 std::lock_guard<std::mutex> lk(dataMutex);
@@ -1284,7 +1284,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             else if( s->cmd == "get" )
             {
                 if( s->name.empty() )
-                    s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
+                    s->name = uniset_conf()->oind->getShortName(s->id);
 
                 s->value = ui->getValue(s->id);
                 s->err = "";
@@ -1299,7 +1299,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
 
             if( s->name.empty() )
-                s->name = uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->id));
+                s->name = uniset_conf()->oind->getShortName(s->id);
 
             s->err = ex.what();
             sendResponse(s);

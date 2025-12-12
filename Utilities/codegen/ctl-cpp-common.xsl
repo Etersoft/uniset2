@@ -711,7 +711,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( con
 		auto jsens = uniset::json::make_child(jstat,"sensors");
 		for( const auto&amp; s: smStat )
 		{
-			std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
+			std::string sname(uniset_conf()->oind->getShortName(s.first));
 			auto js = uniset::json::make_child(jsens,sname);
 			js->set("id", s.first);
 			js->set("name", sname);
@@ -1642,7 +1642,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 	{
 		Poco::JSON::Object::Ptr inf = uniset::json::make_child(j_in,"<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>");
 		inf->set("id",<xsl:value-of select="@name"/>);
-		inf->set("name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)));
+		inf->set("name",uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>));
 		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
 		<xsl:for-each select="@*[not(name()='name')]">inf->set("<xsl:value-of select="name(.)"/>","<xsl:value-of select="."/>");
 		</xsl:for-each>
@@ -1658,7 +1658,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 	{
 		Poco::JSON::Object::Ptr inf = uniset::json::make_child(j_out,"<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>");
 		inf->set("id",<xsl:value-of select="@name"/>);
-		inf->set("name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)));
+		inf->set("name",uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>));
 		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
 		<xsl:for-each select="@*[not(name()='name')]">inf->set("<xsl:value-of select="name(.)"/>","<xsl:value-of select="."/>");
 		</xsl:for-each>
@@ -1684,7 +1684,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	<xsl:if test="normalize-space(@vartype)='in'">
 		s1.str("");
 		s1 &lt;&lt; "    " &lt;&lt; setw(24) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
-				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
+				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		<xsl:if test="normalize-space($STAT)='1'">
 		s1 &lt;&lt; " [" &lt;&lt; setw(5) &lt;&lt; smStat[<xsl:value-of select="@name"/>] &lt;&lt; "]";
@@ -1699,7 +1699,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	<xsl:if test="normalize-space(@vartype)='out'">
 		s1.str("");
 		s1 &lt;&lt; "    " &lt;&lt; setw(24) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
-				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
+				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		v_out.emplace_back(s1.str());
 	</xsl:if>
@@ -1734,7 +1734,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::msgstr( uniset::ObjectId id
 	if( id == <xsl:value-of select="@name"/> )
 	{
 		s &lt;&lt; "<xsl:value-of select="@name"/>";
-		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
+		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>) &lt;&lt; ")";
 		return s.str();
 	}
 	</xsl:for-each>	
@@ -1748,7 +1748,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 	if( id == <xsl:value-of select="@name"/> )
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
-		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
+		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>) &lt;&lt; ")";
 		return s.str();
 	}
 	</xsl:for-each>	
@@ -1766,7 +1766,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id
 	{
 		// s &lt;&lt; str(id,showLinkName) &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
-		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";		
+		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; uniset_conf()->oind->getShortName(<xsl:value-of select="@name"/>) &lt;&lt; ")";		
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		return s.str();
 	}

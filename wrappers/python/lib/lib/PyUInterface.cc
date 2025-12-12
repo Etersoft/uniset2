@@ -161,7 +161,7 @@ string pyUInterface::getShortName( long id )
 	auto conf = uniset::uniset_conf();
 
 	if( conf )
-		return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
+		return conf->oind->getShortName(id);
 
 	return "";
 }

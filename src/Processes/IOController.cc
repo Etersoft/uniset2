@@ -1510,7 +1510,7 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
     }
 
     jsens->set("id", s->si.id);
-    jsens->set("name", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id)));
+    jsens->set("name", uniset_conf()->oind->getShortName(s->si.id));
     jsens->set("tv_sec", s->tv_sec);
     jsens->set("tv_nsec", s->tv_nsec);
 
@@ -1528,7 +1528,7 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 
     if( s->depend_sid != DefaultObjectId )
     {
-        jsens->set("depend_sensor", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->depend_sid)));
+        jsens->set("depend_sensor", uniset_conf()->oind->getShortName(s->depend_sid));
         jsens->set("depend_sensor_id", s->depend_sid);
         jsens->set("depend_value", s->d_value);
         jsens->set("depend_off_value", s->d_off_value);
@@ -1618,7 +1618,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
         // Apply text search (case-insensitive substring match by name)
         if( !search.empty() )
         {
-            std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(s->si.id));
+            std::string sensorName = conf->oind->getShortName(s->si.id);
             if( !uniset::containsIgnoreCase(sensorName, search) )
                 continue;
         }

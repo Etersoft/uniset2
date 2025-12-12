@@ -2568,7 +2568,7 @@ namespace uniset
         Object::Ptr js = new Object();
 
         js->set("id", (int)attr->si.id);
-        js->set("name", cachedName.empty() ? ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id)) : cachedName);
+        js->set("name", cachedName.empty() ? conf->oind->getShortName(attr->si.id) : cachedName);
         js->set("nodeid", attr->attrName);
 
         js->set("iotype", uniset::iotype2str(attr->stype));
@@ -2694,7 +2694,7 @@ namespace uniset
             if( filterIds.find(attr->si.id) == filterIds.end() )
                 continue;
 
-            std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id));
+            std::string sensorName = conf->oind->getShortName(attr->si.id);
 
             Object::Ptr r = new Object();
             r->set("id", static_cast<int>(attr->si.id));
@@ -2808,7 +2808,7 @@ namespace uniset
             // Apply text search (case-insensitive substring match by name)
             if( !search.empty() )
             {
-                sensorName = ORepHelpers::getShortName(conf->oind->getMapName(attr->si.id));
+                sensorName = conf->oind->getShortName(attr->si.id);
 
                 if( !uniset::containsIgnoreCase(sensorName, search) )
                     continue;

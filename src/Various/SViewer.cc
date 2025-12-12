@@ -203,9 +203,9 @@ void SViewer::getInfo( ObjectId id )
 // ---------------------------------------------------------------------------
 void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::ObjectId oid )
 {
-    const string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
+    const string owner = uniset_conf()->oind->getShortName(oid);
     cout << "\n======================================================\n"
-         << ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid))
+         << owner
          << "\t Датчики"
          << "\n------------------------------------------------------"
          << endl;
@@ -217,12 +217,9 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::Ob
     {
         if( amap[i].type == UniversalIO::AI || amap[i].type == UniversalIO::DI )
         {
-            string name(oind->getNameById(amap[i].si.id));
+            string name = isShortName ? oind->getShortName(amap[i].si.id) : oind->getNameById(amap[i].si.id);
 
-            if( isShortName )
-                name = ORepHelpers::getShortName(name);
-
-            string supplier = ORepHelpers::getShortName(oind->getMapName(amap[i].supplier));
+            string supplier = oind->getShortName(amap[i].supplier);
 
             if( amap[i].supplier == uniset::AdminID )
                 supplier = "uniset-admin";
@@ -248,12 +245,9 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::Ob
     {
         if( amap[i].type == UniversalIO::AO || amap[i].type == UniversalIO::DO )
         {
-            string name(uniset_conf()->oind->getNameById(amap[i].si.id));
+            string name = isShortName ? oind->getShortName(amap[i].si.id) : oind->getNameById(amap[i].si.id);
 
-            if( isShortName )
-                name = ORepHelpers::getShortName(name);
-
-            string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
+            string supplier = oind->getShortName(amap[i].supplier);
 
             if( amap[i].supplier == uniset::AdminID )
                 supplier = "uniset-admin";
@@ -276,7 +270,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::Ob
 void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid )
 {
     int size = tlst->length();
-    const string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
+    const string owner = uniset_conf()->oind->getShortName(oid);
     cout << "\n======================================================\n" << owner;
     cout << "\t Пороговые датчики";
     cout << "\n------------------------------------------------------" << endl;
@@ -300,10 +294,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
                 break;
         }
 
-        string sname(uniset_conf()->oind->getNameById(tlst[i].si.id));
-
-        if( isShortName )
-            sname = ORepHelpers::getShortName(sname);
+        string sname = isShortName ? uniset_conf()->oind->getShortName(tlst[i].si.id) : uniset_conf()->oind->getNameById(tlst[i].si.id);
 
         cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl;
 

@@ -156,8 +156,7 @@ namespace uniset
         if( isActive() )
             throw ObjectNameAlready("Set ID error: ObjectId is active..");
 
-        string myfullname = ui->getNameById(id);
-        myname = ORepHelpers::getShortName(myfullname);
+        myname = uniset_conf()->oind->getShortName(id);
         myid = id;
         ui->initBackId(myid);
     }

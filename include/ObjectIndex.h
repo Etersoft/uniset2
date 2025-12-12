@@ -62,6 +62,11 @@ namespace uniset
             //! \return "" if not found
             virtual std::string getTextName( const uniset::ObjectId id ) const noexcept = 0;
 
+            //! Get short name (without path) directly from ObjectInfo
+            //! More efficient than ORepHelpers::getShortName(getMapName(id))
+            //! \return "" if not found
+            std::string getShortName( const uniset::ObjectId id ) const noexcept;
+
             //
             virtual std::ostream& printMap(std::ostream& os) const noexcept = 0;
 

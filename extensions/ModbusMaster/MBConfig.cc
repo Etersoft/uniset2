@@ -807,7 +807,7 @@ namespace uniset
                 sl << "[ ";
 
                 for( const auto& i : ri->slst )
-                    sl << ORepHelpers::getShortName(conf->oind->getMapName(i.si.id)) << ",";
+                    sl << conf->oind->getShortName(i.si.id) << ",";
 
                 sl << "]";
 
@@ -847,7 +847,7 @@ namespace uniset
                         err << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
                             << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg
                             << ") conflict with non masked register "
-                            << ORepHelpers::getShortName(conf->oind->getMapName(it2.si.id)) << "!"
+                            << conf->oind->getShortName(it2.si.id) << "!"
                             << " IGNORE --> " << it.getProp("name");
 
                         mbcrit  << err.str() << endl;

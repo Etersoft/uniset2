@@ -135,7 +135,7 @@ std::string SMonitor::printEvent( const uniset::SensorMessage* sm )
 	if( sm->supplier == uniset::AdminID )
 		s_sup = "uniset-admin";
 	else
-		s_sup = ORepHelpers::getShortName(conf->oind->getMapName(sm->supplier));
+		s_sup = conf->oind->getShortName(sm->supplier);
 
 	s << "(" << setw(6) << sm->id << "):"
 	  << "[(" << std::right << setw(5) << sm->supplier << ")"

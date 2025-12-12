@@ -3206,7 +3206,7 @@ namespace uniset
                         if( filterIds.find(prop.si.id) == filterIds.end() )
                             continue;
 
-                        std::string sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
+                        std::string sensorName = conf->oind->getShortName(prop.si.id);
 
                         Object::Ptr r = new Object();
                         r->set("id", static_cast<int>(prop.si.id));
@@ -3321,7 +3321,7 @@ namespace uniset
                         // Apply text search
                         if( !search.empty() )
                         {
-                            sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
+                            sensorName = conf->oind->getShortName(prop.si.id);
 
                             if( !uniset::containsIgnoreCase(sensorName, search) )
                                 continue;
@@ -3340,7 +3340,7 @@ namespace uniset
 
                         // Get name if not already cached (for JSON output)
                         if( sensorName.empty() )
-                            sensorName = ORepHelpers::getShortName(conf->oind->getMapName(prop.si.id));
+                            sensorName = conf->oind->getShortName(prop.si.id);
 
                         Object::Ptr r = new Object();
                         r->set("id", static_cast<int>(prop.si.id));
