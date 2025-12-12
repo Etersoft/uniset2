@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <cmath>
 #include <sstream>
+#include <set>
 #include <Poco/Net/NetException.h>
 #include "unisetstd.h"
 #include "Exceptions.h"
@@ -24,6 +25,7 @@
 #include "modbus/ModbusRTUSlaveSlot.h"
 #include "modbus/ModbusTCPServerSlot.h"
 #include "modbus/MBLogSugar.h"
+#include "ORepHelpers.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -2111,116 +2113,9 @@ namespace uniset
     }
 #ifndef DISABLE_REST_API
     // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBSlave::request_regs( const string& req, const Poco::URI::QueryParameters& params )
-    {
-        Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-        Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "regs");
-        auto my = httpGetMyInfo(json);
-        auto oind = uniset_conf()->oind;
-
-        std::vector<std::string> q_regs;
-        std::vector<std::string> q_addr;
-
-        if( !params.empty() )
-        {
-            for( const auto& p : params )
-            {
-                if( p.first == "regs" )
-                    q_regs = uniset::explode_str(p.second, ',');
-                else if( p.first == "addr" )
-                    q_addr = uniset::explode_str(p.second, ',');
-            }
-        }
-
-        /* Создаём json
-         * { {"addr":
-         *         {"regs":
-         *               {reginfo..},
-         *               {reginfo..},
-         *   }},
-         * }
-         */
-
-        // Проход по списку заданных addr..
-        if( !q_addr.empty() )
-        {
-            for( const auto& a : q_addr )
-            {
-                ModbusRTU::ModbusAddr mbaddr = ModbusRTU::str2mbAddr(a);
-                auto i = iomap.find(mbaddr);
-
-                if( i != iomap.end() )
-                {
-                    Poco::JSON::Object::Ptr jaddr = get_regs(i->first, i->second, q_regs);
-                    jdata->add(jaddr);
-                }
-            }
-        }
-        else // Проход по всему списку
-        {
-            for( const auto& i : iomap )
-            {
-                Poco::JSON::Object::Ptr jaddr = get_regs(i.first, i.second, q_regs);
-                jdata->add(jaddr);
-            }
-        }
-
-        return json;
-    }
-    // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBSlave::get_regs(ModbusRTU::ModbusAddr addr, const RegMap& rmap, const std::vector<string>& q_regs )
-    {
-        Poco::JSON::Object::Ptr jaddr = new Poco::JSON::Object();
-        Poco::JSON::Array::Ptr regs = new Poco::JSON::Array();
-        jaddr->set( ModbusRTU::addr2str(addr), regs);
-
-        if( q_regs.empty() )
-        {
-            for( const auto& r : rmap )
-            {
-                Poco::JSON::Object::Ptr reginfo = get_reginfo(r.second);
-                regs->add(reginfo);
-            }
-        }
-        else
-        {
-            for( const auto& s : q_regs )
-            {
-                auto reg = genRegID( ModbusRTU::str2mbData(s), default_mbfunc);
-                auto r = rmap.find(reg);
-
-                if( r != rmap.end() )
-                {
-                    Poco::JSON::Object::Ptr reginfo = get_reginfo(r->second);
-                    regs->add(reginfo);
-                }
-            }
-        }
-
-        return jaddr;
-    }
-    // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBSlave::get_reginfo( const IOProperty& prop )
-    {
-        Poco::JSON::Object::Ptr reginfo = new Poco::JSON::Object();
-        reginfo->set("mbreg", prop.mbreg);
-        reginfo->set("vtype", VTypes::type2str( prop.vtype));
-        reginfo->set("regID",  prop.regID);
-        reginfo->set("amode", amode2str( prop.amode));
-        reginfo->set("value",  prop.value);
-        return reginfo;
-    }
-    // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBSlave::httpHelp( const Poco::URI::QueryParameters& p )
     {
         uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
-
-        {
-            uniset::json::help::item cmd("regs", "get registers list");
-            cmd.param("regs=reg1,reg2,reg3..", "get these registers");
-            cmd.param("addr=mbaddr1,mbaddr2,..", "get registers for mbaddr");
-            myhelp.add(cmd);
-        }
 
         {
             uniset::json::help::item cmd("getparam", "read runtime parameters");
@@ -2244,6 +2139,16 @@ namespace uniset
             myhelp.add(cmd);
         }
 
+        {
+            uniset::json::help::item cmd("registers", "get list of registers (sensors)");
+            cmd.param("offset", "skip first N items");
+            cmd.param("limit", "max items to return (0 = unlimited)");
+            cmd.param("filter", "filter by name (case-insensitive substring)");
+            cmd.param("iotype", "filter by type: AI|AO|DI|DO");
+            cmd.param("addr", "filter by modbus address (comma-separated)");
+            cmd.param("regs", "filter by register number (comma-separated)");
+            myhelp.add(cmd);
+        }
 
         return myhelp;
     }
@@ -2254,9 +2159,6 @@ namespace uniset
         {
             const std::string& req = ctx[0];
 
-            if( req == "regs" )
-                return request_regs(req, ctx.params);
-
             if( req == "getparam" )
                 return httpGetParam(ctx.params);
 
@@ -2265,6 +2167,9 @@ namespace uniset
 
             if( req == "status" )
                 return httpStatus();
+
+            if( req == "registers" )
+                return httpRegisters(ctx.params);
         }
 
         return UniSetObject::httpRequest(ctx);
@@ -2516,10 +2421,147 @@ namespace uniset
         return out;
     }
     // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr MBSlave::httpRegisters( const Poco::URI::QueryParameters& params )
+    {
+        using Poco::JSON::Array;
+        using Poco::JSON::Object;
+
+        // 1. Парсинг параметров
+        size_t offset = 0;
+        size_t limit = 0;
+        std::string filter;
+        UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
+        std::vector<ModbusRTU::ModbusAddr> q_addr;
+        std::vector<ModbusRTU::RegID> q_regs;
+
+        for( const auto& p : params )
+        {
+            if( p.first == "offset" )
+                offset = uni_atoi(p.second);
+            else if( p.first == "limit" )
+                limit = uni_atoi(p.second);
+            else if( p.first == "filter" && !p.second.empty() )
+                filter = p.second;
+            else if( p.first == "iotype" && !p.second.empty() )
+                iotypeFilter = uniset::getIOType(p.second);
+            else if( p.first == "addr" && !p.second.empty() )
+            {
+                auto addrs = uniset::explode_str(p.second, ',');
+
+                for( const auto& a : addrs )
+                    q_addr.push_back(ModbusRTU::str2mbAddr(a));
+            }
+            else if( p.first == "regs" && !p.second.empty() )
+            {
+                auto regsStr = uniset::explode_str(p.second, ',');
+
+                for( const auto& s : regsStr )
+                    q_regs.push_back(genRegID(ModbusRTU::str2mbData(s), default_mbfunc));
+            }
+        }
+
+        // 2. Обход iomap с фильтрацией и пагинацией
+        size_t total = 0;
+        size_t count = 0;
+        size_t skipped = 0;
+        std::set<ModbusRTU::ModbusAddr> usedAddrs;
+        Array::Ptr regs = new Array();
+        auto oind = uniset_conf()->oind;
+
+        for( const auto& addrIt : iomap )
+        {
+            // Фильтр по addr (если задан)
+            if( !q_addr.empty() )
+            {
+                if( std::find(q_addr.begin(), q_addr.end(), addrIt.first) == q_addr.end() )
+                    continue;
+            }
+
+            for( const auto& regIt : addrIt.second )
+            {
+                const IOProperty& prop = regIt.second;
+
+                // Фильтр по regs (если задан)
+                if( !q_regs.empty() )
+                {
+                    if( std::find(q_regs.begin(), q_regs.end(), prop.regID) == q_regs.end() )
+                        continue;
+                }
+
+                // Фильтр по iotype
+                if( iotypeFilter != UniversalIO::UnknownIOType && prop.stype != iotypeFilter )
+                    continue;
+
+                // Фильтр по имени
+                std::string sensorName;
+
+                if( !filter.empty() )
+                {
+                    sensorName = ORepHelpers::getShortName(oind->getMapName(prop.si.id));
+
+                    if( !uniset::containsIgnoreCase(sensorName, filter) )
+                        continue;
+                }
+
+                total++;
+
+                // Пагинация: пропуск первых offset записей
+                if( skipped < offset )
+                {
+                    skipped++;
+                    continue;
+                }
+
+                // Пагинация: ограничение на limit записей
+                if( limit > 0 && count >= limit )
+                    continue;
+
+                // Формирование JSON записи
+                if( sensorName.empty() )
+                    sensorName = ORepHelpers::getShortName(oind->getMapName(prop.si.id));
+
+                Object::Ptr r = new Object();
+                r->set("id", static_cast<int>(prop.si.id));
+                r->set("name", sensorName);
+                r->set("iotype", uniset::iotype2str(prop.stype));
+                r->set("value", static_cast<long>(prop.value));
+                r->set("vtype", VTypes::type2str(prop.vtype));
+                r->set("device", static_cast<int>(addrIt.first));
+                r->set("mbreg", static_cast<int>(prop.mbreg));
+                r->set("amode", amode2str(prop.amode));
+
+                regs->add(r);
+                usedAddrs.insert(addrIt.first);
+                count++;
+            }
+        }
+
+        // 3. Формирование devices dict
+        Object::Ptr devicesDict = new Object();
+
+        for( const auto& addr : usedAddrs )
+        {
+            Object::Ptr d = new Object();
+            devicesDict->set(std::to_string(addr), d);
+        }
+
+        // 4. Формирование ответа
+        Object::Ptr out = new Object();
+        out->set("result", "OK");
+        out->set("devices", devicesDict);
+        out->set("registers", regs);
+        out->set("total", static_cast<int>(total));
+        out->set("count", static_cast<int>(count));
+        out->set("offset", static_cast<int>(offset));
+        out->set("limit", static_cast<int>(limit));
+
+        return out;
+    }
+    // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr MBSlave::httpGetMyInfo( Poco::JSON::Object::Ptr root )
     {
         auto my = UniSetObject::httpGetMyInfo(root);
-        my->set("extensionType", "MBSlave");
+        my->set("extensionType", "ModbusSlave");
         return my;
     }
 #endif

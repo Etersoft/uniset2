@@ -533,14 +533,10 @@ namespace uniset
 
 #ifndef DISABLE_REST_API
             // http api
-            Poco::JSON::Object::Ptr request_regs( const std::string& req, const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr get_regs(ModbusRTU::ModbusAddr addr, const RegMap& rmap, const std::vector<std::string>& q_regs );
-            Poco::JSON::Object::Ptr get_reginfo( const IOProperty& prop );
-
-            // params API
             Poco::JSON::Object::Ptr httpGetParam( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpSetParam( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr httpRegisters( const Poco::URI::QueryParameters& p );
 
             bool httpEnabledSetParams = { false };
 #endif

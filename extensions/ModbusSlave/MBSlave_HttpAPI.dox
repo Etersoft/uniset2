@@ -3,7 +3,7 @@
 
 - \ref sec_MBSLAVE_HTTP_API_help
 - \ref sec_MBSLAVE_HTTP_API_root
-- \ref sec_MBSLAVE_HTTP_API_regs
+- \ref sec_MBSLAVE_HTTP_API_registers
 - \ref sec_MBSLAVE_HTTP_API_status
 - \ref sec_MBSLAVE_HTTP_API_params
 
@@ -27,17 +27,65 @@ GET /<object>/help
 GET /<object>/
 \endcode
 
-\section sec_MBSLAVE_HTTP_API_regs /regs
+\section sec_MBSLAVE_HTTP_API_registers /registers
 
-Получить список/значения регистров (как реализовано в MBSlave::request_regs).
+Возвращает список регистров (датчиков) с поддержкой пагинации и фильтрации.
+Унифицированный формат, совместимый с ModbusMaster.
 
 \code
-GET /<object>/regs?addr=mbaddr1,mbaddr2&regs=reg1,reg2
+GET /api/v01/MBSlave1/registers
+GET /api/v01/MBSlave1/registers?offset=0&limit=50
+GET /api/v01/MBSlave1/registers?filter=Sensor&iotype=AI
+GET /api/v01/MBSlave1/registers?addr=1,2&regs=10,20
 \endcode
 
-Параметры:
-- \c addr — список адресов Modbus slave (строка, через запятую)
-- \c regs — список регистров (строка, через запятую)
+\par Параметры
+- \b offset — пропустить первые N записей (default: 0)
+- \b limit — максимальное количество записей в ответе (0 = без ограничений)
+- \b filter — фильтр по имени датчика (подстрока, без учёта регистра)
+- \b iotype — фильтр по типу: AI, AO, DI, DO
+- \b addr — фильтр по Modbus адресам (через запятую)
+- \b regs — фильтр по номерам регистров (через запятую)
+
+\par Response
+\code
+{
+  "result": "OK",
+  "devices": {
+    "1": {},
+    "49": {}
+  },
+  "registers": [
+    {
+      "id": 1003,
+      "name": "Sensor1_AI",
+      "iotype": "AI",
+      "value": 42,
+      "vtype": "signed",
+      "device": 1,
+      "mbreg": 10,
+      "amode": "rw"
+    }
+  ],
+  "total": 150,
+  "count": 50,
+  "offset": 0,
+  "limit": 50
+}
+\endcode
+
+\par Описание полей
+- \b id — идентификатор датчика
+- \b name — короткое имя датчика
+- \b iotype — тип (AI, AO, DI, DO)
+- \b value — текущее значение
+- \b vtype — тип значения (signed, unsigned, etc.)
+- \b device — Modbus адрес устройства
+- \b mbreg — номер Modbus регистра
+- \b amode — режим доступа (rw, ro, wo)
+- \b total — общее количество датчиков (с учётом фильтров)
+- \b count — количество датчиков в ответе
+- \b offset, \b limit — параметры пагинации
 
 \section sec_MBSLAVE_HTTP_API_params /getparam и /setparam
 

@@ -1484,6 +1484,183 @@ TEST_CASE("MBSlave: HTTP /status returns info", "[http][mbslave][status]")
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBSlave: HTTP /registers returns list", "[http][mbslave][registers]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBSlave1/registers", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+    REQUIRE(root->get("result").toString() == "OK");
+
+    // Проверяем структуру ответа
+    REQUIRE(root->has("registers"));
+    REQUIRE(root->has("devices"));
+    REQUIRE(root->has("total"));
+    REQUIRE(root->has("count"));
+    REQUIRE(root->has("offset"));
+    REQUIRE(root->has("limit"));
+
+    auto regs = root->getArray("registers");
+    REQUIRE(regs);
+    REQUIRE(regs->size() > 0);
+
+    // Проверяем структуру записи регистра
+    auto firstReg = regs->getObject(0);
+    REQUIRE(firstReg);
+    REQUIRE(firstReg->has("id"));
+    REQUIRE(firstReg->has("name"));
+    REQUIRE(firstReg->has("iotype"));
+    REQUIRE(firstReg->has("value"));
+    REQUIRE(firstReg->has("vtype"));
+    REQUIRE(firstReg->has("device"));
+    REQUIRE(firstReg->has("mbreg"));
+    REQUIRE(firstReg->has("amode"));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBSlave: HTTP /registers with pagination", "[http][mbslave][registers]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBSlave1/registers?offset=0&limit=5", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(root);
+
+    auto regs = root->getArray("registers");
+    REQUIRE(regs);
+    REQUIRE(regs->size() <= 5);
+
+    int total = root->getValue<int>("total");
+    int count = root->getValue<int>("count");
+    int limit = root->getValue<int>("limit");
+
+    REQUIRE(limit == 5);
+    REQUIRE(count <= limit);
+    REQUIRE(total >= count);
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBSlave: HTTP /registers with addr filter", "[http][mbslave][registers]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    // Сначала получаем все регистры чтобы узнать какие адреса есть
+    HTTPClientSession cs1(httpAddr, httpPort);
+    HTTPRequest req1(HTTPRequest::HTTP_GET, "/api/v2/MBSlave1/registers?limit=100", HTTPRequest::HTTP_1_1);
+    HTTPResponse res1;
+
+    cs1.sendRequest(req1);
+    std::istream& rs1 = cs1.receiveResponse(res1);
+    REQUIRE(res1.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss1;
+    ss1 << rs1.rdbuf();
+
+    Poco::JSON::Parser parser1;
+    auto parsed1 = parser1.parse(ss1.str());
+    Poco::JSON::Object::Ptr root1 = parsed1.extract<Poco::JSON::Object::Ptr>();
+    auto regs1 = root1->getArray("registers");
+    REQUIRE(regs1);
+    REQUIRE(regs1->size() > 0);
+
+    // Берём адрес первого регистра
+    int firstAddr = regs1->getObject(0)->getValue<int>("device");
+
+    // Теперь фильтруем по этому адресу
+    HTTPClientSession cs2(httpAddr, httpPort);
+    std::string url = "/api/v2/MBSlave1/registers?addr=" + std::to_string(firstAddr);
+    HTTPRequest req2(HTTPRequest::HTTP_GET, url, HTTPRequest::HTTP_1_1);
+    HTTPResponse res2;
+
+    cs2.sendRequest(req2);
+    std::istream& rs2 = cs2.receiveResponse(res2);
+    REQUIRE(res2.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss2;
+    ss2 << rs2.rdbuf();
+
+    Poco::JSON::Parser parser2;
+    auto parsed2 = parser2.parse(ss2.str());
+    Poco::JSON::Object::Ptr root2 = parsed2.extract<Poco::JSON::Object::Ptr>();
+    auto regs2 = root2->getArray("registers");
+    REQUIRE(regs2);
+
+    // Все регистры должны иметь указанный адрес
+    for( size_t i = 0; i < regs2->size(); i++ )
+    {
+        auto reg = regs2->getObject(i);
+        REQUIRE(reg->getValue<int>("device") == firstAddr);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBSlave: HTTP /registers with iotype filter", "[http][mbslave][registers]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBSlave1/registers?iotype=AI", HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    cs.sendRequest(req);
+    std::istream& rs = cs.receiveResponse(res);
+    REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+    std::stringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    auto parsed = parser.parse(ss.str());
+    Poco::JSON::Object::Ptr root = parsed.extract<Poco::JSON::Object::Ptr>();
+    auto regs = root->getArray("registers");
+    REQUIRE(regs);
+
+    // Все регистры должны иметь тип AI
+    for( size_t i = 0; i < regs->size(); i++ )
+    {
+        auto reg = regs->getObject(i);
+        REQUIRE(reg->get("iotype").toString() == "AI");
+    }
+}
+// -----------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API
 
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */
