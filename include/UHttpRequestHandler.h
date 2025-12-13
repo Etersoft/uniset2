@@ -142,9 +142,9 @@ namespace uniset
                 // throw SystemError
                 virtual Poco::JSON::Array::Ptr httpGetObjectsList(const HttpRequestContext& ctx) = 0;
 
-                // Справка по объекту
+                // Справка по объекту (диспетчеризация к конкретному объекту по ctx.objectName)
                 // throw SystemError, NameNotFound
-                virtual Poco::JSON::Object::Ptr httpHelp(const HttpRequestContext& ctx) = 0;
+                virtual Poco::JSON::Object::Ptr httpHelpRequest(const HttpRequestContext& ctx) = 0;
         };
 
         // -------------------------------------------------------------------------

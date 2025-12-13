@@ -65,11 +65,11 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
 
     if( findArgParam("--" + argprefix + "run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
     {
-        logserv_host = conf->getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "localhost");
+        logserv_host = conf->getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "0.0.0.0");
         logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
     }
 
-    httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "-http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
+    httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
     auto ip = conf->getArgParam("--" + argprefix + "host", "0.0.0.0");
     auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
     auto browseName = it.getProp2("browseName", conf->oind->getMapName(conf->getLocalNode()));
@@ -544,6 +544,12 @@ void OPCUAServer::sysCommand( const uniset::SystemMessage* sm )
 
     if( sm->command == SystemMessage::StartUp )
     {
+        if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+        {
+            myinfo << myname << "(sysCommand): run log server " << logserv_host << ":" << logserv_port << endl;
+            logserv->async_run(logserv_host, logserv_port);
+        }
+
         active  = true;
         myinfo << myname << "(sysCommand): init " << variables.size() << " variables" << endl;
         serverThread->start();
@@ -985,6 +991,12 @@ Poco::JSON::Object::Ptr OPCUAServer::httpRequest( const UHttp::HttpRequestContex
 
         if( req == "status" )
             return httpStatus();
+
+        if( req == "sensors" )
+            return httpSensors(ctx.params);
+
+        if( req == "get" )
+            return httpGet(ctx.params);
     }
 
     auto json = UObject_SK::httpRequest(ctx);
@@ -1020,13 +1032,28 @@ Poco::JSON::Object::Ptr OPCUAServer::httpHelp( const Poco::URI::QueryParameters&
     {
         uniset::json::help::item cmd("getparam", "read runtime parameters");
         cmd.param("name", "parameter to read; can be repeated");
-        cmd.param("note", "supported: updateTime_msec");
+        cmd.param("note", "supported: updateTime_msec|variablesCount|writeCount|methodCount|httpEnabledSetParams");
         myhelp.add(cmd);
     }
     {
         uniset::json::help::item cmd("setparam", "set runtime parameters");
         cmd.param("updateTime_msec", "milliseconds");
         cmd.param("note", "may be disabled by httpEnabledSetParams");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("sensors", "list OPC UA variables with pagination");
+        cmd.param("limit", "max number of sensors to return (default: 50, 0=unlimited)");
+        cmd.param("offset", "skip first N sensors (for pagination)");
+        cmd.param("search", "filter by name (case-insensitive substring match)");
+        cmd.param("iotype", "filter by type: AI|AO|DI|DO");
+        cmd.param("filter", "filter by sensor names/ids (comma-separated)");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("get", "get values by sensor names or ids");
+        cmd.param("name", "sensor name(s), comma-separated; can be repeated");
+        cmd.param("id", "sensor id(s), comma-separated; can be repeated");
         myhelp.add(cmd);
     }
 
@@ -1087,6 +1114,14 @@ Poco::JSON::Object::Ptr OPCUAServer::httpGetParam( const Poco::URI::QueryParamet
     {
         if( n == "updateTime_msec" )
             params->set(n, (int)updateTime_msec);
+        else if( n == "variablesCount" )
+            params->set(n, (int)variables.size());
+        else if( n == "writeCount" )
+            params->set(n, (int)writeCount);
+        else if( n == "methodCount" )
+            params->set(n, (int)methodCount);
+        else if( n == "httpEnabledSetParams" )
+            params->set(n, httpEnabledSetParams ? 1 : 0);
         else
             unknown->add(n);
     }
@@ -1152,17 +1187,22 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
 
     Object::Ptr st = new Object();
     st->set("name", myname);
+    st->set("extensionType", "OPCUAServer");
     st->set("LogServer", buildLogServerInfo());
 
     auto opcConfig = UA_Server_getConfig(opcServer->handle());
 
     // endpoints
-    for( int i = 0; i < opcConfig->endpointsSize; i++ )
     {
-        Object::Ptr ep = new Object();
-        ep->set("url",  UAStringToStdString(opcConfig->endpoints[i].server.applicationUri));
-        ep->set("name",  UAStringToStdString(opcConfig->endpoints[i].server.applicationName.text));
-        st->set("endpoint", ep);
+        Array::Ptr eps = new Array();
+        for( size_t i = 0; i < opcConfig->endpointsSize; i++ )
+        {
+            Object::Ptr ep = new Object();
+            ep->set("url",  UAStringToStdString(opcConfig->endpoints[i].server.applicationUri));
+            ep->set("name",  UAStringToStdString(opcConfig->endpoints[i].server.applicationName.text));
+            eps->add(ep);
+        }
+        st->set("endpoints", eps);
     }
 
     // runtime params
@@ -1172,13 +1212,24 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
         st->set("params", rp);
     }
 
-    // conf
+    // config
     {
-        Object::Ptr sz = new Object();
-        sz->set("maxSubscriptions",      (int)opcConfig->maxSubscriptions);
-        sz->set("maxSessions", (int)opcConfig->maxSessions);
-        sz->set("maxSecureChannels",         (int)opcConfig->maxSecureChannels );
-        st->set("maxSessionTimeout", opcConfig->maxSessionTimeout);
+        Object::Ptr cfg = new Object();
+        cfg->set("maxSubscriptions", (int)opcConfig->maxSubscriptions);
+        cfg->set("maxSessions", (int)opcConfig->maxSessions);
+        cfg->set("maxSecureChannels", (int)opcConfig->maxSecureChannels);
+        cfg->set("maxSessionTimeout", (int)opcConfig->maxSessionTimeout);
+        st->set("config", cfg);
+    }
+
+    // variables info
+    {
+        Object::Ptr vars = new Object();
+        vars->set("total", (int)variables.size());
+        vars->set("read", (int)(variables.size() - writeCount));
+        vars->set("write", (int)writeCount);
+        vars->set("methods", (int)methodCount);
+        st->set("variables", vars);
     }
 
     st->set("httpEnabledSetParams", httpEnabledSetParams ? 1 : 0);
@@ -1194,6 +1245,225 @@ Poco::JSON::Object::Ptr OPCUAServer::httpGetMyInfo( Poco::JSON::Object::Ptr root
     auto my = UObject_SK::httpGetMyInfo(root);
     my->set("extensionType", "OPCUAServer");
     return my;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpSensors( const Poco::URI::QueryParameters& p )
+{
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    int limit = 50;
+    int offset = 0;
+    std::string search;
+    UniversalIO::IOType iotypeFilter = UniversalIO::UnknownIOType;
+    std::unordered_set<uniset::ObjectId> filterIds;
+
+    auto conf = uniset_conf();
+
+    for( const auto& kv : p )
+    {
+        if( kv.first == "limit" && !kv.second.empty() )
+            limit = std::stoi(kv.second);
+        else if( kv.first == "offset" && !kv.second.empty() )
+            offset = std::stoi(kv.second);
+        else if( kv.first == "search" && !kv.second.empty() )
+            search = kv.second;
+        else if( kv.first == "iotype" && !kv.second.empty() )
+            iotypeFilter = uniset::getIOType(kv.second);
+        else if( kv.first == "filter" && !kv.second.empty() )
+        {
+            try
+            {
+                auto slist = uniset::getSInfoList(kv.second, conf);
+                filterIds.reserve(slist.size());
+                for( const auto& s : slist )
+                    filterIds.insert(s.si.id);
+            }
+            catch( const std::exception& ex )
+            {
+                // Invalid filter - ignore
+            }
+        }
+    }
+
+    // For backward compatibility: if search is AI/AO/DI/DO, treat as iotype
+    if( iotypeFilter == UniversalIO::UnknownIOType && !search.empty() )
+    {
+        auto t = uniset::getIOType(search);
+        if( t != UniversalIO::UnknownIOType )
+        {
+            iotypeFilter = t;
+            search.clear();
+        }
+    }
+
+    Object::Ptr out = new Object();
+    Array::Ptr sensors = new Array();
+
+    int total = 0;
+    int added = 0;
+    int skipped = 0;
+
+    for( const auto& var : variables )
+    {
+        // Apply filter by id/name (if specified)
+        if( !filterIds.empty() )
+        {
+            if( filterIds.find(var.first) == filterIds.end() )
+                continue;
+        }
+
+        // Apply iotype filter
+        if( iotypeFilter != UniversalIO::UnknownIOType && var.second.stype != iotypeFilter )
+            continue;
+
+        // Get sensor name
+        std::string sensorName = conf->oind->getShortName(var.first);
+
+        // Apply text search (case-insensitive substring match)
+        if( !search.empty() )
+        {
+            if( !uniset::containsIgnoreCase(sensorName, search) )
+                continue;
+        }
+
+        total++;
+
+        // Apply offset
+        if( skipped < offset )
+        {
+            skipped++;
+            continue;
+        }
+
+        // Apply limit (0 = no limit)
+        if( limit > 0 && added >= limit )
+            continue;
+
+        // Build sensor JSON
+        Object::Ptr js = new Object();
+        js->set("id", (int)var.first);
+        js->set("name", sensorName);
+        js->set("iotype", uniset::iotype2str(var.second.stype));
+
+        // Read current value (thread-safe)
+        {
+            uniset::uniset_rwmutex_rlock lock(const_cast<IOVariable&>(var.second).vmut);
+
+            if( var.second.vtype == opcua::DataTypeId::Boolean )
+                js->set("value", var.second.state ? 1 : 0);
+            else if( var.second.vtype == opcua::DataTypeId::Float )
+            {
+                float fval = var.second.precision > 0
+                    ? (float)var.second.value / std::pow(10.0f, var.second.precision)
+                    : (float)var.second.value;
+                js->set("value", fval);
+            }
+            else
+                js->set("value", (int)var.second.value);
+        }
+
+        // OPC UA specific info
+        js->set("vtype", (int)var.second.vtype);
+        if( var.second.mask != 0 )
+            js->set("mask", (int)var.second.mask);
+        if( var.second.precision > 0 )
+            js->set("precision", (int)var.second.precision);
+
+        sensors->add(js);
+        added++;
+    }
+
+    out->set("result", "OK");
+    out->set("sensors", sensors);
+    out->set("total", total);
+    out->set("limit", limit);
+    out->set("offset", offset);
+
+    return out;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr OPCUAServer::httpGet( const Poco::URI::QueryParameters& p )
+{
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    auto conf = uniset_conf();
+
+    // Collect requested sensor names/ids
+    std::vector<std::pair<uniset::ObjectId, std::string>> requestedSensors;
+    std::vector<std::string> notFoundNames;
+
+    for( const auto& kv : p )
+    {
+        if( (kv.first == "name" || kv.first == "id") && !kv.second.empty() )
+        {
+            auto slist = uniset::getSInfoList(kv.second, conf);
+            if( slist.empty() )
+                notFoundNames.push_back(kv.second);
+            else
+            {
+                for( const auto& s : slist )
+                    requestedSensors.emplace_back(s.si.id, s.fname);
+            }
+        }
+    }
+
+    if( requestedSensors.empty() && notFoundNames.empty() )
+        throw uniset::SystemError(myname + "(/get): specify at least one 'name' or 'id' parameter");
+
+    Object::Ptr out = new Object();
+    Array::Ptr sensors = new Array();
+
+    for( const auto& req : requestedSensors )
+    {
+        Object::Ptr js = new Object();
+        js->set("name", req.second);
+        js->set("id", (int)req.first);
+
+        auto it = variables.find(req.first);
+        if( it != variables.end() )
+        {
+            js->set("iotype", uniset::iotype2str(it->second.stype));
+
+            // Read current value (thread-safe)
+            {
+                uniset::uniset_rwmutex_rlock lock(const_cast<IOVariable&>(it->second).vmut);
+
+                if( it->second.vtype == opcua::DataTypeId::Boolean )
+                    js->set("value", it->second.state ? 1 : 0);
+                else if( it->second.vtype == opcua::DataTypeId::Float )
+                {
+                    float fval = it->second.precision > 0
+                        ? (float)it->second.value / std::pow(10.0f, it->second.precision)
+                        : (float)it->second.value;
+                    js->set("value", fval);
+                }
+                else
+                    js->set("value", (int)it->second.value);
+            }
+        }
+        else
+        {
+            js->set("error", "not found in OPC UA variables");
+        }
+
+        sensors->add(js);
+    }
+
+    // Add entries for sensors not found in configuration
+    for( const auto& name : notFoundNames )
+    {
+        Object::Ptr js = new Object();
+        js->set("name", name);
+        js->set("error", "not found in configuration");
+        sensors->add(js);
+    }
+
+    out->set("result", "OK");
+    out->set("sensors", sensors);
+
+    return out;
 }
 // -----------------------------------------------------------------------------
 #endif // DISABLE_REST_API

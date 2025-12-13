@@ -439,7 +439,7 @@ namespace uniset
         return jdata;
     }
     // ------------------------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr UniSetActivator::httpHelp( const UHttp::HttpRequestContext& ctx )
+    Poco::JSON::Object::Ptr UniSetActivator::httpHelpRequest( const UHttp::HttpRequestContext& ctx )
     {
         const std::string& name = ctx.objectName;
 

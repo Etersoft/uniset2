@@ -182,7 +182,7 @@ namespace uniset
             // /api/v2/ObjectName/help
             if( ctx.depth() == 1 && ctx[0] == "help" )
             {
-                auto json = registry->httpHelp(ctx);
+                auto json = registry->httpHelpRequest(ctx);
                 std::ostream& out = resp.send();
                 json->stringify(out);
                 out.flush();

@@ -208,6 +208,10 @@ namespace uniset
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
             virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override;
             virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root ) override;
+
+            // Public HTTP endpoints
+            Poco::JSON::Object::Ptr httpSensors( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p );
 #endif
 
         protected:
