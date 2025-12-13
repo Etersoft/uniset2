@@ -2183,7 +2183,24 @@ namespace uniset
                 return httpRegisters(ctx.params);
         }
 
-        return UniSetObject::httpRequest(ctx);
+        // depth == 0: добавляем LogServer в ответ
+        auto json = UniSetObject::httpRequest(ctx);
+
+        // Добавляем LogServer по аналогии с генерируемым скелетоном
+        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+        if( !jdata )
+            jdata = uniset::json::make_child(json, myname);
+
+        Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata, "LogServer");
+        if( logserv )
+        {
+            jserv->set("host", logserv_host);
+            jserv->set("port", logserv_port);
+            jserv->set("state", ( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
+            jserv->set("info", logserv->httpGetShortInfo());
+        }
+
+        return json;
     }
     // -------------------------------------------------------------------------
     static long to_long(const std::string& s, const std::string& what, const std::string& myname)
