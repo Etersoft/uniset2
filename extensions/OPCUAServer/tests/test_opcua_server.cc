@@ -1,5 +1,6 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
+#include <algorithm>
 #include <limits>
 #include <memory>
 
@@ -228,7 +229,7 @@ TEST_CASE("[OPCUAServer]: reconnect check", "[opcuaserver][reconnect]")
 #ifndef DISABLE_REST_API
 TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
 {
-    InitTest(); // если у тебя есть общий инициализатор окружения
+    InitTest();
 
     using Poco::Net::HTTPClientSession;
     using Poco::Net::HTTPRequest;
@@ -254,16 +255,56 @@ TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
     auto st = root->getObject("status");
     REQUIRE(st);
     REQUIRE(st->has("name"));
+    REQUIRE(st->has("extensionType"));
+    REQUIRE(st->get("extensionType").toString() == "OPCUAServer");
 
-    if( st->has("endpoint") ) REQUIRE(st->getObject("endpoint")->has("url"));
+    // endpoints (array)
+    if( st->has("endpoints") )
+    {
+        auto eps = st->getArray("endpoints");
+        REQUIRE(eps);
+        if( eps->size() > 0 )
+        {
+            auto ep = eps->getObject(0);
+            REQUIRE(ep->has("url"));
+            REQUIRE(ep->has("name"));
+        }
+    }
 
-    if( st->has("params") )   REQUIRE(st->getObject("params")->has("updateTime_msec"));
+    // params
+    if( st->has("params") )
+        REQUIRE(st->getObject("params")->has("updateTime_msec"));
 
+    // config
+    if( st->has("config") )
+    {
+        auto cfg = st->getObject("config");
+        REQUIRE(cfg->has("maxSubscriptions"));
+        REQUIRE(cfg->has("maxSessions"));
+        REQUIRE(cfg->has("maxSecureChannels"));
+        REQUIRE(cfg->has("maxSessionTimeout"));
+    }
+
+    // variables
+    if( st->has("variables") )
+    {
+        auto vars = st->getObject("variables");
+        REQUIRE(vars->has("total"));
+        REQUIRE(vars->has("read"));
+        REQUIRE(vars->has("write"));
+        REQUIRE(vars->has("methods"));
+        REQUIRE((int)vars->get("total") > 0);
+    }
+
+    // LogServer
     REQUIRE(st->has("LogServer"));
     auto jls = st->getObject("LogServer");
     REQUIRE(jls);
     REQUIRE(jls->has("state"));
     REQUIRE(jls->has("port"));
+
+    // httpEnabledSetParams
+    REQUIRE(st->has("httpEnabledSetParams"));
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
@@ -349,6 +390,316 @@ TEST_CASE("OPCUAServer: HTTP getparam/setparam", "[http][opcua][params]")
         REQUIRE(resSet.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
         REQUIRE(body.find("httpEnabledSetParams") != std::string::npos);
         REQUIRE(body.find("disabled") != std::string::npos);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: HTTP /sensors", "[http][opcua][sensors]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // 1) Basic request - get all sensors with default limit
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/sensors",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE(j->get("result").toString() == "OK");
+        REQUIRE(j->has("sensors"));
+        REQUIRE(j->has("total"));
+        REQUIRE(j->has("limit"));
+        REQUIRE(j->has("offset"));
+
+        auto sensors = j->getArray("sensors");
+        REQUIRE(sensors);
+        REQUIRE(sensors->size() > 0);
+
+        // Check sensor structure
+        auto first = sensors->getObject(0);
+        REQUIRE(first->has("id"));
+        REQUIRE(first->has("name"));
+        REQUIRE(first->has("iotype"));
+        REQUIRE(first->has("value"));
+    }
+
+    // 2) Pagination: limit and offset
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/sensors?limit=2&offset=0",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        auto sensors = j->getArray("sensors");
+        REQUIRE(sensors->size() <= 2);
+        REQUIRE((int)j->get("limit") == 2);
+        REQUIRE((int)j->get("offset") == 0);
+    }
+
+    // 3) Filter by iotype
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/sensors?iotype=AI",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        auto sensors = j->getArray("sensors");
+        for( size_t i = 0; i < sensors->size(); i++ )
+        {
+            auto s = sensors->getObject(i);
+            REQUIRE(s->get("iotype").toString() == "AI");
+        }
+    }
+
+    // 4) Search by name
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/sensors?search=AI1",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        auto sensors = j->getArray("sensors");
+        for( size_t i = 0; i < sensors->size(); i++ )
+        {
+            auto s = sensors->getObject(i);
+            std::string name = s->get("name").toString();
+            // case-insensitive search
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+            REQUIRE(name.find("ai1") != std::string::npos);
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: HTTP /get", "[http][opcua][get]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Set known values first
+    ui->setValue(2, 12345);
+    ui->setValue(1, 1);
+    msleep(pause_msec);
+
+    // 1) Get by name
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/get?name=AI1_S",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE(j->get("result").toString() == "OK");
+        REQUIRE(j->has("sensors"));
+
+        auto sensors = j->getArray("sensors");
+        REQUIRE(sensors->size() == 1);
+
+        auto s = sensors->getObject(0);
+        REQUIRE(s->has("id"));
+        REQUIRE(s->has("name"));
+        REQUIRE(s->has("value"));
+        REQUIRE((int)s->get("value") == 12345);
+    }
+
+    // 2) Get multiple by names (comma-separated)
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/get?name=AI1_S,DI1_S",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        auto sensors = j->getArray("sensors");
+        REQUIRE(sensors->size() == 2);
+    }
+
+    // 3) Get by id
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/get?id=2",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        auto sensors = j->getArray("sensors");
+        REQUIRE(sensors->size() == 1);
+
+        auto s = sensors->getObject(0);
+        REQUIRE((int)s->get("id") == 2);
+        REQUIRE((int)s->get("value") == 12345);
+    }
+
+    // 4) Non-existent sensor - may return 200 with error or 500
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/get?name=NonExistent_S",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+
+        if(res.getStatus() == HTTPResponse::HTTP_OK)
+        {
+            // Graceful handling: 200 with error in response
+            auto r = parser.parse(ss.str());
+            auto j = r.extract<Poco::JSON::Object::Ptr>();
+            auto sensors = j->getArray("sensors");
+            REQUIRE(sensors->size() == 1);
+            auto s = sensors->getObject(0);
+            REQUIRE(s->has("error"));
+        }
+        else
+        {
+            // Exception handling: 500 for invalid sensor
+            REQUIRE(res.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+        }
+    }
+
+    // 5) No parameters - error
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/get",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() >= HTTPResponse::HTTP_BAD_REQUEST);
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("OPCUAServer: HTTP /getparam extended", "[http][opcua][getparam]")
+{
+    InitTest();
+
+    using Poco::Net::HTTPClientSession;
+    using Poco::Net::HTTPRequest;
+    using Poco::Net::HTTPResponse;
+
+    HTTPClientSession cs(httpAddr, httpPort);
+    Poco::JSON::Parser parser;
+
+    // Get all extended parameters
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/getparam?name=variablesCount&name=writeCount&name=methodCount&name=httpEnabledSetParams",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE(j->get("result").toString() == "OK");
+        auto params = j->getObject("params");
+        REQUIRE(params);
+
+        // variablesCount should be > 0 (we have sensors configured)
+        REQUIRE(params->has("variablesCount"));
+        REQUIRE((int)params->get("variablesCount") > 0);
+
+        // writeCount
+        REQUIRE(params->has("writeCount"));
+        REQUIRE((int)params->get("writeCount") >= 0);
+
+        // methodCount
+        REQUIRE(params->has("methodCount"));
+        REQUIRE((int)params->get("methodCount") >= 0);
+
+        // httpEnabledSetParams
+        REQUIRE(params->has("httpEnabledSetParams"));
+    }
+
+    // Unknown parameter should be listed in 'unknown' array
+    {
+        HTTPRequest req(HTTPRequest::HTTP_GET,
+                        "/api/v2/OPCUAServer/getparam?name=unknownParam123",
+                        HTTPRequest::HTTP_1_1);
+        HTTPResponse res;
+        cs.sendRequest(req);
+        std::istream& rs = cs.receiveResponse(res);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+
+        std::stringstream ss;
+        ss << rs.rdbuf();
+        auto r = parser.parse(ss.str());
+        auto j = r.extract<Poco::JSON::Object::Ptr>();
+
+        REQUIRE(j->has("unknown"));
+        auto unknown = j->getArray("unknown");
+        REQUIRE(unknown->size() == 1);
+        REQUIRE(unknown->get(0).toString() == "unknownParam123");
     }
 }
 // -----------------------------------------------------------------------------

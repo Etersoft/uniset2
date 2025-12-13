@@ -105,7 +105,7 @@ namespace uniset
             // Поддержка REST API (IHttpRequestRegistry)
             virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override;
             virtual Poco::JSON::Array::Ptr httpGetObjectsList( const UHttp::HttpRequestContext& ctx ) override;
-            virtual Poco::JSON::Object::Ptr httpHelp( const UHttp::HttpRequestContext& ctx ) override;
+            virtual Poco::JSON::Object::Ptr httpHelpRequest( const UHttp::HttpRequestContext& ctx ) override;
 #endif
 
         protected:

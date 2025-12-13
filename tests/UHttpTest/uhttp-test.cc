@@ -79,7 +79,7 @@ class UTestRequestRegistry:
             return j;
         }
 
-        virtual Poco::JSON::Object::Ptr httpHelp( const UHttp::HttpRequestContext& ctx ) override
+        virtual Poco::JSON::Object::Ptr httpHelpRequest( const UHttp::HttpRequestContext& ctx ) override
         {
             return sup.httpHelp(ctx.params);
         }
