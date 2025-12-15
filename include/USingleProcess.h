@@ -28,10 +28,12 @@ namespace uniset
     {
         public:
             USingleProcess( xmlNode* cnode, int argc, const char* const argv[], const std::string& prefix = "" );
+            explicit USingleProcess();
             virtual ~USingleProcess();
 
         protected:
             std::shared_ptr<RunLock> rlock = nullptr;
+            bool checkLockFile( xmlNode* cnode, int argc, const char* const argv[], const std::string& prefix );
 
     };
     // -------------------------------------------------------------------------

@@ -1208,8 +1208,6 @@ Poco::JSON::Object::Ptr IOController::httpRequest( const UHttp::HttpRequestConte
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )
 {
-    // TODO access control
-
     if( p.empty() )
     {
         ostringstream err;
@@ -1220,18 +1218,48 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
     auto conf = uniset_conf();
     std::string filterParam;
     bool shortInfo = false;
+    uniset::ObjectId sup_id = DefaultObjectId;
 
     for( const auto& param : p )
     {
+        if( param.first == "supplier" )
+        {
+            sup_id = conf->getObjectID(param.second);
+            continue;
+        }
+
         if( param.first == "filter" && !param.second.empty() )
             filterParam = param.second;
         else if( param.first == "shortInfo" )
             shortInfo = true;
+        else if( filterParam.empty() )
+            filterParam = param.first; // backward compatibility if 'filter=' is not used and not a known param
     }
 
-    // backward compatibility: if filter= not found, use first key as filter
+    // backward compatibility: if filter= not found, use first non-supplier key as filter
     if( filterParam.empty() )
-        filterParam = p[0].first;
+    {
+        for( const auto& param : p )
+        {
+            if( param.first != "supplier" )
+            {
+                filterParam = param.first;
+                break;
+            }
+        }
+    }
+
+    if( !disableHttpAccessControl )
+    {
+        if( sup_id == DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << "(request_get): 'get' requires 'supplier' parameter. Example: /get?supplier=Name&...";
+            throw uniset::SystemError(err.str());
+        }
+    }
+    else if( sup_id == DefaultObjectId )
+        sup_id = getId();
 
     auto slist = uniset::getSInfoList( filterParam, conf );
 
@@ -1271,9 +1299,16 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
                 continue;
             }
 
-            getSensorInfo(jsens, sinf->second, shortInfo);
+            getSensorInfo(jsens, sinf->second, sup_id, shortInfo);
         }
         catch( IOController_i::NameNotFound& ex )
+        {
+            Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+            jr->set("name", s.fname);
+            jr->set("error", string(ex.err));
+            jsens->add(jr);
+        }
+        catch( IOController_i::AccessDenied& ex )
         {
             Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
             jr->set("name", s.fname);
@@ -1496,18 +1531,30 @@ Poco::JSON::Object::Ptr IOController::request_freeze( const string& req, const P
     return jdata;
 }
 // -----------------------------------------------------------------------------
-void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
+void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, uniset::ObjectId consumer_id, bool shortInfo )
 {
-    // TODO access control
-
     Poco::JSON::Object::Ptr jsens = new Poco::JSON::Object();
     jdata->add(jsens);
 
+    // Access control for reading sensor values
+    if( consumer_id != getId() && !s->checkMask(consumer_id, defaultAccessMask).canRead() )
+    {
+        ostringstream err;
+        err << myname << "(getSensorInfo): Access denied";
+        throw IOController_i::AccessDenied(err.str().c_str());
+    }
+
+    long value = 0;
+    long real_value = 0;
+
     {
         uniset_rwmutex_rlock lock(s->val_lock);
-        jsens->set("value", s->value);
-        jsens->set("real_value", s->real_value);
+        value = s->value;
+        real_value = s->real_value;
     }
+
+    jsens->set("value", value);
+    jsens->set("real_value", real_value);
 
     jsens->set("id", s->si.id);
     jsens->set("name", uniset_conf()->oind->getShortName(s->si.id));
@@ -1636,7 +1683,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
         if( limit > 0 && count >= limit )
             continue;
 
-        getSensorInfo(jsens, it->second, false);
+        getSensorInfo(jsens, it->second, getId(), false);
         count++;
     }
 
