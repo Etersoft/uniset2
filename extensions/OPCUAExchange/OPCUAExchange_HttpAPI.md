@@ -47,7 +47,18 @@ GET /api/v2/OPCUAExchange1/status
     "httpControlAllow": 1,
     "httpControlActive": 0,
     "errorHistoryMax": 100,
-    "errorHistorySize": 3
+    "errorHistorySize": 3,
+    "lastErrors": [
+      {
+        "time": "2025-12-15T12:00:00",
+        "lastSeen": "2025-12-15T12:05:10",
+        "channel": 0,
+        "operation": "read",
+        "statusCode": "BadDisconnect",
+        "nodeid": "ns=2;s=Temp",
+        "count": 5
+      }
+    ]
   }
 }
 ```
@@ -59,6 +70,8 @@ GET /api/v2/OPCUAExchange1/status
 Чтение/изменение runtime‑параметров обмена.
 
 Поддерживаемые параметры: `polltime`, `updatetime`, `reconnectPause`, `timeoutIterate`, `exchangeMode`, `writeToAllChannels`, `currentChannel`, `connectCount`, `activated`, `iolistSize`, `httpControlAllow`, `httpControlActive`, `errorHistoryMax`.
+
+История ошибок агрегирует повторы по ключу (канал, операция, статус, nodeid); для каждой записи возвращаются время первого появления (`time`), последнего (`lastSeen`) и счётчик `count`. Размер истории ограничен `errorHistoryMax`.
 
 Чтение:
 

@@ -786,9 +786,9 @@ TEST_CASE("OPCUAExchange: HTTP /sensors (list with pagination)", "[http][opcuaex
         REQUIRE((int)root->get("offset") == 0);
     }
 
-    // Request with filter
+    // Request with iotype filter
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=AI", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?iotype=AI", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -820,10 +820,10 @@ TEST_CASE("OPCUAExchange: HTTP /sensors filtering", "[http][opcuaex][sensors][fi
     HTTPClientSession cs(httpAddr, httpPort);
     Poco::JSON::Parser parser;
 
-    // Test text filter by sensor name (case-insensitive substring)
+    // Test text search by sensor name (case-insensitive substring)
     SECTION("filter by name (text search)")
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=attr", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?search=attr", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -870,10 +870,10 @@ TEST_CASE("OPCUAExchange: HTTP /sensors filtering", "[http][opcuaex][sensors][fi
         }
     }
 
-    // Test combination of filter and iotype
+    // Test combination of search and iotype
     SECTION("combined filter and iotype")
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=Attr&iotype=AI", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?search=Attr&iotype=AI", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -896,10 +896,10 @@ TEST_CASE("OPCUAExchange: HTTP /sensors filtering", "[http][opcuaex][sensors][fi
         }
     }
 
-    // Test backward compatibility: filter=AI should work as iotype filter
-    SECTION("backward compatibility: filter=AI as iotype")
+    // Test backward compatibility: search=AI should work as iotype filter
+    SECTION("backward compatibility: search=AI as iotype")
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=AI", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?search=AI", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -921,7 +921,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensors filtering", "[http][opcuaex][sensors][fi
     // Test filter with no matches
     SECTION("filter with no matches")
     {
-        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?filter=nonexistent_xyz_123", HTTPRequest::HTTP_1_1);
+        HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/OPCUAExchange1/sensors?search=nonexistent_xyz_123", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
@@ -1096,6 +1096,21 @@ TEST_CASE("OPCUAExchange: HTTP /diagnostics", "[http][opcuaex][diagnostics]")
     // Check history info
     REQUIRE(root->has("errorHistorySize"));
     REQUIRE(root->has("errorHistoryMax"));
+
+    // lastErrors should contain aggregated info with count/lastSeen
+    {
+        auto lastErrors = root->getArray("lastErrors");
+        REQUIRE(lastErrors);
+
+        if( !lastErrors->empty() )
+        {
+            auto err0 = lastErrors->getObject(0);
+            REQUIRE(err0->has("count"));
+            REQUIRE(err0->has("lastSeen"));
+            REQUIRE(err0->get("count").convert<uint64_t>() >= 1);
+            REQUIRE_FALSE(err0->get("lastSeen").toString().empty());
+        }
+    }
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("OPCUAExchange: HTTP /takeControl and /releaseControl", "[http][opcuaex][control]")

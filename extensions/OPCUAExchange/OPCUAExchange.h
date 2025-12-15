@@ -19,12 +19,13 @@
 // -----------------------------------------------------------------------------
 #include <vector>
 #include <memory>
-#include <deque>
+#include <list>
 #include <string>
 #include <regex>
 #include <optional>
 #include <chrono>
 #include <mutex>
+#include <unordered_map>
 #include "UniXML.h"
 #include "ThreadCreator.h"
 #include "PassiveTimer.h"
@@ -302,11 +303,13 @@ namespace uniset
             /*! Запись об ошибке для диагностики */
             struct ErrorRecord
             {
-                std::chrono::system_clock::time_point time;
-                size_t channel;
+                std::chrono::system_clock::time_point time;      // first occurrence
+                std::chrono::system_clock::time_point lastSeen;  // last occurrence
+                size_t channel { 0 };
                 std::string operation;  // "read" | "write" | "connect"
-                UA_StatusCode statusCode;
+                UA_StatusCode statusCode { UA_STATUSCODE_GOOD };
                 std::string nodeid;     // опционально, для read/write
+                size_t count { 1 };
             };
 
             typedef std::list<IOBase> ThresholdList;
@@ -469,8 +472,37 @@ namespace uniset
 
             VMonitor vmon;
 
-            // Диагностика: кольцевой буфер ошибок
-            mutable std::deque<ErrorRecord> errorHistory;
+            struct ErrorKey
+            {
+                size_t channel;
+                std::string operation;
+                UA_StatusCode statusCode;
+                std::string nodeid;
+
+                bool operator==( const ErrorKey& other ) const noexcept
+                {
+                    return channel == other.channel &&
+                           statusCode == other.statusCode &&
+                           operation == other.operation &&
+                           nodeid == other.nodeid;
+                }
+            };
+
+            struct ErrorKeyHash
+            {
+                size_t operator()( const ErrorKey& k ) const noexcept
+                {
+                    size_t h1 = std::hash<size_t>{}(k.channel);
+                    size_t h2 = std::hash<UA_StatusCode>{}(k.statusCode);
+                    size_t h3 = std::hash<std::string>{}(k.operation);
+                    size_t h4 = std::hash<std::string>{}(k.nodeid);
+                    return ((h1 ^ (h2 << 1)) ^ (h3 << 2)) ^ (h4 << 3);
+                }
+            };
+
+            // Диагностика: кольцевой буфер ошибок (с дедупликацией)
+            mutable std::list<ErrorRecord> errorHistory;
+            mutable std::unordered_map<ErrorKey, std::list<ErrorRecord>::iterator, ErrorKeyHash> errorHistoryIndex;
             size_t errorHistoryMax { 100 };  /*!< максимальный размер истории ошибок */
             mutable std::mutex errorHistoryMutex;
 

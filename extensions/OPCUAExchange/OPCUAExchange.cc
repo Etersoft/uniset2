@@ -2947,10 +2947,12 @@ namespace uniset
             {
                 Object::Ptr err = new Object();
                 err->set("time", formatTime(it->time));
+                err->set("lastSeen", formatTime(it->lastSeen));
                 err->set("channel", (int)it->channel);
                 err->set("operation", it->operation);
                 err->set("statusCode", UA_StatusCode_name(it->statusCode));
                 err->set("nodeid", it->nodeid);
+                err->set("count", (uint64_t)it->count);
                 errors->add(err);
             }
 
@@ -3027,17 +3029,39 @@ namespace uniset
 
         std::lock_guard<std::mutex> lock(errorHistoryMutex);
 
-        ErrorRecord rec;
-        rec.time = std::chrono::system_clock::now();
-        rec.channel = channel;
-        rec.operation = operation;
-        rec.statusCode = status;
-        rec.nodeid = nodeid;
+        auto now = std::chrono::system_clock::now();
 
-        errorHistory.push_back(std::move(rec));
+        ErrorKey key{ channel, operation, status, nodeid };
+        auto it = errorHistoryIndex.find(key);
 
-        while( errorHistory.size() > errorHistoryMax )
-            errorHistory.pop_front();
+        if( it != errorHistoryIndex.end() )
+        {
+            auto recIt = it->second;
+            recIt->lastSeen = now;
+            recIt->count++;
+        }
+        else
+        {
+            ErrorRecord rec;
+            rec.time = now;
+            rec.lastSeen = now;
+            rec.channel = channel;
+            rec.operation = operation;
+            rec.statusCode = status;
+            rec.nodeid = nodeid;
+
+            errorHistory.push_back(std::move(rec));
+            auto inserted = std::prev(errorHistory.end());
+            errorHistoryIndex.emplace(std::move(key), inserted);
+
+            while( errorHistory.size() > errorHistoryMax )
+            {
+                const auto& front = errorHistory.front();
+                ErrorKey fkey{ front.channel, front.operation, front.statusCode, front.nodeid };
+                errorHistoryIndex.erase(fkey);
+                errorHistory.pop_front();
+            }
+        }
     }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset
