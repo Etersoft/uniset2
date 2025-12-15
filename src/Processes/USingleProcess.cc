@@ -22,9 +22,17 @@
 using namespace uniset;
 using namespace std;
 //---------------------------------------------------------------------------
+USingleProcess::USingleProcess()
+{
+}
+//---------------------------------------------------------------------------
 USingleProcess::USingleProcess( xmlNode* cnode, int argc, const char* const argv[], const std::string& prefix )
 {
-
+    checkLockFile(cnode, argc, argv, prefix);
+}
+//---------------------------------------------------------------------------
+bool USingleProcess::checkLockFile( xmlNode* cnode, int argc, const char* const argv[], const std::string& prefix )
+{
     std::string lockfile = "";
 
     std::string param = "--run-lock";
@@ -47,7 +55,8 @@ USingleProcess::USingleProcess( xmlNode* cnode, int argc, const char* const argv
     else if( cnode )
     {
         UniXML::iterator it(cnode);
-        lockfile = it.getProp("lockfile");
+        if( cnode )
+            lockfile = it.getProp("lockfile");
     }
 
     if( !lockfile.empty() )
@@ -63,6 +72,8 @@ USingleProcess::USingleProcess( xmlNode* cnode, int argc, const char* const argv
 
         rlock->lock();
     }
+
+    return true;
 }
 //---------------------------------------------------------------------------
 USingleProcess::~USingleProcess()
