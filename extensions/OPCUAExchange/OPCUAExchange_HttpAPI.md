@@ -160,13 +160,19 @@ GET /api/v2/OPCUAExchange1/get?filter=1000,Temp_AS,1002
 Параметр: `filter` — список ID/имён через запятую.
 
 Ответ: `sensors[]` с полями `id`, `name`, `iotype`, `value`, `vtype`, `device`, `mbreg`, `amode`, `count` (совместимо с IONC).
+Фактически возвращаются `sensors[]` с полями `id`, `name`, `iotype`, `value`; для отсутствующих — `{ "name": "<requested>", "error": "not found" }`.
 
 ## /diagnostics {#sec_opcuaex_http_api_diagnostics}
 
-Диагностика обмена/ошибок. Формат зависит от реализации; обычно включает историю ошибок и агрегированную статистику.
+Диагностика обмена/ошибок. Формат зависит от реализации; включает историю ошибок и агрегированную статистику (`errorHistoryMax/Size`, `lastErrors[]`).
 
 ## /control {#sec_opcuaex_http_api_control}
 
 Перехват управления режимом обмена (HTTP‑контроль):
-- флаги `httpControlAllow` и `httpControlActive`;
-- установка `exchangeMode` разрешена только при активном контроле.
+
+```
+GET /api/v2/<object>/takeControl
+GET /api/v2/<object>/releaseControl
+```
+
+Возвращает флаги `httpControlAllow`/`httpControlActive`; при запрете управления отдаёт ошибку. Установка `exchangeMode` через `/setparam` допускается только когда `httpControlActive=1`.

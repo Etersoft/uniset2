@@ -25,6 +25,7 @@
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
+#include <Poco/Net/IPAddress.h>
 #include <Poco/URI.h>
 #include <Poco/JSON/Object.h>
 #include "ujson.h"
@@ -109,6 +110,17 @@ namespace uniset
             std::string pathString() const;
         };
 
+        // Простая структура для описания подсети (CIDR)
+        struct NetworkRule
+        {
+            Poco::Net::IPAddress address;
+            unsigned int prefixLength = { 0 };
+            bool isRange = { false };
+            Poco::Net::IPAddress rangeEnd;
+        };
+
+        using NetworkRules = std::vector<NetworkRule>;
+
         // -------------------------------------------------------------------------
         /*! Интерфейс для объекта, обрабатывающего HTTP запросы */
         class IHttpRequest
@@ -153,9 +165,18 @@ namespace uniset
         {
             public:
                 UHttpRequestHandler( std::shared_ptr<IHttpRequestRegistry> _registry, const std::string& httpCORS_allow = "*",
-                                                                        const std::string& contentType="text/json; charset=UTF-8");
+                                    const std::string& contentType="text/json; charset=UTF-8",
+                                    const NetworkRules& whitelist = NetworkRules(),
+                                    const NetworkRules& blacklist = NetworkRules(),
+                                    const NetworkRules& trustedProxies = NetworkRules());
 
                 virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
+
+                static bool match(const Poco::Net::IPAddress& ip, const NetworkRule& rule);
+                static bool inRules(const Poco::Net::IPAddress& ip, const NetworkRules& rules);
+                static bool isDenied(const Poco::Net::IPAddress& ip,
+                                     const NetworkRules& whitelist,
+                                     const NetworkRules& blacklist);
 
             private:
 
@@ -163,6 +184,9 @@ namespace uniset
                 std::shared_ptr<DebugStream> log;
                 const std::string httpCORS_allow = { "*" };
                 std::string httpDefaultContentType = {"text/json; charset=UTF-8" };
+                NetworkRules whitelist;
+                NetworkRules blacklist;
+                NetworkRules trustedProxies;
         };
         // -------------------------------------------------------------------------
         class UHttpRequestHandlerFactory:
@@ -177,10 +201,16 @@ namespace uniset
                 // (CORS): Access-Control-Allow-Origin. Default: *
                 void setCORS_allow( const std::string& allow );
                 void setDefaultContentType( const std::string& ct );
+                void setWhitelist( const NetworkRules& rules );
+                void setBlacklist( const NetworkRules& rules );
+                void setTrustedProxies( const NetworkRules& rules );
             private:
                 std::shared_ptr<IHttpRequestRegistry> registry;
                 std::string httpCORS_allow = { "*" };
                 std::string httpDefaultContentType = {"text/json; charset=UTF-8" };
+                NetworkRules whitelist;
+                NetworkRules blacklist;
+                NetworkRules trustedProxies;
         };
     }
     // -------------------------------------------------------------------------

@@ -24,6 +24,7 @@
 // --------------------------------------------------------------------------
 #include <deque>
 #include <memory>
+#include <vector>
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
@@ -46,13 +47,14 @@ namespace uniset
      * /api/VERSION/configure/get?[ID|NAME]&props=testname,name]
      * \endcode
      * Для запуска http-сервера необходимо в аргументах командной строки указать --activator-run-httpserver
-     * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
-     * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *
-     * --activator-httpserver-default-content-type str - Default: "text/json; charset=UTF-8"
-     *
-     * \sa \ref pg_UHttpServer
-     *
-     **/
+         * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
+         * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *
+         * --activator-httpserver-default-content-type str - Default: "text/json; charset=UTF-8"
+         * --activator-httpserver-trusted-proxies list - список доверенных фронтов (через запятую) для разбора X-Forwarded-For/X-Real-IP
+         *
+         * \sa \ref pg_UHttpServer
+         *
+         **/
     //----------------------------------------------------------------------------------------
     class UniSetActivator;
     typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
@@ -133,6 +135,9 @@ namespace uniset
             int httpPort = { 0 };
             std::string httpCORS_allow = { "*" };
             std::string httpDefaultContentType = { "text/json; charset=UTF-8" };
+            std::vector<std::string> httpWhitelist;
+            std::vector<std::string> httpBlacklist;
+            std::vector<std::string> httpTrustedProxies;
 #endif
     };
     // -------------------------------------------------------------------------

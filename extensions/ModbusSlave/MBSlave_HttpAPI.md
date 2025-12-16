@@ -16,7 +16,7 @@
 Возвращает список доступных команд и их краткое описание.
 
 ```
-GET /<object>/help
+GET /api/v2/<object>/help
 ```
 
 ## / {#sec_mbsalve_http_api_root}
@@ -24,8 +24,9 @@ GET /<object>/help
 Возвращает стандартную информацию об объекте.
 
 ```
-GET /<object>/
+GET /api/v2/<object>/
 ```
+Включает `extensionType=ModbusSlave` и секцию `LogServer` (если включён).
 
 ## /registers {#sec_mbsalve_http_api_registers}
 
@@ -35,7 +36,6 @@ GET /<object>/
 GET /api/v2/MBSlave1/registers
 GET /api/v2/MBSlave1/registers?offset=0&limit=50
 GET /api/v2/MBSlave1/registers?search=Sensor&iotype=AI
-GET /api/v2/MBSlave1/registers?addr=1,2&regs=10,20
 GET /api/v2/MBSlave1/registers?filter=1003,Sensor1_AI,1005
 ```
 
@@ -46,14 +46,14 @@ GET /api/v2/MBSlave1/registers?filter=1003,Sensor1_AI,1005
 - `filter` — список ID или имён (смешанный формат, как у IONC `/get`)
 - `iotype` — AI | AO | DI | DO
 - `addr` — Modbus-адреса через запятую
-- `regs` — номера регистров через запятую
+- `regs` — номера регистров (функция учитывается по умолчанию)
 
 Пример ответа:
 
 ```json
 {
   "result": "OK",
-  "devices": { "1": {}, "49": {} },
+  "devices": { "1": {} },
   "registers": [
     {
       "id": 1003,
@@ -92,20 +92,10 @@ GET /api/v2/MBSlave1/get?filter=1003,Sensor1_AI,1005
 
 ```json
 {
-  "result": "OK",
-  "registers": [
-    {
-      "id": 1003,
-      "name": "Sensor1_AI",
-      "iotype": "AI",
-      "value": 42,
-      "vtype": "signed",
-      "device": 1,
-      "mbreg": 10,
-      "amode": "rw"
-    }
-  ],
-  "count": 1
+  "sensors": [
+    { "id": 1003, "name": "Sensor1_AI", "iotype": "AI", "value": 42 },
+    { "name": "BadName", "error": "not found" }
+  ]
 }
 ```
 
@@ -114,7 +104,7 @@ GET /api/v2/MBSlave1/get?filter=1003,Sensor1_AI,1005
 Чтение/изменение runtime‑параметров процесса. Базовый путь: `/api/v2/<object>/...`.
 
 Поддерживаемые параметры:
-- `force` (0|1)
+- `force` (0|1|true)
 - `sockTimeout` (ms)
 - `sessTimeout` (ms)
 - `updateStatTime` (ms)
@@ -162,7 +152,7 @@ GET /api/v2/MBSlave1/setparam?force=1&sockTimeout=45000&sessTimeout=2500&updateS
 ```
 
 Ограничения:
-- `/setparam` может быть заблокирован флагом `httpEnabledSetParams`.
+- `/setparam` может быть заблокирован флагом `httpEnabledSetParams` (CLI/конфиг `--<prefix>-http-enabled-setparams=1`).
 - При блокировке `/setparam` возвращает ошибку.
 
 Коды ошибок:
@@ -178,8 +168,13 @@ GET /api/v2/MBSlave1/status
 ```
 
 Ключевые поля ответа:
-- `name`, `tcp.{ip,port}`, `logserver.{host,port}`
-- `iomap.{size,map[]}`, `myaddr`
+- `name`
+- `tcp.{ip,port}` (если TCP слот)
+- `monitor`
+- `logserver.{host,port}`
+- `iomap.{size,map[{mbaddr,iomap}]}`
+- `myaddr`
 - `stat.{connectionCount,smPingOK,restartTCPServerCount}`
-- `tcp_clients[]`, `tcp_sessions.{count,max_sessions,updateStatTime,items[]}`
-- `sockTimeout`, `sessTimeout`, `updateStatTime`, `force`
+- `tcp_clients[]`
+- `tcp_sessions.{count,max_sessions,updateStatTime,items[]}`
+- плоские поля: `sockTimeout`, `sessTimeout`, `updateStatTime`, `force`

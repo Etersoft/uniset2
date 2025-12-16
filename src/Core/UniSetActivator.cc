@@ -26,6 +26,7 @@
 #include <mutex>
 #include <atomic>
 #include <chrono>
+#include <cctype>
 
 // for stack trace
 // --------------------
@@ -53,6 +54,32 @@ static std::shared_ptr<std::thread> g_finish_guard_thread;
 static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
 
 static const int TERMINATE_TIMEOUT_SEC = 15; //  время, отведённое на завершение процесса [сек]
+// ------------------------------------------------------------------------------------------
+namespace
+{
+    std::vector<std::string> splitList(const std::string& src)
+    {
+        std::vector<std::string> res;
+        std::stringstream ss(src);
+        std::string item;
+
+        while( std::getline(ss, item, ',') )
+        {
+            auto b = item.begin();
+            while( b != item.end() && std::isspace(static_cast<unsigned char>(*b)) )
+                ++b;
+
+            auto e = item.end();
+            while( e != b && std::isspace(static_cast<unsigned char>(*(e - 1))) )
+                --e;
+
+            if( b != e )
+                res.emplace_back(b, e);
+        }
+
+        return res;
+    }
+}
 // ------------------------------------------------------------------------------------------
 struct ORBThreadDeleter
 {
@@ -99,6 +126,9 @@ namespace uniset
             ulog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
             httpCORS_allow = conf->getArgParam("--activator-httpserver-cors-allow", "*");
             httpDefaultContentType = conf->getArgParam("--activator-httpserver-default-content-type", "text/json; charset=UTF-8");
+            httpWhitelist = splitList(conf->getArgParam("--activator-httpserver-whitelist", ""));
+            httpBlacklist = splitList(conf->getArgParam("--activator-httpserver-blacklist", ""));
+            httpTrustedProxies = splitList(conf->getArgParam("--activator-httpserver-trusted-proxies", ""));
         }
 
 #endif
@@ -167,6 +197,9 @@ namespace uniset
                 httpserv = make_shared<UHttp::UHttpServer>(reg, httpHost, httpPort);
                 httpserv->setCORS_allow(httpCORS_allow);
                 httpserv->setDefaultContentType(httpDefaultContentType);
+                httpserv->setWhitelist(httpWhitelist);
+                httpserv->setBlacklist(httpBlacklist);
+                httpserv->setTrustedProxies(httpTrustedProxies);
                 httpserv->start();
             }
             catch( std::exception& ex )
