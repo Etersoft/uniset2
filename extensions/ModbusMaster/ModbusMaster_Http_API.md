@@ -11,7 +11,7 @@
 - [registers](#sec_mbttp_http_api_registers)
 - [devices](#sec_mbttp_http_api_devices)
 - [get](#sec_mbttp_http_api_get)
-- [control](#sec_mbttp_http_api_control)
+- [takeControl / releaseControl](#sec_mbttp_http_api_control)
 
 Базовый URL: `/api/v2/<object>/`
 
@@ -20,35 +20,29 @@
 Возвращает список доступных команд и параметров.
 
 ```
-GET /<object>/help
+GET /api/v2/<object>/help
 ```
 
 ## / {#sec_mbttp_http_api_root}
 
-Стандартная информация об объекте (включая `extensionType`, `transportType`).
+Стандартная информация об объекте (включая `extensionType`), плюс секция `LogServer` (если сервер включён).
 
 ```json
 {
   "object": {
     "id": 1001,
     "name": "MBTCPMaster1",
-    "extensionType": "ModbusMaster",
-    "transportType": "tcp"
+    "extensionType": "ModbusMaster"
   }
 }
 ```
-
-`transportType`:
-- `tcp` — MBTCPMaster (TCP)
-- `multi` — MBTCPMultiMaster (несколько TCP соединений)
-- `rtu` — RTUExchange (serial)
 
 ## /reload {#sec_mbttp_http_api_reload}
 
 Перезагрузка конфигурации. Параметр `confile` — абсолютный путь к альтернативному конфигу (необязателен).
 
 ```
-GET /<object>/reload?confile=/path/to/confile
+GET /api/v2/<object>/reload?confile=/path/to/confile
 ```
 
 Ответ:
@@ -121,9 +115,10 @@ GET /api/v2/MBTCPMaster1/setparam?recv_timeout=3000&polltime=2000
 
 Правила и ошибки:
 - Ключи передаются как `name=value`; пустые запросы дают 400.
-- Для bool параметров допустимы строки `0|1`.
+- Для bool параметров допустимы строки `0|1|true`.
 - Неизвестные имена попадают в `unknown`.
 - Некорректные значения → 400/5xx.
+- Изменение доступно только если в конфиге/CLI указано `--<prefix>-http-enabled-setparams=1`, иначе вернётся ошибка.
 
 ## /status {#sec_mbttp_http_api_status}
 
@@ -133,7 +128,7 @@ GET /api/v2/MBTCPMaster1/setparam?recv_timeout=3000&polltime=2000
 GET /api/v2/MBTCPMaster1/status
 ```
 
-Ключевые поля: `result`, `status.name`, `transport`, `tcp_sessions`, `polltime`, `recv_timeout`, `force`, `force_out`, `maxHeartBeat`, статистика обмена и т.п.
+Ключевые поля: `result`, `status.name`, `monitor`, `activated`, `logserver`, `parameters.config`, статистика (если включена), список устройств, режим (`mode.name/id/control`), `force`, `force_out`, `maxHeartBeat`, `httpControlAllow`, `httpControlActive`, `httpEnabledSetParams`, `config_params` (`recv_timeout`, `sleepPause_msec`, `polltime`, `default_timeout`).
 
 ## /registers {#sec_mbttp_http_api_registers}
 
@@ -143,18 +138,19 @@ GET /api/v2/MBTCPMaster1/status
 GET /api/v2/MBTCPMaster1/registers
 GET /api/v2/MBTCPMaster1/registers?offset=0&limit=50
 GET /api/v2/MBTCPMaster1/registers?search=Sensor&iotype=AI
-GET /api/v2/MBTCPMaster1/registers?addr=1,2&regs=10,20
 GET /api/v2/MBTCPMaster1/registers?filter=1003,Sensor1_AI,1005
 ```
 
-Параметры: `offset`, `limit`, `search`, `filter`, `iotype` (AI/AO/DI/DO), `addr`, `regs`.
+Параметры: `offset`, `limit`, `search`, `filter`, `iotype` (AI/AO/DI/DO). Фильтры по `addr/regs` не поддерживаются.
 
 Пример ответа:
 
 ```json
 {
   "result": "OK",
-  "devices": { "1": {}, "49": {} },
+  "devices": {
+    "1": { "respond": 1, "dtype": "rtu", "mode": 0, "safeMode": 0 }
+  },
   "registers": [
     {
       "id": 1003,
@@ -163,8 +159,10 @@ GET /api/v2/MBTCPMaster1/registers?filter=1003,Sensor1_AI,1005
       "value": 42,
       "vtype": "signed",
       "device": 1,
-      "mbreg": 10,
-      "amode": "rw"
+      "register": { "mbreg": 10, "mbfunc": 3, "mbval": 1 },
+      "nbit": 0,
+      "mask": 0,
+      "precision": 0
     }
   ],
   "total": 150,
@@ -178,6 +176,16 @@ GET /api/v2/MBTCPMaster1/registers?filter=1003,Sensor1_AI,1005
 
 Список устройств (по Modbus-адресам) с их состоянием. Реализация повторяет ModbusMaster API.
 
+```json
+{
+  "result": "OK",
+  "devices": [
+    { "addr": 1, "respond": 1, "dtype": "rtu", "regCount": 10, "mode": 0, "safeMode": 0 }
+  ],
+  "count": 1
+}
+```
+
 ## /get {#sec_mbttp_http_api_get}
 
 Возвращает указанные датчики по ID/имени, совместимо с IONC `/get`.
@@ -186,8 +194,15 @@ GET /api/v2/MBTCPMaster1/registers?filter=1003,Sensor1_AI,1005
 GET /api/v2/MBTCPMaster1/get?filter=1003,Sensor1_AI,1005
 ```
 
-Ответ: массив `registers[]` с полями `id`, `name`, `iotype`, `value`, `vtype`, `device`, `mbreg`, `amode`, `count`.
+Ответ: массив `sensors[]` с полями `id`, `name`, `iotype`, `value`; для несуществующих — `{ "name": "<requested>", "error": "not found" }`.
 
-## /control {#sec_mbttp_http_api_control}
+## /takeControl и /releaseControl {#sec_mbttp_http_api_control}
 
-Управление и отладочные команды, список зависит от реализации контроллера.
+Переключение в режим управления через HTTP (если в конфиге включён `httpControlAllow=1`):
+
+```
+GET /api/v2/MBTCPMaster1/takeControl
+GET /api/v2/MBTCPMaster1/releaseControl
+```
+
+При запрете в конфиге возвращает `"result": "ERROR"`.

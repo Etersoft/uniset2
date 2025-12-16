@@ -20,6 +20,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <memory>
+#include <vector>
 #include <Poco/Net/HTTPServer.h>
 #include "DebugStream.h"
 #include "ThreadCreator.h"
@@ -27,6 +28,23 @@
 // -------------------------------------------------------------------------
 /*! \page pgUHttpServer Http сервер
     Http сервер предназначен для получения информации о UniSetObject-ах через http (json).
+    \n\n
+    Примеры задания разрешений/запретов по IP для CORS/ACL:
+    \code
+    auto srv = std::make_shared<uniset::UHttp::UHttpServer>(registry, "0.0.0.0", 8080);
+
+    // CIDR-подсети
+    srv->setWhitelist({"192.168.1.0/24", "10.0.0.0/8"});
+
+    // Конкретный адрес (префикс = длина адреса)
+    srv->setBlacklist({"192.168.1.100"});
+
+    // Диапазон адресов, начало и конец через '-'
+    srv->setBlacklist({"172.16.0.10-172.16.0.20"});
+
+    // Доверенные фронты, от которых читаем X-Forwarded-For/X-Real-IP
+    srv->setTrustedProxies({"127.0.0.1", "10.0.0.0/24"});
+    \endcode
 */
 // -------------------------------------------------------------------------
 namespace uniset
@@ -48,6 +66,10 @@ namespace uniset
                 // (CORS): Access-Control-Allow-Origin. Default: *
                 void setCORS_allow( const std::string& CORS_allow );
                 void setDefaultContentType( const std::string& ct);
+                void setWhitelist( const std::vector<std::string>& wl );
+                void setBlacklist( const std::vector<std::string>& bl );
+                // Доверенные прокси, от которых принимаем X-Forwarded-For/X-Real-IP
+                void setTrustedProxies( const std::vector<std::string>& proxies );
             protected:
                 UHttpServer();
 
@@ -58,6 +80,9 @@ namespace uniset
 
                 std::shared_ptr<Poco::Net::HTTPServer> http;
                 std::shared_ptr<UHttpRequestHandlerFactory> reqFactory;
+                UHttp::NetworkRules whitelist;
+                UHttp::NetworkRules blacklist;
+                UHttp::NetworkRules trustedProxies;
 
         };
     }

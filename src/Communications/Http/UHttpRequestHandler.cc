@@ -17,6 +17,7 @@
 // -------------------------------------------------------------------------
 #include <ostream>
 #include <sstream>
+#include <cstring>
 #include <Poco/JSON/Parser.h>
 #include "Exceptions.h"
 #include "UHttpRequestHandler.h"
@@ -66,10 +67,16 @@ namespace uniset
     // -------------------------------------------------------------------------
     UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry
             , const std::string& allow
-            , const std::string& contentType)
+            , const std::string& contentType
+            , const NetworkRules& wl
+            , const NetworkRules& bl
+            , const NetworkRules& trusted)
         : registry(_registry)
         , httpCORS_allow(allow)
         , httpDefaultContentType(contentType)
+        , whitelist(wl)
+        , blacklist(bl)
+        , trustedProxies(trusted)
     {
         log = make_shared<DebugStream>();
     }
@@ -83,6 +90,71 @@ namespace uniset
         resp.set("Access-Control-Allow-Request-Method", "*");
         resp.set("Access-Control-Allow-Origin", httpCORS_allow);
         resp.setContentType(httpDefaultContentType);
+
+        Poco::Net::IPAddress clientIP = req.clientAddress().host();
+
+        if( inRules(clientIP, trustedProxies) )
+        {
+            const std::string xff = req.get("X-Forwarded-For", "");
+            const std::string xri = xff.empty() ? req.get("X-Real-IP", "") : "";
+            Poco::Net::IPAddress forwardedIP;
+            bool gotForwarded = false;
+
+            auto tryParse = [&](const std::string& value) -> bool
+            {
+                if( value.empty() )
+                    return false;
+
+                auto first = value.find_first_not_of(" \t");
+                if( first == std::string::npos )
+                    return false;
+
+                auto last = value.find_first_of(',');
+                const std::string raw = value.substr(first, (last == std::string::npos ? value.size() : last) - first);
+                const auto trimmedLast = raw.find_last_not_of(" \t");
+                const std::string candidate = (trimmedLast == std::string::npos) ? "" : raw.substr(0, trimmedLast + 1);
+
+                if( candidate.empty() )
+                    return false;
+
+                try
+                {
+                    forwardedIP = Poco::Net::IPAddress(candidate);
+                    return true;
+                }
+                catch( std::exception& ex )
+                {
+                    if( log && log->is_warn() )
+                        log->warn() << req.getHost() << ": ignore forwarded ip '" << candidate << "': " << ex.what() << std::endl;
+                    return false;
+                }
+            };
+
+            gotForwarded = tryParse(xff);
+
+            if( !gotForwarded )
+                gotForwarded = tryParse(xri);
+
+            if( gotForwarded )
+                clientIP = forwardedIP;
+        }
+
+        if( isDenied(clientIP, whitelist, blacklist) )
+        {
+            resp.setStatus(HTTPResponse::HTTP_FORBIDDEN);
+            std::ostream& out = resp.send();
+            Poco::JSON::Object jdata;
+            jdata.set("error", "forbidden");
+            jdata.set("ecode", (int)resp.getStatus());
+            jdata.set("message", "access denied from " + clientIP.toString());
+            jdata.stringify(out);
+            out.flush();
+
+            if( log->is_warn() )
+                log->warn() << req.getHost() << ": deny request from " << clientIP.toString() << endl;
+
+            return;
+        }
 
         if( !registry )
         {
@@ -214,6 +286,71 @@ namespace uniset
     }
 
     // -------------------------------------------------------------------------
+    bool UHttpRequestHandler::match(const Poco::Net::IPAddress& ip, const NetworkRule& rule)
+    {
+        if( rule.isRange )
+        {
+            if( ip.family() != rule.address.family() )
+                return false;
+
+            const int len = ip.length();
+            const int cmpStart = std::memcmp(rule.address.addr(), ip.addr(), len);
+            const int cmpEnd = std::memcmp(ip.addr(), rule.rangeEnd.addr(), len);
+            return cmpStart <= 0 && cmpEnd <= 0;
+        }
+
+        if( ip.family() != rule.address.family() )
+            return false;
+
+        const unsigned char* addr = static_cast<const unsigned char*>(ip.addr());
+        const unsigned char* netaddr = static_cast<const unsigned char*>(rule.address.addr());
+
+        unsigned int bitsLeft = rule.prefixLength;
+        const int addrLen = ip.length();
+
+        for( int i = 0; i < addrLen && bitsLeft > 0; ++i )
+        {
+            unsigned char mask = 0;
+
+            if( bitsLeft >= 8 )
+                mask = 0xFF;
+            else
+                mask = static_cast<unsigned char>(0xFF << (8 - bitsLeft));
+
+            if( (addr[i] & mask) != (netaddr[i] & mask) )
+                return false;
+
+            bitsLeft = (bitsLeft >= 8) ? (bitsLeft - 8) : 0;
+        }
+
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    bool UHttpRequestHandler::inRules(const Poco::Net::IPAddress& ip, const NetworkRules& rules)
+    {
+        for( const auto& r: rules )
+        {
+            if( match(ip, r) )
+                return true;
+        }
+
+        return false;
+    }
+    // -------------------------------------------------------------------------
+    bool UHttpRequestHandler::isDenied(const Poco::Net::IPAddress& ip,
+                                       const NetworkRules& whitelistRules,
+                                       const NetworkRules& blacklistRules)
+    {
+        if( inRules(ip, blacklistRules) )
+            return true;
+
+        if( !whitelistRules.empty() && !inRules(ip, whitelistRules) )
+            return true;
+
+        return false;
+    }
+
+    // -------------------------------------------------------------------------
     // UHttpRequestHandlerFactory implementation
     // -------------------------------------------------------------------------
     UHttpRequestHandlerFactory::UHttpRequestHandlerFactory(std::shared_ptr<IHttpRequestRegistry>& _registry ):
@@ -223,7 +360,7 @@ namespace uniset
     // -------------------------------------------------------------------------
     HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTPServerRequest& req )
     {
-        return new UHttpRequestHandler(registry, httpCORS_allow, httpDefaultContentType);
+        return new UHttpRequestHandler(registry, httpCORS_allow, httpDefaultContentType, whitelist, blacklist, trustedProxies);
     }
     // -------------------------------------------------------------------------
     void UHttpRequestHandlerFactory::setCORS_allow( const std::string& allow )
@@ -234,6 +371,21 @@ namespace uniset
     void UHttpRequestHandlerFactory::setDefaultContentType( const std::string& ct )
     {
         httpDefaultContentType = ct;
+    }
+    // -------------------------------------------------------------------------
+    void UHttpRequestHandlerFactory::setWhitelist( const NetworkRules& rules )
+    {
+        whitelist = rules;
+    }
+    // -------------------------------------------------------------------------
+    void UHttpRequestHandlerFactory::setBlacklist( const NetworkRules& rules )
+    {
+        blacklist = rules;
+    }
+    // -------------------------------------------------------------------------
+    void UHttpRequestHandlerFactory::setTrustedProxies( const NetworkRules& rules )
+    {
+        trustedProxies = rules;
     }
     // -------------------------------------------------------------------------
 } // end of namespace uniset

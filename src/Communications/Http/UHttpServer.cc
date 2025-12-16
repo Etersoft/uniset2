@@ -16,6 +16,8 @@
  */
 // -------------------------------------------------------------------------
 #include <sstream>
+#include <cstring>
+#include <stdexcept>
 #include <Poco/URI.h>
 #include "UHttpServer.h"
 #include "Exceptions.h"
@@ -24,14 +26,92 @@ using namespace Poco::Net;
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	using namespace UHttp;
-	// -------------------------------------------------------------------------
+    using namespace UHttp;
+    // -------------------------------------------------------------------------
+    namespace
+    {
+        NetworkRule makeRule(const std::string& cidr)
+        {
+            NetworkRule rule;
 
-	UHttpServer::UHttpServer(std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string& _host, int _port ):
-		sa(_host, _port)
-	{
-		try
-		{
+            auto rangePos = cidr.find('-');
+            if( rangePos != std::string::npos )
+            {
+                const std::string startStr = cidr.substr(0, rangePos);
+                const std::string endStr = cidr.substr(rangePos + 1);
+
+                rule.address = Poco::Net::IPAddress(startStr);
+                rule.rangeEnd = Poco::Net::IPAddress(endStr);
+                rule.isRange = true;
+
+                if( rule.address.family() != rule.rangeEnd.family() )
+                    throw std::invalid_argument("range family mismatch");
+
+                const int len = rule.address.length();
+                if( std::memcmp(rule.address.addr(), rule.rangeEnd.addr(), len) > 0 )
+                    throw std::invalid_argument("range start greater than end");
+
+                rule.prefixLength = 0;
+                return rule;
+            }
+
+            auto pos = cidr.find('/');
+            if( pos == std::string::npos )
+            {
+                rule.address = Poco::Net::IPAddress(cidr);
+                rule.prefixLength = rule.address.length() * 8;
+                return rule;
+            }
+
+            rule.address = Poco::Net::IPAddress(cidr.substr(0, pos));
+            rule.prefixLength = static_cast<unsigned int>(std::stoul(cidr.substr(pos + 1)));
+
+            const unsigned int maxPrefix = rule.address.length() * 8;
+            if( rule.prefixLength > maxPrefix )
+                throw std::invalid_argument("prefix is greater than address length");
+
+            rule.isRange = false;
+            return rule;
+        }
+
+        NetworkRules buildRules(const std::vector<std::string>& values, std::shared_ptr<DebugStream> log)
+        {
+            NetworkRules res;
+
+            for( const auto& v: values )
+            {
+                if( v.empty() )
+                    continue;
+
+                auto first = v.find_first_not_of(" \t");
+                auto last = v.find_last_not_of(" \t");
+
+                if( first == std::string::npos )
+                    continue;
+
+                const std::string trimmed = v.substr(first, last - first + 1);
+
+                try
+                {
+                    res.push_back(makeRule(trimmed));
+                }
+                catch( std::exception& ex )
+                {
+                    if( log && log->is_warn() )
+                        log->warn() << "(UHttpServer::buildRules): skip '" << v << "': " << ex.what() << std::endl;
+                }
+            }
+
+            return res;
+        }
+    }
+    // -------------------------------------------------------------------------
+
+    UHttpServer::UHttpServer(std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string& _host, int _port ):
+        sa(_host, _port)
+    {
+        try
+        {
 			mylog = std::make_shared<DebugStream>();
 
 			/*! \FIXME: доделать конфигурирование параметров */
@@ -86,6 +166,24 @@ namespace uniset
 	void UHttpServer::setDefaultContentType( const std::string& ct)
 	{
 		reqFactory->setDefaultContentType(ct);
+	}
+	// -------------------------------------------------------------------------
+	void UHttpServer::setWhitelist( const std::vector<std::string>& wl )
+	{
+		whitelist = buildRules(wl, mylog);
+		reqFactory->setWhitelist(whitelist);
+	}
+	// -------------------------------------------------------------------------
+	void UHttpServer::setBlacklist( const std::vector<std::string>& bl )
+	{
+		blacklist = buildRules(bl, mylog);
+		reqFactory->setBlacklist(blacklist);
+	}
+	// -------------------------------------------------------------------------
+	void UHttpServer::setTrustedProxies( const std::vector<std::string>& proxies )
+	{
+		trustedProxies = buildRules(proxies, mylog);
+		reqFactory->setTrustedProxies(trustedProxies);
 	}
 	// -------------------------------------------------------------------------
 } // end of namespace uniset
