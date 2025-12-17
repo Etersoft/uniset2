@@ -21,6 +21,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <unordered_set>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
 #include <Poco/Net/HTTPServerRequest.h>
@@ -120,6 +121,7 @@ namespace uniset
         };
 
         using NetworkRules = std::vector<NetworkRule>;
+        using BearerTokens = std::unordered_set<std::string>;
 
         // -------------------------------------------------------------------------
         /*! Интерфейс для объекта, обрабатывающего HTTP запросы */
@@ -168,7 +170,9 @@ namespace uniset
                                     const std::string& contentType="text/json; charset=UTF-8",
                                     const NetworkRules& whitelist = NetworkRules(),
                                     const NetworkRules& blacklist = NetworkRules(),
-                                    const NetworkRules& trustedProxies = NetworkRules());
+                                    const NetworkRules& trustedProxies = NetworkRules(),
+                                    bool bearerRequired = false,
+                                    const BearerTokens& bearerTokens = BearerTokens());
 
                 virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
 
@@ -177,6 +181,7 @@ namespace uniset
                 static bool isDenied(const Poco::Net::IPAddress& ip,
                                      const NetworkRules& whitelist,
                                      const NetworkRules& blacklist);
+                static bool validateBearer(const std::string& header, const BearerTokens& tokens);
 
             private:
 
@@ -187,6 +192,8 @@ namespace uniset
                 NetworkRules whitelist;
                 NetworkRules blacklist;
                 NetworkRules trustedProxies;
+                bool bearerRequired = { false };
+                BearerTokens bearerTokens;
         };
         // -------------------------------------------------------------------------
         class UHttpRequestHandlerFactory:
@@ -204,6 +211,8 @@ namespace uniset
                 void setWhitelist( const NetworkRules& rules );
                 void setBlacklist( const NetworkRules& rules );
                 void setTrustedProxies( const NetworkRules& rules );
+                void setBearerRequired( bool required );
+                void setBearerTokens( const BearerTokens& tokens );
             private:
                 std::shared_ptr<IHttpRequestRegistry> registry;
                 std::string httpCORS_allow = { "*" };
@@ -211,6 +220,8 @@ namespace uniset
                 NetworkRules whitelist;
                 NetworkRules blacklist;
                 NetworkRules trustedProxies;
+                bool bearerRequired = { false };
+                BearerTokens bearerTokens;
         };
     }
     // -------------------------------------------------------------------------

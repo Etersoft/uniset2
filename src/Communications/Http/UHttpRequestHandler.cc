@@ -70,13 +70,17 @@ namespace uniset
             , const std::string& contentType
             , const NetworkRules& wl
             , const NetworkRules& bl
-            , const NetworkRules& trusted)
+            , const NetworkRules& trusted
+            , bool bearerReq
+            , const BearerTokens& tokens)
         : registry(_registry)
         , httpCORS_allow(allow)
         , httpDefaultContentType(contentType)
         , whitelist(wl)
         , blacklist(bl)
         , trustedProxies(trusted)
+        , bearerRequired(bearerReq)
+        , bearerTokens(tokens)
     {
         log = make_shared<DebugStream>();
     }
@@ -137,6 +141,29 @@ namespace uniset
 
             if( gotForwarded )
                 clientIP = forwardedIP;
+        }
+
+        if( bearerRequired )
+        {
+            const std::string auth = req.get("Authorization", "");
+            const bool ok = validateBearer(auth, bearerTokens);
+
+            if( !ok )
+            {
+                resp.setStatus(HTTPResponse::HTTP_UNAUTHORIZED);
+                std::ostream& out = resp.send();
+                Poco::JSON::Object jdata;
+                jdata.set("error", "unauthorized");
+                jdata.set("ecode", (int)resp.getStatus());
+                jdata.set("message", "missing or invalid bearer token");
+                jdata.stringify(out);
+                out.flush();
+
+                if( log && log->is_warn() )
+                    log->warn() << req.getHost() << ": unauthorized request from " << clientIP.toString() << std::endl;
+
+                return;
+            }
         }
 
         if( isDenied(clientIP, whitelist, blacklist) )
@@ -349,6 +376,24 @@ namespace uniset
 
         return false;
     }
+    // -------------------------------------------------------------------------
+    bool UHttpRequestHandler::validateBearer(const std::string& header, const BearerTokens& tokens)
+    {
+        if( header.empty() || tokens.empty() )
+            return false;
+
+        // Header format: "Bearer <token>" (case-sensitive scheme per RFC6750)
+        static const std::string prefix = "Bearer ";
+
+        if( header.size() <= prefix.size() )
+            return false;
+
+        if( header.compare(0, prefix.size(), prefix) != 0 )
+            return false;
+
+        const std::string token = header.substr(prefix.size());
+        return tokens.find(token) != tokens.end();
+    }
 
     // -------------------------------------------------------------------------
     // UHttpRequestHandlerFactory implementation
@@ -360,7 +405,7 @@ namespace uniset
     // -------------------------------------------------------------------------
     HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTPServerRequest& req )
     {
-        return new UHttpRequestHandler(registry, httpCORS_allow, httpDefaultContentType, whitelist, blacklist, trustedProxies);
+        return new UHttpRequestHandler(registry, httpCORS_allow, httpDefaultContentType, whitelist, blacklist, trustedProxies, bearerRequired, bearerTokens);
     }
     // -------------------------------------------------------------------------
     void UHttpRequestHandlerFactory::setCORS_allow( const std::string& allow )
@@ -386,6 +431,16 @@ namespace uniset
     void UHttpRequestHandlerFactory::setTrustedProxies( const NetworkRules& rules )
     {
         trustedProxies = rules;
+    }
+    // -------------------------------------------------------------------------
+    void UHttpRequestHandlerFactory::setBearerRequired( bool required )
+    {
+        bearerRequired = required;
+    }
+    // -------------------------------------------------------------------------
+    void UHttpRequestHandlerFactory::setBearerTokens( const BearerTokens& tokens )
+    {
+        bearerTokens = tokens;
     }
     // -------------------------------------------------------------------------
 } // end of namespace uniset

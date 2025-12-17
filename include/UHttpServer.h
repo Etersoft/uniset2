@@ -44,6 +44,10 @@
 
     // Доверенные фронты, от которых читаем X-Forwarded-For/X-Real-IP
     srv->setTrustedProxies({"127.0.0.1", "10.0.0.0/24"});
+
+    // Bearer-аутентификация: включить и задать список токенов
+    srv->setBearerRequired(true);
+    srv->setBearerTokens({"token123", "another-token"});
     \endcode
 */
 // -------------------------------------------------------------------------
@@ -70,6 +74,9 @@ namespace uniset
                 void setBlacklist( const std::vector<std::string>& bl );
                 // Доверенные прокси, от которых принимаем X-Forwarded-For/X-Real-IP
                 void setTrustedProxies( const std::vector<std::string>& proxies );
+                // Bearer auth: включение и список допустимых токенов
+                void setBearerRequired( bool required );
+                void setBearerTokens( const std::vector<std::string>& tokens );
             protected:
                 UHttpServer();
 
@@ -83,6 +90,8 @@ namespace uniset
                 UHttp::NetworkRules whitelist;
                 UHttp::NetworkRules blacklist;
                 UHttp::NetworkRules trustedProxies;
+                UHttp::BearerTokens bearerTokens;
+                bool bearerRequired = { false };
 
         };
     }

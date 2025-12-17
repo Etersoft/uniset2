@@ -79,5 +79,15 @@ TEST_CASE("UHttp", "[uhttp]" )
         REQUIRE(UHttpRequestHandler::isDenied(Poco::Net::IPAddress("172.16.0.20"), wl, bl));
         REQUIRE_FALSE(UHttpRequestHandler::isDenied(Poco::Net::IPAddress("172.16.0.9"), wl, bl));
     }
+
+    SECTION("validate bearer token")
+    {
+        BearerTokens tokens = { "token1", "token-two" };
+        REQUIRE(UHttpRequestHandler::validateBearer("Bearer token1", tokens));
+        REQUIRE(UHttpRequestHandler::validateBearer("Bearer token-two", tokens));
+        REQUIRE_FALSE(UHttpRequestHandler::validateBearer("Bearer wrong", tokens));
+        REQUIRE_FALSE(UHttpRequestHandler::validateBearer("Token token1", tokens));
+        REQUIRE_FALSE(UHttpRequestHandler::validateBearer("", tokens));
+    }
 }
 // -----------------------------------------------------------------------------
