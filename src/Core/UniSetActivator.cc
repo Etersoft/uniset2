@@ -129,6 +129,8 @@ namespace uniset
             httpWhitelist = splitList(conf->getArgParam("--activator-httpserver-whitelist", ""));
             httpBlacklist = splitList(conf->getArgParam("--activator-httpserver-blacklist", ""));
             httpTrustedProxies = splitList(conf->getArgParam("--activator-httpserver-trusted-proxies", ""));
+            httpBearerRequired = conf->getArgPInt("--activator-httpserver-bearer-required", 0) ? true : false;
+            httpBearerTokens = splitList(conf->getArgParam("--activator-httpserver-bearer-tokens", ""));
         }
 
 #endif
@@ -200,6 +202,8 @@ namespace uniset
                 httpserv->setWhitelist(httpWhitelist);
                 httpserv->setBlacklist(httpBlacklist);
                 httpserv->setTrustedProxies(httpTrustedProxies);
+                httpserv->setBearerRequired(httpBearerRequired);
+                httpserv->setBearerTokens(httpBearerTokens);
                 httpserv->start();
             }
             catch( std::exception& ex )

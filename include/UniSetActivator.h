@@ -51,6 +51,8 @@ namespace uniset
          * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *
          * --activator-httpserver-default-content-type str - Default: "text/json; charset=UTF-8"
          * --activator-httpserver-trusted-proxies list - список доверенных фронтов (через запятую) для разбора X-Forwarded-For/X-Real-IP
+         * --activator-httpserver-bearer-required 0|1 - требовать Bearer токен
+         * --activator-httpserver-bearer-tokens list - список допустимых Bearer токенов (через запятую)
          *
          * \sa \ref pg_UHttpServer
          *
@@ -138,6 +140,8 @@ namespace uniset
             std::vector<std::string> httpWhitelist;
             std::vector<std::string> httpBlacklist;
             std::vector<std::string> httpTrustedProxies;
+            bool httpBearerRequired = { false };
+            std::vector<std::string> httpBearerTokens;
 #endif
     };
     // -------------------------------------------------------------------------

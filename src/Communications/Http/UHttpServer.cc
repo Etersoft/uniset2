@@ -104,6 +104,29 @@ namespace uniset
 
             return res;
         }
+
+        BearerTokens buildTokens(const std::vector<std::string>& values)
+        {
+            BearerTokens res;
+
+            for( const auto& v : values )
+            {
+                if( v.empty() )
+                    continue;
+
+                auto first = v.find_first_not_of(" \t");
+                auto last = v.find_last_not_of(" \t");
+
+                if( first == std::string::npos )
+                    continue;
+
+                const std::string trimmed = v.substr(first, last - first + 1);
+                if( !trimmed.empty() )
+                    res.insert(trimmed);
+            }
+
+            return res;
+        }
     }
     // -------------------------------------------------------------------------
 
@@ -184,6 +207,18 @@ namespace uniset
 	{
 		trustedProxies = buildRules(proxies, mylog);
 		reqFactory->setTrustedProxies(trustedProxies);
+	}
+	// -------------------------------------------------------------------------
+	void UHttpServer::setBearerRequired( bool required )
+	{
+		bearerRequired = required;
+		reqFactory->setBearerRequired(required);
+	}
+	// -------------------------------------------------------------------------
+	void UHttpServer::setBearerTokens( const std::vector<std::string>& tokens )
+	{
+		bearerTokens = buildTokens(tokens);
+		reqFactory->setBearerTokens(bearerTokens);
 	}
 	// -------------------------------------------------------------------------
 } // end of namespace uniset
