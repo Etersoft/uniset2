@@ -390,9 +390,20 @@ bool uniset::is_digit( const std::string& s ) noexcept
     if( s.empty() )
         return false;
 
-    for( const auto& c : s )
+    size_t pos = 0;
+
+    // допускаем ведущий минус для отрицательных ID
+    if( s[0] == '-' )
     {
-        if( !isdigit(c) )
+        if( s.size() == 1 )
+            return false;
+
+        pos = 1;
+    }
+
+    for( ; pos < s.size(); ++pos )
+    {
+        if( !isdigit(static_cast<unsigned char>(s[pos])) )
             return false;
     }
 
@@ -406,9 +417,19 @@ bool uniset::is_digit_sv( std::string_view s ) noexcept
     if( s.empty() )
         return false;
 
-    for( const auto& c : s )
+    size_t pos = 0;
+
+    if( s[0] == '-' )
     {
-        if( !isdigit(c) )
+        if( s.size() == 1 )
+            return false;
+
+        pos = 1;
+    }
+
+    for( ; pos < s.size(); ++pos )
+    {
+        if( !isdigit(static_cast<unsigned char>(s[pos])) )
             return false;
     }
 
