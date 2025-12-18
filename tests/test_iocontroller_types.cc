@@ -35,4 +35,12 @@ TEST_CASE("IOController: USensorInfo", "[ioc][usi]" )
 
     WARN("Tests for 'UniSetTypes' incomplete...");
 }
+
+TEST_CASE("UniSetTypes: parse negative sensor id", "[types][getSInfoList]")
+{
+    auto lst = getSInfoList("-100", nullptr);
+    REQUIRE(lst.size() == 1);
+    REQUIRE(lst.front().si.id == -100);
+    REQUIRE(lst.front().si.node == DefaultObjectId);
+}
 // -----------------------------------------------------------------------------
