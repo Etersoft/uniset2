@@ -1293,6 +1293,28 @@ namespace uniset
         return oind->getNodeId( name );
     }
     // -------------------------------------------------------------------------
+    ObjectId Configuration::getAnyObjectID( const string& name ) const noexcept
+    {
+        ObjectId id = DefaultObjectId;
+
+        if( uniset::is_digit(name) )
+            return uni_atoi(name);
+
+        // ищем в <objects>
+        if( id == DefaultObjectId )
+            id = getObjectID(name);
+
+        // ищем в <controllers>
+        if( id == DefaultObjectId )
+            id = getObjectID(name);
+
+        // ищем в <services>
+        if( id == DefaultObjectId )
+            id = getServiceID(name);
+
+        return id;
+    }
+    // -------------------------------------------------------------------------
     ObjectId Configuration::getAnyID( const string& name ) const noexcept
     {
         ObjectId id = DefaultObjectId;

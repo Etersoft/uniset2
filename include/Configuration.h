@@ -120,7 +120,7 @@ namespace uniset
 
             // поиск в sensors,objects,controlles,services,nodes
             uniset::ObjectId getAnyID( const std::string& name ) const noexcept;
-
+            uniset::ObjectId getAnyObjectID( const std::string& name ) const noexcept;
 
             const std::string getConfFileName() const noexcept;
             std::string getImagesDir() const noexcept;

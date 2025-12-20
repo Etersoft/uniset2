@@ -1224,7 +1224,7 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
     {
         if( param.first == "supplier" )
         {
-            sup_id = conf->getObjectID(param.second);
+            sup_id = conf->getAnyObjectID(param.second);
             continue;
         }
 
@@ -1364,7 +1364,7 @@ Poco::JSON::Object::Ptr IOController::request_set( const string& req, const Poco
 
     if( p[0].first == "supplier" )
     {
-        sup_id = conf->getObjectID(p[0].second);
+        sup_id = conf->getAnyObjectID(p[0].second);
         skipFirst = true;
     }
 
@@ -1466,7 +1466,7 @@ Poco::JSON::Object::Ptr IOController::request_freeze( const string& req, const P
 
     if( p[0].first == "supplier" )
     {
-        sup_id = conf->getObjectID(p[0].second);
+        sup_id = conf->getAnyObjectID(p[0].second);
         skipFirst = true;
     }
 
@@ -1546,11 +1546,13 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 
     long value = 0;
     long real_value = 0;
+    uniset::ObjectId writer = DefaultObjectId;
 
     {
         uniset_rwmutex_rlock lock(s->val_lock);
         value = s->value;
         real_value = s->real_value;
+        writer = s->supplier;
     }
 
     jsens->set("value", value);
@@ -1560,6 +1562,15 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
     jsens->set("name", uniset_conf()->oind->getShortName(s->si.id));
     jsens->set("tv_sec", s->tv_sec);
     jsens->set("tv_nsec", s->tv_nsec);
+    jsens->set("supplier_id", static_cast<long>(writer));
+
+    if( writer != DefaultObjectId )
+    {
+        std::string name = uniset_conf()->oind->getShortName(writer);
+        if( name.empty() )
+            name = std::to_string(writer);
+        jsens->set("supplier", name);
+    }
 
     if( shortInfo )
         return;
