@@ -69,7 +69,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
         logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
     }
 
-    httpEnabledSetParams =  conf->getArgPInt("--" + prefix + "http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
+    httpEnabledSetParams = conf->getArgPInt("--" + argprefix + "http-enabled-setparams", it.getProp("httpEnabledSetParams"), 0);
     auto ip = conf->getArgParam("--" + argprefix + "host", "0.0.0.0");
     auto port = conf->getArgPInt("--" + argprefix + "port", it.getProp("port"), 4840);
     auto browseName = it.getProp2("browseName", conf->oind->getMapName(conf->getLocalNode()));
