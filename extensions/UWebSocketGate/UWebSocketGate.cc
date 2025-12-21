@@ -575,18 +575,7 @@ Poco::JSON::Object::Ptr UWebSocketGate::httpStatus()
     auto my = httpGetMyInfo(out);
     my->set("extensionType", "UWebSocketGate");
 
-    Poco::JSON::Object::Ptr log = uniset::json::make_child(my, "logserver");
-    log->set("host", logserv_host);
-    log->set("port", logserv_port);
-    if( logserv )
-    {
-        log->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
-        auto info = logserv->httpGetShortInfo();
-        if( info )
-            log->set("info", info);
-    }
-    else
-        log->set("state", "NOT_CONFIGURED");
+    my->set("logserver", LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port));
 
     Poco::JSON::Object::Ptr ws = uniset::json::make_child(my, "websockets");
     Poco::JSON::Array::Ptr items = uniset::json::make_child_array(ws, "items");

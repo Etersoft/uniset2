@@ -673,14 +673,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( con
 		if( !jdata )
 			jdata = uniset::json::make_child(json,myname);
 
-		Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
-		if( logserv )
-		{
-			jserv->set("host",logserv_host);
-			jserv->set("port",logserv_port);
-			jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
-			jserv->set("info", logserv->httpGetShortInfo());
-		}
+		jdata->set("LogServer", LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port));
 <xsl:if test="normalize-space($SIMPLEPROC)=''">
 		jdata->set("io", httpDumpIO());
 </xsl:if>

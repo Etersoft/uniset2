@@ -2123,22 +2123,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
     Poco::JSON::Object::Ptr OPCUAExchange::buildLogServerInfo()
     {
-        Poco::JSON::Object::Ptr jls = new Poco::JSON::Object();
-        jls->set("host", logserv_host);
-        jls->set("port", logserv_port);
-
-        if( logserv )
-        {
-            jls->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
-            auto info = logserv->httpGetShortInfo();
-
-            if( info )
-                jls->set("info", info);
-        }
-        else
-            jls->set("state", "NOT_CONFIGURED");
-
-        return jls;
+        return LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port);
     }
     // -----------------------------------------------------------------------------
     Poco::JSON::Object::Ptr OPCUAExchange::httpRequest( const UHttp::HttpRequestContext& ctx )
