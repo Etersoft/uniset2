@@ -47,145 +47,6 @@
 namespace uniset
 {
     //------------------------------------------------------------------------------------------
-    /*!
-          \page page_UWebSocketGate Шлюз для подключения через WebSocket (UWebSocketGate)
-
-          - \ref sec_UWebSocketGate_Comm
-          - \ref sec_UWebSocketGate_Conf
-          - \ref sec_UWebSocketGate_Command
-
-        \section sec_UWebSocketGate_Comm Общее описание работы UWebSocketGate
-            UWebSocketGate это сервис, который позволяет подключаться через websocket и получать события
-        об изменнии датчиков, а так же изменять состояние (см. \ref sec_UWebSocketGate_Command).
-        Подключение к websocket-у доступно по адресу:
-         \code
-         ws://host:port/wsgate/
-         \endcode
-
-         Помимо этого UWebSocketGate работает в режиме мониторинга изменений датчиков.
-         Для этого достаточно зайти на страничку по адресу:
-         \code
-         http://host:port/wsgate/?s1,s2,s3,s4
-         \endcode
-
-        \section sec_UWebSocketGate_Conf Конфигурирование UWebSocketGate
-        Для конфигурования необходимо создать секцию вида:
-        \code
-        <UWebSocketGate name="UWebSocketGate" .../>
-        \endcode
-
-        Количество создаваемых websocket-ов можно ограничить при помощи параметра maxWebsockets (--prefix-max-conn).
-
-        \section sec_UWebSocketGate_DETAIL UWebSocketGate: Технические детали
-           Вся релизация построена на "однопоточном" eventloop. Если датчики долго не меняются, то периодически посылается "ping" сообщение.
-
-        \section sec_UWebSocketGate_Messages Сообщения
-          Общий формат сообщений
-         \code
-         {
-            "data": [
-            {
-                "type": "SensorInfo",
-                ...
-            },
-            {
-                "type": "SensorInfo",
-                ...
-            },
-            {
-                "type": "OtherType",
-                ...
-            },
-            {
-               "type": "YetAnotherType",
-               ...
-            },
-         ]}
-         \endcode
-
-        Example
-        \code
-         {
-            "data": [
-            {
-              "type": "SensorInfo",
-              "tv_nsec": 343079769,
-              "tv_sec": 1614521238,
-              "value": 63
-              "sm_tv_nsec": 976745544,
-              "sm_tv_sec": 1614520060,
-              "sm_type": "AI",
-              "error": "",
-              "id": 10,
-              "name": "AI_AS",
-              "node": 3000,
-              "supplier": 5003,
-              "undefined": false,
-              "calibration": {
-                 "cmax": 0,
-                 "cmin": 0,
-                 "precision": 3,
-                 "rmax": 0,
-                 "rmin": 0
-              },
-            }]
-         }
-       \endcode
-
-       \section sec_UWebSocketGate_Get Get
-       Функция get возвращает результат в укороченном формате
-        \code
-         {
-            "data": [
-            {
-              "type": "ShortSensorInfo",
-              "value": 63
-              "error": "",
-              "id": 10,
-              },
-            }]
-         }
-       \endcode
-
-       \section sec_UWebSocketGate_Ping Ping
-        Для того, чтобы соединение не закрывалось при отсутствии данных, каждые ping_sec посылается
-        специальное сообщение
-        \code
-         {
-            "data": [
-             {"type": "Ping"}
-            ]
-         }
-        \endcode
-        По умолчанию каждый 3 секунды, но время можно задавать параметром "wsHeartbeatTime" (msec)
-        или аргументом командной строки
-        --prefix-ws-heartbeat-time msec
-
-       \section sec_UWebSocketGate_Command Команды
-        Через websocket можно посылать команды.
-        На текущий момент формат команды строковый.
-        Т.е. для подачи команды, необходимо послать просто строку.
-        Поддерживаются следующие команды:
-
-        - "set:id1=val1,id2=val2,name3=val4,..." - выставить значение датчиков
-        - "ask:id1,id2,name3,..." - подписаться на уведомления об изменении датчиков (sensorInfo)
-        - "del:id1,id2,name3,..." - отказаться от уведомления об изменении датчиков
-        - "get:id1,id2,name3,..." - получить текущее значение датчиков (разовое сообщение ShortSensorInfo)
-        - "freeze:id1=val1,id2=val2,name3=val4,..." - выставить значение и заморозить изменение датчиков
-        - "unfreeze:id1,id2,name3..." - разморозить изменения датчиков
-
-        Если длина команды превышает допустимое значение, то возвращается ошибка
-        \code
-        {
-           "data": [
-               {"type": "Error",  "message": "Payload to big"}
-           ]
-        }
-        \endcode
-
-        \warning Под хранение сообщений для отправки выделяется Kbuf*maxSend. Kbuf в текущей реализации равен 10.
-        Т.е. если настроено maxSend=5000 сообщений, то буфер сможет максимально хранить 50000 сообщений.
-    */
     class UWebSocketGate:
         public UniSetObject,
         public EventLoopServer
@@ -222,6 +83,9 @@ namespace uniset
 #ifndef DISABLE_REST_API
             virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
             void onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
+            Poco::JSON::Object::Ptr httpStatus();
+            Poco::JSON::Object::Ptr httpList();
+            Poco::JSON::Object::Ptr httpHelpApi();
 #endif
 
             static Poco::JSON::Object::Ptr error_to_json( std::string_view err );

@@ -25,6 +25,22 @@ static int port = 8081;
 static string addr("127.0.0.1");
 static std::shared_ptr<UInterface> ui;
 // -----------------------------------------------------------------------------
+static Poco::Dynamic::Var httpGetJson(const std::string& path, HTTPResponse::HTTPStatus expectStatus = HTTPResponse::HTTP_OK)
+{
+    HTTPClientSession cs(addr, port);
+    HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPRequest::HTTP_1_1);
+    HTTPResponse response;
+    cs.sendRequest(request);
+    std::istream& rs = cs.receiveResponse(response);
+    REQUIRE(response.getStatus() == expectStatus);
+
+    std::ostringstream ss;
+    ss << rs.rdbuf();
+
+    Poco::JSON::Parser parser;
+    return parser.parse(ss.str());
+}
+// -----------------------------------------------------------------------------
 static void InitTest()
 {
     auto conf = uniset_conf();
@@ -407,6 +423,44 @@ TEST_CASE("[UWebSocketGate]: get", "[uwebsocketgate]")
         {
             REQUIRE( j->get("value").convert<long>() == 333 );
         }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UWebSocketGate]: http api", "[uwebsocketgate][http]")
+{
+    InitTest();
+
+    {
+        auto result = httpGetJson("/api/v2/list");
+        auto arr = result.extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(arr);
+        REQUIRE(arr->size() == 1);
+        REQUIRE(arr->get(0).convert<std::string>() == "UWebSocketGate1");
+    }
+
+    {
+        auto result = httpGetJson("/api/v2/UWebSocketGate1/help");
+        auto json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+        REQUIRE(json->has("UWebSocketGate1"));
+    }
+
+    {
+        auto result = httpGetJson("/api/v2/UWebSocketGate1/status");
+        auto json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+        auto obj = json->getObject("object");
+        REQUIRE(obj);
+        REQUIRE(obj->getValue<std::string>("extensionType") == "UWebSocketGate");
+        REQUIRE(obj->has("logserver"));
+        REQUIRE(obj->has("websockets"));
+    }
+
+    {
+        auto result = httpGetJson("/api/v2/UWebSocketGate1/list");
+        auto json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+        REQUIRE(json->has("sessions"));
     }
 }
 // -----------------------------------------------------------------------------
