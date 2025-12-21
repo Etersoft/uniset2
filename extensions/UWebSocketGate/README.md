@@ -167,7 +167,9 @@ Ping:
       "type": "ShortSensorInfo",
       "id": 10,
       "value": 63,
-      "error": ""
+      "error": "",
+      "supplier_id": 5003,
+      "supplier": "TestProc"
     }
   ]
 }
@@ -189,7 +191,8 @@ Ping:
       "id": 10,
       "name": "AI_AS",
       "node": 3000,
-      "supplier": 5003,
+      "supplier_id": 5003,
+      "supplier": "TestProc",
       "undefined": false,
       "calibration": {
         "cmax": 0,
@@ -211,7 +214,9 @@ Ping:
       "type": "ShortSensorInfo",
       "id": 10,
       "value": 1,
-      "error": ""
+      "error": "",
+      "supplier_id": 5003,
+      "supplier": "TestProc"
     }
   ]
 }
@@ -225,7 +230,9 @@ Ping:
       "type": "ShortSensorInfo",
       "id": 10,
       "value": 0,
-      "error": "Access denied"
+      "error": "Access denied",
+      "supplier_id": 5003,
+      "supplier": "TestProc"
     }
   ]
 }
@@ -239,7 +246,9 @@ Ping:
       "type": "ShortSensorInfo",
       "id": 10,
       "value": 0,
-      "error": ""
+      "error": "",
+      "supplier_id": 5003,
+      "supplier": "TestProc"
     }
   ]
 }
@@ -253,7 +262,9 @@ Ping:
       "type": "ShortSensorInfo",
       "id": 10,
       "value": 0,
-      "error": ""
+      "error": "",
+      "supplier_id": 5003,
+      "supplier": "TestProc"
     }
   ]
 }
@@ -267,7 +278,9 @@ Ping:
       "type": "ShortSensorInfo",
       "id": 10,
       "value": 0,
-      "error": "Unknown sensor"
+      "error": "Unknown sensor",
+      "supplier_id": 5003,
+      "supplier": "TestProc"
     }
   ]
 }
@@ -318,7 +331,8 @@ Example:
       "id": 10,
       "name": "AI_AS",
       "node": 3000,
-      "supplier": 5003,
+      "supplier_id": 5003,
+      "supplier": "TestProc",
       "undefined": false,
       "calibration": {
         "cmax": 0,

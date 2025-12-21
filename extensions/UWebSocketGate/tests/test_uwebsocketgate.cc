@@ -206,6 +206,10 @@ TEST_CASE("[UWebSocketGate]: ask", "[uwebsocketgate]")
         auto j = jdata->getObject(i);
         REQUIRE(j);
         REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
+        REQUIRE( j->has("supplier_id") );
+        const long supplier_id = j->get("supplier_id").convert<long>();
+        if( supplier_id != DefaultObjectId )
+            REQUIRE( j->has("supplier") );
 
         long id  = j->get("id").convert<long>();
 
@@ -237,6 +241,10 @@ TEST_CASE("[UWebSocketGate]: ask", "[uwebsocketgate]")
     auto j = jdata->getObject(0);
     REQUIRE(j);
     REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
+    REQUIRE( j->has("supplier_id") );
+    const long supplier_id = j->get("supplier_id").convert<long>();
+    if( supplier_id != DefaultObjectId )
+        REQUIRE( j->has("supplier") );
     REQUIRE( j->get("iotype").convert<std::string>() == "AI" );
     REQUIRE( j->get("value").convert<long>() == 84 );
 }
@@ -291,6 +299,10 @@ TEST_CASE("[UWebSocketGate]: ask max", "[uwebsocketgate][cmdmax]")
             auto j = jdata->getObject(i);
             REQUIRE(j);
             REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
+            REQUIRE( j->has("supplier_id") );
+            const long supplier_id = j->get("supplier_id").convert<long>();
+            if( supplier_id != DefaultObjectId )
+                REQUIRE( j->has("supplier") );
 
             long id  = j->get("id").convert<long>();
 
@@ -323,6 +335,10 @@ TEST_CASE("[UWebSocketGate]: ask max", "[uwebsocketgate][cmdmax]")
         auto j = jdata->getObject(0);
         REQUIRE(j);
         REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
+        REQUIRE( j->has("supplier_id") );
+        const long supplier_id = j->get("supplier_id").convert<long>();
+        if( supplier_id != DefaultObjectId )
+            REQUIRE( j->has("supplier") );
         REQUIRE( j->get("iotype").convert<std::string>() == "AI" );
         REQUIRE( j->get("value").convert<long>() == 84 );
 
@@ -408,6 +424,10 @@ TEST_CASE("[UWebSocketGate]: get", "[uwebsocketgate]")
         auto j = jdata->getObject(i);
         REQUIRE(j);
         REQUIRE( j->get("type").convert<std::string>() == "ShortSensorInfo" );
+        REQUIRE( j->has("supplier_id") );
+        const long supplier_id = j->get("supplier_id").convert<long>();
+        if( supplier_id != DefaultObjectId )
+            REQUIRE( j->has("supplier") );
 
         long id  = j->get("id").convert<long>();
 
