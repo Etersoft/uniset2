@@ -31,6 +31,7 @@ static int polltime = 100; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
 static const string confile2 = "mbmaster-test-configure2.xml";
+static const string confile1 = "mbmaster-test-configure.xml";
 static const string httpAddr = "127.0.0.1";
 static const uint16_t httpPort = 9090;
 // -----------------------------------------------------------------------------
@@ -887,6 +888,10 @@ TEST_CASE("MBTCPMaster: reload config", "[modbus][reload][mbmaster][mbtcpmaster]
 
     msleep(polltime + 600);
     REQUIRE( ui->getValue(1080) == 160 );
+
+    // restore base config for following tests
+    REQUIRE( mbm->reload(confile1) );
+    msleep(polltime + 600);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaster][mbtcpmaster]")
@@ -950,6 +955,10 @@ TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaste
         REQUIRE_FALSE( info.empty() );
         REQUIRE( info.find("OK") == std::string::npos );
     }
+
+    // restore base config for following tests
+    REQUIRE( mbm->reload(confile1) );
+    msleep(polltime + 600);
 }
 // -----------------------------------------------------------------------------
 #if 0
@@ -1988,11 +1997,18 @@ TEST_CASE("MBTCPMaster: HTTP /registers (filter by id/name)", "[http][rest][mbtc
         REQUIRE(registers);
         REQUIRE(registers->size() >= 2);
 
-        for(size_t i = 0; i < registers->size() && i < 3; i++)
+        std::unordered_set<int> uniqIds;
+        for(size_t i = 0; i < registers->size(); i++)
         {
             auto reg = registers->getObject(i);
-            allIds.push_back(reg->getValue<int>("id"));
-            allNames.push_back(reg->getValue<std::string>("name"));
+            int id = reg->getValue<int>("id");
+            if( uniqIds.insert(id).second )
+            {
+                allIds.push_back(id);
+                allNames.push_back(reg->getValue<std::string>("name"));
+            }
+            if( allIds.size() >= 2 )
+                break;
         }
     }
 
@@ -2123,11 +2139,18 @@ TEST_CASE("MBTCPMaster: HTTP /get endpoint", "[http][rest][mbtcpmaster][get]")
         REQUIRE(registers);
         REQUIRE(registers->size() >= 2);
 
+        std::unordered_set<int> uniqIds;
         for(size_t i = 0; i < registers->size(); i++)
         {
             auto reg = registers->getObject(i);
-            allIds.push_back(reg->getValue<int>("id"));
-            allNames.push_back(reg->getValue<std::string>("name"));
+            int id = reg->getValue<int>("id");
+            if( uniqIds.insert(id).second )
+            {
+                allIds.push_back(id);
+                allNames.push_back(reg->getValue<std::string>("name"));
+            }
+            if( allIds.size() >= 2 )
+                break;
         }
     }
 
