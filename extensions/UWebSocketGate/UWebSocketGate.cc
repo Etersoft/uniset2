@@ -549,6 +549,73 @@ void UWebSocketGate::makeResponseAccessHeader( Poco::Net::HTTPServerResponse& re
     //  header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization');
 }
 // -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UWebSocketGate::httpHelpApi()
+{
+    uniset::json::help::object myhelp(myname);
+
+    {
+        uniset::json::help::item cmd("help", "this help");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("status", "get websocket gate status");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("list", "list active websocket sessions");
+        myhelp.add(cmd);
+    }
+
+    return myhelp;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UWebSocketGate::httpStatus()
+{
+    Poco::JSON::Object::Ptr out = new Poco::JSON::Object();
+    auto my = httpGetMyInfo(out);
+    my->set("extensionType", "UWebSocketGate");
+
+    Poco::JSON::Object::Ptr log = uniset::json::make_child(my, "logserver");
+    log->set("host", logserv_host);
+    log->set("port", logserv_port);
+    if( logserv )
+    {
+        log->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
+        auto info = logserv->httpGetShortInfo();
+        if( info )
+            log->set("info", info);
+    }
+    else
+        log->set("state", "NOT_CONFIGURED");
+
+    Poco::JSON::Object::Ptr ws = uniset::json::make_child(my, "websockets");
+    Poco::JSON::Array::Ptr items = uniset::json::make_child_array(ws, "items");
+
+    {
+        uniset_rwmutex_wrlock lock(wsocksMutex);
+        ws->set("count", static_cast<int>(wsocks.size()));
+
+        for( const auto& s : wsocks )
+            items->add(s->getInfo());
+    }
+
+    return out;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UWebSocketGate::httpList()
+{
+    Poco::JSON::Object::Ptr out = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr items = uniset::json::make_child_array(out, "sessions");
+
+    {
+        uniset_rwmutex_wrlock lock(wsocksMutex);
+        for( const auto& s : wsocks )
+            items->add(s->getInfo());
+    }
+
+    return out;
+}
+// -----------------------------------------------------------------------------
 void UWebSocketGate::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
 {
     using Poco::Net::HTTPResponse;
@@ -574,6 +641,64 @@ void UWebSocketGate::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net
 
     std::vector<std::string> seg;
     uri.getPathSegments(seg);
+
+    // /api/v2/<ObjectName>/[help|status|list]
+    if( seg.size() >= 3 && seg[0] == "api" && seg[1] == UHttp::UHTTP_API_VERSION )
+    {
+        if( seg[2] == "list" )
+        {
+            Poco::JSON::Array::Ptr items = new Poco::JSON::Array();
+            items->add(myname);
+            items->stringify(out);
+            out.flush();
+            return;
+        }
+
+        if( seg[2] != myname )
+        {
+            auto jdata = respError(resp, HTTPResponse::HTTP_NOT_FOUND, "Object not found");
+            jdata->stringify(out);
+            out.flush();
+            return;
+        }
+
+        if( seg.size() == 3 )
+        {
+            auto jdata = httpStatus();
+            jdata->stringify(out);
+            out.flush();
+            return;
+        }
+
+        if( seg[3] == "help" )
+        {
+            auto jdata = httpHelpApi();
+            jdata->stringify(out);
+            out.flush();
+            return;
+        }
+
+        if( seg[3] == "status" )
+        {
+            auto jdata = httpStatus();
+            jdata->stringify(out);
+            out.flush();
+            return;
+        }
+
+        if( seg[3] == "list" )
+        {
+            auto jdata = httpList();
+            jdata->stringify(out);
+            out.flush();
+            return;
+        }
+
+        auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, "Unknown command");
+        jdata->stringify(out);
+        out.flush();
+        return;
+    }
 
     // проверка подключения к страничке со списком websocket-ов
     if( !seg.empty() && seg[0] == "wsgate" )
