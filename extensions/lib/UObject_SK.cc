@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2025-12-13+03:00
+// generate timestamp: 2025-12-21+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -464,14 +464,7 @@ Poco::JSON::Object::Ptr UObject_SK::httpRequest( const uniset::UHttp::HttpReques
 		if( !jdata )
 			jdata = uniset::json::make_child(json,myname);
 
-		Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
-		if( logserv )
-		{
-			jserv->set("host",logserv_host);
-			jserv->set("port",logserv_port);
-			jserv->set("state",( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
-			jserv->set("info", logserv->httpGetShortInfo());
-		}
+		jdata->set("LogServer", LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port));
 
 		auto timers = getTimersList();
 		auto jtm = uniset::json::make_child(jdata,"Timers");

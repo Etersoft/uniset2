@@ -131,28 +131,37 @@ namespace uniset
         return myname;
     }
     // -------------------------------------------------------------------------
-    bool LogServer::run( const std::string& _addr, Poco::UInt16 _port )
+    static Poco::UInt16 normalize_port( int port ) noexcept
+    {
+        if( port <= 0 )
+            return 0;
+        if( port > 0xFFFF )
+            return 0;
+        return static_cast<Poco::UInt16>(port);
+    }
+    // -------------------------------------------------------------------------
+    bool LogServer::run( const std::string& _addr, int _port )
     {
         addr = _addr;
-        port = _port;
+        port = normalize_port(_port);
 
         {
             ostringstream s;
-            s << _addr << ":" << _port;
+            s << _addr << ":" << port;
             myname = s.str();
         }
 
         return loop.evrun(this);
     }
     // -------------------------------------------------------------------------
-    bool LogServer::async_run( const std::string& _addr, Poco::UInt16 _port )
+    bool LogServer::async_run( const std::string& _addr, int _port )
     {
         addr = _addr;
-        port = _port;
+        port = normalize_port(_port);
 
         {
             ostringstream s;
-            s << _addr << ":" << _port;
+            s << _addr << ":" << port;
             myname = s.str();
         }
         return loop.async_evrun(this);
@@ -268,6 +277,18 @@ namespace uniset
                 mylog.crit() << err.str() << endl;
 
             throw uniset::SystemError( err.str() );
+        }
+
+        if( port == 0 )
+        {
+            try
+            {
+                port = sock->address().port();
+                ostringstream s;
+                s << addr << ":" << port;
+                myname = s.str();
+            }
+            catch( ... ) {}
         }
 
         sock->setBlocking(false);
@@ -422,6 +443,41 @@ namespace uniset
         }
 
         return jdata;
+    }
+
+    Poco::JSON::Object::Ptr LogServer::httpLogServerInfo( const std::shared_ptr<LogServer>& logserv,
+                                                          const std::string& host,
+                                                          int port )
+    {
+        Poco::JSON::Object::Ptr jls = new Poco::JSON::Object();
+
+        if( logserv )
+        {
+            jls->set("state", logserv->isRunning() ? "RUNNING" : "STOPPED");
+            auto info = logserv->httpGetShortInfo();
+
+            if( info )
+            {
+                if( info->has("host") )
+                    jls->set("host", info->get("host"));
+                if( info->has("port") )
+                    jls->set("port", info->get("port"));
+                jls->set("info", info);
+            }
+            else
+            {
+                jls->set("host", host);
+                jls->set("port", port);
+            }
+        }
+        else
+        {
+            jls->set("state", "NOT_CONFIGURED");
+            jls->set("host", host);
+            jls->set("port", port);
+        }
+
+        return jls;
     }
 #endif // #ifndef DISABLE_REST_API
     // -----------------------------------------------------------------------------

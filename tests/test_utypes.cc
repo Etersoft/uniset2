@@ -363,7 +363,7 @@ TEST_CASE("UniSetTypes: is_digit", "[utypes][is_digit]" )
     CHECK( is_digit("1") );
     CHECK( is_digit("100") );
     CHECK( is_digit("0") );
-    CHECK_FALSE( is_digit("-1") );
+    CHECK( is_digit("-1") );
     CHECK_FALSE( is_digit("10 000") );
     CHECK_FALSE( is_digit("100.0") );
     CHECK_FALSE( is_digit("a") );

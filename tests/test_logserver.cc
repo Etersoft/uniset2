@@ -261,6 +261,30 @@ TEST_CASE("MaxSessions", "[LogServer]" )
     ret1.get();
     ret2.get();
 }
+#ifndef DISABLE_REST_API
+// --------------------------------------------------------------------------
+TEST_CASE("LogServer auto port", "[LogServer]" )
+{
+    auto la = make_shared<LogAgregator>();
+    auto log1 = la->create("log1");
+
+    log1->level(Debug::ANY);
+    log1->showDateTime(false);
+    log1->showLogType(false);
+
+    LogServer ls(la);
+    ls.async_run(ip, -1);
+
+    for( int i = 0; i < 3 && !ls.isRunning(); i++ )
+        msleep(600);
+
+    REQUIRE( ls.isRunning() );
+
+    auto info = ls.httpGetShortInfo();
+    REQUIRE( info );
+    REQUIRE( info->getValue<int>("port") > 0 );
+}
+#endif
 // --------------------------------------------------------------------------
 TEST_CASE("LogAgregator regexp", "[LogAgregator][regexp]" )
 {

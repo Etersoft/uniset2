@@ -2798,14 +2798,7 @@ namespace uniset
         if( !jdata )
             jdata = uniset::json::make_child(json, myname);
 
-        Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata, "LogServer");
-        if( logserv )
-        {
-            jserv->set("host", logserv_host);
-            jserv->set("port", logserv_port);
-            jserv->set("state", ( logserv->isRunning() ? "RUNNING" : "STOPPED" ));
-            jserv->set("info", logserv->httpGetShortInfo());
-        }
+        jdata->set("LogServer", LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port));
 
         return json;
     }
@@ -3088,8 +3081,11 @@ namespace uniset
         // LogServer
         {
             Object::Ptr log = new Object();
-            log->set("host", logserv_host);
-            log->set("port", (int)logserv_port);
+            auto info = LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port);
+            if( info->has("host") )
+                log->set("host", info->get("host"));
+            if( info->has("port") )
+                log->set("port", info->get("port"));
             st->set("logserver", log);
         }
 

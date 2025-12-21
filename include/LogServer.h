@@ -22,6 +22,7 @@
 #include <memory>
 #include <unordered_map>
 #include <ev++.h>
+#include <Poco/JSON/Object.h>
 #include "Mutex.h"
 #include "UniXML.h"
 #include "DebugStream.h"
@@ -102,8 +103,9 @@ namespace uniset
             void setSessionLog( Debug::type t ) noexcept;
             void setMaxSessionCount( size_t num ) noexcept;
 
-            bool async_run( const std::string& addr, Poco::UInt16 port );
-            bool run( const std::string& addr, Poco::UInt16 port );
+            // port <= 0: select an available port automatically
+            bool async_run( const std::string& addr, int port );
+            bool run( const std::string& addr, int port );
 
             void terminate();
 
@@ -119,6 +121,9 @@ namespace uniset
 
 #ifndef DISABLE_REST_API
             Poco::JSON::Object::Ptr httpGetShortInfo();
+            static Poco::JSON::Object::Ptr httpLogServerInfo( const std::shared_ptr<LogServer>& logserv,
+                                                              const std::string& host,
+                                                              int port );
 #endif
 
         protected:
