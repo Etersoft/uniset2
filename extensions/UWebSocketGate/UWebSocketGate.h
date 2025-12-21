@@ -190,6 +190,7 @@ namespace uniset
                         uniset::ObjectId id = { uniset::DefaultObjectId };
                         std::string cmd = "";
                         long value = { 0 }; // set value
+                        uniset::ObjectId supplier = { uniset::DefaultObjectId };
                         // cache
                         std::string name;
                     };

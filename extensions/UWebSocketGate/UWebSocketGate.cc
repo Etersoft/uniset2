@@ -298,6 +298,14 @@ void UWebSocketGate::UWebSocket::fill_short_json( Poco::JSON::Object::Ptr& json,
     json->set("error", si->err);
     json->set("id", si->id);
     json->set("value", si->value);
+    json->set("supplier_id", static_cast<long>(si->supplier));
+    if( si->supplier != DefaultObjectId )
+    {
+        std::string name = uniset_conf()->oind->getShortName(si->supplier);
+        if( name.empty() )
+            name = std::to_string(si->supplier);
+        json->set("supplier", name);
+    }
 }
 //--------------------------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( const std::shared_ptr<sinfo>& si )
@@ -307,6 +315,14 @@ Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( const std::sh
     json->set("error", si->err);
     json->set("id", si->id);
     json->set("value", si->value);
+    json->set("supplier_id", static_cast<long>(si->supplier));
+    if( si->supplier != DefaultObjectId )
+    {
+        std::string name = uniset_conf()->oind->getShortName(si->supplier);
+        if( name.empty() )
+            name = std::to_string(si->supplier);
+        json->set("supplier", name);
+    }
     return json;
 }
 //--------------------------------------------------------------------------------------------
@@ -321,7 +337,14 @@ void UWebSocketGate::UWebSocket::fill_json( Poco::JSON::Object::Ptr& json, const
     json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
     json->set("iotype", uniset::iotype2str(sm->sensor_type));
     json->set("undefined", sm->undefined );
-    json->set("supplier", sm->supplier );
+    json->set("supplier_id", static_cast<long>(sm->supplier));
+    if( sm->supplier != DefaultObjectId )
+    {
+        std::string name = uniset_conf()->oind->getShortName(sm->supplier);
+        if( name.empty() )
+            name = std::to_string(sm->supplier);
+        json->set("supplier", name);
+    }
     json->set("tv_sec", sm->tm.tv_sec);
     json->set("tv_nsec", sm->tm.tv_nsec);
     json->set("node", sm->node);
@@ -356,7 +379,14 @@ Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_json( const SensorMessage
     json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
     json->set("iotype", uniset::iotype2str(sm->sensor_type));
     json->set("undefined", sm->undefined );
-    json->set("supplier", sm->supplier );
+    json->set("supplier_id", static_cast<long>(sm->supplier));
+    if( sm->supplier != DefaultObjectId )
+    {
+        std::string name = uniset_conf()->oind->getShortName(sm->supplier);
+        if( name.empty() )
+            name = std::to_string(sm->supplier);
+        json->set("supplier", name);
+    }
     json->set("tv_sec", sm->tm.tv_sec);
     json->set("tv_nsec", sm->tm.tv_nsec);
     json->set("node", sm->node);
@@ -1328,6 +1358,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
         }
 
         auto j = jpoolSM->borrowObject();
+        s->second->supplier = sm->supplier;
         fill_json(j, sm, s->second);
         jbuf.emplace(j);
     }
