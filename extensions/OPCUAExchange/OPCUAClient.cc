@@ -20,57 +20,8 @@
 #include <iomanip>
 #include <chrono>
 
-#include <open62541/client_highlevel.h>
-#include <open62541/client_subscriptions.h>
-#include <open62541/plugin/log_stdout.h>
-#include <open62541/types_generated_handling.h>
-
 #include <open62541pp/open62541pp.hpp>
-
 #include "OPCUAClient.h"
-
-namespace uniset
-{
-    static void dataChangeNotificationCallback(
-        [[maybe_unused]] UA_Client* client,
-        uint32_t subId,
-        [[maybe_unused]] void* subContext,
-        uint32_t monId,
-        void* monContext,
-        UA_DataValue* value
-    ) noexcept
-    {
-        if (monContext == nullptr)
-            return;
-
-        auto* monitoredItem = static_cast<uniset::MonitoredItem*>(monContext);
-
-        if (monitoredItem->dataChangeCallback)
-        {
-            monitoredItem->dataChangeCallback(subId, monId, opcua::asWrapper<opcua::DataValue>(*value));
-        }
-    }
-
-    static void deleteMonitoredItemCallback(
-        [[maybe_unused]] UA_Client* client,
-        uint32_t subId,
-        [[maybe_unused]] void* subContext,
-        uint32_t monId,
-        void* monContext
-    ) noexcept
-    {
-        if (monContext == nullptr)
-            return;
-
-        auto* monitoredItem = static_cast<uniset::MonitoredItem*>(monContext);
-
-        if (monitoredItem->deleteCallback)
-        {
-            monitoredItem->deleteCallback(subId, monId);
-        }
-    }
-
-}// end of namespace uniset
 
 // -----------------------------------------------------------------------------
 using namespace uniset;
@@ -146,14 +97,11 @@ namespace opcua
 // -----------------------------------------------------------------------------
 OPCUAClient::OPCUAClient()
 {
-    //    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "create OPCUAClient");
-    val = UA_Variant_new();
 }
 // -----------------------------------------------------------------------------
 OPCUAClient::~OPCUAClient()
 {
     client.disconnect();
-    UA_Variant_delete(val);
 }
 // -----------------------------------------------------------------------------
 bool OPCUAClient::connect( const std::string& addr )
@@ -220,11 +168,6 @@ OPCUAClient::VarType OPCUAClient::str2vtype( std::string_view s )
     return VarType::Int32;
 }
 // -----------------------------------------------------------------------------
-bool OPCUAClient::ResultVar::statusOk()
-{
-    return status == UA_STATUSCODE_GOOD;
-}
-// -----------------------------------------------------------------------------
 int32_t OPCUAClient::ResultVar::get()
 {
     if( type == VarType::Int32 )
@@ -252,277 +195,222 @@ int32_t OPCUAClient::ResultVar::get()
     return 0;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::read(std::vector<UA_ReadValueId>& attrs, std::vector<ResultVar>& result )
+void OPCUAClient::processResult(opcua::String node_name, const opcua::DataValue& in, OPCUAClient::ResultVar& out)
 {
-    UA_ReadRequest request;
-    UA_ReadRequest_init(&request);
-    request.nodesToRead = attrs.data();
-    request.nodesToReadSize = attrs.size();
-
-    UA_ReadResponse response = UA_Client_Service_read(client.handle(), request);
-    auto retval = response.responseHeader.serviceResult;
-
-    if( retval == UA_STATUSCODE_GOOD )
+    std::stringstream ss;
+    ss << " Read nodeId: [" << node_name;
+    out.status = in.status();
+ 
+    if(in.status().isGood())
     {
-        if( response.resultsSize > result.size() )
-            retval = UA_STATUSCODE_BADRESPONSETOOLARGE;
+        
+        ss << "] status: [" << in.status().name();
+        if ( in.value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
+        {
+            out.type = VarType::Float;
+            out.value = (float)in.value().to<double>();
+            ss << "] value(double): [" << out.as<float>();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
+        {
+            out.type = VarType::Float;
+            out.value = (float)in.value().to<float>();
+            ss << "] value(float): [" << out.as<float>();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_BOOLEAN]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<bool>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_INT32]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<int32_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_UINT32]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<uint32_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_INT64]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<int64_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_UINT64]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<uint64_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_INT16]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<int16_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_UINT16]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<uint16_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_BYTE]) )
+        {
+            out.type = VarType::Int32;
+            out.value = (int32_t)in.value().to<uint8_t>();
+            ss << "] value(int32_t): [" << (int32_t)out.get();
+        }
         else
         {
-            for( size_t i = 0; i < response.resultsSize; i++ )
-            {
-                result[i].status = response.results[i].status;
-                result[i].value = 0;
-
-                if( response.results[i].status == UA_STATUSCODE_GOOD )
-                {
-                    result[i].type = VarType::Int32; // by default
-                    UA_Variant* val = &response.results[i].value;
-
-                    if (val->type == &UA_TYPES[UA_TYPES_INT32])
-                        result[i].value = int32_t(*(UA_Int32*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_UINT32])
-                        result[i].value = int32_t(*(UA_UInt32*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_INT64])
-                        result[i].value = int32_t(*(UA_Int64*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_UINT64])
-                        result[i].value = int32_t(*(UA_UInt64*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_BOOLEAN])
-                        result[i].value = *(UA_Boolean*) val->data ? 1 : 0;
-                    else if (val->type == &UA_TYPES[UA_TYPES_UINT16])
-                        result[i].value = int32_t(*(UA_UInt16*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_INT16])
-                        result[i].value = int32_t(*(UA_Int16*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_BYTE])
-                        result[i].value = int32_t(*(UA_Byte*) val->data);
-                    else if (val->type == &UA_TYPES[UA_TYPES_FLOAT])
-                    {
-                        result[i].type  = VarType::Float;
-                        result[i].value = (float)(*(UA_Float*) val->data);
-                    }
-                    else if (val->type == &UA_TYPES[UA_TYPES_DOUBLE])
-                    {
-                        result[i].type  = VarType::Float;
-                        result[i].value = (float)(*(UA_Double*)val->data);
-                    }
-                }
-            }
-        }
+            ss << " unknown type: [" << in.value().type()->typeName << "]";
+            opcua::log( client, opcua::LogLevel::Error, opcua::LogCategory::Client, ss.str());
+            return;
+        }     
+        ss << "]";
+        opcua::log( client, opcua::LogLevel::Info, opcua::LogCategory::Client, ss.str());
     }
     else
-    {
-        opcua::log(client, opcua::LogLevel::Warning, opcua::LogCategory::Client, "read error!");
-
-        for( auto&& r : result )
-            r.status = retval;
+    { 
+        ss << "] error with status: [" << in.status().name() << "]";
+        opcua::log( client, opcua::LogLevel::Error, opcua::LogCategory::Client, ss.str());
     }
-
-    UA_ReadResponse_clear(&response);
-    return (OPCUAClient::ErrorCode)retval;
 }
 // -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::write32( std::vector<UA_WriteValue>& values )
+const opcua::StatusCode OPCUAClient::read(const std::vector<opcua::ua::ReadValueId>& attrs, std::vector<OPCUAClient::ResultVar>& results )
 {
-    UA_WriteRequest request;
-    UA_WriteRequest_init(&request);
-    request.nodesToWrite = values.data();
-    request.nodesToWriteSize = values.size();
-    UA_WriteResponse response = UA_Client_Service_write(client.handle(), request);
+    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "Read attributes");
+    const auto request = opcua::services::detail::makeReadRequest(opcua::ua::TimestampsToReturn{}, attrs);
+    const auto response = opcua::services::read(client, opcua::asWrapper<opcua::ua::ReadRequest>(request));
+    const opcua::StatusCode serviceResult = opcua::services::detail::getServiceResult(response);
 
-    auto retval = response.responseHeader.serviceResult;
-
-    for( size_t i = 0; i < response.resultsSize; i++ )
+    if( serviceResult.isGood() )
     {
-        values[i].value.status = response.results[i];
-
-        if( response.results[i] != UA_STATUSCODE_GOOD )
-            retval = response.results[i];
-    }
-
-    UA_WriteResponse_clear(&response);
-    return (OPCUAClient::ErrorCode)retval;
-}
-// -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::write( const UA_WriteValue& val )
-{
-    UA_WriteRequest request;
-    UA_WriteRequest_init(&request);
-    UA_WriteValue wrval[1] = { val };
-    request.nodesToWrite = wrval;
-    request.nodesToWriteSize = 1;
-    UA_WriteResponse response = UA_Client_Service_write(client.handle(), request);
-
-    auto retval = response.responseHeader.serviceResult;
-
-    for( size_t i = 0; i < response.resultsSize; i++ )
-    {
-        if( response.results[i] != UA_STATUSCODE_GOOD )
-            retval = response.results[i];
-    }
-
-    UA_WriteResponse_clear(&response);
-    return (OPCUAClient::ErrorCode)retval;
-}
-// -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::set( const std::string& attr, bool set )
-{
-    UA_Variant_clear(val);
-    UA_Variant_setScalarCopy(val, &set, &UA_TYPES[UA_TYPES_BOOLEAN]);
-
-    return UA_Client_writeValueAttribute(client.handle(), UA_NODEID(attr.c_str()), val);
-}
-// -----------------------------------------------------------------------------
-OPCUAClient::ErrorCode OPCUAClient::write32( const std::string& attr, int32_t value )
-{
-    UA_Variant_clear(val);
-    UA_Variant_setScalarCopy(val, &value, &UA_TYPES[UA_TYPES_INT32]);
-    return UA_Client_writeValueAttribute(client.handle(), UA_NODEID(attr.c_str()), val);
-}
-// -----------------------------------------------------------------------------
-UA_WriteValue OPCUAClient::makeWriteValue32( const std::string& name, int32_t val )
-{
-    UA_WriteValue wv;
-    UA_WriteValue_init(&wv);
-    wv.attributeId = UA_ATTRIBUTEID_VALUE;
-    wv.nodeId = UA_NODEID(name.c_str());
-    wv.value.hasValue = true;
-    UA_Variant_setScalarCopy(&wv.value.value, &val, &UA_TYPES[UA_TYPES_INT32]);
-    return wv;
-}
-// -----------------------------------------------------------------------------
-UA_ReadValueId OPCUAClient::makeReadValue32( const std::string& name )
-{
-    UA_ReadValueId rv;
-    UA_ReadValueId_init(&rv);
-    rv.attributeId = UA_ATTRIBUTEID_VALUE;
-    rv.nodeId = UA_NODEID(name.c_str());
-    return rv;
-}
-// -----------------------------------------------------------------------------
-std::vector<opcua::MonitoredItem<opcua::Client>> OPCUAClient::subscribeDataChanges(
-            opcua::Subscription<opcua::Client>& sub,
-            std::vector<UA_ReadValueId>& attrs,
-            std::vector<uniset::DataChangeCallback>& dataChangeCallbacks,
-            std::vector<uniset::DeleteMonitoredItemCallback>& deleteMonItemCallbacks,
-            bool stop /* флаг остановки при ошибках в процессе подписки */
-        )
-{
-    std::vector<opcua::MonitoredItem<opcua::Client>> ret;
-    auto subscriptionId_ = sub.subscriptionId();
-    auto& exceptionCatcher = opcua::detail::getExceptionCatcher(client);
-    std::vector<std::unique_ptr<uniset::MonitoredItem>> monItems;
-    size_t attr_size = attrs.size();
-
-    std::vector<UA_MonitoredItemCreateRequest> items;
-    std::vector<UA_Client_DataChangeNotificationCallback> callbacks;
-    std::vector<UA_Client_DeleteMonitoredItemCallback> deleteCallbacks;
-    std::vector<void*> contexts;
-
-    for( size_t i = 0 ; i < attr_size ; i++ )
-    {
-        /* monitor the server state */
-        items.emplace_back(UA_MonitoredItemCreateRequest_default(attrs[i].nodeId));
-        callbacks.emplace_back(dataChangeNotificationCallback);
-        deleteCallbacks.emplace_back(deleteMonitoredItemCallback);
-
-        auto context = std::make_unique<uniset::MonitoredItem>();
-        context->itemToMonitor = opcua::ReadValueId(attrs[i]);
-        context->dataChangeCallback = exceptionCatcher.wrapCallback(
-                                          [this, callback = std::move(dataChangeCallbacks[i])](
-                                              uint32_t subId, uint32_t monId, const opcua::DataValue & value
-                                          )
+        if( response.results().size() > results.size() )
         {
-            auto it = this->monitoredItems.find({subId, monId});
-
-            if (it == this->monitoredItems.end())
-            {
-                opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, monId + ": monitored item not found!");
-                throw opcua::BadStatus(UA_STATUSCODE_BADMONITOREDITEMIDINVALID);
-            }
-
-            callback(*(it->second.get()), value);
-        });
-
-        context->deleteCallback = exceptionCatcher.wrapCallback(
-                                      [this, callback = std::move(deleteMonItemCallbacks[i])](
-                                          uint32_t subId, uint32_t monId
-                                      )
+            std::stringstream ss;
+            ss << "Response items size mismatched: " << response.results().size() << " != " << results.size();
+            opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, ss.str());
+            return opcua::StatusCode{ UA_STATUSCODE_BADRESPONSETOOLARGE };
+        } else
         {
-            if(!monId)
-                return;
-
-            auto it = this->monitoredItems.find({subId, monId});
-
-            if (it == this->monitoredItems.end())
+            for(size_t i = 0; i < response.results().size(); i++)
             {
-                opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, monId + ": monitored item not found!");
-                throw opcua::BadStatus(UA_STATUSCODE_BADMONITOREDITEMIDINVALID);
+                processResult(opcua::toString(attrs[i].nodeId()), response.results()[i], results[i]);
             }
-            else
-            {
-                opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, monId + ": monitored item remove!");
-                this->monitoredItems.erase({subId, monId});
-            }
-
-            if(callback)
-                callback(subId, monId);
-        });
-
-        contexts.emplace_back(context.get());
-        /* NOTE!
-            В monitoredItems хранится context только для элементов, на которые успешно подпишется клиент.
-           Поэтому contexts здесь хранит все элементы пока не получим ответ на запрос.
-           В самом клиенте также создается элемент UA_Client_MonitoredItem только при успешной подписке.
-           В нем сохраняется raw указатель на элемент contexts, но за существование и удаление отвечает
-           OPCUAClient! Поэтому он должен гарантировать существование monitoredItems пока выполняется runIterate
-           и существует клиент opcua::Client. Возможность отписки здесь не реализована, так что удаление из
-           monitoredItems происходит только при удалении подписки, при этом вызывается специальный delete_callback.
-           И так же если возможность привязать пользователю OPCUAClient дополнительный обработчик вызова delete_callback.
-        */
-        monItems.emplace_back(std::move(context));
-    }
-
-    UA_CreateMonitoredItemsRequest createRequest;
-    UA_CreateMonitoredItemsRequest_init(&createRequest);
-    createRequest.subscriptionId = subscriptionId_;
-    createRequest.timestampsToReturn = UA_TIMESTAMPSTORETURN_BOTH;
-    createRequest.itemsToCreate = items.data();
-    createRequest.itemsToCreateSize = attr_size;
-
-    using createResponse = opcua::TypeWrapper<UA_CreateMonitoredItemsResponse, UA_TYPES_CREATEMONITOREDITEMSRESPONSE>;
-    const createResponse response =
-        UA_Client_MonitoredItems_createDataChanges(client.handle(), createRequest, contexts.data(),
-                callbacks.data(), deleteCallbacks.data());
-
-    for(size_t i = 0; i < response->resultsSize; i++)
-    {
-        auto code = response->results[i].statusCode;
-
-        // stop - флаг для остановки процесса инициализации подписки, если не указано игнорировать ошибки в процессе
-        // подписки. Если указано игнорировать, то появится только лог с ошибкой ниже и дальше продолжится обработка ответа.
-        if(stop)
-            opcua::throwIfBad(code);
-
-        if(code == UA_STATUSCODE_GOOD)
-        {
-            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                        "Good monitoring for attr = '%-16.*s' with monitoring id = '%u'",
-                        (int)attrs[i].nodeId.identifier.string.length,
-                        attrs[i].nodeId.identifier.string.data,
-                        response->results[i].monitoredItemId);
-            // Сохраняем список обработчиков для отслеживаемых элементов
-            monitoredItems.insert_or_assign({subscriptionId_, response->results[i].monitoredItemId}, std::move(monItems[i]));
         }
-        else
-            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                        "Bad monitoring for attr = '%-16.*s' with error '%s'",
-                        (int)attrs[i].nodeId.identifier.string.length,
-                        attrs[i].nodeId.identifier.string.data,
-                        UA_StatusCode_name(code));
+    }
+    return serviceResult;
+}
+// -----------------------------------------------------------------------------
+const opcua::StatusCode OPCUAClient::write32( std::vector<opcua::ua::WriteValue>& values )
+{
+    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "Write attributes");
+    const auto request = opcua::services::detail::makeWriteRequest({values.data(), values.size()});
+    const auto response = opcua::services::write(client, opcua::asWrapper<opcua::ua::WriteRequest>(request));
+    const opcua::StatusCode serviceResult = opcua::services::detail::getServiceResult(response);
+    return serviceResult;
+}
+// -----------------------------------------------------------------------------
+const opcua::StatusCode OPCUAClient::write( const opcua::ua::WriteValue& writeValue )
+{
+    const auto request = opcua::services::detail::makeWriteRequest({&writeValue, 1});
+    const auto response = opcua::services::write(client, opcua::asWrapper<opcua::ua::WriteRequest>(request));
+    const opcua::StatusCode serviceResult = opcua::services::detail::getServiceResult(response);
+    return serviceResult;
+}
+// -----------------------------------------------------------------------------
+const opcua::StatusCode OPCUAClient::set( const std::string& attr, bool set )
+{
+    const opcua::StatusCode serviceResult = opcua::services::writeAttribute(client,
+                                            opcua::NodeId::parse(attr.c_str()),
+                                            opcua::AttributeId::Value,
+                                            opcua::DataValue{opcua::Variant{set}});
+    return serviceResult;
+}
+// -----------------------------------------------------------------------------
+const opcua::StatusCode OPCUAClient::write32( const std::string& attr, int32_t value )
+{
+    const opcua::StatusCode serviceResult = opcua::services::writeAttribute(client,
+                                            opcua::NodeId::parse(attr.c_str()),
+                                            opcua::AttributeId::Value,
+                                            opcua::DataValue{opcua::Variant{value}});
+    return serviceResult;
+}
+// -----------------------------------------------------------------------------
+opcua::ua::WriteValue OPCUAClient::makeWriteValue32( const std::string& name, int32_t val )
+{
+    return opcua::ua::WriteValue(opcua::NodeId::parse(name.c_str()),
+                                 opcua::AttributeId::Value,
+                                 {},
+                                 opcua::DataValue{opcua::Variant{val}});
+}
+// -----------------------------------------------------------------------------
+opcua::ua::ReadValueId OPCUAClient::makeReadValue32( const std::string& name )
+{
+    return opcua::ua::ReadValueId{opcua::NodeId::parse(name.c_str()), opcua::AttributeId::Value};
+}
+// -----------------------------------------------------------------------------
+const opcua::StatusCode OPCUAClient::subscribeDataChanges(std::vector<opcua::ua::ReadValueId>& ids,
+                                                          std::vector<OPCUAClient::ResultVar>& results,
+                                                          float samplingInterval,
+                                                          float publishingInterval)
+{
+    assert(ids.size() == results.size());
 
-        // Возвращаем список opcua::MonitoredItem<opcua::Client> для удобства настройки параметров
-        ret.emplace_back(sub.connection(), subscriptionId_, response->results[i].monitoredItemId);
+    opcua::SubscriptionParameters subscriptionParameters{};
+    subscriptionParameters.publishingInterval = publishingInterval;
+    auto subscriptionId = createSubscription(subscriptionParameters);
+
+    std::vector<UA_MonitoredItemCreateRequest> requests(ids.size());
+    std::vector<std::unique_ptr<opcua::services::detail::MonitoredItemContext>> contexts(ids.size());
+    opcua::services::MonitoringParametersEx monitoringParameters{};
+    monitoringParameters.samplingInterval = samplingInterval;
+
+    for (size_t i = 0; i < ids.size(); ++i)
+    {
+        auto&& [id, res] = std::tie(ids[i], results[i]);
+
+        //CreateMonitoredItemsRequest
+        requests[i] = opcua::services::detail::makeMonitoredItemCreateRequest(
+                                                id,
+                                                opcua::MonitoringMode::Reporting,
+                                                monitoringParameters);
+
+        //MonitoredItemContexts
+        contexts[i] = std::make_unique<opcua::services::detail::MonitoredItemContext>();
+        contexts[i]->catcher = &opcua::detail::getExceptionCatcher(client);
+        contexts[i]->itemToMonitor = id;
+        contexts[i]->dataChangeCallback =
+        [&](uint32_t subId, uint32_t monId, const opcua::DataValue& value)
+        {
+            processResult(opcua::toString(id.nodeId()), value, res);
+        };
+        contexts[i]->eventCallback = {};
+        contexts[i]->deleteCallback = {};
     }
 
-    return ret;
+    const auto request = opcua::services::detail::makeCreateMonitoredItemsRequest(
+                                                    subscriptionId,
+                                                    monitoringParameters.timestamps,
+                                                    {requests.data(), requests.size()});
+
+    std::vector<opcua::services::detail::MonitoredItemContext*> contextsPtr(contexts.size());
+    std::vector<UA_Client_DataChangeNotificationCallback> dataChangeCallbacks(contexts.size());
+    std::vector<UA_Client_DeleteMonitoredItemCallback> deleteCallbacks(contexts.size());
+
+    opcua::services::detail::convertMonitoredItemContexts(
+        contexts, contextsPtr, dataChangeCallbacks, {}/*EventNotificationCallback*/, deleteCallbacks
+    );
+
+    opcua::ua::CreateMonitoredItemsResponse response = UA_Client_MonitoredItems_createDataChanges(
+        client.handle(),
+        request,
+        reinterpret_cast<void**>(contextsPtr.data()),
+        dataChangeCallbacks.data(),
+        deleteCallbacks.data()
+    );
+
+    opcua::services::detail::storeMonitoredItemContexts(client, opcua::asWrapper<opcua::ua::CreateMonitoredItemsRequest>(request).subscriptionId(), response, contexts);
+
+    const opcua::StatusCode serviceResult = opcua::services::detail::getServiceResult(response);
+    opcua::throwIfBad(serviceResult);
+ 
+    return serviceResult;
 }
 // -----------------------------------------------------------------------------

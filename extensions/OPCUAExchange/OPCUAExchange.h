@@ -95,6 +95,7 @@ namespace uniset
      - \b writeToAllChannels [0,1] - Включение режима записи по всем каналам. По умолчанию датчики пишутся только в активном канале обмена.
      - \b enableSubscription [0,1] - Включение опроса сервера по подписке.
      - \b maxNodesPerRead N - Максимальное количество элементов в одном запросе на чтение. Если не задано, то читается все одним запросом.
+     Также при подписке используется как ограничение запроса мониторинга элементов за раз.
      - \b maxNodesPerWrite N - Максимальное количество элементов в одном запросе на запись. Если не задано, то пишется все одним запросом.
      - \b publishingInterval N(миллисекунды) - Циклический интервал в миллисекундах, когда подписка запрашивается для возврата уведомлений.
      - \b samplingInterval N(миллисекунды) - Интервал выборки, с которой сервер должен выполнять выборку из своего базового источника на предмет изменения
@@ -213,11 +214,11 @@ namespace uniset
             struct ReadGroup
             {
                 std::vector<std::vector<OPCUAClient::ResultVar>> results;
-                std::vector<std::vector<UA_ReadValueId>> ids;
+                std::vector<std::vector<opcua::ua::ReadValueId>> ids;
             };
             struct WriteGroup
             {
-                std::vector<std::vector<UA_WriteValue>> ids;
+                std::vector<std::vector<opcua::ua::WriteValue>> ids;
             };
             /*! Информация о входе/выходе */
             struct OPCAttribute:
@@ -252,9 +253,8 @@ namespace uniset
                     size_t grNumber = {0}; // Номер группы запроса в общем списке
                     int32_t get();
                     float getF();
-                    bool statusOk();
-                    UA_StatusCode status();
-                    const UA_ReadValueId& ref();
+                    const opcua::StatusCode status();
+                    const opcua::ua::ReadValueId& ref();
                     // Subscription
                     uint32_t subscriptionId = {0U};
                     uint32_t monitoredItemId = {0U};
@@ -269,10 +269,9 @@ namespace uniset
                     size_t grNumber = {0}; // Номер группы запроса в общем списке
                     bool set( int32_t val );
                     bool setF( float val );
-                    bool statusOk();
-                    UA_StatusCode status();
-                    const UA_WriteValue& ref();
-                    static void init( UA_WriteValue* wval, const std::string& nodeId, const std::string& type, int32_t defvalue );
+                    const opcua::StatusCode status();
+                    const opcua::ua::WriteValue& ref();
+                    static opcua::Variant initValue(const std::string& stype, int32_t defvalue );
                 };
                 WrValue wval[numChannels];
 
@@ -387,8 +386,6 @@ namespace uniset
             bool waitSM();
             bool tryConnect(Channel* ch);
             void initOutputs();
-            void createSubscription(int nchannel);
-            void doCreateSubscription(int nchannel);
 
             xmlNode* confnode = { nullptr }; /*!< xml-узел в настроечном файле */
             timeout_t polltime = { 100 };   /*!< периодичность обновления данных, [мсек] */
@@ -449,6 +446,7 @@ namespace uniset
             uint16_t stopOnError = {0U};                /*!< параметр, для выбора поведения процесса при ошибке в OPCUA */
             std::atomic<uint32_t> connectCount = {0U};  /*!< Считаем количество успешных подключений к серверу */
             std::atomic_bool subscription_ok = {false};
+            std::atomic_bool newSessionActivated = {false};
 
             std::atomic_bool activated = { false };
             std::atomic_bool cancelled = { false };
@@ -517,6 +515,7 @@ namespace uniset
             std::chrono::steady_clock::time_point startTime;
 
         private:
+            void doCreateSubscription(int nchannel);
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset
