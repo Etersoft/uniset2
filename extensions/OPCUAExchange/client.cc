@@ -55,8 +55,8 @@ int main(int argc, char* argv[])
     int msecpause = 200;
     timeout_t tout = UniSetTimer::WaitUpTime;
     size_t ncycles = 0;
-    std::vector<UA_ReadValueId> rvalues;
-    std::vector<UA_WriteValue> wvalues;
+    std::vector<opcua::ua::ReadValueId> rvalues;
+    std::vector<opcua::ua::WriteValue> wvalues;
     std::vector<std::string> attrs;
 
     while(1)
@@ -259,7 +259,7 @@ int main(int argc, char* argv[])
                     cout << "write:" << endl;
 
                 for( size_t i = 0; i < attrs.size(); i++ )
-                    cout << attrs[i]  << " = " << (*(int32_t*)wvalues[i].value.value.data) << endl;
+                    cout << attrs[i]  << " = " << (*(int32_t*)wvalues[i].value().value().data()) << endl;
 
                 if( verb )
                     cout << endl;
@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
                         cerr << "write error code " << ret << endl;
 
                         for( size_t i = 0; i < wvalues.size(); i++ )
-                            cerr << attrs[i] << ": status=" << UA_StatusCode_name(wvalues[i].value.status) << endl;
+                            cerr << attrs[i] << ": status=" << wvalues[i].value().status().name() << endl;
                     }
                     else if( verb )
                     {

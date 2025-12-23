@@ -17,8 +17,6 @@
 #include <sstream>
 #include <limits>
 #include <iomanip>
-#include <unordered_set>
-#include <open62541/client_highlevel.h>
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
 #include "Extensions.h"
@@ -140,12 +138,20 @@ namespace uniset
                 }
             }
 
-            //Подписка для opcua по флагу
-            if(enableSubscription)
+            channels[i].client->onSessionActivated([this, i]
             {
-                opclog3 << myname << " Create subscription for channel " << i + 1 << endl;
-                createSubscription(i);
-            }
+                if(enableSubscription){
+                    opclog3 << myname << " Session activated for channel " << i << endl;
+                    subscription_ok = false;
+                    channels[i].needSubscription = true;
+                }
+                newSessionActivated = true;
+            });
+
+            channels[i].client->onSubscriptionInactive([this, i](opcua::ua::IntegerId id)
+            {
+                opclog3 << myname << " Subscription [" << id << "] innactive for channel " << i << endl;
+            });
         }
 
         if( channels[0].addr.empty() )
@@ -470,6 +476,24 @@ namespace uniset
                     msleep(reconnectPause);
                     continue;
                 }
+                
+                if(newSessionActivated)
+                {
+                    newSessionActivated = false;
+                    opclog3 << myname << " Read server info <<<<<<< " << endl;
+                    opcua::Node node = ch->client->createNode(opcua::VariableId::Server_ServerStatus_CurrentTime);
+                    opclog3 << myname << " Server date (UTC): " << node.readValue().to<opcua::DateTime>().format("%Y-%m-%d %H:%M:%S") << endl;
+                    node = ch->client->createNode(opcua::VariableId::Server_ServerCapabilities_OperationLimits_MaxNodesPerRead);
+                    opclog3 << myname << " Server_ServerCapabilities_OperationLimits_MaxNodesPerRead: " << node.readValue().to<uint32_t>() << endl;
+                    node = ch->client->createNode(opcua::VariableId::Server_ServerCapabilities_OperationLimits_MaxNodesPerWrite);
+                    opclog3 << myname << " Server_ServerCapabilities_OperationLimits_MaxNodesPerWrite: " << node.readValue().to<uint32_t>() << endl;
+                    node = ch->client->createNode(opcua::VariableId::Server_ServerCapabilities_OperationLimits_MaxMonitoredItemsPerCall);
+                    opclog3 << myname << " Server_ServerCapabilities_OperationLimits_MaxMonitoredItemsPerCall: " << node.readValue().to<uint32_t>() << endl;
+                    /*
+                    ServerType_ServerCapabilities_OperationLimits_MaxNodesPerRead???
+                    */
+                    opclog3 << myname << " End server info >>>>>>> " << endl;
+                }
 
                 // Create subscription outside callback after session activation
                 if(enableSubscription && ch->needSubscription)
@@ -498,6 +522,15 @@ namespace uniset
 
                 if(enableSubscription)
                 {
+                    if(ch->needSubscription)
+                    {
+                        opclog3 << myname << " doCreateSubscription for channel " << ch->idx << endl;
+                        doCreateSubscription(ch->idx);
+                        ch->needSubscription = false;
+                        connectCount++;
+                        subscription_ok = true;
+                    }
+
                     try
                     {
                         ch->client->rethrowException();
@@ -595,10 +628,10 @@ namespace uniset
 
                         auto ret = ch->client->write32(it);
 
-                        if( ret != UA_STATUSCODE_GOOD )
+                        if( ret.isBad() )
                         {
                             opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
-                                    << " write error: " << UA_StatusCode_name(ret) << endl;
+                                    << " write error: " << ret.name() << endl;
                             addError(ch->idx, "write", ret);
                         }
 
@@ -629,7 +662,20 @@ namespace uniset
                 try
                 {
                     if(subscription_ok)
+                    {
                         ch->client->runIterate(timeoutIterate);
+                    }
+                    else
+                        opcwarn << myname << "(channel" << ch->num << "Thread): subscription does not ready" << endl;
+                        
+                }
+                catch (const opcua::BadDisconnect& ex)
+                {
+                    opcwarn << myname << "(channel" << ch->num << "Thread): ServiceFault disconnect on attempt - " << ex.what() << endl;
+                }
+                catch (const opcua::BadStatus& ex)
+                {
+                    opcwarn << myname << "(channel" << ch->num << "Thread): ServiceFault bad status on attempt - " << ex.what() << endl;
                 }
                 catch(const std::exception& ex)
                 {
@@ -651,21 +697,20 @@ namespace uniset
                     {
                         std::vector<std::vector<OPCUAClient::ResultVar>>::iterator rit = v.second->results.begin();
 
-                        for(auto& it : v.second->ids)
+                        for(const auto& it : v.second->ids)
                         {
                             opclog4 << myname << "(channelExchange): channel" << ch->num << " tick " << (int) tick << " read "
                                     << it.size() << " attrs" << endl;
 
                             auto ret = ch->client->read(it, *rit++);
 
-                            if( ret != UA_STATUSCODE_GOOD )
+                            if( ret.isBad() )
                             {
                                 opcwarn << myname << "(channelExchange): channel" << ch->num << " tick=" << (int) tick
-                                        << " read error: " << UA_StatusCode_name(ret) << endl;
+                                        << " read error: " << ret.name() << endl;
                                 addError(ch->idx, "read", ret);
                             }
 
-                            // Проверяем критичные ошибки, требующие переподключения и переключения канала
                             if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED ||
                                     ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
                                     ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
@@ -841,7 +886,7 @@ namespace uniset
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
-                        if( io->rval[ch->idx].statusOk() )
+                        if( io->rval[ch->idx].status().isGood() )
                         {
                             if( io->vtype == OPCUAClient::VarType::Float )
                                 io->set( io->rval[ch->idx].getF() );
@@ -863,7 +908,7 @@ namespace uniset
                     {
                         uniset::uniset_rwmutex_wrlock lock(io->vmut);
 
-                        if( io->rval[ch->idx].statusOk() )
+                        if( io->rval[ch->idx].status().isGood() )
                             io->val = getBits(io->rval[ch->idx].get() ? 1 : 0, io->mask, io->offset);
                         else
                             addError(ch->idx, "read", io->rval[ch->idx].status(), io->attrName);
@@ -1015,7 +1060,7 @@ namespace uniset
         if( !gr )
             return 0;
 
-        if( !statusOk() || !gr->results[grNumber][grIndex].statusOk() )
+        if( status().isBad() || gr->results[grNumber][grIndex].status.isBad() )
             return 0;
 
         return gr->results[grNumber][grIndex].get();
@@ -1026,7 +1071,7 @@ namespace uniset
         if( !gr )
             return 0;
 
-        if( !statusOk() || !gr->results[grNumber][grIndex].statusOk() )
+        if( status().isBad() || gr->results[grNumber][grIndex].status.isBad() )
             return 0;
 
         if( gr->results[grNumber][grIndex].type == OPCUAClient::VarType::Float )
@@ -1035,15 +1080,10 @@ namespace uniset
         return gr->results[grNumber][grIndex].get();
     }
     // ------------------------------------------------------------------------------------------
-    bool OPCUAExchange::OPCAttribute::RdValue::statusOk()
-    {
-        return status() == UA_STATUSCODE_GOOD;
-    }
-    // ------------------------------------------------------------------------------------------
-    UA_StatusCode OPCUAExchange::OPCAttribute::RdValue::status()
+    const opcua::StatusCode OPCUAExchange::OPCAttribute::RdValue::status()
     {
         if( !gr )
-            return UA_STATUSCODE_BAD;
+            return opcua::StatusCode{ UA_STATUSCODE_BADUNEXPECTEDERROR };
 
         return gr->results[grNumber][grIndex].status;
     }
@@ -1092,67 +1132,51 @@ namespace uniset
         return (value & mask) >> offset;
     }
     // ------------------------------------------------------------------------------------------
-    void OPCUAExchange::OPCAttribute::WrValue::init( UA_WriteValue* wv, const std::string& nodeId, const std::string& stype, int32_t defvalue )
+    opcua::Variant OPCUAExchange::OPCAttribute::WrValue::initValue( const std::string& stype, int32_t defvalue )
     {
-        UA_WriteValue_init(wv);
-        wv->attributeId = UA_ATTRIBUTEID_VALUE;
-        wv->value.hasValue = true;
-        wv->nodeId = UA_NODEID(nodeId.c_str());
-        // wv->value.value.storageType = UA_VARIANT_DATA_NODELETE;
-
         if( stype == "bool" )
         {
-            bool val = defvalue != 0;
-            UA_Variant_setScalarCopy(&wv->value.value, &val, &UA_TYPES[UA_TYPES_BOOLEAN]);
+            return opcua::Variant{static_cast<bool>(defvalue != 0)};
         }
         else if( stype == "int16" )
         {
-            int16_t def = (int16_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_INT16]);
+            return opcua::Variant{static_cast<int16_t>(defvalue)};
         }
         else if( stype == "uint16" )
         {
-            uint16_t def = (uint16_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT16]);
+            return opcua::Variant{static_cast<uint16_t>(defvalue)};
         }
         else  if( stype == "int32" )
         {
-            int32_t def = (int32_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_INT32]);
+            return opcua::Variant{static_cast<int32_t>(defvalue)};
         }
         else if( stype == "uint32" )
         {
-            uint32_t def = (uint32_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT32]);
+            return opcua::Variant{static_cast<uint32_t>(defvalue)};
         }
         else if( stype == "byte" )
         {
-            uint8_t def = (uint8_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_BYTE]);
+            return opcua::Variant{static_cast<uint8_t>(defvalue)};
         }
         else if( stype == "int64" )
         {
-            int64_t def = (int64_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_INT64]);
+            return opcua::Variant{static_cast<int64_t>(defvalue)};
         }
         else if( stype == "uint64" )
         {
-            uint64_t def = (uint64_t)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_UINT64]);
+            return opcua::Variant{static_cast<uint64_t>(defvalue)};
         }
         else if( stype == "float" )
         {
-            float def = (float)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_FLOAT]);
+            return opcua::Variant{static_cast<float>(defvalue)};
         }
         else if( stype == "double" )
         {
-            double def = (double)defvalue;
-            UA_Variant_setScalarCopy(&wv->value.value, &def, &UA_TYPES[UA_TYPES_DOUBLE]);
+            return opcua::Variant{static_cast<double>(defvalue)};
         }
         else
         {
-            UA_Variant_setScalarCopy(&wv->value.value, &defvalue, &UA_TYPES[UA_TYPES_INT32]);
+            return opcua::Variant{defvalue};
         }
     }
     // ------------------------------------------------------------------------------------------
@@ -1163,14 +1187,14 @@ namespace uniset
 
         auto& wv = gr->ids[grNumber][grIndex];
 
-        if( wv.value.value.type == &UA_TYPES[UA_TYPES_FLOAT] )
+        if( wv.value().value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
         {
-            *(float*)(wv.value.value.data) = val;
+            *(float*)(wv.value().value().data()) = val;
             return true;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_DOUBLE] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
         {
-            *(double*)(wv.value.value.data) = val;
+            *(double*)(wv.value().value().data()) = val;
             return true;
         }
 
@@ -1184,46 +1208,46 @@ namespace uniset
 
         auto& wv = gr->ids[grNumber][grIndex];
 
-        if( wv.value.value.type == &UA_TYPES[UA_TYPES_BOOLEAN] )
+        if( wv.value().value().isType(&UA_TYPES[UA_TYPES_BOOLEAN]) )
         {
             bool set = val != 0;
-            *(bool*)(wv.value.value.data) = set;
+            *(bool*)(wv.value().value().data()) = set;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT16] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_INT16]) )
         {
-            *(int16_t*)(wv.value.value.data) = (int16_t)val;
+            *(int16_t*)(wv.value().value().data()) = (int16_t)val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_UINT16] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_UINT16]) )
         {
-            *(uint16_t*)(wv.value.value.data) = (uint16_t)val;
+            *(uint16_t*)(wv.value().value().data()) = (uint16_t)val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT32] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_INT32]) )
         {
-            *(int32_t*)(wv.value.value.data) = val;
+            *(int32_t*)(wv.value().value().data()) = val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_UINT32] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_UINT32]) )
         {
-            *(uint32_t*)(wv.value.value.data) = (uint32_t)val;
+            *(uint32_t*)(wv.value().value().data()) = (uint32_t)val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_BYTE] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_BYTE]) )
         {
-            *(uint8_t*)(wv.value.value.data) = (uint8_t)val;
+            *(uint8_t*)(wv.value().value().data()) = (uint8_t)val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_UINT64] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_UINT64]) )
         {
-            *(uint64_t*)(wv.value.value.data) = val;
+            *(uint64_t*)(wv.value().value().data()) = val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_INT64] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_INT64]) )
         {
-            *(int64_t*)(wv.value.value.data) = val;
+            *(int64_t*)(wv.value().value().data()) = val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_FLOAT] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
         {
-            *(float*)(wv.value.value.data) = val;
+            *(float*)(wv.value().value().data()) = val;
         }
-        else if( wv.value.value.type == &UA_TYPES[UA_TYPES_DOUBLE] )
+        else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
         {
-            *(double*)(wv.value.value.data) = val;
+            *(double*)(wv.value().value().data()) = val;
         }
         else
         {
@@ -1233,21 +1257,16 @@ namespace uniset
         return true;
     }
     // ------------------------------------------------------------------------------------------
-    bool OPCUAExchange::OPCAttribute::WrValue::statusOk()
-    {
-        return status() == UA_STATUSCODE_GOOD;
-    }
-    // ------------------------------------------------------------------------------------------
-    UA_StatusCode OPCUAExchange::OPCAttribute::WrValue::status()
+    const opcua::StatusCode OPCUAExchange::OPCAttribute::WrValue::status()
     {
         if( !gr )
-            return UA_STATUSCODE_BAD;
+            return opcua::StatusCode{ UA_STATUSCODE_BADUNEXPECTEDERROR };
 
-        return gr->ids[grNumber][grIndex].value.status;
+        return gr->ids[grNumber][grIndex].value().status();
     }
     // ------------------------------------------------------------------------------------------
-    static const UA_WriteValue nullWriteValue = UA_WriteValue{};
-    const UA_WriteValue& OPCUAExchange::OPCAttribute::WrValue::ref()
+    static const opcua::ua::WriteValue nullWriteValue = opcua::ua::WriteValue{};
+    const opcua::ua::WriteValue& OPCUAExchange::OPCAttribute::WrValue::ref()
     {
         if( !gr )
             return nullWriteValue;
@@ -1255,8 +1274,8 @@ namespace uniset
         return gr->ids[grNumber][grIndex];
     }
     // ------------------------------------------------------------------------------------------
-    static const UA_ReadValueId nullReadValueId = UA_ReadValueId{};
-    const UA_ReadValueId& OPCUAExchange::OPCAttribute::RdValue::ref()
+    static const opcua::ua::ReadValueId nullReadValueId = opcua::ua::ReadValueId{};
+    const opcua::ua::ReadValueId& OPCUAExchange::OPCAttribute::RdValue::ref()
     {
         if( !gr )
             return nullReadValueId;
@@ -1309,8 +1328,7 @@ namespace uniset
         if( maxItem >= iolist.size() )
             iolist.resize(maxItem + 30);
 
-        int tick = (uint8_t)IOBase::initIntProp(it, "opcua_tick", prop_prefix, false);
-        inf->tick = tick;
+        inf->tick = enableSubscription ? (uint8_t)0 : (uint8_t)IOBase::initIntProp(it, "opcua_tick", prop_prefix, false); ;
 
         std::string smask = IOBase::initProp(it, "opcua_mask", prop_prefix, false);
 
@@ -1350,29 +1368,25 @@ namespace uniset
                 {
                     gr = std::make_shared<ReadGroup>();
                     channels[chan].readValues.emplace(inf->tick, gr);
-                    gr->ids.emplace_back(std::vector<UA_ReadValueId>());
+                    gr->ids.emplace_back(std::vector<opcua::ua::ReadValueId>());
                     gr->results.emplace_back(std::vector<OPCUAClient::ResultVar>());
                 }
-
-                UA_ReadValueId* rv;
 
                 // Добавление нового регистра в зависимости от ограничений на чтение.
                 if(maxReadItems)
                 {
                     if(gr->ids.back().size() >= maxReadItems)
                     {
-                        gr->ids.emplace_back(std::vector<UA_ReadValueId>());
+                        gr->ids.emplace_back(std::vector<opcua::ua::ReadValueId>());
                         gr->results.emplace_back(std::vector<OPCUAClient::ResultVar>());
                     }
                 }
 
-                rv = &(gr->ids.back().emplace_back(UA_ReadValueId{}));
-                UA_ReadValueId_init(rv);
-                rv->attributeId = UA_ATTRIBUTEID_VALUE;
-                rv->nodeId = UA_NODEID(attr.c_str());
+                opcua::NodeId nodeId = opcua::NodeId::parse(attr.c_str());
+                gr->ids.back().emplace_back(opcua::ua::ReadValueId{nodeId, opcua::AttributeId::Value});
 
                 OPCUAClient::ResultVar res;
-                res.status = UA_STATUSCODE_GOOD;
+                res.status = opcua::StatusCode{UA_STATUSCODE_GOOD};//default code UA_STATUSCODE_GOOD
                 res.type = inf->vtype;
 
                 if( inf->vtype == OPCUAClient::VarType::Float )
@@ -1407,23 +1421,24 @@ namespace uniset
                 {
                     gr = std::make_shared<WriteGroup>();
                     channels[chan].writeValues.emplace(inf->tick, gr);
-                    gr->ids.emplace_back(std::vector<UA_WriteValue>());
+                    gr->ids.emplace_back(std::vector<opcua::ua::WriteValue>());
                 }
-
-                UA_WriteValue* wv;
 
                 // Добавление нового регистра в зависимости от ограничений на запись.
                 if(maxWriteItems)
                 {
                     if(gr->ids.back().size() >= maxWriteItems)
                     {
-                        gr->ids.emplace_back(std::vector<UA_WriteValue>());
+                        gr->ids.emplace_back(std::vector<opcua::ua::WriteValue>());
                     }
                 }
 
-                wv = &(gr->ids.back().emplace_back(UA_WriteValue{}));
-
-                OPCAttribute::WrValue::init(wv, attr, vtype, forceSetBits(0, inf->defval, inf->mask, inf->offset));
+                gr->ids.back().emplace_back(opcua::ua::WriteValue{
+                                            opcua::NodeId::parse(attr.c_str()),
+                                            opcua::AttributeId::Value,
+                                            {},
+                                            opcua::DataValue{OPCAttribute::WrValue::initValue(vtype, forceSetBits(0, inf->defval, inf->mask, inf->offset))}
+                                        });
 
                 OPCAttribute::WrValue wr;
                 wr.gr = gr;
@@ -1532,10 +1547,10 @@ namespace uniset
                         {
                             auto errcode = channels[i].client->write(it->wval[i].ref());
 
-                            if( errcode != UA_STATUSCODE_GOOD )
+                            if( errcode.isBad() )
                                 opcwarn << myname << "(initOutput): channel" << i
                                         << " sid=" << it->si.id
-                                        << " write error: " << UA_StatusCode_name(errcode) << endl;
+                                        << " write error: " << errcode.name() << endl;
                         }
                     }
                 }
@@ -1602,6 +1617,7 @@ namespace uniset
         cout << "--opcua-write-to-all-channels  - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
         cout << "--opcua-maxNodesPerRead        - Количество элементов для чтения в одном запросе. По-умолчанию неограниченно" << endl;
         cout << "--opcua-maxNodesPerWrite       - Количество элементов для записи в одном запросе. По-умолчанию неограниченно" << endl;
+        cout << "--opcua-enable-subscription    - Включить режим подписки. По-умолчанию выключено" << endl;
 
         cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
         cout << "--opcua-default-exchange-mode  - Режим обмена по-умолчанию при старте процесса" << endl;
@@ -2043,152 +2059,36 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::doCreateSubscription(int nchannel)
     {
-        int i = nchannel;
+        auto t_start = std::chrono::steady_clock::now();
 
-        opclog3 << myname << " doCreateSubscription for channel " << i << endl;
-        subscription_ok = false;
-
-        auto sub = channels[i].client->createSubscription();
-
-        // Modify and delete the subscription via the returned Subscription<T> object
-        opcua::SubscriptionParameters subscriptionParameters{};
-        subscriptionParameters.publishingInterval = publishingInterval;
-        sub.setSubscriptionParameters(subscriptionParameters);
-        sub.setPublishingMode(true);
-
-        std::vector<UA_ReadValueId> items;
-        IOList rdlist;
-        std::vector<uniset::DataChangeCallback> callbacks;
-        std::vector<uniset::DeleteMonitoredItemCallback> deletecallbacks;
-
-        for( const auto& it : iolist )
+        for( auto&& v : channels[nchannel].readValues )//For subscription only 1 readValue array
         {
-            if(it->stype != UniversalIO::AI && it->stype != UniversalIO::DI)
-                continue;
-
-            if( it->ignore )
-                continue;
-
-            items.push_back(it->rval[i].ref());
-            rdlist.push_back(it);// Копирование std::shared_ptr
-
-            callbacks.emplace_back(
-                [this, i, io = it](const auto & item, const opcua::DataValue & value)
+            short i = 1;
+            std::vector<std::vector<OPCUAClient::ResultVar>>::iterator rit = v.second->results.begin();
+            for( auto& it : v.second->ids )
             {
-                opclog5 << myname << "item data changed, new value: " << (*(UA_Int32*) value.value().data() ) << endl;
-
-                auto& result = io->rval[i].gr->results[io->rval[i].grNumber][io->rval[i].grIndex];
-                auto data = value.value();
-
-                result.status = value.status();
-
-                if(data.isType(&UA_TYPES[UA_TYPES_INT32]))
-                    result.value = int32_t(*(UA_Int32*) data.data());
-                else if(data.isType(&UA_TYPES[UA_TYPES_UINT32]))
-                    result.value = int32_t(*(UA_UInt32*) data.data());
-
-                if(data.isType(&UA_TYPES[UA_TYPES_INT64]))
-                    result.value = int32_t(*(UA_Int64*) data.data());
-                else if(data.isType(&UA_TYPES[UA_TYPES_UINT64]))
-                    result.value = int32_t(*(UA_UInt64*) data.data());
-                else if(data.isType(&UA_TYPES[UA_TYPES_BOOLEAN]))
-                    result.value = (bool)(*(UA_Boolean*) data.data() ? 1 : 0);
-
-                if(data.isType(&UA_TYPES[UA_TYPES_INT16]))
-                    result.value = int32_t(*(UA_Int16*) data.data());
-                else if(data.isType(&UA_TYPES[UA_TYPES_UINT16]))
-                    result.value = int32_t(*(UA_UInt16*) data.data());
-
-                if(data.isType(&UA_TYPES[UA_TYPES_BYTE]))
-                    result.value = int32_t(*(UA_Byte*) data.data());
-                else if(data.isType(&UA_TYPES[UA_TYPES_FLOAT]))
+                try
                 {
-                    result.type = OPCUAClient::VarType::Float;
-                    result.value = (float)(*(UA_Float*) data.data());
-                }
-                else if(data.isType(&UA_TYPES[UA_TYPES_DOUBLE]))
+                    opcinfo << myname << " Create subscription part " << i++ << endl;
+                    const opcua::StatusCode result = channels[nchannel].client->subscribeDataChanges(it, *rit++, samplingInterval, publishingInterval);
+                    opcinfo << myname << " Created subscription status: " << result.name() << endl;
+                    //result.statusCode().throwIfBad();-> todo result array!
+
+                }catch(const std::exception& ex)
                 {
-                    result.type = OPCUAClient::VarType::Float;
-                    result.value = (float)(*(UA_Double*) data.data());
+                    // Бросается исключение, а в основном цикле channelThread проверяем на наличие в exceptionCatcher и ретранслируем.
+                    opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
+                    throw;
                 }
-            });
-        }
-
-        deletecallbacks.resize(items.size());
-
-        // Create a monitored item within the subscription for data change notifications
-        try
-        {
-            opclog3 << myname << " Create monitoring items : " << items.size() << endl;
-            auto t_start = std::chrono::steady_clock::now();
-
-            bool stop = false;
-
-            if((stopOnError == smFirstOnly && connectCount == 0) || stopOnError == smAny)
-                stop = true;
-
-            auto result = channels[i].client->subscribeDataChanges(sub, items, callbacks, deletecallbacks, stop);
-
-            // "result" если запрос прошел успешно, то данные в ответе идут в том же порядке и
-            // количестве что и в запросе. Если не удалось подписаться на датчик будет исключение
-            // брошено в subscribeDataChanges.
-            opcua::MonitoringParametersEx monitoringParameters{};
-            monitoringParameters.samplingInterval = samplingInterval;
-
-            assert(result.size() == rdlist.size());
-
-            for(size_t j = 0; j < result.size(); j++)
-            {
-                uint32_t monId = result[j].monitoredItemId();
-
-                if(monId)
+                catch(...)
                 {
-                    result[j].setMonitoringParameters(monitoringParameters);
-                    result[j].setMonitoringMode(opcua::MonitoringMode::Reporting);
-
-                    rdlist[j]->rval[i].subscriptionId = result[j].subscriptionId();
-                    rdlist[j]->rval[i].monitoredItemId = monId;
-                    rdlist[j]->rval[i].subscriptionState = true;
+                    cerr << "unexpected exception" << endl;
                 }
-                else
-                {
-                    opcwarn << "Error subscription for item: " << rdlist[j]->attrName << endl;
-                    rdlist[j]->rval[i].subscriptionId = 0;
-                    rdlist[j]->rval[i].monitoredItemId = 0;
-                    rdlist[j]->rval[i].subscriptionState = false;
-                }
-            }
-
-            auto t_end = std::chrono::steady_clock::now();
-            opclog8 << myname << "(add monitoring item): " << setw(10) << setprecision(7) << std::fixed
-                    << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
+            }     
         }
-        catch(const std::exception& ex)
-        {
-            // Бросается исключение, а в основном цикле channelThread проверяем на наличие в exceptionCatcher и ретранслируем.
-            opcwarn << myname << " Error while subscribe data change : " << ex.what() << endl;
-            throw;
-        }
-        catch(...)
-        {
-            cerr << "unexpected exception" << endl;
-        }
-
-        connectCount++;
-        subscription_ok = true;
-    }
-    // -----------------------------------------------------------------------------
-    void OPCUAExchange::createSubscription(int nchannel)
-    {
-        if(channels[nchannel].client == nullptr)
-            return;
-
-        channels[nchannel].client->onSessionActivated([this, i = nchannel]
-        {
-            opclog3 << myname << " Session activated for channel " << i << endl;
-            channels[i].needSubscription = true;
-            subscription_ok = false;
-        });
+        auto t_end = std::chrono::steady_clock::now();
+        opclog8 << myname << " ( added monitoring items ): " << setw(10) << setprecision(7) << std::fixed
+                << std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start).count() << " sec" << endl;
     }
     // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
@@ -2661,7 +2561,7 @@ namespace uniset
 
         if( ch < numChannels )
         {
-            bool isOk = attr->rval[ch].statusOk();
+            bool isOk = attr->rval[ch].status().isGood();
             js->set("status", isOk ? "OK" : UA_StatusCode_name(attr->rval[ch].status()));
         }
         else
@@ -2687,7 +2587,7 @@ namespace uniset
                 }
                 else
                 {
-                    bool isOk = attr->rval[i].statusOk();
+                    bool isOk = attr->rval[i].status().isGood();
                     chObj->set("status", isOk ? "OK" : "ERROR");
                     chObj->set("statusCode", UA_StatusCode_name(attr->rval[i].status()));
                 }
