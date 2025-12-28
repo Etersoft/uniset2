@@ -1434,3 +1434,295 @@ void UNetExchange::initMulticastReceiverForNode( UniXML::iterator root, UniXML::
     recvlist.emplace_back( std::move(ri) );
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+    auto my = UniSetObject::httpGetMyInfo(root);
+    my->set("extensionType", "UNetExchange");
+    return my;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpRequest( const UHttp::HttpRequestContext& ctx )
+{
+    if( ctx.depth() > 0 )
+    {
+        const std::string& req = ctx[0];
+
+        if( req == "status" )
+            return httpStatus();
+
+        if( req == "receivers" )
+            return httpReceivers(ctx.params);
+
+        if( req == "senders" )
+            return httpSenders(ctx.params);
+
+        if( req == "getparam" )
+            return httpGetParam(ctx.params);
+
+        if( req == "setparam" )
+            return httpSetParam(ctx.params);
+    }
+
+    auto json = UniSetObject::httpRequest(ctx);
+
+    if( ctx.depth() == 0 )
+    {
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
+        if( !jdata )
+        {
+            jdata = new Poco::JSON::Object();
+            json->set(myname, jdata);
+        }
+
+        jdata->set("LogServer", LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port));
+    }
+
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpHelp( const Poco::URI::QueryParameters& p )
+{
+    uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
+
+    {
+        uniset::json::help::item cmd("status", "get current object status (JSON)");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("receivers", "get receivers info");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("senders", "get senders info");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("getparam", "read runtime parameters");
+        cmd.param("name", "parameter to read; can be repeated");
+        cmd.param("note", "supported: steptime | maxHeartBeat | activated | no_sender");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("setparam", "set runtime parameters");
+        cmd.param("steptime", "milliseconds");
+        cmd.param("maxHeartBeat", "count");
+        cmd.param("note", "may be disabled by httpEnabledSetParams");
+        myhelp.add(cmd);
+    }
+
+    return myhelp;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpStatus()
+{
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    Object::Ptr st = new Object();
+
+    st->set("name", myname);
+    st->set("activated", activated.load());
+    st->set("no_sender", no_sender);
+    st->set("steptime", (int)steptime);
+    st->set("maxHeartBeat", (int)maxHeartBeat);
+
+    // LogServer
+    st->set("LogServer", LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port));
+
+    // Receivers
+    {
+        Array::Ptr arr = new Array();
+
+        for( const auto& r : recvlist )
+        {
+            Object::Ptr rinfo = new Object();
+
+            if( r.r1 )
+                rinfo->set("chan1", r.r1->httpInfo(nullptr));
+            else
+                rinfo->set("chan1", "DISABLED");
+
+            if( r.r2 )
+                rinfo->set("chan2", r.r2->httpInfo(nullptr));
+            else
+                rinfo->set("chan2", "DISABLED");
+
+            arr->add(rinfo);
+        }
+
+        st->set("receivers", arr);
+    }
+
+    // Senders
+    {
+        Object::Ptr snd = new Object();
+
+        if( sender )
+            snd->set("chan1", sender->httpInfo(nullptr));
+        else
+            snd->set("chan1", "DISABLED");
+
+        if( sender2 )
+            snd->set("chan2", sender2->httpInfo(nullptr));
+        else
+            snd->set("chan2", "DISABLED");
+
+        st->set("senders", snd);
+    }
+
+    Object::Ptr out = new Object();
+    out->set("result", "OK");
+    out->set("status", st);
+    return out;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpReceivers( const Poco::URI::QueryParameters& p )
+{
+    using Poco::JSON::Object;
+    using Poco::JSON::Array;
+
+    Object::Ptr json = new Object();
+    Array::Ptr arr = new Array();
+
+    for( const auto& r : recvlist )
+    {
+        Object::Ptr rinfo = new Object();
+
+        if( r.r1 )
+            rinfo->set("chan1", r.r1->httpInfo(nullptr));
+        else
+            rinfo->set("chan1", "DISABLED");
+
+        if( r.r2 )
+            rinfo->set("chan2", r.r2->httpInfo(nullptr));
+        else
+            rinfo->set("chan2", "DISABLED");
+
+        arr->add(rinfo);
+    }
+
+    json->set("result", "OK");
+    json->set("receivers", arr);
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpSenders( const Poco::URI::QueryParameters& p )
+{
+    using Poco::JSON::Object;
+
+    Object::Ptr json = new Object();
+    Object::Ptr snd = new Object();
+
+    if( sender )
+        snd->set("chan1", sender->httpInfo(nullptr));
+    else
+        snd->set("chan1", "DISABLED");
+
+    if( sender2 )
+        snd->set("chan2", sender2->httpInfo(nullptr));
+    else
+        snd->set("chan2", "DISABLED");
+
+    json->set("result", "OK");
+    json->set("senders", snd);
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpGetParam( const Poco::URI::QueryParameters& p )
+{
+    if( p.empty() )
+        throw uniset::SystemError(myname + "(/getparam): pass at least one 'name' parameter");
+
+    std::vector<std::string> names;
+    names.reserve(p.size());
+
+    for( const auto& kv : p )
+        if( kv.first == "name" && !kv.second.empty() )
+            names.push_back(kv.second);
+
+    if( names.empty() )
+        throw uniset::SystemError(myname + "(/getparam): parameter 'name' is required (can be repeated)");
+
+    Poco::JSON::Object::Ptr js = new Poco::JSON::Object();
+    Poco::JSON::Object::Ptr params = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+    for( const auto& n : names )
+    {
+        if( n == "steptime" )
+            params->set(n, (int)steptime);
+        else if( n == "maxHeartBeat" )
+            params->set(n, (int)maxHeartBeat);
+        else if( n == "activated" )
+            params->set(n, activated.load());
+        else if( n == "no_sender" )
+            params->set(n, no_sender);
+        else
+            unknown->add(n);
+    }
+
+    js->set("result", "OK");
+    js->set("params", params);
+
+    if( unknown->size() > 0 )
+        js->set("unknown", unknown);
+
+    return js;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UNetExchange::httpSetParam( const Poco::URI::QueryParameters& p )
+{
+    if( !httpEnabledSetParams )
+        throw uniset::SystemError(myname + ": /setparam API disabled by admin");
+
+    if( p.empty() )
+        throw uniset::SystemError(myname + "(/setparam): pass key=value pairs, e.g. /setparam?steptime=1000");
+
+    Poco::JSON::Object::Ptr js = new Poco::JSON::Object();
+    Poco::JSON::Object::Ptr updated = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr unknown = new Poco::JSON::Array();
+
+    for( const auto& kv : p )
+    {
+        const std::string& name = kv.first;
+        const std::string& val  = kv.second;
+
+        if( name == "steptime" )
+        {
+            timeout_t v = uni_atoi(val);
+
+            if( v > 0 )
+            {
+                steptime = v;
+                updated->set(name, (int)steptime);
+            }
+        }
+        else if( name == "maxHeartBeat" )
+        {
+            timeout_t v = uni_atoi(val);
+            maxHeartBeat = v;
+            updated->set(name, (int)maxHeartBeat);
+        }
+        else
+        {
+            unknown->add(name);
+        }
+    }
+
+    js->set("result", "OK");
+    js->set("updated", updated);
+
+    if( unknown->size() > 0 )
+        js->set("unknown", unknown);
+
+    return js;
+}
+// -----------------------------------------------------------------------------
+#endif // DISABLE_REST_API
+// -----------------------------------------------------------------------------

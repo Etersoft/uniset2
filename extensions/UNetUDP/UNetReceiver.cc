@@ -938,6 +938,49 @@ namespace uniset
         return s.str();
     }
     // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+    Poco::JSON::Object::Ptr UNetReceiver::httpInfo( Poco::JSON::Object::Ptr root ) const
+    {
+        Poco::JSON::Object::Ptr json = root;
+
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        std::string smode = isLockUpdate() ? "PASSIVE" : "ACTIVE";
+
+        if( mode != Mode::mEnabled )
+            smode = to_string(mode);
+
+        json->set("transport", transport->toString());
+        json->set("mode", smode);
+        json->set("recvOK", isRecvOK());
+        json->set("receivepack", (int)rnum);
+        json->set("lostPackets", (int)getLostPacketsNum());
+        json->set("cacheMissed", (int)cacheMissed);
+
+        // params
+        Poco::JSON::Object::Ptr params = new Poco::JSON::Object();
+        params->set("recvTimeout", (int)recvTimeout);
+        params->set("prepareTime", (int)prepareTime);
+        params->set("evrunTimeout", (int)evrunTimeout);
+        params->set("lostTimeout", (int)lostTimeout);
+        params->set("updatepause", (int)updatepause);
+        params->set("maxDifferens", (int)maxDifferens);
+        json->set("params", params);
+
+        // stats
+        Poco::JSON::Object::Ptr st = new Poco::JSON::Object();
+        st->set("qsize", (int)(wnum - rnum));
+        st->set("recvPerSec", stats.recvPerSec);
+        st->set("upPerSec", stats.upPerSec);
+        st->set("upProcessingTime_usec", (int)stats.upProcessingTime_microsec);
+        st->set("recvProcessingTime_usec", (int)stats.recvProcessingTime_microsec);
+        json->set("stats", st);
+
+        return json;
+    }
+#endif
+    // -----------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------
 namespace std
