@@ -32,6 +32,9 @@
 #include "UDPPacket.h"
 #include "CommonEventLoop.h"
 #include "UNetTransport.h"
+#ifndef DISABLE_REST_API
+#include <Poco/JSON/Object.h>
+#endif
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -173,6 +176,10 @@ namespace uniset
             }
 
             std::string getShortInfo() const noexcept;
+
+#ifndef DISABLE_REST_API
+            Poco::JSON::Object::Ptr httpInfo( Poco::JSON::Object::Ptr root ) const;
+#endif
 
         protected:
 

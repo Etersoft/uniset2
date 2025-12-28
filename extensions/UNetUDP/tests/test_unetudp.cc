@@ -642,3 +642,160 @@ TEST_CASE("[UNetUDP]: perf test", "[unetudp][zero][perf]")
 
     cerr << "perf: " << pt.getCurrent() << " msec" << endl;
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// -----------------------------------------------------------------------------
+#include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
+#include "UHttpRequestHandler.h"
+// -----------------------------------------------------------------------------
+using namespace Poco::Net;
+// -----------------------------------------------------------------------------
+static const std::string httpHost = "127.0.0.1";
+static const int httpPort = 8181;
+static std::string unetName = "UNetExchange";
+// -----------------------------------------------------------------------------
+static std::string httpRequest( const std::string& path )
+{
+    std::string fullPath = "/api/" + uniset::UHttp::UHTTP_API_VERSION + "/" + unetName;
+
+    if( !path.empty() )
+    {
+        if( path[0] != '/' )
+            fullPath += "/";
+
+        fullPath += path;
+    }
+
+    HTTPClientSession session(httpHost, httpPort);
+    HTTPRequest req(HTTPRequest::HTTP_GET, fullPath, HTTPRequest::HTTP_1_1);
+    HTTPResponse res;
+
+    session.sendRequest(req);
+    std::istream& rs = session.receiveResponse(res);
+
+    std::ostringstream oss;
+    oss << rs.rdbuf();
+    return oss.str();
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: HTTP API /status", "[unetudp][http][status]")
+{
+    InitTest();
+
+    std::string s = httpRequest("status");
+    REQUIRE_FALSE( s.empty() );
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE( json );
+
+    REQUIRE( json->get("result").convert<std::string>() == "OK" );
+
+    auto st = json->getObject("status");
+    REQUIRE( st );
+
+    REQUIRE( st->has("name") );
+    REQUIRE( st->has("activated") );
+    REQUIRE( st->has("receivers") );
+    REQUIRE( st->has("senders") );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: HTTP API /receivers", "[unetudp][http][receivers]")
+{
+    InitTest();
+
+    std::string s = httpRequest("receivers");
+    REQUIRE_FALSE( s.empty() );
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE( json );
+
+    REQUIRE( json->get("result").convert<std::string>() == "OK" );
+    REQUIRE( json->has("receivers") );
+
+    auto receivers = json->getArray("receivers");
+    REQUIRE( receivers );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: HTTP API /senders", "[unetudp][http][senders]")
+{
+    InitTest();
+
+    std::string s = httpRequest("senders");
+    REQUIRE_FALSE( s.empty() );
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE( json );
+
+    REQUIRE( json->get("result").convert<std::string>() == "OK" );
+    REQUIRE( json->has("senders") );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: HTTP API /getparam", "[unetudp][http][getparam]")
+{
+    InitTest();
+
+    std::string s = httpRequest("getparam?name=steptime&name=activated");
+    REQUIRE_FALSE( s.empty() );
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE( json );
+
+    REQUIRE( json->get("result").convert<std::string>() == "OK" );
+    REQUIRE( json->has("params") );
+
+    auto params = json->getObject("params");
+    REQUIRE( params );
+    REQUIRE( params->has("steptime") );
+    REQUIRE( params->has("activated") );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: HTTP API /help", "[unetudp][http][help]")
+{
+    InitTest();
+
+    std::string s = httpRequest("help");
+    REQUIRE_FALSE( s.empty() );
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE( json );
+
+    // help должен содержать информацию о командах
+    REQUIRE( json->has(unetName) );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: HTTP API / (root info)", "[unetudp][http][root]")
+{
+    InitTest();
+
+    std::string s = httpRequest("");
+    REQUIRE_FALSE( s.empty() );
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(s);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE( json );
+
+    // Корневой запрос должен вернуть информацию об объекте
+    REQUIRE( json->has(unetName) );
+
+    auto unet = json->getObject(unetName);
+    REQUIRE( unet );
+
+    // Проверяем наличие LogServer (добавляется в httpRequest)
+    REQUIRE( unet->has("LogServer") );
+}
+// -----------------------------------------------------------------------------
+#endif // DISABLE_REST_API

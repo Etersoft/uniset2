@@ -608,6 +608,59 @@ namespace uniset
         return s.str();
     }
     // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+    Poco::JSON::Object::Ptr UNetSender::httpInfo( Poco::JSON::Object::Ptr root ) const
+    {
+        Poco::JSON::Object::Ptr json = root;
+
+        if( !json )
+            json = new Poco::JSON::Object();
+
+        json->set("transport", transport->toString());
+        json->set("mode", to_string(mode));
+        json->set("lastpacknum", (int)packetnum);
+        json->set("items", (int)items.size());
+        json->set("maxAData", (int)getADataSize());
+        json->set("maxDData", (int)getDDataSize());
+
+        // params
+        Poco::JSON::Object::Ptr params = new Poco::JSON::Object();
+        params->set("sendpause", (int)sendpause);
+        params->set("packsendpause", (int)packsendpause);
+        params->set("packsendpauseFactor", (int)packsendpauseFactor);
+        json->set("params", params);
+
+        // packs info
+        Poco::JSON::Array::Ptr packs = new Poco::JSON::Array();
+
+        for( const auto& p : mypacks )
+        {
+            Poco::JSON::Object::Ptr packInfo = new Poco::JSON::Object();
+            packInfo->set("sendfactor", (int)p.first);
+            packInfo->set("count", (int)p.second.size());
+
+            Poco::JSON::Array::Ptr packList = new Poco::JSON::Array();
+
+            for( const auto& pack : p.second )
+            {
+                Poco::JSON::Object::Ptr pi = new Poco::JSON::Object();
+                pi->set("dataID", (int)pack.msg.getDataID());
+                pi->set("numA", (int)pack.msg.asize());
+                pi->set("numD", (int)pack.msg.dsize());
+                pi->set("bytes", (int)sizeof(pack.msg));
+                packList->add(pi);
+            }
+
+            packInfo->set("packs", packList);
+            packs->add(packInfo);
+        }
+
+        json->set("packGroups", packs);
+
+        return json;
+    }
+#endif
+    // -----------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------
 namespace std
