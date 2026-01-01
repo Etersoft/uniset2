@@ -560,7 +560,8 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
     {
-        shm->askSensor(sidMode, cmd);
+        if( sidMode != DefaultObjectId )
+            shm->askSensor(sidMode, cmd);
 
         for( const auto& it : items  )
             shm->askSensor(it.second.id, cmd);

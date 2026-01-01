@@ -197,12 +197,14 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     }
     else
     {
-        test_id = conf->getSensorID("TestMode_S");
+        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-test-sid", it.getProp2("smTestSID", "TestMode_S"));
+
+        test_id = conf->getSensorID(sm_ready_sid);
 
         if( test_id == DefaultObjectId )
         {
             ostringstream err;
-            err << myname << "(init): sidTestSMReady unknown. 'TestMode_S' not found...";
+            err << "(init): Unknown ID for sm-test-sid (--" << prefix << "-sm-test-sid)..." << endl;
             unetcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
@@ -238,14 +240,24 @@ bool UNetExchange::checkExistTransport( const std::string& transportID ) noexcep
 // -----------------------------------------------------------------------------
 void UNetExchange::startReceivers()
 {
+    unetinfo << myname << "(startReceivers): starting " << recvlist.size() << " receivers..." << endl;
+
     for( const auto& it : recvlist )
     {
         if( it.r1 )
+        {
+            unetinfo << myname << "(startReceivers): starting receiver for node " << it.r1->getName() << endl;
             it.r1->start();
+        }
 
         if( it.r2 )
+        {
+            unetinfo << myname << "(startReceivers): starting receiver2 for node " << it.r2->getName() << endl;
             it.r2->start();
+        }
     }
+
+    unetinfo << myname << "(startReceivers): done" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetExchange::waitSMReady()
@@ -385,6 +397,8 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
     {
         case SystemMessage::StartUp:
         {
+            unetinfo << myname << "(sysCommand): StartUp received..." << endl;
+
             if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
             {
                 try
@@ -400,8 +414,11 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 
             if( !waitSMReady() )
             {
+                unetcrit << myname << "(sysCommand): waitSMReady FAILED!" << endl;
+
                 if( !cancelled )
-                   uterminate();
+                    uterminate();
+
                 return;
             }
 
@@ -412,7 +429,6 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 
             while( !cancelled && !activated && !ptAct.checkTime() )
             {
-                cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(300);
 
                 if( activated )
@@ -429,7 +445,17 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
                 uniset::uniset_rwmutex_rlock l(mutex_start);
 
                 if( shm->isLocalwork() )
-                    askSensors(UniversalIO::UIONotify);
+                {
+                    try
+                    {
+                        askSensors(UniversalIO::UIONotify);
+                    }
+                    catch( const std::exception& ex )
+                    {
+                        unetcrit << myname << "(sysCommand): askSensors exception: " << ex.what() << endl;
+                        throw;
+                    }
+                }
             }
 
             askTimer(tmStep, steptime);
@@ -611,6 +637,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
     cout << "--prefix-recv-max-at-time num    - Максимальное количество сообщений вычитываемых из сети за один раз. По умолчанию: 5" << endl;
     cout << "--prefix-recv-ignore-crc  [0,1]  - Отключить оптимизацию по проверке crc, обновлять данные в SM всегда. По умолчанию: 0" << endl;
     cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
+    cout << "--prefix-sm-test-sid name        - Датчик для проверки готовности SM к работе. По умолчанию TestMode_S" << endl;
     cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
     cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
     cout << endl;
