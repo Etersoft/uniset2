@@ -1306,7 +1306,7 @@ namespace uniset
 
         // ищем в <controllers>
         if( id == DefaultObjectId )
-            id = getObjectID(name);
+            id = getControllerID(name);
 
         // ищем в <services>
         if( id == DefaultObjectId )
@@ -1331,15 +1331,15 @@ namespace uniset
 
         // ищем в <controllers>
         if( id == DefaultObjectId )
-            id = getObjectID(name);
-
-        // ищем в <nodes>
-        if( id == DefaultObjectId )
-            id = getNodeID(name);
+            id = getControllerID(name);
 
         // ищем в <services>
         if( id == DefaultObjectId )
             id = getServiceID(name);
+
+        // ищем в <nodes>
+        if( id == DefaultObjectId )
+            id = getNodeID(name);
 
         return id;
     }
