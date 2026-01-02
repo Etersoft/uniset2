@@ -83,6 +83,9 @@ namespace uniset
 
             static UniSetActivatorPtr Instance();
 
+            /*! Print command line help */
+            static void help_print();
+
             virtual ~UniSetActivator();
 
             // запуск системы
