@@ -433,6 +433,45 @@ JavaScript runner for %{name} (supported opcua)
 %endif
 %endif
 
+%package extension-launcher
+Group: Development/C++
+Summary: Process lifecycle manager for UniSet2 distributed systems
+Requires: %name-extension-common = %version-%release
+
+%description extension-launcher
+Process lifecycle manager for UniSet2 distributed systems.
+Handles startup sequence, health monitoring, and automatic restarts.
+
+%package extension-uno
+Group: Development/C++
+Summary: Combined application for running multiple UniSet2 extensions
+Requires: %name-extension-common = %version-%release
+%if_enabled opcua
+Requires: %name-extension-opcua = %version-%release
+%endif
+%if_enabled io
+Requires: %name-extension-io = %version-%release
+%endif
+%if_enabled logicproc
+Requires: %name-extension-logicproc = %version-%release
+%endif
+%if_enabled mqtt
+Requires: %name-extension-mqtt = %version-%release
+%endif
+%if_enabled uwebsocket
+Requires: %name-extension-wsgate = %version-%release
+%endif
+%if_enabled clickhouse
+Requires: %name-extension-clickhouse = %version-%release
+%endif
+%if_enabled pgsql
+Requires: %name-extension-pgsql = %version-%release
+%endif
+
+%description extension-uno
+Combined application that runs multiple UniSet2 extensions in a single process
+with direct SharedMemory access (without IPC overhead).
+
 %prep
 %setup
 
@@ -687,6 +726,12 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_includedir/%oname/extensions/wsgate/
 %endif
 %endif
+
+%files extension-launcher
+%_bindir/%oname-launcher
+
+%files extension-uno
+%_bindir/%oname-uno
 
 %files extension-common-devel
 %dir %_includedir/%oname/extensions

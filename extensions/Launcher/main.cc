@@ -1,0 +1,356 @@
+/*
+ * Copyright (c) 2026 Pavel Vainerman.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, version 2.1.
+ */
+// -------------------------------------------------------------------------
+#include <iostream>
+#include <csignal>
+#include <atomic>
+#include <Poco/Util/HelpFormatter.h>
+#include "Configuration.h"
+#include "UniSetTypes.h"
+#include "ProcessManager.h"
+#include "ConfigLoader.h"
+#include "Debug.h"
+#ifndef DISABLE_REST_API
+#include "UHttpServer.h"
+#include "LauncherHttpRegistry.h"
+#endif
+// -------------------------------------------------------------------------
+using namespace std;
+using namespace uniset;
+// -------------------------------------------------------------------------
+static std::atomic<bool> g_shutdown{false};
+static ProcessManager* g_pm = nullptr;
+// -------------------------------------------------------------------------
+static void signal_handler(int sig)
+{
+    if (sig == SIGTERM || sig == SIGINT)
+    {
+        g_shutdown = true;
+
+        if (g_pm)
+            g_pm->stopMonitoring();
+    }
+}
+// -------------------------------------------------------------------------
+static void print_help(const std::string& prog)
+{
+    cout << prog << " [--confile configure.xml] [--localNode NodeName] [OPTIONS]\n"
+         << "\n"
+         << "UniSet2 Process Launcher - manages startup sequence and health monitoring.\n"
+         << "\n"
+         << "Options:\n"
+         << "  --confile FILE       Configuration file (required)\n"
+         << "  --localNode NAME     Local node name (required)\n"
+         << "  --launcher-name NAME Launcher section name in config\n"
+         << "  --http-port PORT     HTTP API port (0 = disabled)\n"
+         << "  --http-host HOST     HTTP API host (default: 0.0.0.0)\n"
+         << "  --http-whitelist IPs Comma-separated whitelist (CIDR, ranges, IPs)\n"
+         << "  --http-blacklist IPs Comma-separated blacklist (CIDR, ranges, IPs)\n"
+         << "  --health-interval MS Health check interval in ms (default: 5000)\n"
+         << "  --no-monitor         Don't monitor processes after startup\n"
+         << "  --runlist, --dry-run Show what will be launched without starting\n"
+         << "  --verbose            Verbose output\n"
+         << "  --help               Show this help\n"
+         << "\n"
+         << "REST API endpoints (when --http-port is set):\n"
+         << "  GET  /api/v2/launcher                        - Launcher status\n"
+         << "  GET  /api/v2/launcher/status                 - All processes status\n"
+         << "  GET  /api/v2/launcher/processes              - List all processes (detailed)\n"
+         << "  GET  /api/v2/launcher/process/{name}         - Specific process status\n"
+         << "  POST /api/v2/launcher/process/{name}/restart - Restart process\n"
+         << "  GET  /api/v2/launcher/health                 - Health check (for Docker/K8s)\n"
+         << "  GET  /api/v2/launcher/groups                 - Process groups\n"
+         << "  GET  /api/v2/launcher/help                   - API help\n"
+         << "\n"
+         << "Whitelist/Blacklist examples:\n"
+         << "  --http-whitelist \"192.168.1.0/24,10.0.0.1\"\n"
+         << "  --http-blacklist \"192.168.1.100,172.16.0.10-172.16.0.20\"\n"
+         << endl;
+}
+// -------------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+    // Parse command line
+    std::string confFile;
+    std::string nodeName;
+    std::string launcherName;
+    int httpPort = 0;
+    std::string httpHost = "0.0.0.0";
+    std::string httpWhitelist;
+    std::string httpBlacklist;
+    size_t healthInterval = 5000;
+    bool noMonitor = false;
+    bool verbose = false;
+    bool dryRun = false;
+
+    for (int i = 1; i < argc; i++)
+    {
+        std::string arg = argv[i];
+
+        if (arg == "--help" || arg == "-h")
+        {
+            print_help(argv[0]);
+            return 0;
+        }
+
+        if (arg == "--confile" && i + 1 < argc)
+        {
+            confFile = argv[++i];
+            continue;
+        }
+
+        if (arg == "--localNode" && i + 1 < argc)
+        {
+            nodeName = argv[++i];
+            continue;
+        }
+
+        if (arg == "--launcher-name" && i + 1 < argc)
+        {
+            launcherName = argv[++i];
+            continue;
+        }
+
+        if (arg == "--http-port" && i + 1 < argc)
+        {
+            httpPort = std::stoi(argv[++i]);
+            continue;
+        }
+
+        if (arg == "--http-host" && i + 1 < argc)
+        {
+            httpHost = argv[++i];
+            continue;
+        }
+
+        if (arg == "--http-whitelist" && i + 1 < argc)
+        {
+            httpWhitelist = argv[++i];
+            continue;
+        }
+
+        if (arg == "--http-blacklist" && i + 1 < argc)
+        {
+            httpBlacklist = argv[++i];
+            continue;
+        }
+
+        if (arg == "--health-interval" && i + 1 < argc)
+        {
+            healthInterval = std::stoul(argv[++i]);
+            continue;
+        }
+
+        if (arg == "--no-monitor")
+        {
+            noMonitor = true;
+            continue;
+        }
+
+        if (arg == "--runlist" || arg == "--dry-run")
+        {
+            dryRun = true;
+            continue;
+        }
+
+        if (arg == "--verbose" || arg == "-v")
+        {
+            verbose = true;
+            continue;
+        }
+    }
+
+    // Validate required arguments
+    if (confFile.empty())
+    {
+        cerr << "Error: --confile is required" << endl;
+        print_help(argv[0]);
+        return 1;
+    }
+
+    if (nodeName.empty())
+    {
+        cerr << "Error: --localNode is required" << endl;
+        print_help(argv[0]);
+        return 1;
+    }
+
+    // Setup signal handlers
+    signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
+    signal(SIGCHLD, SIG_IGN);  // Prevent zombie processes
+
+    // Set environment variables for child processes
+    setenv("CONFFILE", confFile.c_str(), 0);  // Don't override if set
+    setenv("NODE_NAME", nodeName.c_str(), 0);
+
+    try
+    {
+        // Initialize UniSet configuration (required for CORBA checks)
+        auto conf = uniset_init(argc, argv, confFile);
+
+        if (!conf)
+        {
+            cerr << "Failed to initialize UniSet configuration" << endl;
+            return 1;
+        }
+
+        // Load launcher-specific configuration
+        cout << "Loading configuration from " << confFile << endl;
+
+        ConfigLoader loader;
+        auto config = loader.load(confFile, launcherName);
+
+        // Override settings from command line
+        if (httpPort > 0)
+            config.httpPort = httpPort;
+
+        config.healthCheckInterval_msec = healthInterval;
+
+        // Apply environment variables from config
+        for (const auto& kv : config.environment)
+            setenv(kv.first.c_str(), kv.second.c_str(), 0);
+
+        // Create ProcessManager with UniSet configuration for CORBA checks
+        ProcessManager pm(conf);
+        g_pm = &pm;
+
+        pm.setNodeName(nodeName);
+        pm.setHealthCheckInterval(config.healthCheckInterval_msec);
+        pm.setRestartWindow(config.restartWindow_msec);
+        pm.setCommonArgs(config.commonArgs);
+
+        // Setup logging
+        if (verbose)
+        {
+            pm.log()->addLevel(Debug::ANY);
+            pm.log()->showDateTime(true);
+        }
+        else
+        {
+            pm.log()->addLevel(Debug::INFO);
+            pm.log()->addLevel(Debug::WARN);
+            pm.log()->addLevel(Debug::CRIT);
+        }
+
+        // Register groups and processes
+        for (const auto& group : config.groups)
+            pm.addGroup(group);
+
+        for (const auto& kv : config.processes)
+            pm.addProcess(kv.second);
+
+        // Dry-run mode: show what will be launched and exit
+        if (dryRun)
+        {
+            pm.printRunList(cout);
+            return 0;
+        }
+
+        // Setup callbacks
+        pm.setOnProcessStarted([](const ProcessInfo & proc)
+        {
+            cout << "[STARTED] " << proc.name << " (PID " << proc.pid << ")" << endl;
+        });
+
+        pm.setOnProcessFailed([](const ProcessInfo & proc)
+        {
+            cerr << "[FAILED] " << proc.name << ": " << proc.lastError << endl;
+        });
+
+        pm.setOnProcessStopped([](const ProcessInfo & proc)
+        {
+            cout << "[STOPPED] " << proc.name << endl;
+        });
+
+        // Start HTTP server
+#ifndef DISABLE_REST_API
+        std::shared_ptr<UHttp::UHttpServer> httpServer;
+
+        if (config.httpPort > 0)
+        {
+            cout << "Starting HTTP server on " << httpHost << ":" << config.httpPort << endl;
+
+            std::shared_ptr<UHttp::IHttpRequestRegistry> registry =
+                std::make_shared<LauncherHttpRegistry>(pm);
+            httpServer = std::make_shared<UHttp::UHttpServer>(registry, httpHost, config.httpPort);
+
+            if (!httpWhitelist.empty())
+            {
+                httpServer->setWhitelist(uniset::explode_str(httpWhitelist, ','));
+                cout << "HTTP whitelist: " << httpWhitelist << endl;
+            }
+
+            if (!httpBlacklist.empty())
+            {
+                httpServer->setBlacklist(uniset::explode_str(httpBlacklist, ','));
+                cout << "HTTP blacklist: " << httpBlacklist << endl;
+            }
+
+            httpServer->start();
+        }
+
+#endif
+
+        // Start all processes
+        cout << "Starting processes for node " << nodeName << "..." << endl;
+
+        if (!pm.startAll())
+        {
+            cerr << "Failed to start all processes" << endl;
+            return 1;
+        }
+
+        cout << "All processes started successfully" << endl;
+
+        // Start monitoring
+        if (!noMonitor)
+        {
+            pm.startMonitoring();
+            cout << "Process monitoring enabled (interval: "
+                 << config.healthCheckInterval_msec << "ms)" << endl;
+        }
+
+        // Wait for shutdown signal
+        cout << "Launcher running. Press Ctrl+C to stop." << endl;
+
+        while (!g_shutdown)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+            // Check for critical failures
+            if (pm.anyCriticalFailed())
+            {
+                cerr << "Critical process failed, shutting down" << endl;
+                break;
+            }
+        }
+
+        // Shutdown
+        cout << "Shutting down..." << endl;
+
+#ifndef DISABLE_REST_API
+
+        if (httpServer)
+            httpServer->stop();
+
+#endif
+
+        pm.stopMonitoring();
+        pm.stopAll();
+
+        cout << "Shutdown complete" << endl;
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Error: " << e.what() << endl;
+        return 1;
+    }
+}
+// -------------------------------------------------------------------------
