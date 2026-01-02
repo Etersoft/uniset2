@@ -56,6 +56,8 @@ namespace uniset
 
             std::string getProp2( const std::string& name, const std::string& defval = "" ) const noexcept;
             std::string getProp( const std::string& name ) const noexcept;
+            //! Get property by name1, if empty - try name2
+            std::string getPropOrProp( const std::string& name1, const std::string& name2 ) const noexcept;
             int getIntProp( const std::string& name ) const noexcept;
             /// if value if not positive ( <= 0 ), returns def
             int getPIntProp( const std::string& name, int def ) const noexcept;
@@ -153,6 +155,8 @@ namespace uniset
             // Получить свойство name указанного узла node
             static std::string getProp(const xmlNode* node, const std::string& name) noexcept;
             static std::string getProp2(const xmlNode* node, const std::string& name, const std::string& defval = "" ) noexcept;
+            //! Get property by name1, if empty - try name2
+            static std::string getPropOrProp(const xmlNode* node, const std::string& name1, const std::string& name2) noexcept;
 
             static int getIntProp(const xmlNode* node, const std::string& name) noexcept;
 

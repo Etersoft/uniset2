@@ -223,6 +223,16 @@ int UniXML::getPIntProp(const xmlNode* node, const string& name, int def ) noexc
 	return uniset::uni_atoi(param);
 }
 // -----------------------------------------------------------------------------
+string UniXML::getPropOrProp(const xmlNode* node, const string& name1, const string& name2) noexcept
+{
+	string val = getProp(node, name1);
+
+	if( val.empty() )
+		val = getProp(node, name2);
+
+	return val;
+}
+// -----------------------------------------------------------------------------
 void UniXML::setProp(xmlNode* node, const string& name, const string& text )
 {
 	::xmlSetProp(node, (const xmlChar*)name.c_str(), (const xmlChar*)text.c_str());
@@ -581,6 +591,11 @@ string UniXML_iterator::getProp2( const string& name, const string& defval ) con
 string UniXML_iterator::getProp( const string& name ) const noexcept
 {
 	return UniXML::getProp(curNode, name);
+}
+
+string UniXML_iterator::getPropOrProp( const string& name1, const string& name2 ) const noexcept
+{
+	return UniXML::getPropOrProp(curNode, name1, name2);
 }
 
 // -------------------------------------------------------------------------
