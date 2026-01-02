@@ -710,6 +710,10 @@ AC_CONFIG_FILES([Makefile
 				 extensions/OPCUAExchange/libUniSet2OPCUAExchange.pc
 				 extensions/JScript/Makefile
 				 extensions/JScript/tests/Makefile
+				 extensions/Launcher/Makefile
+				 extensions/Launcher/tests/Makefile
+				 extensions/uno/Makefile
+				 extensions/uno/tests/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile
