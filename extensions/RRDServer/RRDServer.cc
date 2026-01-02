@@ -78,9 +78,9 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
     UniXML::iterator it(cnode);
 
     string fname( it.getProp("filename") );
-    string ff( it.getProp("filter_field") );
-    string fv( it.getProp("filter_value") );
-    string cf( it.getProp("ds_field") );
+    string ff( it.getPropOrProp("filter_field", "filterField") );
+    string fv( it.getPropOrProp("filter_value", "filterValue") );
+    string cf( it.getPropOrProp("ds_field", "dsField") );
 
     string ds(cf + "_dsname");
 

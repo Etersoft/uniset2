@@ -36,23 +36,11 @@ RTUExchange::RTUExchange(uniset::ObjectId objId, xmlNode* cnode,
 
     // префикс для "свойств" - по умолчанию
     mbconf->prop_prefix = "";
+    UniXML::iterator it(cnode);
 
-    // если "принудительно" задан префикс
-    // используем его.
-    {
-        string p("--" + mbconf->prefix + "-set-prop-prefix");
-        string v = conf->getArgParam(p, "");
-
-        if( !v.empty() && v[0] != '-' )
-            mbconf->prop_prefix = v;
-        // если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
-        else if( findArgParam(p, conf->getArgc(), conf->getArgv()) != -1 )
-            mbconf->prop_prefix = "";
-    }
-
+    mbconf->prop_prefix = initPropPrefix( it.getProp("propPrefix"));
     mbinfo << myname << "(init): prop_prefix=" << mbconf->prop_prefix << endl;
 
-    UniXML::iterator it(cnode);
     // ---------- init RS ----------
     devname    = conf->getArgParam("--" + mbconf->prefix + "-dev", it.getProp("device"));
 
@@ -414,7 +402,7 @@ std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange(int argc, const char*
 {
     auto conf = uniset_conf();
 
-    string name = conf->getArgParam("--" + prefix + "-name", "RTUExchange1");
+    string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "RTUExchange1");
 
     if( name.empty() )
     {
@@ -432,8 +420,9 @@ std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange(int argc, const char*
         return 0;
     }
 
-    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    string cname = uniset::getArgParam("--" + prefix + "-confnode", argc, argv, name);
     auto confnode = conf->getNode(cname);
+
     if( !confnode )
     {
         cerr << "(rtuexchange): Not found confnode '" << cname << "' in config file" << endl;

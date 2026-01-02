@@ -27,6 +27,7 @@
 #include "modbus/ModbusTCPServerSlot.h"
 #include "modbus/MBLogSugar.h"
 #include "ORepHelpers.h"
+#include "IOController.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -93,8 +94,8 @@ namespace uniset
             ic->logAgregator()->add(loga);
 
         // определяем фильтр
-        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
-        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
+        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getPropOrProp("filter_field", "filterField"));
+        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getPropOrProp("filter_value", "filterValue"));
         mbinfo << myname << "(init): read s_field='" << s_field
                << "' s_fvalue='" << s_fvalue << "'" << endl;
 
@@ -761,6 +762,11 @@ namespace uniset
                     shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
                     ptHeartBeat.reset();
                 }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    mbcrit << myname << "(updateStatistics): (hb) sid=" << sidHeartBeat
+                           << " IOController_i::NameNotFound: " << ex.err << std::endl;
+                }
                 catch( const uniset::Exception& ex )
                 {
                     mbcrit << myname << "(updateStatistics): (hb) " << ex << std::endl;
@@ -778,6 +784,11 @@ namespace uniset
                 {
                     shm->localSetValue(itRespond, respond_id, (state ? 1 : 0), getId());
                 }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    mbcrit << myname << "(updateStatistics): (respond) sid=" << respond_id
+                           << " IOController_i::NameNotFound: " << ex.err << std::endl;
+                }
                 catch( const uniset::Exception& ex )
                 {
                     mbcrit << myname << "(updateStatistics): (respond) " << ex << std::endl;
@@ -790,6 +801,11 @@ namespace uniset
                 {
                     shm->localSetValue(itAskCount, askcount_id, connCount, getId());
                 }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    mbcrit << myname << "(updateStatistics): (askCount) sid=" << askcount_id
+                           << " IOController_i::NameNotFound: " << ex.err << std::endl;
+                }
                 catch( const uniset::Exception& ex )
                 {
                     mbcrit << myname << "(updateStatistics): (askCount) " << ex << std::endl;
@@ -801,6 +817,11 @@ namespace uniset
                 try
                 {
                     shm->localSetValue(sesscount_it, sesscount_id, tcpserver->getCountSessions(), getId());
+                }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    mbcrit << myname << "(updateStatistics): (sessCount) sid=" << sesscount_id
+                           << " IOController_i::NameNotFound: " << ex.err << std::endl;
                 }
                 catch( const uniset::Exception& ex )
                 {
@@ -897,9 +918,14 @@ namespace uniset
                         bool st = c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime();
                         shm->localSetValue(c.respond_it, c.respond_s, st, getId());
                     }
+                    catch( const IOController_i::NameNotFound& ex )
+                    {
+                        mbcrit << myname << "(work): respond_s=" << c.respond_s
+                               << " IOController_i::NameNotFound: " << ex.err << std::endl;
+                    }
                     catch( const uniset::Exception& ex )
                     {
-                        mbcrit << myname << "(updateStatistics): " << ex << std::endl;
+                        mbcrit << myname << "(work): " << ex << std::endl;
                     }
                 }
 
@@ -909,9 +935,14 @@ namespace uniset
                     {
                         shm->localSetValue(c.askcount_it, c.askcount_s, c.askCount, getId());
                     }
+                    catch( const IOController_i::NameNotFound& ex )
+                    {
+                        mbcrit << myname << "(work): askcount_s=" << c.askcount_s
+                               << " IOController_i::NameNotFound: " << ex.err << std::endl;
+                    }
                     catch( const uniset::Exception& ex )
                     {
-                        mbcrit << myname << "(updateStatistics): " << ex << std::endl;
+                        mbcrit << myname << "(work): " << ex << std::endl;
                     }
                 }
             }
@@ -1642,7 +1673,7 @@ namespace uniset
             const std::shared_ptr<SharedMemory>& ic, const string& prefix )
     {
         auto conf = uniset_conf();
-        string name = conf->getArgParam("--" + prefix + "-name", "MBSlave1");
+        string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "MBSlave1");
 
         if( name.empty() )
         {

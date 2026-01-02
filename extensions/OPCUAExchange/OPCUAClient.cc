@@ -191,7 +191,7 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     try
     {
         if( !user.empty() )
-           client.config().setUserIdentityToken(opcua::UserNameIdentityToken{user, pass});
+            client.config().setUserIdentityToken(opcua::UserNameIdentityToken{user, pass});
 
         client.connect(addr);
     }

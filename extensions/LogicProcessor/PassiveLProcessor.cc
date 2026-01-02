@@ -280,7 +280,7 @@ std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, cons
         const std::string& prefix )
 {
     auto conf = uniset_conf();
-    string name = conf->getArgParam("--" + prefix + "-name", "PassiveProcessor1");
+    string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "PassiveProcessor1");
 
     if( name.empty() )
     {
@@ -298,7 +298,7 @@ std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, cons
         return 0;
     }
 
-    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    string cname = uniset::getArgParam("--" + prefix + "-confnode", argc, argv, name);
     auto confnode = conf->getNode(cname);
     if( !confnode )
     {

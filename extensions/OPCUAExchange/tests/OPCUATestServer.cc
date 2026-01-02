@@ -23,7 +23,7 @@ OPCUATestServer::OPCUATestServer( const std::string& _addr, uint16_t port ):
     opcconf.setApplicationName("uniset2 OPC UA gate");
     opcconf.setApplicationUri("urn:uniset2.server.gate");
     opcconf.setProductUri("https://github.com/Etersoft/uniset2/");
-//    opcconf.setCustomHostname(addr);
+    //    opcconf.setCustomHostname(addr);
     server = opcua::Server(std::move(opcconf));
 
     auto opcConfig = UA_Server_getConfig(server.handle());
@@ -32,7 +32,7 @@ OPCUATestServer::OPCUATestServer( const std::string& _addr, uint16_t port ):
     opcConfig->maxSessionTimeout = 5000;
 
     // HACK (init loglevel)
-    UA_ServerConfig *sconf = UA_Server_getConfig(server.handle());
+    UA_ServerConfig* sconf = UA_Server_getConfig(server.handle());
     auto slogger = UA_Log_Stdout_new( UA_LOGLEVEL_ERROR );
     sconf->logging = slogger;
 
