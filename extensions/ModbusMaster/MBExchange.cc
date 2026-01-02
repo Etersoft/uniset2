@@ -87,13 +87,14 @@ namespace uniset
             ic->logAgregator()->add(loga);
 
         // определяем фильтр
-        mbconf->s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
-        mbconf->s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
+        mbconf->s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getPropOrProp("filter_field", "filterField"));
+        mbconf->s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getPropOrProp("filter_value", "filterValue"));
         mbinfo << myname << "(init): read filter-field='" << mbconf->s_field
                << "' filter-value='" << mbconf->s_fvalue << "'" << endl;
 
         mbconf->prefix = prefix;
-        mbconf->prop_prefix = initPropPrefix("");
+        mbconf->prop_prefix = initPropPrefix( it.getProp("propPrefix"));
+        mbinfo << myname << "(init): first prop_prefix=" << mbconf->prop_prefix << endl;
 
         stat_time = conf->getArgPInt("--" + prefix + "-statistic-sec", it.getProp("statistic_sec"), 0);
         vmonit(stat_time);
@@ -2105,18 +2106,6 @@ namespace uniset
                     logserv->async_run(logserv_host, logserv_port);
                 }
 
-                if( mbconf->devices.empty() )
-                {
-                    mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl << flush;
-                    uterminate();
-                    return;
-                }
-
-                mbinfo << myname << "(sysCommand): device map size= " << mbconf->devices.size() << endl;
-
-                if( !shm->isLocalwork() )
-                    mbconf->initDeviceList(uniset_conf()->getConfXML());
-
                 if( !waitSMReady() )
                 {
                     if( !canceled )
@@ -2127,6 +2116,9 @@ namespace uniset
 
                 // подождать пока пройдёт инициализация датчиков
                 // см. activateObject()
+                // ВАЖНО: в режиме !isLocalwork() (uno mode) devices заполняется через callback
+                // из SharedMemory::activateObject(), поэтому нужно дождаться активации
+                // прежде чем проверять devices.empty()
                 msleep(initPause);
                 PassiveTimer ptAct(activateTimeout);
 
@@ -2145,6 +2137,20 @@ namespace uniset
                     uterminate();
                     return;
                 }
+
+                // Проверка devices.empty() ПОСЛЕ ожидания активации,
+                // т.к. в режиме !isLocalwork() devices заполняется через callback
+                if( mbconf->devices.empty() )
+                {
+                    mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl << flush;
+                    uterminate();
+                    return;
+                }
+
+                mbinfo << myname << "(sysCommand): device map size= " << mbconf->devices.size() << endl;
+
+                if( !shm->isLocalwork() )
+                    mbconf->initDeviceList(uniset_conf()->getConfXML());
 
                 {
                     uniset::uniset_rwmutex_rlock l(mutex_start);
@@ -2795,6 +2801,7 @@ namespace uniset
 
         // Добавляем LogServer по аналогии с генерируемым скелетоном
         Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+
         if( !jdata )
             jdata = uniset::json::make_child(json, myname);
 
@@ -3005,6 +3012,7 @@ namespace uniset
             else if( name == "maxHeartBeat" )
             {
                 long v = to_long(val, name, myname);
+
                 if( v < 0 )
                     throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
 
@@ -3014,6 +3022,7 @@ namespace uniset
             else if( name == "recv_timeout" )
             {
                 long v = to_long(val, name, myname);
+
                 if( v < 0 )
                     throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
 
@@ -3023,6 +3032,7 @@ namespace uniset
             else if( name == "sleepPause_msec" )
             {
                 long v = to_long(val, name, myname);
+
                 if( v < 0 )
                     throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
 
@@ -3032,6 +3042,7 @@ namespace uniset
             else if( name == "polltime" )
             {
                 long v = to_long(val, name, myname);
+
                 if( v < 0 )
                     throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
 
@@ -3042,6 +3053,7 @@ namespace uniset
             else if( name == "default_timeout" )
             {
                 long v = to_long(val, name, myname);
+
                 if( v < 0 )
                     throw uniset::SystemError(myname + "(/setparam): value must be >= 0 (" + name + ")");
 
@@ -3082,10 +3094,13 @@ namespace uniset
         {
             Object::Ptr log = new Object();
             auto info = LogServer::httpLogServerInfo(logserv, logserv_host, logserv_port);
+
             if( info->has("host") )
                 log->set("host", info->get("host"));
+
             if( info->has("port") )
                 log->set("port", info->get("port"));
+
             st->set("logserver", log);
         }
 
@@ -3174,6 +3189,7 @@ namespace uniset
 
         // Parse filter parameter
         std::string filterParam;
+
         for( const auto& p : params )
         {
             if( p.first == "filter" && !p.second.empty() )
@@ -3195,11 +3211,13 @@ namespace uniset
         // Build set of requested IDs for fast lookup
         std::unordered_set<uniset::ObjectId> filterIds;
         filterIds.reserve(slist.size());
+
         for( const auto& s : slist )
             filterIds.insert(s.si.id);
 
         // Track resolved names to find unresolved ones
         std::set<std::string> resolvedNames;
+
         for( const auto& s : slist )
             resolvedNames.insert(s.fname);
 
@@ -3291,6 +3309,7 @@ namespace uniset
             {
                 auto slist = uniset::getSInfoList(p.second, conf);
                 filterIds.reserve(slist.size());
+
                 for( const auto& s : slist )
                     filterIds.insert(s.si.id);
             }
@@ -3393,8 +3412,8 @@ namespace uniset
             Object::Ptr d = new Object();
             d->set("respond", dev.second->resp_state);
             std::string dtypeStr = (dev.second->dtype == MBConfig::dtRTU ? "rtu" :
-                                   dev.second->dtype == MBConfig::dtMTR ? "mtr" :
-                                   dev.second->dtype == MBConfig::dtRTU188 ? "rtu188" : "unknown");
+                                    dev.second->dtype == MBConfig::dtMTR ? "mtr" :
+                                    dev.second->dtype == MBConfig::dtRTU188 ? "rtu188" : "unknown");
             d->set("dtype", dtypeStr);
             d->set("mode", static_cast<int>(dev.second->mode));
             d->set("safeMode", static_cast<int>(dev.second->safeMode));
@@ -3426,14 +3445,16 @@ namespace uniset
             d->set("addr", static_cast<int>(dev.second->mbaddr));
             d->set("respond", dev.second->resp_state);
             std::string dtypeStr = (dev.second->dtype == MBConfig::dtRTU ? "rtu" :
-                                   dev.second->dtype == MBConfig::dtMTR ? "mtr" :
-                                   dev.second->dtype == MBConfig::dtRTU188 ? "rtu188" : "unknown");
+                                    dev.second->dtype == MBConfig::dtMTR ? "mtr" :
+                                    dev.second->dtype == MBConfig::dtRTU188 ? "rtu188" : "unknown");
             d->set("dtype", dtypeStr);
 
             // Count registers
             size_t regCount = 0;
+
             for( const auto& pollmap : dev.second->pollmap )
                 regCount += pollmap.second->size();
+
             d->set("regCount", static_cast<int>(regCount));
 
             // Mode

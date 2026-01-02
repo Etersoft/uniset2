@@ -494,10 +494,10 @@ namespace uniset
             {
                 size_t operator()( const ErrorKey& k ) const noexcept
                 {
-                    size_t h1 = std::hash<size_t>{}(k.channel);
-                    size_t h2 = std::hash<UA_StatusCode>{}(k.statusCode);
-                    size_t h3 = std::hash<std::string>{}(k.operation);
-                    size_t h4 = std::hash<std::string>{}(k.nodeid);
+                    size_t h1 = std::hash<size_t> {}(k.channel);
+                    size_t h2 = std::hash<UA_StatusCode> {}(k.statusCode);
+                    size_t h3 = std::hash<std::string> {}(k.operation);
+                    size_t h4 = std::hash<std::string> {}(k.nodeid);
                     return ((h1 ^ (h2 << 1)) ^ (h3 << 2)) ^ (h4 << 3);
                 }
             };

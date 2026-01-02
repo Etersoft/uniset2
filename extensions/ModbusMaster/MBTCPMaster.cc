@@ -38,11 +38,12 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, xmlNode* confnode,
 
     auto conf = uniset_conf();
 
+    UniXML::iterator it(cnode);
+
     // префикс для "свойств" - по умолчанию "tcp_";
-    mbconf->prop_prefix = initPropPrefix("tcp_");
+    mbconf->prop_prefix = initPropPrefix(it.getProp2("propPrefix", "tcp_"));
     mbinfo << myname << "(init): prop_prefix=" << mbconf->prop_prefix << endl;
 
-    UniXML::iterator it(cnode);
 
     // ---------- init MBTCP ----------
     string pname("--" + prefix + "-gateway-iaddr");
@@ -52,7 +53,7 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, xmlNode* confnode,
         throw uniset::SystemError(myname + "(MBMaster): Unknown inet addr...(Use: " + pname + ")" );
 
     string tmp("--" + prefix + "-gateway-port");
-    port = conf->getArgInt(tmp, it.getProp("gateway_port"));
+    port = conf->getArgInt(tmp, it.getProp2("gateway_port", "502"));
 
     if( port <= 0 )
         throw uniset::SystemError(myname + "(MBMaster): Unknown inet port...(Use: " + tmp + ")" );
@@ -213,7 +214,7 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
         const std::string& prefix )
 {
     auto conf = uniset_conf();
-    string name = conf->getArgParam("--" + prefix + "-name", "MBTCPMaster1");
+    string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "MBTCPMaster1");
 
     if( name.empty() )
     {
@@ -231,8 +232,9 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
         return 0;
     }
 
-    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    string cname = uniset::getArgParam("--" + prefix + "-confnode", argc, argv, name);
     auto confnode = conf->getNode(cname);
+
     if( !confnode )
     {
         cerr << "(MBTCPMaster): Not found confnode '" << cname << "' in config file" << endl;
@@ -258,9 +260,9 @@ uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )
 // ----------------------------------------------------------------------------
 bool MBTCPMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& newConf )
 {
-    newConf->prop_prefix = initPropPrefix("tcp_");
-
     UniXML::iterator it(newConf->cnode);
+
+    newConf->prop_prefix = initPropPrefix(it.getProp2("propPrefix", "tcp_"));
 
     auto newIAddr = it.getProp("gateway_iaddr");
     auto newPort = it.getIntProp("gateway_port");

@@ -22,6 +22,7 @@
 #include "Extensions.h"
 #include "UNetSender.h"
 #include "UNetLogSugar.h"
+#include "IOController.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -132,13 +133,21 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void UNetSender::updateFromSM()
     {
-        try
+        if( sidMode != DefaultObjectId )
         {
-            mode = (Mode) shm->localGetValue(itMode, sidMode);
-        }
-        catch( std::exception& ex )
-        {
-            unetwarn << myname << "(updateFromSM): mode update error: " << ex.what() << endl;
+            try
+            {
+                mode = (Mode) shm->localGetValue(itMode, sidMode);
+            }
+            catch( const IOController_i::NameNotFound& ex )
+            {
+                unetcrit << myname << "(updateFromSM): sidMode=" << sidMode
+                         << " IOController_i::NameNotFound: " << ex.err << endl;
+            }
+            catch( std::exception& ex )
+            {
+                unetwarn << myname << "(updateFromSM): mode update error: " << ex.what() << endl;
+            }
         }
 
         for( auto&& it : items )
@@ -232,15 +241,20 @@ namespace uniset
                 }
             }
 
-            if( !shm->isLocalwork() )
+            if( !shm->isLocalwork() && sidMode != DefaultObjectId )
             {
                 try
                 {
                     mode = (Mode) shm->localGetValue(itMode, sidMode);
                 }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    unetcrit << myname << "(send): sidMode=" << sidMode
+                             << " IOController_i::NameNotFound: " << ex.err << endl;
+                }
                 catch (std::exception& ex)
                 {
-                    unetwarn << myname << "(updateFromSM): mode update error: " << ex.what() << endl;
+                    unetwarn << myname << "(send): mode update error: " << ex.what() << endl;
                 }
             }
 
@@ -561,10 +575,32 @@ namespace uniset
     void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
     {
         if( sidMode != DefaultObjectId )
-            shm->askSensor(sidMode, cmd);
+        {
+            try
+            {
+                shm->askSensor(sidMode, cmd);
+            }
+            catch( const IOController_i::NameNotFound& ex )
+            {
+                unetcrit << myname << "(askSensors): sidMode=" << sidMode
+                         << " IOController_i::NameNotFound: " << ex.err << endl;
+                throw;
+            }
+        }
 
         for( const auto& it : items  )
-            shm->askSensor(it.second.id, cmd);
+        {
+            try
+            {
+                shm->askSensor(it.second.id, cmd);
+            }
+            catch( const IOController_i::NameNotFound& ex )
+            {
+                unetcrit << myname << "(askSensors): sensor id=" << it.second.id
+                         << " IOController_i::NameNotFound: " << ex.err << endl;
+                throw;
+            }
+        }
     }
     // -----------------------------------------------------------------------------
     size_t UNetSender::getDataPackCount() const noexcept
