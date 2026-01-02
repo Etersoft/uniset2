@@ -72,8 +72,8 @@ void BackendOpenTSDB::init( xmlNode* cnode )
     if( sz > 0 )
         setMaxSizeOfMessageQueue(sz);
 
-    const string ff = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filter_field"), "" );
-    const string fv = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filter_value"), "" );
+    const string ff = conf->getArg2Param("--" + prefix + "-filter-field", it.getPropOrProp("filter_field", "filterField"), "" );
+    const string fv = conf->getArg2Param("--" + prefix + "-filter-value", it.getPropOrProp("filter_value", "filterValue"), "" );
 
     myinfo << myname << "(init): influxdb host=" << host << ":" << port
            << " " << ff << "='" << fv << "'"

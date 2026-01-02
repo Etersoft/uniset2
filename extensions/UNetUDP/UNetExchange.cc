@@ -23,10 +23,33 @@
 #include "UNetLogSugar.h"
 #include "UDPTransport.h"
 #include "MulticastTransport.h"
+#include "IOController.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
+// -----------------------------------------------------------------------------
+// Find my node (localNode) in <nodes> section
+// Returns pointer to <item> node matching localNodeName, or nullptr if not found
+static xmlNode* getMyNode(xmlNode* nodes, const std::string& localNodeName)
+{
+    if( !nodes || localNodeName.empty() )
+        return nullptr;
+
+    UniXML::iterator it(nodes);
+
+    if( !it.goChildren() )
+        return nullptr;
+
+    do
+    {
+        if( it.getProp("name") == localNodeName )
+            return it.getCurrent();
+    }
+    while( it.goNext() );
+
+    return nullptr;
+}
 // -----------------------------------------------------------------------------
 UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
     UniSetObject(objId),
@@ -104,14 +127,19 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
     UniXML::iterator n_it(nodes);
 
-    // определяем фильтр
-    s_field = conf->getArg2Param("--" + prefix + "-filter-field", n_it.getProp("filter_field"));
-    s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", n_it.getProp("filter_value"));
-    unetinfo << myname << "(init): read filter-field='" << s_field
-             << "' filter-value='" << s_fvalue << "'" << endl;
+    // Find my node in <nodes> for filter settings
+    xmlNode* myNode = getMyNode(nodes, conf->getLocalNodeName());
+    UniXML::iterator myNodeIt(myNode ? myNode : nodes);  // fallback to <nodes> if not found
 
-    const string n_field = conf->getArg2Param("--" + prefix + "-nodes-filter-field", n_it.getProp("nodes_filter_field"));
-    const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getProp("nodes_filter_value"));
+    // определяем фильтр (из настроек своего узла)
+    s_field = conf->getArg2Param("--" + prefix + "-filter-field", myNodeIt.getPropOrProp("filter_field", "filterField"));
+    s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", myNodeIt.getPropOrProp("filter_value", "filterValue"));
+    unetinfo << myname << "(init): read filter-field='" << s_field
+             << "' filter-value='" << s_fvalue << "'"
+             << " from " << (myNode ? "myNode" : "<nodes>") << endl;
+
+    const string n_field = conf->getArg2Param("--" + prefix + "-nodes-filter-field", n_it.getPropOrProp("nodes_filter_field", "nodesFilterField"));
+    const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getPropOrProp("nodes_filter_value", "nodesFilterValue"));
     unetinfo << myname << "(init): read nodes-filter-field='" << n_field
              << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
@@ -450,6 +478,11 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
                     {
                         askSensors(UniversalIO::UIONotify);
                     }
+                    catch( const IOController_i::NameNotFound& ex )
+                    {
+                        unetcrit << myname << "(sysCommand): askSensors IOController_i::NameNotFound: " << ex.err << endl;
+                        throw;
+                    }
                     catch( const std::exception& ex )
                     {
                         unetcrit << myname << "(sysCommand): askSensors exception: " << ex.what() << endl;
@@ -486,7 +519,22 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
             // то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
             // при заказе датчиков, а если SM вылетит, то вместе с этим процессом(UNetExchange)
             if( shm->isLocalwork() )
-                askSensors(UniversalIO::UIONotify);
+            {
+                try
+                {
+                    askSensors(UniversalIO::UIONotify);
+                }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    unetcrit << myname << "(sysCommand): WatchDog: IOController_i::NameNotFound: " << ex.err << endl;
+                    throw;
+                }
+                catch( const std::exception& ex )
+                {
+                    unetcrit << myname << "(sysCommand): WatchDog: exception: " << ex.what() << endl;
+                    throw;
+                }
+            }
         }
         break;
 
@@ -543,12 +591,31 @@ bool UNetExchange::activateObject()
     // блокирование обработки Starsp
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
+    try
     {
         activated = false;
         uniset::uniset_rwmutex_wrlock l(mutex_start);
+        unetinfo << myname << "(activateObject): calling UniSetObject::activateObject..." << endl;
         UniSetObject::activateObject();
+        unetinfo << myname << "(activateObject): calling initIterators..." << endl;
         initIterators();
+        unetinfo << myname << "(activateObject): done" << endl;
         activated = true;
+    }
+    catch( const IOController_i::NameNotFound& ex )
+    {
+        unetcrit << myname << "(activateObject): EXCEPTION IOController_i::NameNotFound: " << ex.err << endl;
+        throw;
+    }
+    catch( const std::exception& ex )
+    {
+        unetcrit << myname << "(activateObject): EXCEPTION std::exception: " << ex.what() << endl;
+        throw;
+    }
+    catch( ... )
+    {
+        unetcrit << myname << "(activateObject): UNKNOWN EXCEPTION" << endl;
+        throw;
     }
 
     return true;
@@ -665,7 +732,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const ch
     auto conf = uniset_conf();
 
     string p("--" + prefix + "-name");
-    string name = conf->getArgParam(p, "UNetExchange1");
+    string name = uniset::getArgParam(p, argc, argv, "UNetExchange1");
 
     if( name.empty() )
     {

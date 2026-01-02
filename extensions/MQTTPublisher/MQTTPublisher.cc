@@ -51,8 +51,8 @@ MQTTPublisher::MQTTPublisher(uniset::ObjectId objId, xmlNode* cnode, uniset::Obj
         topic = s.str();
     }
 
-    string ff = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"), "");
-    string fv = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"), "");
+    string ff = conf->getArg2Param("--" + argprefix + "filter-field", it.getPropOrProp("filter_field", "filterField"), "");
+    string fv = conf->getArg2Param("--" + argprefix + "filter-value", it.getPropOrProp("filter_value", "filterValue"), "");
 
     myinfo << myname << "(init): filter-field=" << ff << " filter-value=" << fv << endl;
 

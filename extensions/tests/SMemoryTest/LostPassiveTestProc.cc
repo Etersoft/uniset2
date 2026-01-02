@@ -11,8 +11,8 @@ LostPassiveTestProc::LostPassiveTestProc( uniset::ObjectId id, xmlNode* confnode
     auto conf = uniset_conf();
 
     UniXML::iterator cit(confnode);
-    string f_field = conf->getArgParam("--" + argprefix + "filter-field", cit.getProp("filterField"));
-    string f_value = conf->getArgParam("--" + argprefix + "filter-value", cit.getProp("filterValue"));
+    string f_field = conf->getArgParam("--" + argprefix + "filter-field", cit.getPropOrProp("filter_field", "filterField"));
+    string f_value = conf->getArgParam("--" + argprefix + "filter-value", cit.getPropOrProp("filter_value", "filterValue"));
 
     xmlNode* snode = conf->getXMLSensorsSection();
 
