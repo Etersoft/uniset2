@@ -1,0 +1,97 @@
+x-node-common: &node-common
+  build:
+    context: ../..
+    dockerfile: testsuite/e2e/Dockerfile
+  volumes:
+    - ./configure.xml:/app/configure.xml:ro
+    - ./scripts:/scripts:ro
+  networks:
+    - uniset_net
+
+services:
+  # Node1: omniNames + SM + UNetExchange
+  node1:
+    <<: *node-common
+    hostname: Node1
+    environment:
+      - NODE_NAME=Node1
+    networks:
+      uniset_net:
+        ipv4_address: 172.20.0.11
+
+  # Node2: omniNames + SM + UNetExchange
+  node2:
+    <<: *node-common
+    hostname: Node2
+    depends_on:
+      - node1
+    environment:
+      - NODE_NAME=Node2
+    networks:
+      uniset_net:
+        ipv4_address: 172.20.0.12
+
+  # Node3: omniNames + SM + MBTCPMaster
+  node3:
+    <<: *node-common
+    hostname: Node3
+    depends_on:
+      - node1
+      - node4
+    environment:
+      - NODE_NAME=Node3
+    networks:
+      uniset_net:
+        ipv4_address: 172.20.0.13
+
+  # Node4: omniNames + SM + MBSlave
+  node4:
+    <<: *node-common
+    hostname: Node4
+    depends_on:
+      - node1
+    environment:
+      - NODE_NAME=Node4
+    networks:
+      uniset_net:
+        ipv4_address: 172.20.0.14
+
+  # Node5: omniNames + SM + OPCUAServer
+  node5:
+    <<: *node-common
+    hostname: Node5
+    depends_on:
+      - node1
+    environment:
+      - NODE_NAME=Node5
+    networks:
+      uniset_net:
+        ipv4_address: 172.20.0.15
+
+  # Tester: runs test scripts (no launcher, just executes command)
+  tester:
+    <<: *node-common
+    hostname: Tester
+    environment:
+      - NODE_NAME=Tester
+    volumes:
+      - ./configure.xml:/app/configure.xml:ro
+      - ./tests:/tests:ro
+      - ./scripts:/scripts:ro
+    depends_on:
+      - node1
+      - node2
+      - node3
+      - node4
+      - node5
+    command: ["/tests/run-tests.sh"]
+    networks:
+      uniset_net:
+        ipv4_address: 172.20.0.100
+
+networks:
+  uniset_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    E2E Test Configuration for UniSet2
+    Single config file for all nodes (5 nodes + tester)
+    Each node runs with: localnode NodeName
+-->
+<UNISET_E2E xmlns:xi="http://www.w3.org/2001/XInclude">
+    <UserData/>
+
+    <!-- UniSet core settings -->
+    <UniSet>
+        <NameService host="localhost" port="2809"/>
+        <LocalNode name="Node1"/>
+        <RootSection name="E2E"/>
+        <CountOfNet name="1"/>
+        <RepeatCount name="3"/>
+        <RepeatTimeoutMS name="50"/>
+        <WatchDogTime name="0"/>
+        <PingNodeTime name="0"/>
+        <AutoStartUpTime name="1"/>
+        <DumpStateTime name="10"/>
+        <SleepTickMS name="500"/>
+        <UniSetDebug levels="info,warn,crit" name="ulog"/>
+        <ConfDir name="/app/"/>
+        <DataDir name="/app/"/>
+        <BinDir name="/usr/bin/"/>
+        <LogDir name="/tmp/"/>
+        <DocDir name="/app/"/>
+        <LockDir name="/tmp/"/>
+        <Services/>
+    </UniSet>
+
+    <dlog name="dlog" levels="info,warn,crit"/>
+
+    <settings>
+        <!-- SharedMemory for each node -->
+        <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+
+        <!-- UNetExchange runs on Node1 and Node2 with broadcast transport -->
+        <UNetExchange1 name="UNetExchange1" checkConnectionPause="1000" initpause="1000"/>
+
+        <!-- ModbusMaster on Node3 -->
+        <MBTCPMaster1 name="MBTCPMaster1" gateway_iaddr="172.20.0.14" gateway_port="10502" polltime="200" recv_timeout="100" filterField="mb" filterValue="1">
+            <DeviceList>
+                <item addr="0x01" timeout="2000" respondSensor="MB_Respond_S"/>
+            </DeviceList>
+        </MBTCPMaster1>
+
+        <!-- ModbusSlave on Node4 -->
+        <MBSlave1 name="MBSlave1" type="TCP" addr="0x01" iaddr="0.0.0.0" iport="10502" filterField="mbs" filterValue="1"/>
+
+        <!-- OPCUAServer on Node5 -->
+        <OPCUAServer1 name="OPCUAServer1" host="0.0.0.0" port="4840"/>
+
+        <!-- OPCUAExchange on Node5 -->
+        <OPCUAExchange1 name="OPCUAExchange1">
+            <channels>
+                <channel addr="opc.tcp://172.20.0.15:4840"/>
+            </channels>
+        </OPCUAExchange1>
+
+        <!-- JScript runner -->
+        <JSProxy name="JSProxy"/>
+
+        <!--
+            UniSetUno configurations for different node types.
+            Each node runs uniset2-uno with confile, localNode and uno-name arguments.
+        -->
+        <!-- Node1: SM + UNetExchange -->
+        <UniSetUno name="Node1">
+            <extensions>
+                <extension type="SharedMemory" name="SharedMemory"/>
+                <extension type="UNetExchange" name="UNetExchange1" prefix="unet"
+                           args="--unet-filter-field unet --unet-filter-value node1 --unet-log-add-levels info,warn,crit"/>
+            </extensions>
+        </UniSetUno>
+
+        <!-- Node2: SM only -->
+        <UniSetUno name="Node2">
+            <extensions>
+                <extension type="SharedMemory" name="SharedMemory"/>
+            </extensions>
+        </UniSetUno>
+
+        <!-- Node3: SM + MBTCPMaster -->
+        <UniSetUno name="Node3">
+            <extensions>
+                <extension type="SharedMemory" name="SharedMemory"/>
+                <extension type="MBTCPMaster" name="MBTCPMaster1" prefix="mbtcp"/>
+            </extensions>
+        </UniSetUno>
+
+        <!-- Node4: SM + MBSlave -->
+        <UniSetUno name="Node4">
+            <extensions>
+                <extension type="SharedMemory" name="SharedMemory"/>
+                <extension type="MBSlave" name="MBSlave1" prefix="mbs"/>
+            </extensions>
+        </UniSetUno>
+
+        <!-- Node5: SM + OPCUAServer + OPCUAExchange (testing) -->
+        <UniSetUno name="Node5">
+            <extensions>
+                <extension type="SharedMemory" name="SharedMemory"/>
+                <extension type="OPCUAServer" name="OPCUAServer1" prefix="opcua"/>
+                <extension type="OPCUAExchange" name="OPCUAExchange1" prefix="opcua-ex"/>
+            </extensions>
+        </UniSetUno>
+
+        <!--
+            Launcher configuration for process lifecycle management.
+            Uses nodeFilter to control which processes run on which nodes.
+            Each node starts with: uniset2-launcher with confile and localNode arguments.
+        -->
+        <Launcher name="E2ELauncher"
+                  healthCheckInterval="3000"
+                  restartDelay="2000"
+                  maxRestarts="3"
+                  commonArgs="--confile ${CONFFILE} --localNode ${NODE_NAME}">
+
+            <ProcessGroups>
+                <!-- Group 0: Naming service + repository creation -->
+                <group name="naming" order="0">
+                    <!-- omniNames uses rawArgs to avoid getting commonArgs -->
+                    <process name="omniNames"
+                             command="omniNames"
+                             rawArgs="-start -logdir /var/log/omninames"
+                             readyCheck="tcp:2809"
+                             readyTimeout="30000"
+                             critical="true"/>
+
+                    <!-- Create object repository (oneshot command) -->
+                    <!-- Uses rawArgs to avoid localNode arg which uniset2-admin doesn't understand -->
+                    <process name="CreateRepository"
+                             command="uniset2-admin"
+                             rawArgs="--confile ${CONFFILE} --create"
+                             oneshot="true"
+                             critical="true"/>
+                </group>
+
+                <!-- Group 1: SharedMemory (on all nodes except Tester) -->
+                <group name="sharedmemory" order="1" depends="naming">
+                    <process name="SharedMemory"
+                             command="uniset2-smemory"
+                             args="--smemory-id SharedMemory"
+                             readyCheck="corba:SharedMemory"
+                             readyTimeout="30000"
+                             critical="true"
+                             nodeFilter="Node1,Node2,Node3,Node4,Node5"/>
+                </group>
+
+                <!-- Group 2: Exchanges (after SM) -->
+                <group name="exchanges" order="2" depends="sharedmemory">
+                    <!-- UNetExchange on Node1: sends sensors with unet="node1" -->
+                    <process name="UNetExchange_Node1"
+                             command="uniset2-unetexchange"
+                             args="--unet-name UNetExchange1 --smemory-id SharedMemory --unet-filter-field unet --unet-filter-value node1"
+                             nodeFilter="Node1"
+                             restartOnFailure="true"/>
+
+                    <!-- UNetExchange on Node2: sends sensors with unet="node2" -->
+                    <process name="UNetExchange_Node2"
+                             command="uniset2-unetexchange"
+                             args="--unet-name UNetExchange1 --smemory-id SharedMemory --unet-filter-field unet --unet-filter-value node2"
+                             nodeFilter="Node2"
+                             restartOnFailure="true"/>
+
+                    <!-- ModbusMaster on Node3 (currently disabled) -->
+                    <process name="MBTCPMaster"
+                             command="uniset2-mbtcpmaster"
+                             args="--mbtcp-name MBTCPMaster1 --smemory-id SharedMemory"
+                             nodeFilter="Node3"
+                             skip="1"/>
+
+                    <!-- ModbusSlave on Node4 (currently disabled) -->
+                    <process name="MBSlave"
+                             command="uniset2-mbslave"
+                             args="--mbs-name MBSlave1 --smemory-id SharedMemory"
+                             nodeFilter="Node4"
+                             skip="1"/>
+
+                    <!-- OPCUAServer on Node5 -->
+                    <process name="OPCUAServer"
+                             command="uniset2-opcua-server"
+                             args="--opcua-name OPCUAServer1 --smemory-id SharedMemory"
+                             nodeFilter="Node5"
+                             restartOnFailure="true"/>
+                </group>
+            </ProcessGroups>
+
+            <Environment>
+                <var name="CONFFILE" value="/app/configure.xml"/>
+            </Environment>
+        </Launcher>
+    </settings>
+
+    <ObjectsMap>
+        <!-- Nodes definition with broadcast for UNet -->
+        <nodes port="2809" unet_broadcast_ip="172.20.0.255">
+            <item ip="172.20.0.11" name="Node1" textname="Node1"
+                  unet_port="3001"
+                  unet_respond_id="Node1_Respond_S"/>
+
+            <item ip="172.20.0.12" name="Node2" textname="Node2"
+                  unet_port="3002"
+                  unet_respond_id="Node2_Respond_S"
+                  unet_lostpackets_id="Node2_LostPackets_AS"/>
+
+            <item ip="172.20.0.13" name="Node3" textname="Node3"
+                  unet_port="3003"/>
+
+            <item ip="172.20.0.14" name="Node4" textname="Node4"
+                  unet_port="3004"/>
+
+            <item ip="172.20.0.15" name="Node5" textname="Node5"
+                  unet_port="3005"/>
+
+            <item ip="172.20.0.100" name="Tester" textname="Test runner"
+                  unet_port="3100"/>
+        </nodes>
+
+        <!-- Sensors -->
+        <sensors name="Sensors">
+            <!-- === UNet exchange sensors (between Node1 and Node2) === -->
+            <!-- Node1 owns and sends these sensors -->
+            <item iotype="AI" name="TestValue1_AS" textname="Test value 1" unet="node1" default="0"/>
+            <item iotype="DI" name="TestBool1_S" textname="Test bool 1" unet="node1" default="0"/>
+            <!-- Node2 owns and sends these sensors -->
+            <item iotype="AI" name="TestValue2_AS" textname="Test value 2" unet="node2" default="0"/>
+            <item iotype="DI" name="TestBool2_S" textname="Test bool 2" unet="node2" default="0"/>
+
+            <!-- UNet monitoring sensors -->
+            <item iotype="DI" name="Node1_Respond_S" textname="Node1 respond"/>
+            <item iotype="DI" name="Node2_Respond_S" textname="Node2 respond"/>
+            <item iotype="AI" name="Node2_LostPackets_AS" textname="Node2 lost packets"/>
+
+            <!-- === Modbus sensors (Node3 Master to Node4 Slave) === -->
+            <!-- Master side (Node3) reads from slave -->
+            <item iotype="AI" name="MB_Register1_AS" textname="Modbus register 1"
+                  mb="1" mbtype="rtu" mbaddr="0x01" mbreg="0" mbfunc="0x03" node="Node3"/>
+            <item iotype="AI" name="MB_Register2_AS" textname="Modbus register 2"
+                  mb="1" mbtype="rtu" mbaddr="0x01" mbreg="1" mbfunc="0x03" node="Node3"/>
+            <item iotype="DI" name="MB_Respond_S" textname="Modbus respond" node="Node3"/>
+
+            <!-- Slave side (Node4) provides values -->
+            <item iotype="AI" name="MB_SlaveValue1_AS" textname="Slave value 1"
+                  mbs="1" mbreg="0" mbaddr="0x01" node="Node4"/>
+            <item iotype="AI" name="MB_SlaveValue2_AS" textname="Slave value 2"
+                  mbs="1" mbreg="1" mbaddr="0x01" node="Node4"/>
+
+            <!-- === OPC UA sensors (Node5) === -->
+            <item iotype="AI" name="OPCUA_Value1_AS" textname="OPC UA value 1" opc="1"/>
+            <item iotype="AI" name="OPCUA_Value2_AS" textname="OPC UA value 2" opc="1"/>
+            <item iotype="AO" name="OPCUA_Output1_AS" textname="OPC UA output 1" opc="1"/>
+
+            <!-- General test sensors -->
+            <item iotype="AI" name="TestCounter_AS" textname="Test counter"/>
+            <item iotype="DI" name="TestMode_S" textname="Test mode"/>
+        </sensors>
+
+        <thresholds name="thresholds"/>
+
+        <controllers name="Controllers">
+            <item name="SharedMemory"/>
+        </controllers>
+
+        <services name="Services">
+            <item name="TestService"/>
+        </services>
+
+        <objects name="UniObjects">
+            <item name="UNetExchange1"/>
+            <item name="MBTCPMaster1"/>
+            <item name="MBSlave1"/>
+            <item name="OPCUAServer1"/>
+            <item name="OPCUAExchange1"/>
+            <item name="JSProxy"/>
+        </objects>
+    </ObjectsMap>
+</UNISET_E2E>
