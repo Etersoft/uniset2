@@ -495,5 +495,24 @@ namespace uniset
     // ------------------------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API
     // ------------------------------------------------------------------------------------------
+    void UniSetActivator::help_print()
+    {
+        cout << endl << "UniSetActivator options:" << endl;
+#ifndef DISABLE_REST_API
+        cout << "--activator-run-httpserver                   - Run HTTP server for REST API" << endl;
+        cout << "--activator-httpserver-host host             - HTTP server listen host. Default: localhost" << endl;
+        cout << "--activator-httpserver-port port             - HTTP server listen port. Default: ObjectId" << endl;
+        cout << "--activator-httpserver-cors-allow addr       - CORS Access-Control-Allow-Origin. Default: *" << endl;
+        cout << "--activator-httpserver-default-content-type  - Default Content-Type. Default: text/json; charset=UTF-8" << endl;
+        cout << "--activator-httpserver-whitelist list        - IP whitelist (comma-separated)" << endl;
+        cout << "--activator-httpserver-blacklist list        - IP blacklist (comma-separated)" << endl;
+        cout << "--activator-httpserver-trusted-proxies list  - Trusted proxies for X-Forwarded-For (comma-separated)" << endl;
+        cout << "--activator-httpserver-bearer-required 0|1   - Require Bearer token. Default: 0" << endl;
+        cout << "--activator-httpserver-bearer-tokens list    - Allowed Bearer tokens (comma-separated)" << endl;
+#else
+        cout << "(HTTP server disabled at compile time)" << endl;
+#endif
+    }
+    // ------------------------------------------------------------------------------------------
 } // end of namespace uniset
 // ------------------------------------------------------------------------------------------
