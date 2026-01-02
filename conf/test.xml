@@ -75,6 +75,13 @@
         </clickhouse_tags>
 	</BackendClickHouse>
 	<settings>
+		<UniSetUno name="UniSetUno">
+		  <extensions>
+		    <extension type="SharedMemory" name="SharedMemory"/>
+		    <extension type="UNetExchange" name="UNetExchange"/>
+		    <extension type="MBTCPMaster" name="MBMaster1" prefix="mbtcp"/>
+		  </extensions>
+		</UniSetUno>
 		<JSProxy name="JSProxy">
 			<modules>
 				<module path="/tmp/js"/>
@@ -117,7 +124,7 @@
 			<item name="UniExchange2" node="Node2"/>
 			<item id="3001" node_id="Node2"/>
 		</UniExchange>
-		<MBMaster1 iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
+		<MBMaster1 gateway_iaddr="127.0.0.1" gateway_port="2048" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60" filterField="rs" filterValue="7" propPrefix="rs_">
 			<DeviceList>
 				<item addr="0x01" invert="1" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
@@ -210,7 +217,7 @@
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
 		<UDPExchange2 name="UDPExchange2"/>
-		<UNetExchange name="UNetExchange" transport1="multicast"/>
+		<UNetExchange name="UNetExchange" transport1="multicast" />
 		<HeartBeatTime msec="5000"/>
 		<NCReadyTimeout msec="120000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestProc" output1_c="DO_C" output2_c="DO1_C"/>
@@ -264,6 +271,7 @@
 -->
 		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255">
 			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="localhost" textname="Локальный узел"
+		filter_field="rs" filter_value="2"
                 unet_ignore="0" unet_port="2048"
                 unet_multicast_ip="226.0.31.1"
                 unet_multicast_iface="lo"
@@ -281,7 +289,7 @@
 					<item baddr="0x110" card="3" dev="/dev/null" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
 				</iocards>
 			</item>
-			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел"
+			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" 
 				unet_recvmode_id="Node1_RecvMode1_S"
                 unet_port="2049"
                 unet_multicast_ip="226.0.31.2"
@@ -293,7 +301,7 @@
                 unet_multicast_port2="3122"
                 unet_multicast_sender_ip2="192.168.0.48"/>
          
-            <item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="1" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
+            <item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="1" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1" />
 			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="1" unet_port="3002"/>
 			<item id="3004" ip="192.168.56.12" name="Node3" textname="Node3" unet_ignore="1"/>
 			<item id="3005" ip="192.168.56.13" name="Node4" textname="Node4" unet_ignore="1"/>
