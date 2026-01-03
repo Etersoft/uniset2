@@ -32,6 +32,13 @@ bin_PROGRAMS = @PACKAGE@-launcher
 	$(SIGC_LIBS) $(POCO_LIBS)
 
 @PACKAGE@_launcher_CPPFLAGS = $(SIGC_CFLAGS) $(POCO_CFLAGS) \
-	-I$(top_builddir)/extensions/include
+	-I$(top_builddir)/extensions/include \
+	-DUNISET_DATADIR=\"$(datadir)/@PACKAGE@\"
+
+# Web UI files
+launcherwebdir = $(datadir)/@PACKAGE@
+launcherweb_DATA = launcher.html launcher-app.js
+
+EXTRA_DIST = launcher.html launcher-app.js
 
 include $(top_builddir)/include.mk

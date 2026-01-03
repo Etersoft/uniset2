@@ -75,6 +75,18 @@
         </clickhouse_tags>
 	</BackendClickHouse>
 	<settings>
+		<Launcher name="Launcher1"
+			commonArgs="--confile ${CONFFILE} --localNode ${NODE_NAME}">
+			<ProcessGroups>
+				<group name="sharedmemory" order="1">
+					<process name="SharedMemory"/>
+				</group>
+				<group name="exchanges" order="2" depends="sharedmemory">
+					<process name="UNetExchange1"/>
+					<process name="MBTCPMaster1"/>
+				</group>
+			</ProcessGroups>
+		</Launcher>
 		<UniSetUno name="UniSetUno">
 		  <extensions>
 		    <extension type="SharedMemory" name="SharedMemory"/>

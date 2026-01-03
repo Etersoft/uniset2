@@ -30,6 +30,7 @@ static void signal_handler(int sig)
 {
     if (sig == SIGTERM || sig == SIGINT)
     {
+        std::cerr << "Received signal " << sig << ", terminating..." << std::endl;
         g_shutdown = true;
 
         if (g_pm)
@@ -39,18 +40,21 @@ static void signal_handler(int sig)
 // -------------------------------------------------------------------------
 static void print_help(const std::string& prog)
 {
-    cout << prog << " [--confile configure.xml] [--localNode NodeName] [OPTIONS]\n"
+    cout << prog << " --confile configure.xml [--localNode NodeName] [OPTIONS]\n"
          << "\n"
          << "UniSet2 Process Launcher - manages startup sequence and health monitoring.\n"
          << "\n"
          << "Options:\n"
          << "  --confile FILE       Configuration file (required)\n"
-         << "  --localNode NAME     Local node name (required)\n"
+         << "  --localNode NAME     Local node name (default: from config localNode attribute)\n"
          << "  --launcher-name NAME Launcher section name in config\n"
          << "  --http-port PORT     HTTP API port (0 = disabled)\n"
          << "  --http-host HOST     HTTP API host (default: 0.0.0.0)\n"
          << "  --http-whitelist IPs Comma-separated whitelist (CIDR, ranges, IPs)\n"
          << "  --http-blacklist IPs Comma-separated blacklist (CIDR, ranges, IPs)\n"
+         << "  --read-token TOKEN   Bearer token for read access (UI, GET API)\n"
+         << "  --control-token TOKEN Bearer token for control (POST restart/stop/start)\n"
+         << "  --html-template FILE Custom HTML template file\n"
          << "  --health-interval MS Health check interval in ms (default: 5000)\n"
          << "  --no-monitor         Don't monitor processes after startup\n"
          << "  --runlist, --dry-run Show what will be launched without starting\n"
@@ -58,11 +62,15 @@ static void print_help(const std::string& prog)
          << "  --help               Show this help\n"
          << "\n"
          << "REST API endpoints (when --http-port is set):\n"
+         << "  GET  /                                       - Web UI\n"
+         << "  GET  /ui                                     - Web UI\n"
          << "  GET  /api/v2/launcher                        - Launcher status\n"
          << "  GET  /api/v2/launcher/status                 - All processes status\n"
          << "  GET  /api/v2/launcher/processes              - List all processes (detailed)\n"
          << "  GET  /api/v2/launcher/process/{name}         - Specific process status\n"
          << "  POST /api/v2/launcher/process/{name}/restart - Restart process\n"
+         << "  POST /api/v2/launcher/process/{name}/stop    - Stop process\n"
+         << "  POST /api/v2/launcher/process/{name}/start   - Start process\n"
          << "  GET  /api/v2/launcher/health                 - Health check (for Docker/K8s)\n"
          << "  GET  /api/v2/launcher/groups                 - Process groups\n"
          << "  GET  /api/v2/launcher/help                   - API help\n"
@@ -83,6 +91,9 @@ int main(int argc, char* argv[])
     std::string httpHost = "0.0.0.0";
     std::string httpWhitelist;
     std::string httpBlacklist;
+    std::string readToken;
+    std::string controlToken;
+    std::string htmlTemplate;
     size_t healthInterval = 5000;
     bool noMonitor = false;
     bool verbose = false;
@@ -140,6 +151,24 @@ int main(int argc, char* argv[])
             continue;
         }
 
+        if (arg == "--read-token" && i + 1 < argc)
+        {
+            readToken = argv[++i];
+            continue;
+        }
+
+        if (arg == "--control-token" && i + 1 < argc)
+        {
+            controlToken = argv[++i];
+            continue;
+        }
+
+        if (arg == "--html-template" && i + 1 < argc)
+        {
+            htmlTemplate = argv[++i];
+            continue;
+        }
+
         if (arg == "--health-interval" && i + 1 < argc)
         {
             healthInterval = std::stoul(argv[++i]);
@@ -173,21 +202,13 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (nodeName.empty())
-    {
-        cerr << "Error: --localNode is required" << endl;
-        print_help(argv[0]);
-        return 1;
-    }
-
     // Setup signal handlers
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
     signal(SIGCHLD, SIG_IGN);  // Prevent zombie processes
 
-    // Set environment variables for child processes
+    // Set environment variable for child processes (NODE_NAME set after determining nodeName)
     setenv("CONFFILE", confFile.c_str(), 0);  // Don't override if set
-    setenv("NODE_NAME", nodeName.c_str(), 0);
 
     try
     {
@@ -199,6 +220,24 @@ int main(int argc, char* argv[])
             cerr << "Failed to initialize UniSet configuration" << endl;
             return 1;
         }
+
+        // Get localNode from config if not specified on command line
+        if (nodeName.empty())
+        {
+            nodeName = conf->getLocalNodeName();
+
+            if (nodeName.empty())
+            {
+                cerr << "Error: --localNode not specified and localNode not found in config" << endl;
+                return 1;
+            }
+
+            if (verbose)
+                cout << "Using localNode from config: " << nodeName << endl;
+        }
+
+        // Set NODE_NAME environment variable for child processes
+        setenv("NODE_NAME", nodeName.c_str(), 0);
 
         // Load launcher-specific configuration
         cout << "Loading configuration from " << confFile << endl;
@@ -276,8 +315,11 @@ int main(int argc, char* argv[])
         {
             cout << "Starting HTTP server on " << httpHost << ":" << config.httpPort << endl;
 
-            std::shared_ptr<UHttp::IHttpRequestRegistry> registry =
-                std::make_shared<LauncherHttpRegistry>(pm);
+            auto launcherRegistry = std::make_shared<LauncherHttpRegistry>(pm);
+            launcherRegistry->setReadToken(readToken);
+            launcherRegistry->setControlToken(controlToken);
+            launcherRegistry->setHtmlTemplate(htmlTemplate);
+            std::shared_ptr<UHttp::IHttpRequestRegistry> registry = launcherRegistry;
             httpServer = std::make_shared<UHttp::UHttpServer>(registry, httpHost, config.httpPort);
 
             if (!httpWhitelist.empty())
@@ -300,34 +342,39 @@ int main(int argc, char* argv[])
         // Start all processes
         cout << "Starting processes for node " << nodeName << "..." << endl;
 
+        int exitCode = 0;
+
         if (!pm.startAll())
         {
             cerr << "Failed to start all processes" << endl;
-            return 1;
+            exitCode = 1;
         }
-
-        cout << "All processes started successfully" << endl;
-
-        // Start monitoring
-        if (!noMonitor)
+        else
         {
-            pm.startMonitoring();
-            cout << "Process monitoring enabled (interval: "
-                 << config.healthCheckInterval_msec << "ms)" << endl;
-        }
+            cout << "All processes started successfully" << endl;
 
-        // Wait for shutdown signal
-        cout << "Launcher running. Press Ctrl+C to stop." << endl;
-
-        while (!g_shutdown)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-            // Check for critical failures
-            if (pm.anyCriticalFailed())
+            // Start monitoring
+            if (!noMonitor)
             {
-                cerr << "Critical process failed, shutting down" << endl;
-                break;
+                pm.startMonitoring();
+                cout << "Process monitoring enabled (interval: "
+                     << config.healthCheckInterval_msec << "ms)" << endl;
+            }
+
+            // Wait for shutdown signal
+            cout << "Launcher running. Press Ctrl+C to stop." << endl;
+
+            while (!g_shutdown)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+                // Check for critical failures
+                if (pm.anyCriticalFailed())
+                {
+                    cerr << "Critical process failed, shutting down" << endl;
+                    exitCode = 1;
+                    break;
+                }
             }
         }
 
@@ -337,7 +384,10 @@ int main(int argc, char* argv[])
 #ifndef DISABLE_REST_API
 
         if (httpServer)
+        {
             httpServer->stop();
+            httpServer.reset();  // Release before pm is destroyed
+        }
 
 #endif
 
@@ -345,7 +395,7 @@ int main(int argc, char* argv[])
         pm.stopAll();
 
         cout << "Shutdown complete" << endl;
-        return 0;
+        return exitCode;
     }
     catch (const std::exception& e)
     {

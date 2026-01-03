@@ -85,8 +85,10 @@ namespace uniset
                 std::shared_ptr<DebugStream> mylog;
                 Poco::Net::SocketAddress sa;
 
+                // Note: HTTPServer takes ownership of reqFactory, so we just keep a raw pointer
+                // for configuration methods. HTTPServer will delete it.
+                UHttpRequestHandlerFactory* reqFactory = { nullptr };
                 std::shared_ptr<Poco::Net::HTTPServer> http;
-                std::shared_ptr<UHttpRequestHandlerFactory> reqFactory;
                 UHttp::NetworkRules whitelist;
                 UHttp::NetworkRules blacklist;
                 UHttp::NetworkRules trustedProxies;

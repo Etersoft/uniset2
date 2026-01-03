@@ -555,6 +555,54 @@ namespace uniset
         return startProcess(it->second);
     }
     // -------------------------------------------------------------------------
+    bool ProcessManager::stopProcess(const std::string& name)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        auto it = processes_.find(name);
+
+        if (it == processes_.end())
+        {
+            mylog->warn() << "Process not found: " << name << std::endl;
+            return false;
+        }
+
+        mylog->info() << "Stopping process by name: " << name << std::endl;
+        stopProcess(it->second);
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    bool ProcessManager::startProcess(const std::string& name)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        auto it = processes_.find(name);
+
+        if (it == processes_.end())
+        {
+            mylog->warn() << "Process not found: " << name << std::endl;
+            return false;
+        }
+
+        // Skip if process is marked to skip or not for this node
+        if (it->second.skip)
+        {
+            mylog->warn() << "Cannot start " << name << " (skip=true)" << std::endl;
+            return false;
+        }
+
+        if (!it->second.shouldRunOnNode(nodeName_))
+        {
+            mylog->warn() << "Cannot start " << name
+                          << " (not for node " << nodeName_ << ")" << std::endl;
+            return false;
+        }
+
+        mylog->info() << "Starting process by name: " << name << std::endl;
+        it->second.reset();
+        return startProcess(it->second);
+    }
+    // -------------------------------------------------------------------------
     void ProcessManager::startMonitoring()
     {
         if (running_)
