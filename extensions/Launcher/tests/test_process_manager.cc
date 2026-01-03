@@ -23,6 +23,8 @@ TEST_CASE("ProcessInfo: to_string ProcessState", "[process]")
     REQUIRE(to_string(ProcessState::Running) == "running");
     REQUIRE(to_string(ProcessState::Failed) == "failed");
     REQUIRE(to_string(ProcessState::Stopping) == "stopping");
+    REQUIRE(to_string(ProcessState::Restarting) == "restarting");
+    REQUIRE(to_string(ProcessState::Completed) == "completed");
 }
 // -------------------------------------------------------------------------
 TEST_CASE("ProcessInfo: to_string ReadyCheckType", "[process]")
@@ -556,5 +558,17 @@ TEST_CASE("ProcessManager: stopProcess and startProcess by name", "[.integration
     REQUIRE(pm.getProcessState("lifecycle_proc") == ProcessState::Running);
 
     pm.stopAll();
+}
+// -------------------------------------------------------------------------
+// Restart configuration tests
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessInfo: restart defaults", "[process][restart]")
+{
+    ProcessInfo proc;
+
+    REQUIRE(proc.maxRestarts == 0);  // 0 = infinite, -1 = no restart
+    REQUIRE(proc.restartDelay_msec == 1000);  // 1 second initial delay
+    REQUIRE(proc.maxRestartDelay_msec == 30000);  // 30 seconds max
+    REQUIRE(proc.critical == true);  // critical processes are restarted by default
 }
 // -------------------------------------------------------------------------
