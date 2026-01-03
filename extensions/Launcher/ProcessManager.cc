@@ -55,6 +55,11 @@ namespace uniset
         restartWindow_msec_ = msec;
     }
     // -------------------------------------------------------------------------
+    void ProcessManager::setStopTimeout(size_t msec)
+    {
+        stopTimeout_msec_ = msec;
+    }
+    // -------------------------------------------------------------------------
     void ProcessManager::setCommonArgs(const std::vector<std::string>& args)
     {
         commonArgs_ = args;
@@ -533,19 +538,23 @@ namespace uniset
                 // Send SIGTERM
                 Poco::Process::requestTermination(proc.pid);
 
-                // Wait up to 5 seconds for graceful shutdown
-                for (int i = 0; i < 50; i++)
+                // Wait for graceful shutdown
+                const size_t checkInterval = 100;  // ms
+                const size_t iterations = stopTimeout_msec_ / checkInterval;
+
+                for (size_t i = 0; i < iterations; i++)
                 {
                     if (!HealthChecker::isProcessAlive(proc.pid))
                         break;
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(checkInterval));
                 }
 
                 // Force kill if still running
                 if (HealthChecker::isProcessAlive(proc.pid))
                 {
-                    mylog->warn() << proc.name << " did not stop gracefully, killing" << std::endl;
+                    mylog->warn() << proc.name << " did not stop gracefully after "
+                                  << stopTimeout_msec_ << "ms, sending SIGKILL" << std::endl;
                     Poco::Process::kill(proc.pid);
                 }
             }
