@@ -731,6 +731,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_bindir/%oname-launcher
 %_datadir/%oname/launcher.html
 %_datadir/%oname/launcher-app.js
+%_datadir/%oname/uniset2-launcher.service.template
 
 %files extension-uno
 %_bindir/%oname-uno

@@ -1,0 +1,57 @@
+# UniSet2 Launcher systemd service template
+#
+# Usage:
+#   1. Copy this file to /etc/systemd/system/uniset2-launcher.service
+#   2. Edit the file and replace placeholders:
+#      - @CONFFILE@ - path to your configuration file
+#      - @NODE_NAME@ - node name (e.g., Node1)
+#      - @HTTP_PORT@ - HTTP API port (or remove --http-port if not needed)
+#   3. Run: systemctl daemon-reload
+#   4. Run: systemctl enable --now uniset2-launcher
+#
+# Example configuration:
+#   ExecStart=/usr/bin/uniset2-launcher \
+#       --confile /etc/uniset2/configure.xml \
+#       --http-port 8080
+#
+
+[Unit]
+Description=UniSet2 Process Launcher
+Documentation=https://github.com/vpashka/uniset2
+After=network.target
+
+[Service]
+Type=simple
+
+# Main process
+ExecStart=/usr/bin/uniset2-launcher \
+    --confile @CONFFILE@ \
+    --http-port @HTTP_PORT@ \
+    --stop-timeout 10000
+
+# Environment (optional)
+# Environment=CONFFILE=/etc/uniset2/configure.xml
+# EnvironmentFile=-/etc/sysconfig/uniset2-launcher
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+
+# Graceful shutdown timeout (should be > --stop-timeout)
+TimeoutStopSec=30
+
+# Security hardening (optional, uncomment as needed)
+# User=uniset
+# Group=uniset
+# NoNewPrivileges=true
+# ProtectSystem=strict
+# ProtectHome=true
+# ReadWritePaths=/var/log/uniset2 /var/run/uniset2
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=uniset2-launcher
+
+[Install]
+WantedBy=multi-user.target

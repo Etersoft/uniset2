@@ -56,6 +56,7 @@ static void print_help(const std::string& prog)
          << "  --control-token TOKEN Bearer token for control (POST restart/stop/start)\n"
          << "  --html-template FILE Custom HTML template file\n"
          << "  --health-interval MS Health check interval in ms (default: 5000)\n"
+         << "  --stop-timeout MS    Graceful shutdown timeout in ms (default: 5000)\n"
          << "  --no-monitor         Don't monitor processes after startup\n"
          << "  --runlist, --dry-run Show what will be launched without starting\n"
          << "  --verbose            Verbose output\n"
@@ -103,6 +104,7 @@ int main(int argc, char* argv[])
     std::string controlToken;
     std::string htmlTemplate;
     size_t healthInterval = 5000;
+    size_t stopTimeout = 5000;
     bool noMonitor = false;
     bool verbose = false;
     bool dryRun = false;
@@ -205,6 +207,12 @@ int main(int argc, char* argv[])
             continue;
         }
 
+        if (arg == "--stop-timeout" && i + 1 < argc)
+        {
+            stopTimeout = std::stoul(argv[++i]);
+            continue;
+        }
+
         if (arg == "--no-monitor")
         {
             noMonitor = true;
@@ -304,6 +312,7 @@ int main(int argc, char* argv[])
         pm.setNodeName(nodeName);
         pm.setHealthCheckInterval(config.healthCheckInterval_msec);
         pm.setRestartWindow(config.restartWindow_msec);
+        pm.setStopTimeout(stopTimeout);
         pm.setCommonArgs(config.commonArgs);
 
         if (!passthroughArgs.empty())

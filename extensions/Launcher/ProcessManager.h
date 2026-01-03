@@ -43,6 +43,7 @@ namespace uniset
 
             void setHealthCheckInterval(size_t msec);
             void setRestartWindow(size_t msec);
+            void setStopTimeout(size_t msec);
             void setCommonArgs(const std::vector<std::string>& args);
             void setPassthroughArgs(const std::string& args);
             void setForwardArgs(const std::vector<std::string>& args);
@@ -115,6 +116,7 @@ namespace uniset
 
             size_t healthCheckInterval_msec_ = 5000;
             size_t restartWindow_msec_ = 60000;
+            size_t stopTimeout_msec_ = 5000;  // Time to wait for graceful shutdown before SIGKILL
             std::vector<std::string> commonArgs_;
             std::string passthroughArgs_;  // Arguments after "--" passed to all child processes
             std::vector<std::string> forwardArgs_;  // Unknown arguments forwarded to child processes

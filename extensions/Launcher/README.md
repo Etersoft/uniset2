@@ -48,6 +48,7 @@ uniset2-launcher --confile config.xml -- --custom-arg value
 | `--control-token TOKEN` | Bearer-токен для управления (POST restart/stop/start) |
 | `--html-template FILE` | Пользовательский HTML-шаблон |
 | `--health-interval MS` | Интервал проверки состояния в мс (по умолчанию: 5000) |
+| `--stop-timeout MS` | Таймаут graceful shutdown в мс (по умолчанию: 5000) |
 | `--no-monitor` | Не мониторить процессы после запуска |
 | `--runlist`, `--dry-run` | Показать что будет запущено без реального запуска |
 | `--verbose` | Подробный вывод |
@@ -627,23 +628,47 @@ JavaScript-файл для веб-интерфейса.
 
 ## Интеграция с systemd
 
+При установке пакета в `$(datadir)/uniset2/` размещается шаблон
+`uniset2-launcher.service.template`. Скопируйте его и настройте:
+
+```bash
+cp /usr/share/uniset2/uniset2-launcher.service.template \
+   /etc/systemd/system/uniset2-launcher.service
+# Отредактируйте файл, замените @CONFFILE@, @NODE_NAME@, @HTTP_PORT@
+systemctl daemon-reload
+systemctl enable --now uniset2-launcher
+```
+
+Пример unit-файла:
+
 ```ini
 [Unit]
-Description=UniSet2 Launcher for %i
+Description=UniSet2 Launcher
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/uniset2-launcher --confile /etc/uniset2/%i/configure.xml --localNode %i
-ExecStop=/bin/kill -SIGTERM $MAINPID
+ExecStart=/usr/bin/uniset2-launcher \
+    --confile /etc/uniset2/configure.xml \
+    --localNode Node1 \
+    --http-port 8080 \
+    --stop-timeout 10000
 Restart=on-failure
 RestartSec=5
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Установка как шаблон: `systemctl enable uniset2-launcher@Node1`
+Для нескольких нод можно использовать шаблон с `%i`:
+
+```ini
+# /etc/systemd/system/uniset2-launcher@.service
+ExecStart=/usr/bin/uniset2-launcher --confile /etc/uniset2/%i/configure.xml --localNode %i
+```
+
+Установка: `systemctl enable uniset2-launcher@Node1`
 
 ## Пример Docker
 

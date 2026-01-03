@@ -35,10 +35,10 @@ bin_PROGRAMS = @PACKAGE@-launcher
 	-I$(top_builddir)/extensions/include \
 	-DUNISET_DATADIR=\"$(datadir)/@PACKAGE@\"
 
-# Web UI files
-launcherwebdir = $(datadir)/@PACKAGE@
-launcherweb_DATA = launcher.html launcher-app.js
+# Web UI and templates
+launcherdatadir = $(datadir)/@PACKAGE@
+launcherdata_DATA = launcher.html launcher-app.js uniset2-launcher.service.template
 
-EXTRA_DIST = launcher.html launcher-app.js
+EXTRA_DIST = launcher.html launcher-app.js uniset2-launcher.service.template
 
 include $(top_builddir)/include.mk
