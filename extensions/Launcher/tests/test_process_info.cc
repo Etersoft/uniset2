@@ -62,8 +62,8 @@ TEST_CASE("ProcessInfo: default values", "[processinfo]")
     REQUIRE(proc.skip == false);
     REQUIRE(proc.critical == true);  // default is now true
     REQUIRE(proc.oneshot == false);
-    REQUIRE(proc.restartOnFailure == true);
-    REQUIRE(proc.maxRestarts == 5);
+    REQUIRE(proc.maxRestarts == 0);  // 0 = infinite restarts, -1 = no restart
+    REQUIRE(proc.maxRestartDelay_msec == 30000);  // 30 sec max backoff
     REQUIRE(proc.state == ProcessState::Stopped);
     REQUIRE(proc.pid == 0);
 }

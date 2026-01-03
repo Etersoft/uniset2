@@ -155,7 +155,6 @@ namespace uniset
         obj.set("critical", proc.critical);
         obj.set("skip", proc.skip);
         obj.set("oneshot", proc.oneshot);
-        obj.set("restartOnFailure", proc.restartOnFailure);
         obj.set("maxRestarts", proc.maxRestarts);
         obj.set("restartCount", proc.restartCount);
         obj.set("lastExitCode", proc.lastExitCode);

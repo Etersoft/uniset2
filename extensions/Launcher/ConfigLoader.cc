@@ -109,6 +109,9 @@ namespace uniset
         if (lit.getProp("maxRestarts").length() > 0)
             config.maxRestarts = lit.getIntProp("maxRestarts");
 
+        if (lit.getProp("maxRestartDelay").length() > 0)
+            config.maxRestartDelay_msec = lit.getIntProp("maxRestartDelay");
+
         if (lit.getProp("httpPort").length() > 0)
             config.httpPort = lit.getIntProp("httpPort");
 
@@ -365,11 +368,7 @@ namespace uniset
         // afterRun hook
         proc.afterRun = it.getProp("afterRun");
 
-        std::string restartStr = it.getProp("restartOnFailure");
-        proc.restartOnFailure = restartStr.empty() ||
-                                restartStr == "true" ||
-                                restartStr == "1";
-
+        // Parse maxRestarts: -1 = no restart, 0 = infinite (default), >0 = limited
         if (it.getProp("maxRestarts").length() > 0)
             proc.maxRestarts = it.getIntProp("maxRestarts");
         else
@@ -379,6 +378,11 @@ namespace uniset
             proc.restartDelay_msec = it.getIntProp("restartDelay");
         else
             proc.restartDelay_msec = config.restartDelay_msec;
+
+        if (it.getProp("maxRestartDelay").length() > 0)
+            proc.maxRestartDelay_msec = it.getIntProp("maxRestartDelay");
+        else
+            proc.maxRestartDelay_msec = config.maxRestartDelay_msec;
 
         // Node filter
         std::string nodeFilterStr = it.getProp("nodeFilter");

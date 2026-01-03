@@ -37,7 +37,6 @@ static const char* TEST_CONFIG = R"(<?xml version="1.0" encoding="utf-8"?>
                  command="uniset2-smemory"
                  args="--confile ${CONFFILE} --localNode ${NODE_NAME}"
                  readyCheck="corba:SharedMemory"
-                 restartOnFailure="true"
                  maxRestarts="5"/>
       </group>
 
@@ -46,7 +45,7 @@ static const char* TEST_CONFIG = R"(<?xml version="1.0" encoding="utf-8"?>
                  command="uniset2-unetexchange"
                  args="--unet-name UNet1"
                  nodeFilter="Node1,Node2"
-                 restartOnFailure="false"/>
+                 maxRestarts="-1"/>
         <process name="ModbusMaster"
                  command="uniset2-mbtcpmaster"
                  nodeFilter="Node3"/>
@@ -150,14 +149,13 @@ TEST_CASE("ConfigLoader: load processes", "[config]")
     REQUIRE(sm.command == "uniset2-smemory");
     REQUIRE(sm.readyCheck.type == ReadyCheckType::CORBA);
     REQUIRE(sm.readyCheck.target == "SharedMemory");
-    REQUIRE(sm.restartOnFailure == true);
     REQUIRE(sm.maxRestarts == 5);
     REQUIRE(sm.critical == true);  // SharedMemory template default
     REQUIRE(sm.group == "sm");
 
     // UNetExchange
     auto& unet = config.processes["UNetExchange"];
-    REQUIRE(unet.restartOnFailure == false);
+    REQUIRE(unet.maxRestarts == -1);  // explicitly disabled restart
     REQUIRE(unet.nodeFilter.size() == 2);
     REQUIRE(unet.nodeFilter.count("Node1") == 1);
     REQUIRE(unet.nodeFilter.count("Node2") == 1);

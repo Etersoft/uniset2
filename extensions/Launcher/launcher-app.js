@@ -292,6 +292,8 @@
             case 'starting':
             case 'stopping':
                 return 'warn';
+            case 'restarting':
+                return 'warn blink';
             default:
                 return '';
         }
