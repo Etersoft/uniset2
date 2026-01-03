@@ -82,8 +82,7 @@
 					<process name="SharedMemory"/>
 				</group>
 				<group name="exchanges" order="2" depends="sharedmemory">
-					<process name="UNetExchange1"/>
-					<process name="MBTCPMaster1"/>
+					<process name="UNetExchange"/>
 				</group>
 			</ProcessGroups>
 		</Launcher>

@@ -758,6 +758,49 @@ TEST_CASE("HTTP: GET help - readAuthRequired true when read token set", "[http][
     REQUIRE(json->getValue<bool>("controlEnabled") == true);
 }
 // -------------------------------------------------------------------------
+// GET /api/v2/launcher/auth - Control Token Validation
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: GET /auth - control disabled returns 403", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "");  // No control token
+
+    int status = fixture.httpGetStatus("launcher/auth");
+    REQUIRE(status == 403);
+
+    auto json = fixture.httpGetJson("launcher/auth");
+    REQUIRE(json->getValue<std::string>("error") == "forbidden");
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: GET /auth - without token returns 401", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "secret-control-token");
+
+    int status = fixture.httpGetStatus("launcher/auth");
+    REQUIRE(status == 401);
+
+    auto json = fixture.httpGetJson("launcher/auth");
+    REQUIRE(json->getValue<std::string>("error") == "unauthorized");
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: GET /auth - with valid token returns success", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "secret-control-token");
+
+    int status = fixture.httpGetStatus("launcher/auth", "secret-control-token");
+    REQUIRE(status == 200);
+
+    auto json = fixture.httpGetJson("launcher/auth", "secret-control-token");
+    REQUIRE(json->getValue<bool>("success") == true);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: GET /auth - with wrong token returns 401", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "secret-control-token");
+
+    int status = fixture.httpGetStatus("launcher/auth", "wrong-token");
+    REQUIRE(status == 401);
+}
+// -------------------------------------------------------------------------
 // Static file requests (httpStaticRequest)
 // -------------------------------------------------------------------------
 TEST_CASE("HTTP: GET / - returns 404 if no launcher.html", "[http][static]")

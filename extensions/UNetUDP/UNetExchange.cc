@@ -43,8 +43,12 @@ static xmlNode* getMyNode(xmlNode* nodes, const std::string& localNodeName)
 
     do
     {
+        cout << "check node: " << it.getProp("name") << " == " << localNodeName << endl;
         if( it.getProp("name") == localNodeName )
+        {
+            cout << "FOUND! " << localNodeName << endl;
             return it.getCurrent();
+        }
     }
     while( it.goNext() );
 
