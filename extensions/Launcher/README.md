@@ -15,7 +15,22 @@
 ## Использование
 
 ```bash
-uniset2-launcher --confile configure.xml [--localNode Node1] [ОПЦИИ]
+uniset2-launcher --confile configure.xml [--localNode Node1] [ОПЦИИ] [-- ARGS...]
+```
+
+### Проброс аргументов
+
+Неизвестные launcher'у аргументы автоматически пробрасываются в дочерние процессы:
+
+```bash
+# --uniset-port и --lockDir будут переданы всем дочерним процессам
+uniset2-launcher --confile config.xml --uniset-port 2809 --lockDir /tmp
+```
+
+Также можно явно указать аргументы для проброса через `--`:
+
+```bash
+uniset2-launcher --confile config.xml -- --custom-arg value
 ```
 
 ### Опции
@@ -186,7 +201,7 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | `readyCheck` | Проверка готовности (см. ниже) | из шаблона |
 | `readyTimeout` | Таймаут проверки готовности (мс) | 10000 |
 | `checkPause` | Пауза между проверками готовности (мс) | 500 |
-| `critical` | Остановить все при сбое | false |
+| `ignoreFail` | Игнорировать сбой процесса (не останавливать launcher) | false |
 | `restartOnFailure` | Автоперезапуск при падении | true |
 | `maxRestarts` | Максимум попыток перезапуска | 5 |
 | `restartDelay` | Задержка перед перезапуском (мс) | 3000 |
@@ -258,21 +273,23 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 
 Встроенные шаблоны для автоматической конфигурации:
 
-| Тип | Команда | Паттерн аргументов | Проверка готовности | Critical | Префиксы |
-|-----|---------|-------------------|---------------------|----------|----------|
-| `SharedMemory` | `uniset2-smemory` | `--smemory-id ${name}` | `corba:${name}` | да | `SharedMemory`, `SM_`, `SMemory` |
-| `UNetExchange` | `uniset2-unetexchange` | `--unet-name ${name}` | `corba:${name}` | нет | `UNet`, `UNetExchange` |
-| `MBTCPMaster` | `uniset2-mbtcpmaster` | `--mbtcp-name ${name}` | `corba:${name}` | нет | `MBTCPMaster`, `MBTCP`, `ModbusTCP` |
-| `MBTCPMultiMaster` | `uniset2-mbtcpmultimaster` | `--mbtcp-name ${name}` | `corba:${name}` | нет | `MBMultiMaster`, `MBTCPMulti` |
-| `MBSlave` | `uniset2-mbslave` | `--mbs-name ${name}` | `corba:${name}` | нет | `MBSlave`, `ModbusSlave` |
-| `RTUExchange` | `uniset2-rtuexchange` | `--rs-name ${name}` | `corba:${name}` | нет | `RTU`, `RTUExchange` |
-| `OPCUAServer` | `uniset2-opcua-server` | `--opcua-name ${name}` | `corba:${name}` | нет | `OPCUAServer`, `OPCUASrv` |
-| `OPCUAExchange` | `uniset2-opcua-exchange` | `--opcua-name ${name}` | `corba:${name}` | нет | `OPCUAExchange`, `OPCUAClient` |
-| `MQTTPublisher` | `uniset2-mqttpublisher` | `--mqtt-name ${name}` | `corba:${name}` | нет | `MQTT`, `MQTTPublisher` |
-| `LogDB` | `uniset2-logdb` | `--logdb-name ${name}` | нет | нет | `LogDB` |
-| `IOControl` | `uniset2-iocontrol` | `--io-name ${name}` | `corba:${name}` | нет | `IOControl`, `IO_` |
-| `BackendClickHouse` | `uniset2-backend-clickhouse` | `--clickhouse-name ${name}` | `corba:${name}` | нет | `ClickHouse`, `BackendClickHouse` |
-| `UWebSocketGate` | `uniset2-uwebsocket-gate` | `--ws-name ${name}` | `corba:${name}` | нет | `WebSocket`, `UWebSocket` |
+| Тип | Команда | Паттерн аргументов | Проверка готовности | Префиксы |
+|-----|---------|-------------------|---------------------|----------|
+| `SharedMemory` | `uniset2-smemory` | `--smemory-id ${name}` | `corba:${name}` | `SharedMemory`, `SM_`, `SMemory` |
+| `UNetExchange` | `uniset2-unetexchange` | `--unet-name ${name}` | `corba:${name}` | `UNet`, `UNetExchange` |
+| `MBTCPMaster` | `uniset2-mbtcpmaster` | `--mbtcp-name ${name}` | `corba:${name}` | `MBTCPMaster`, `MBTCP`, `ModbusTCP` |
+| `MBTCPMultiMaster` | `uniset2-mbtcpmultimaster` | `--mbtcp-name ${name}` | `corba:${name}` | `MBMultiMaster`, `MBTCPMulti` |
+| `MBSlave` | `uniset2-mbslave` | `--mbs-name ${name}` | `corba:${name}` | `MBSlave`, `ModbusSlave` |
+| `RTUExchange` | `uniset2-rtuexchange` | `--rs-name ${name}` | `corba:${name}` | `RTU`, `RTUExchange` |
+| `OPCUAServer` | `uniset2-opcua-server` | `--opcua-name ${name}` | `corba:${name}` | `OPCUAServer`, `OPCUASrv` |
+| `OPCUAExchange` | `uniset2-opcua-exchange` | `--opcua-name ${name}` | `corba:${name}` | `OPCUAExchange`, `OPCUAClient` |
+| `MQTTPublisher` | `uniset2-mqttpublisher` | `--mqtt-name ${name}` | `corba:${name}` | `MQTT`, `MQTTPublisher` |
+| `LogDB` | `uniset2-logdb` | `--logdb-name ${name}` | нет | `LogDB` |
+| `IOControl` | `uniset2-iocontrol` | `--io-name ${name}` | `corba:${name}` | `IOControl`, `IO_` |
+| `BackendClickHouse` | `uniset2-backend-clickhouse` | `--clickhouse-name ${name}` | `corba:${name}` | `ClickHouse`, `BackendClickHouse` |
+| `UWebSocketGate` | `uniset2-uwebsocket-gate` | `--ws-name ${name}` | `corba:${name}` | `WebSocket`, `UWebSocket` |
+
+**Примечание:** Все процессы являются критическими по умолчанию. Используйте `ignoreFail="true"` для процессов, падение которых не должно останавливать launcher.
 
 Placeholder `${name}` заменяется на имя процесса.
 
@@ -304,20 +321,23 @@ Group 1: sharedmemory (depends: naming)
   [1] SharedMemory
       Type: SharedMemory
       Command: uniset2-smemory --smemory-id SharedMemory
-      Ready: corba:SharedMemory (timeout: 30000ms)
-      Critical: yes
+      Ready: corba:SharedMemory (timeout: 10000ms)
 
 Group 2: exchanges (depends: sharedmemory)
   [2] UNetExchange1
       Type: UNetExchange
       Command: uniset2-unetexchange --unet-name UNetExchange1
-      Ready: corba:UNetExchange1 (timeout: 30000ms)
-      Critical: no
+      Ready: corba:UNetExchange1 (timeout: 10000ms)
+
+  [3] LogDB
+      Type: LogDB
+      Command: uniset2-logdb --logdb-name LogDB
+      ignoreFail: yes
 
 Skipped (nodeFilter mismatch):
   - MBTCPMaster1 (nodeFilter: Node3)
 
-Total: 2 processes to start
+Total: 3 processes to start
 ```
 
 ## Web UI
