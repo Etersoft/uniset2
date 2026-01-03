@@ -15,7 +15,7 @@
 ## Использование
 
 ```bash
-uniset2-launcher --confile configure.xml --localNode Node1 [ОПЦИИ]
+uniset2-launcher --confile configure.xml [--localNode Node1] [ОПЦИИ]
 ```
 
 ### Опции
@@ -23,12 +23,15 @@ uniset2-launcher --confile configure.xml --localNode Node1 [ОПЦИИ]
 | Опция | Описание |
 |-------|----------|
 | `--confile FILE` | Конфигурационный файл (обязательно) |
-| `--localNode NAME` | Имя локального узла (обязательно) |
+| `--localNode NAME` | Имя локального узла (по умолчанию: из атрибута `localNode` в конфиге) |
 | `--launcher-name NAME` | Имя секции Launcher в конфиге |
 | `--http-port PORT` | Порт HTTP API (0 = отключено) |
 | `--http-host HOST` | Хост HTTP API (по умолчанию: 0.0.0.0) |
 | `--http-whitelist IPs` | Whitelist IP/подсетей через запятую |
 | `--http-blacklist IPs` | Blacklist IP/подсетей через запятую |
+| `--read-token TOKEN` | Bearer-токен для доступа к чтению (UI, GET API) |
+| `--control-token TOKEN` | Bearer-токен для управления (POST restart/stop/start) |
+| `--html-template FILE` | Пользовательский HTML-шаблон |
 | `--health-interval MS` | Интервал проверки состояния в мс (по умолчанию: 5000) |
 | `--no-monitor` | Не мониторить процессы после запуска |
 | `--runlist`, `--dry-run` | Показать что будет запущено без реального запуска |
@@ -181,7 +184,7 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | `rawArgs` | Отдельные аргументы без commonArgs | "" |
 | `workDir` | Рабочий каталог | текущий |
 | `readyCheck` | Проверка готовности (см. ниже) | из шаблона |
-| `readyTimeout` | Таймаут проверки готовности (мс) | 30000 |
+| `readyTimeout` | Таймаут проверки готовности (мс) | 10000 |
 | `checkPause` | Пауза между проверками готовности (мс) | 500 |
 | `critical` | Остановить все при сбое | false |
 | `restartOnFailure` | Автоперезапуск при падении | true |
@@ -317,6 +320,88 @@ Skipped (nodeFilter mismatch):
 Total: 2 processes to start
 ```
 
+## Web UI
+
+При запуске с `--http-port` доступен веб-интерфейс для мониторинга и управления процессами.
+
+### Доступ к Web UI
+
+```bash
+# Открытый доступ (только просмотр)
+uniset2-launcher --http-port 8080 --confile config.xml --localNode Node1
+
+# С авторизацией для управления
+uniset2-launcher --http-port 8080 --control-token secret123 --confile config.xml --localNode Node1
+```
+
+Откройте в браузере: `http://localhost:8080/` или `http://localhost:8080/ui`
+
+### Возможности Web UI
+
+- Просмотр списка процессов и их состояния (running, stopped, failed)
+- Просмотр PID и группы каждого процесса
+- Управление процессами: restart, stop, start (если задан `--control-token`)
+- Автоматическое обновление статуса каждые 5 секунд
+- Сохранение токена авторизации в localStorage браузера
+
+### Кастомизация
+
+Используйте `--html-template` для указания собственного HTML-шаблона:
+
+```bash
+uniset2-launcher --html-template /path/to/custom.html ...
+```
+
+Доступные placeholder'ы в шаблоне:
+- `{{NODE_NAME}}` — имя текущего узла
+- `{{API_URL}}` — базовый URL API (например `http://localhost:8080`)
+- `{{CONTROL_ENABLED}}` — `true` если задан control-token, иначе `false`
+
+## Авторизация HTTP API
+
+Launcher поддерживает двухуровневую Bearer-токен авторизацию.
+
+### Уровни доступа
+
+| Опция | Назначение |
+|-------|-----------|
+| `--read-token TOKEN` | Токен для чтения (Web UI, GET запросы к API) |
+| `--control-token TOKEN` | Токен для управления (POST restart/stop/start) |
+
+### Режимы работы
+
+**Открытый доступ (по умолчанию)**:
+```bash
+uniset2-launcher --http-port 8080 ...
+```
+- GET запросы: открыты
+- POST операции: запрещены (403 Forbidden)
+
+**Только управление защищено**:
+```bash
+uniset2-launcher --http-port 8080 --control-token secret123 ...
+```
+- GET запросы: открыты
+- POST операции: требуют `Authorization: Bearer secret123`
+
+**Полная авторизация**:
+```bash
+uniset2-launcher --http-port 8080 --read-token viewer --control-token admin ...
+```
+- GET запросы: требуют `Authorization: Bearer viewer`
+- POST операции: требуют `Authorization: Bearer admin`
+
+### Пример запроса с авторизацией
+
+```bash
+# Чтение статуса (если задан read-token)
+curl -H "Authorization: Bearer viewer" http://localhost:8080/api/v2/launcher/status
+
+# Перезапуск процесса
+curl -X POST -H "Authorization: Bearer admin" \
+     http://localhost:8080/api/v2/launcher/process/SharedMemory/restart
+```
+
 ## REST API
 
 Когда указан `--http-port`, доступны следующие endpoints. Launcher использует HTTP API v2.
@@ -387,9 +472,39 @@ uniset2-launcher --http-port 8080 --http-blacklist "192.168.1.100,172.16.0.10-17
 
 Получить статус конкретного процесса.
 
+### GET / и GET /ui
+
+Веб-интерфейс для управления процессами. См. раздел [Web UI](#web-ui).
+
+### GET /launcher-app.js
+
+JavaScript-файл для веб-интерфейса.
+
 ### POST /api/v2/launcher/process/{name}/restart
 
-Перезапустить процесс.
+Перезапустить процесс. Требует `--control-token`.
+
+```json
+{
+  "process": "UNetExchange",
+  "success": true
+}
+```
+
+### POST /api/v2/launcher/process/{name}/stop
+
+Остановить процесс. Требует `--control-token`.
+
+```json
+{
+  "process": "UNetExchange",
+  "success": true
+}
+```
+
+### POST /api/v2/launcher/process/{name}/start
+
+Запустить остановленный процесс. Требует `--control-token`.
 
 ```json
 {
@@ -481,5 +596,5 @@ make install
 
 Устанавливаются следующие файлы:
 - `/usr/bin/uniset2-launcher` — Основной исполняемый файл
-- `/usr/lib/libUniSet2Launcher.so` — Библиотека
-- `/usr/include/uniset2/extensions/ProcessManager.h` — Заголовочные файлы
+- `/usr/share/uniset2/launcher.html` — HTML-шаблон Web UI
+- `/usr/share/uniset2/launcher-app.js` — JavaScript Web UI

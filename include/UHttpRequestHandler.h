@@ -159,6 +159,21 @@ namespace uniset
                 // Справка по объекту (диспетчеризация к конкретному объекту по ctx.objectName)
                 // throw SystemError, NameNotFound
                 virtual Poco::JSON::Object::Ptr httpHelpRequest(const HttpRequestContext& ctx) = 0;
+
+                /*! Обработка статических файлов (HTML, JS, CSS и др.)
+                 *  Вызывается для путей вне /api/v2/
+                 *  \param path - путь запроса (например "/" или "/app.js")
+                 *  \param req - HTTP запрос
+                 *  \param resp - HTTP ответ
+                 *  \return true если запрос обработан, false если нужно вернуть 400
+                 */
+                virtual bool httpStaticRequest(
+                    const std::string& path,
+                    Poco::Net::HTTPServerRequest& req,
+                    Poco::Net::HTTPServerResponse& resp)
+                {
+                    return false;  // По умолчанию: не обрабатываем
+                }
         };
 
         // -------------------------------------------------------------------------

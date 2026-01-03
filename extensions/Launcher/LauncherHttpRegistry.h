@@ -39,16 +39,29 @@ namespace uniset
             explicit LauncherHttpRegistry(ProcessManager& pm);
             virtual ~LauncherHttpRegistry() = default;
 
+            // Configuration
+            void setReadToken(const std::string& token);
+            void setControlToken(const std::string& token);
+            void setHtmlTemplate(const std::string& path);
+
             // IHttpRequestRegistry interface
             Poco::JSON::Object::Ptr httpRequest(const UHttp::HttpRequestContext& ctx) override;
             Poco::JSON::Array::Ptr httpGetObjectsList(const UHttp::HttpRequestContext& ctx) override;
             Poco::JSON::Object::Ptr httpHelpRequest(const UHttp::HttpRequestContext& ctx) override;
+
+            // Static file serving (HTML, JS)
+            bool httpStaticRequest(
+                const std::string& path,
+                Poco::Net::HTTPServerRequest& req,
+                Poco::Net::HTTPServerResponse& resp) override;
 
         private:
             Poco::JSON::Object::Ptr handleStatus();
             Poco::JSON::Object::Ptr handleProcesses();
             Poco::JSON::Object::Ptr handleProcess(const std::string& name);
             Poco::JSON::Object::Ptr handleRestart(const std::string& name);
+            Poco::JSON::Object::Ptr handleStop(const std::string& name);
+            Poco::JSON::Object::Ptr handleStart(const std::string& name);
             Poco::JSON::Object::Ptr handleHealth();
             Poco::JSON::Object::Ptr handleGroups();
             Poco::JSON::Object::Ptr handleHelp();
@@ -56,7 +69,26 @@ namespace uniset
             Poco::JSON::Object::Ptr processToJSON(const ProcessInfo& proc);
             Poco::JSON::Object::Ptr groupToJSON(const ProcessGroup& group);
 
+            // Authorization helpers
+            bool checkReadAuth(const Poco::Net::HTTPServerRequest& req);
+            bool checkControlAuth(const Poco::Net::HTTPServerRequest& req);
+            static bool validateBearerToken(const Poco::Net::HTTPServerRequest& req,
+                                            const std::string& expectedToken);
+
+            // File serving helpers
+            bool sendHtmlFile(const std::string& filename,
+                              Poco::Net::HTTPServerRequest& req,
+                              Poco::Net::HTTPServerResponse& resp);
+            bool sendJsFile(const std::string& filename,
+                            Poco::Net::HTTPServerRequest& req,
+                            Poco::Net::HTTPServerResponse& resp);
+            std::string findFile(const std::string& filename);
+            std::string applyTemplateVars(const std::string& content);
+
             ProcessManager& pm_;
+            std::string readToken_;
+            std::string controlToken_;
+            std::string htmlTemplatePath_;
     };
 
 } // end of namespace uniset

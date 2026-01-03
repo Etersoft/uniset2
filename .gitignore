@@ -204,6 +204,8 @@ testsuite/atconfig
 !extensions/JScript/tests/tests_opcua.cc
 !extensions/Launcher/*.h
 !extensions/Launcher/*.cc
+!extensions/Launcher/*.html
+!extensions/Launcher/*.js
 !extensions/uno/*.h
 !extensions/uno/*.cc
 !extensions/uno/*.md

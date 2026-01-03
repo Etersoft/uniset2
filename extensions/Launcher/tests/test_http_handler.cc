@@ -459,6 +459,339 @@ TEST_CASE("HTTP: GET processes", "[http][integration]")
     REQUIRE(json->getValue<int>("count") == 2);
 }
 // -------------------------------------------------------------------------
+// Authorization tests
+// -------------------------------------------------------------------------
+class HTTPAuthTestFixture
+{
+    public:
+        HTTPAuthTestFixture(const std::string& readToken = "",
+                            const std::string& controlToken = "")
+            : pm_()
+            , port_(getNextPort())
+        {
+            pm_.setNodeName("AuthTestNode");
+
+            // Add a test process
+            ProcessGroup group;
+            group.name = "testgroup";
+            group.order = 1;
+            group.processes = {"testproc"};
+            pm_.addGroup(group);
+
+            ProcessInfo proc;
+            proc.name = "testproc";
+            proc.command = "/bin/sleep";
+            proc.args = {"60"};
+            proc.group = "testgroup";
+            pm_.addProcess(proc);
+
+            auto reg = std::make_shared<LauncherHttpRegistry>(pm_);
+            reg->setReadToken(readToken);
+            reg->setControlToken(controlToken);
+            registry_ = reg;
+
+            server_ = std::make_shared<UHttp::UHttpServer>(registry_, "127.0.0.1", port_);
+            server_->start();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        ~HTTPAuthTestFixture()
+        {
+            if (server_)
+            {
+                server_->stop();
+                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            }
+            server_.reset();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            registry_.reset();
+        }
+
+        int httpGetStatus(const std::string& path, const std::string& token = "")
+        {
+            Poco::Net::HTTPClientSession session("127.0.0.1", port_);
+            Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET,
+                                       "/api/v2/" + path);
+
+            if (!token.empty())
+                req.set("Authorization", "Bearer " + token);
+
+            session.sendRequest(req);
+
+            Poco::Net::HTTPResponse response;
+            session.receiveResponse(response);
+            return response.getStatus();
+        }
+
+        int httpPostStatus(const std::string& path, const std::string& token = "")
+        {
+            Poco::Net::HTTPClientSession session("127.0.0.1", port_);
+            Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_POST,
+                                       "/api/v2/" + path);
+            req.setContentLength(0);
+
+            if (!token.empty())
+                req.set("Authorization", "Bearer " + token);
+
+            session.sendRequest(req);
+
+            Poco::Net::HTTPResponse response;
+            session.receiveResponse(response);
+            return response.getStatus();
+        }
+
+        // Get static content (not /api/v2/)
+        std::pair<int, std::string> httpGetStatic(const std::string& path,
+                const std::string& token = "")
+        {
+            Poco::Net::HTTPClientSession session("127.0.0.1", port_);
+            Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path);
+
+            if (!token.empty())
+                req.set("Authorization", "Bearer " + token);
+
+            session.sendRequest(req);
+
+            Poco::Net::HTTPResponse response;
+            std::istream& rs = session.receiveResponse(response);
+
+            std::string body;
+            Poco::StreamCopier::copyToString(rs, body);
+
+            return {response.getStatus(), body};
+        }
+
+        Poco::JSON::Object::Ptr httpGetJson(const std::string& path,
+                                            const std::string& token = "")
+        {
+            Poco::Net::HTTPClientSession session("127.0.0.1", port_);
+            Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET,
+                                       "/api/v2/" + path);
+
+            if (!token.empty())
+                req.set("Authorization", "Bearer " + token);
+
+            session.sendRequest(req);
+
+            Poco::Net::HTTPResponse response;
+            std::istream& rs = session.receiveResponse(response);
+
+            std::string body;
+            Poco::StreamCopier::copyToString(rs, body);
+
+            Poco::JSON::Parser parser;
+            auto result = parser.parse(body);
+            return result.extract<Poco::JSON::Object::Ptr>();
+        }
+
+        Poco::JSON::Object::Ptr httpPostJson(const std::string& path,
+                                             const std::string& token = "")
+        {
+            Poco::Net::HTTPClientSession session("127.0.0.1", port_);
+            Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_POST,
+                                       "/api/v2/" + path);
+            req.setContentLength(0);
+
+            if (!token.empty())
+                req.set("Authorization", "Bearer " + token);
+
+            session.sendRequest(req);
+
+            Poco::Net::HTTPResponse response;
+            std::istream& rs = session.receiveResponse(response);
+
+            std::string body;
+            Poco::StreamCopier::copyToString(rs, body);
+
+            Poco::JSON::Parser parser;
+            auto result = parser.parse(body);
+            return result.extract<Poco::JSON::Object::Ptr>();
+        }
+
+        int port() const { return port_; }
+
+    private:
+        static int getNextPort()
+        {
+            static std::atomic<int> nextPort{19888};
+            return nextPort++;
+        }
+
+        ProcessManager pm_;
+        int port_;
+        std::shared_ptr<UHttp::IHttpRequestRegistry> registry_;
+        std::shared_ptr<UHttp::UHttpServer> server_;
+};
+// -------------------------------------------------------------------------
+// Read Token Authorization
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: no read token - GET allowed", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "");  // No tokens
+
+    int status = fixture.httpGetStatus("launcher/status");
+    REQUIRE(status == 200);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: read token required - GET without token fails", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("secret-read-token", "");
+
+    int status = fixture.httpGetStatus("launcher/status");
+    REQUIRE(status == 401);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: read token required - GET with valid token succeeds", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("secret-read-token", "");
+
+    int status = fixture.httpGetStatus("launcher/status", "secret-read-token");
+    REQUIRE(status == 200);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: read token required - GET with wrong token fails", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("secret-read-token", "");
+
+    int status = fixture.httpGetStatus("launcher/status", "wrong-token");
+    REQUIRE(status == 401);
+}
+// -------------------------------------------------------------------------
+// Control Token Authorization
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: no control token - POST restart forbidden", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "");  // No control token
+
+    int status = fixture.httpPostStatus("launcher/process/testproc/restart");
+    REQUIRE(status == 403);  // Forbidden
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: control token - POST without token fails", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "secret-control-token");
+
+    int status = fixture.httpPostStatus("launcher/process/testproc/restart");
+    REQUIRE(status == 401);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: control token - POST with valid token succeeds", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "secret-control-token");
+
+    int status = fixture.httpPostStatus("launcher/process/testproc/restart",
+                                        "secret-control-token");
+    REQUIRE(status == 200);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP Auth: control token - POST with wrong token fails", "[http][auth]")
+{
+    HTTPAuthTestFixture fixture("", "secret-control-token");
+
+    int status = fixture.httpPostStatus("launcher/process/testproc/restart", "wrong-token");
+    REQUIRE(status == 401);
+}
+// -------------------------------------------------------------------------
+// New routes: stop/start
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: POST process/{name}/stop", "[http][integration]")
+{
+    HTTPAuthTestFixture fixture("", "control-token");
+
+    auto json = fixture.httpPostJson("launcher/process/testproc/stop", "control-token");
+
+    REQUIRE(json->getValue<std::string>("process") == "testproc");
+    // Process wasn't running, so stop returns true (no-op)
+    REQUIRE(json->getValue<bool>("success") == true);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: POST process/{name}/start", "[http][integration]")
+{
+    HTTPAuthTestFixture fixture("", "control-token");
+
+    auto json = fixture.httpPostJson("launcher/process/testproc/start", "control-token");
+
+    REQUIRE(json->getValue<std::string>("process") == "testproc");
+    // Note: start may fail or succeed depending on the command
+    REQUIRE(json->has("success"));
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: POST stop/start - not found", "[http][integration]")
+{
+    HTTPAuthTestFixture fixture("", "control-token");
+
+    auto stopJson = fixture.httpPostJson("launcher/process/unknown/stop", "control-token");
+    REQUIRE(stopJson->getValue<bool>("success") == false);
+
+    auto startJson = fixture.httpPostJson("launcher/process/unknown/start", "control-token");
+    REQUIRE(startJson->getValue<bool>("success") == false);
+}
+// -------------------------------------------------------------------------
+// Help includes controlEnabled
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: GET help - controlEnabled true when token set", "[http][integration]")
+{
+    HTTPAuthTestFixture fixture("", "control-token");
+
+    auto json = fixture.httpGetJson("launcher/help");
+
+    REQUIRE(json->getValue<bool>("controlEnabled") == true);
+    REQUIRE(json->getValue<bool>("readAuthRequired") == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: GET help - controlEnabled false when no token", "[http][integration]")
+{
+    HTTPAuthTestFixture fixture("", "");  // No control token
+
+    auto json = fixture.httpGetJson("launcher/help");
+
+    REQUIRE(json->getValue<bool>("controlEnabled") == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: GET help - readAuthRequired true when read token set", "[http][integration]")
+{
+    HTTPAuthTestFixture fixture("read-token", "control-token");
+
+    auto json = fixture.httpGetJson("launcher/help", "read-token");
+
+    REQUIRE(json->getValue<bool>("readAuthRequired") == true);
+    REQUIRE(json->getValue<bool>("controlEnabled") == true);
+}
+// -------------------------------------------------------------------------
+// Static file requests (httpStaticRequest)
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: GET / - returns 404 if no launcher.html", "[http][static]")
+{
+    HTTPAuthTestFixture fixture("", "");
+
+    auto [status, body] = fixture.httpGetStatic("/");
+
+    // File not found (we don't have launcher.html in test directory)
+    REQUIRE(status == 404);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: GET /ui - same as /", "[http][static]")
+{
+    HTTPAuthTestFixture fixture("", "");
+
+    auto [status, body] = fixture.httpGetStatic("/ui");
+
+    REQUIRE(status == 404);  // File not found
+}
+// -------------------------------------------------------------------------
+TEST_CASE("HTTP: Static files require read token when set", "[http][static][auth]")
+{
+    HTTPAuthTestFixture fixture("read-token", "");
+
+    // Without token - should get 401
+    auto [status1, body1] = fixture.httpGetStatic("/");
+    REQUIRE(status1 == 401);
+
+    // With token - should get 404 (file not found, but auth passed)
+    auto [status2, body2] = fixture.httpGetStatic("/", "read-token");
+    REQUIRE(status2 == 404);
+}
+// -------------------------------------------------------------------------
 #endif // ENABLE_HTTP_INTEGRATION_TESTS
 // -------------------------------------------------------------------------
 #endif // DISABLE_REST_API

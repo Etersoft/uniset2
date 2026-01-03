@@ -9,9 +9,13 @@
 #ifndef DISABLE_REST_API
 // -------------------------------------------------------------------------
 #include <sstream>
+#include <fstream>
 #include <Poco/JSON/Array.h>
+#include <Poco/Net/HTTPServerResponse.h>
+#include <Poco/File.h>
 #include "LauncherHttpRegistry.h"
 #include "Exceptions.h"
+#include "Configuration.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -21,6 +25,21 @@ namespace uniset
     {
     }
     // -------------------------------------------------------------------------
+    void LauncherHttpRegistry::setReadToken(const std::string& token)
+    {
+        readToken_ = token;
+    }
+    // -------------------------------------------------------------------------
+    void LauncherHttpRegistry::setControlToken(const std::string& token)
+    {
+        controlToken_ = token;
+    }
+    // -------------------------------------------------------------------------
+    void LauncherHttpRegistry::setHtmlTemplate(const std::string& path)
+    {
+        htmlTemplatePath_ = path;
+    }
+    // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr LauncherHttpRegistry::httpRequest(const UHttp::HttpRequestContext& ctx)
     {
         // Only handle requests for "launcher" object
@@ -28,6 +47,16 @@ namespace uniset
             throw uniset::NameNotFound("Object not found: " + ctx.objectName);
 
         const std::string& method = ctx.request.getMethod();
+
+        // Check read authorization for GET requests (if read token is set)
+        if (method == "GET" && !checkReadAuth(ctx.request))
+        {
+            ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            auto obj = new Poco::JSON::Object();
+            obj->set("error", "unauthorized");
+            obj->set("message", "missing or invalid read token");
+            return obj;
+        }
 
         // No path = status
         if (ctx.depth() == 0)
@@ -52,9 +81,40 @@ namespace uniset
         {
             const std::string& processName = ctx[1];
 
-            // /process/{name}/restart
-            if (ctx.depth() >= 3 && ctx[2] == "restart" && method == "POST")
-                return handleRestart(processName);
+            // Control operations (POST)
+            if (ctx.depth() >= 3 && method == "POST")
+            {
+                const std::string& action = ctx[2];
+
+                // Check if control is enabled
+                if (controlToken_.empty())
+                {
+                    ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                    auto obj = new Poco::JSON::Object();
+                    obj->set("error", "forbidden");
+                    obj->set("message", "control operations disabled (--control-token not set)");
+                    return obj;
+                }
+
+                // Check control authorization
+                if (!checkControlAuth(ctx.request))
+                {
+                    ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                    auto obj = new Poco::JSON::Object();
+                    obj->set("error", "unauthorized");
+                    obj->set("message", "missing or invalid control token");
+                    return obj;
+                }
+
+                if (action == "restart")
+                    return handleRestart(processName);
+
+                if (action == "stop")
+                    return handleStop(processName);
+
+                if (action == "start")
+                    return handleStart(processName);
+            }
 
             // GET /process/{name}
             if (method == "GET")
@@ -149,6 +209,34 @@ namespace uniset
         return obj;
     }
     // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleStop(const std::string& name)
+    {
+        bool ok = pm_.stopProcess(name);
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("process", name);
+        obj->set("success", ok);
+
+        if (!ok)
+            obj->set("error", "Failed to stop process");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleStart(const std::string& name)
+    {
+        bool ok = pm_.startProcess(name);
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("process", name);
+        obj->set("success", ok);
+
+        if (!ok)
+            obj->set("error", "Failed to start process");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr LauncherHttpRegistry::handleHealth()
     {
         bool healthy = pm_.allRunning() && !pm_.anyCriticalFailed();
@@ -223,7 +311,41 @@ namespace uniset
         {
             Poco::JSON::Object cmd;
             cmd.set("name", "process/{name}/restart");
-            cmd.set("desc", "Restart a process");
+            cmd.set("desc", "Restart a process (requires control token)");
+            cmd.set("method", "POST");
+
+            Poco::JSON::Array params;
+            Poco::JSON::Object param;
+            param.set("name", "name");
+            param.set("desc", "Process name");
+            params.add(param);
+            cmd.set("parameters", params);
+
+            commands.add(cmd);
+        }
+
+        // process/{name}/stop
+        {
+            Poco::JSON::Object cmd;
+            cmd.set("name", "process/{name}/stop");
+            cmd.set("desc", "Stop a process (requires control token)");
+            cmd.set("method", "POST");
+
+            Poco::JSON::Array params;
+            Poco::JSON::Object param;
+            param.set("name", "name");
+            param.set("desc", "Process name");
+            params.add(param);
+            cmd.set("parameters", params);
+
+            commands.add(cmd);
+        }
+
+        // process/{name}/start
+        {
+            Poco::JSON::Object cmd;
+            cmd.set("name", "process/{name}/start");
+            cmd.set("desc", "Start a process (requires control token)");
             cmd.set("method", "POST");
 
             Poco::JSON::Array params;
@@ -255,6 +377,8 @@ namespace uniset
         }
 
         root->set("help", commands);
+        root->set("controlEnabled", !controlToken_.empty());
+        root->set("readAuthRequired", !readToken_.empty());
 
         return root;
     }
@@ -331,6 +455,231 @@ namespace uniset
         obj->set("processes", processes);
 
         return obj;
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::httpStaticRequest(
+        const std::string& path,
+        Poco::Net::HTTPServerRequest& req,
+        Poco::Net::HTTPServerResponse& resp)
+    {
+        // Check read authorization (if read token is set)
+        if (!checkReadAuth(req))
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            resp.setContentType("application/json");
+            std::ostream& out = resp.send();
+            out << R"({"error":"unauthorized","message":"missing or invalid read token"})";
+            out.flush();
+            return true;
+        }
+
+        if (path == "/" || path == "/ui" || path == "/launcher.html")
+            return sendHtmlFile("launcher.html", req, resp);
+
+        if (path == "/launcher-app.js")
+            return sendJsFile("launcher-app.js", req, resp);
+
+        return false;  // Not our path
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::checkReadAuth(const Poco::Net::HTTPServerRequest& req)
+    {
+        // If read token is not set, access is open
+        if (readToken_.empty())
+            return true;
+
+        return validateBearerToken(req, readToken_);
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::checkControlAuth(const Poco::Net::HTTPServerRequest& req)
+    {
+        // If control token is not set, control is disabled
+        if (controlToken_.empty())
+            return false;
+
+        return validateBearerToken(req, controlToken_);
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::validateBearerToken(
+        const Poco::Net::HTTPServerRequest& req,
+        const std::string& expectedToken)
+    {
+        const std::string auth = req.get("Authorization", "");
+
+        if (auth.size() <= 7)
+            return false;
+
+        if (auth.substr(0, 7) != "Bearer ")
+            return false;
+
+        return auth.substr(7) == expectedToken;
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::sendHtmlFile(
+        const std::string& filename,
+        Poco::Net::HTTPServerRequest& req,
+        Poco::Net::HTTPServerResponse& resp)
+    {
+        std::string filepath;
+
+        // Use custom template if specified
+        if (!htmlTemplatePath_.empty() && filename == "launcher.html")
+            filepath = htmlTemplatePath_;
+        else
+            filepath = findFile(filename);
+
+        if (filepath.empty())
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
+            resp.setContentType("application/json");
+            std::ostream& out = resp.send();
+            out << R"({"error":"not found","message":")" << filename << R"( not found"})";
+            out.flush();
+            return true;
+        }
+
+        std::ifstream file(filepath);
+
+        if (!file.is_open())
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+            resp.setContentType("application/json");
+            std::ostream& out = resp.send();
+            out << R"({"error":"internal error","message":"failed to open )" << filename << R"("})";
+            out.flush();
+            return true;
+        }
+
+        std::ostringstream ss;
+        ss << file.rdbuf();
+        std::string content = applyTemplateVars(ss.str());
+
+        resp.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+        resp.setContentType("text/html; charset=UTF-8");
+        resp.setContentLength(content.size());
+        std::ostream& out = resp.send();
+        out << content;
+        out.flush();
+
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::sendJsFile(
+        const std::string& filename,
+        Poco::Net::HTTPServerRequest& req,
+        Poco::Net::HTTPServerResponse& resp)
+    {
+        std::string filepath = findFile(filename);
+
+        if (filepath.empty())
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
+            resp.setContentType("application/json");
+            std::ostream& out = resp.send();
+            out << R"({"error":"not found","message":")" << filename << R"( not found"})";
+            out.flush();
+            return true;
+        }
+
+        std::ifstream file(filepath);
+
+        if (!file.is_open())
+        {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+            resp.setContentType("application/json");
+            std::ostream& out = resp.send();
+            out << R"({"error":"internal error","message":"failed to open )" << filename << R"("})";
+            out.flush();
+            return true;
+        }
+
+        std::ostringstream ss;
+        ss << file.rdbuf();
+        std::string content = ss.str();
+
+        resp.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+        resp.setContentType("application/javascript; charset=UTF-8");
+        resp.setContentLength(content.size());
+        std::ostream& out = resp.send();
+        out << content;
+        out.flush();
+
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    std::string LauncherHttpRegistry::findFile(const std::string& filename)
+    {
+        // 1. Current directory
+        if (Poco::File(filename).exists())
+            return filename;
+
+        // 2. Directory from uniset_conf()->getDataDir()
+        try
+        {
+            auto conf = uniset_conf();
+
+            if (conf)
+            {
+                std::string dataDir = conf->getDataDir();
+
+                if (!dataDir.empty())
+                {
+                    std::string path = dataDir + "/" + filename;
+
+                    if (Poco::File(path).exists())
+                        return path;
+                }
+            }
+        }
+        catch (...) {}
+
+        // 3. Compiled-in UNISET_DATADIR
+#ifdef UNISET_DATADIR
+        {
+            std::string path = std::string(UNISET_DATADIR) + "/" + filename;
+
+            if (Poco::File(path).exists())
+                return path;
+        }
+#endif
+
+        return "";  // Not found
+    }
+    // -------------------------------------------------------------------------
+    std::string LauncherHttpRegistry::applyTemplateVars(const std::string& content)
+    {
+        std::string result = content;
+
+        // Replace {{NODE_NAME}}
+        std::string nodeName = pm_.getNodeName();
+        size_t pos = 0;
+
+        while ((pos = result.find("{{NODE_NAME}}", pos)) != std::string::npos)
+        {
+            result.replace(pos, 13, nodeName);
+            pos += nodeName.size();
+        }
+
+        // Replace {{API_URL}} - empty string means relative URLs (same origin)
+        pos = 0;
+
+        while ((pos = result.find("{{API_URL}}", pos)) != std::string::npos)
+        {
+            result.replace(pos, 11, "");
+            pos += 0;
+        }
+
+        // Replace {{CONTROL_ENABLED}}
+        std::string controlEnabled = controlToken_.empty() ? "false" : "true";
+        pos = 0;
+
+        while ((pos = result.find("{{CONTROL_ENABLED}}", pos)) != std::string::npos)
+        {
+            result.replace(pos, 19, controlEnabled);
+            pos += controlEnabled.size();
+        }
+
+        return result;
     }
     // -------------------------------------------------------------------------
 } // end of namespace uniset

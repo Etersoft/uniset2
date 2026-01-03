@@ -456,3 +456,105 @@ TEST_CASE("ProcessManager: skip overrides matching nodeFilter", "[manager][skip]
     pm.stopAll();
 }
 // -------------------------------------------------------------------------
+// Tests for public stopProcess(name) and startProcess(name) methods
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: stopProcess by name - not found", "[manager]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+
+    // Stopping unknown process should return false
+    REQUIRE(pm.stopProcess("unknown_process") == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: startProcess by name - not found", "[manager]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+
+    // Starting unknown process should return false
+    REQUIRE(pm.startProcess("unknown_process") == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: startProcess by name - skipped process", "[manager]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"skipped_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "skipped_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"10"};
+    proc.group = "test";
+    proc.skip = true;
+    pm.addProcess(proc);
+
+    // Starting skipped process should return false
+    REQUIRE(pm.startProcess("skipped_proc") == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: startProcess by name - wrong node", "[manager][nodefilter]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"node2_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "node2_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"10"};
+    proc.group = "test";
+    proc.nodeFilter = {"Node2"};  // Not Node1
+    pm.addProcess(proc);
+
+    // Starting process for wrong node should return false
+    REQUIRE(pm.startProcess("node2_proc") == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: stopProcess and startProcess by name", "[.integration]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"lifecycle_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "lifecycle_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"60"};
+    proc.group = "test";
+    pm.addProcess(proc);
+
+    // Start by name
+    REQUIRE(pm.startProcess("lifecycle_proc") == true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    REQUIRE(pm.getProcessState("lifecycle_proc") == ProcessState::Running);
+
+    // Stop by name
+    REQUIRE(pm.stopProcess("lifecycle_proc") == true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    REQUIRE(pm.getProcessState("lifecycle_proc") == ProcessState::Stopped);
+
+    // Start again
+    REQUIRE(pm.startProcess("lifecycle_proc") == true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    REQUIRE(pm.getProcessState("lifecycle_proc") == ProcessState::Running);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
