@@ -76,7 +76,7 @@ namespace uniset
 
         // Command to run after process is ready (e.g. "uniset2-admin --create")
         std::string afterRun;
-        bool critical = false;          // If fails, stop everything
+        bool critical = true;           // If fails, stop everything (default: true)
         bool restartOnFailure = true;
         int maxRestarts = 5;
         size_t restartDelay_msec = 3000;

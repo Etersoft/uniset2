@@ -60,6 +60,16 @@ namespace uniset
         commonArgs_ = args;
     }
     // -------------------------------------------------------------------------
+    void ProcessManager::setPassthroughArgs(const std::string& args)
+    {
+        passthroughArgs_ = args;
+    }
+    // -------------------------------------------------------------------------
+    void ProcessManager::setForwardArgs(const std::vector<std::string>& args)
+    {
+        forwardArgs_ = args;
+    }
+    // -------------------------------------------------------------------------
     void ProcessManager::addProcess(const ProcessInfo& proc)
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -180,6 +190,14 @@ namespace uniset
                     args.push_back(arg);
             }
 
+            // Add forwarded args (unknown launcher args like --uniset-port)
+            for (const auto& arg : forwardArgs_)
+                args.push_back(arg);
+
+            // Add passthrough args (from -- on command line)
+            if (!passthroughArgs_.empty())
+                args.push_back(passthroughArgs_);
+
             // Expand environment variables
             expandEnvironment(args);
 
@@ -289,6 +307,14 @@ namespace uniset
             for (const auto& arg : proc.args)
                 args.push_back(arg);
         }
+
+        // Add forwarded args (unknown launcher args like --uniset-port)
+        for (const auto& arg : forwardArgs_)
+            args.push_back(arg);
+
+        // Add passthrough args (from -- on command line)
+        if (!passthroughArgs_.empty())
+            args.push_back(passthroughArgs_);
 
         // Expand environment variables
         expandEnvironment(args);
@@ -998,6 +1024,14 @@ namespace uniset
                 for (const auto& arg : allArgs)
                     out << " " << arg;
 
+                // Add forwarded args
+                for (const auto& arg : forwardArgs_)
+                    out << " " << arg;
+
+                // Add passthrough args
+                if (!passthroughArgs_.empty())
+                    out << " " << passthroughArgs_;
+
                 out << std::endl;
 
                 // Print ready check
@@ -1009,7 +1043,8 @@ namespace uniset
                         << std::endl;
                 }
 
-                out << "      Critical: " << (proc.critical ? "yes" : "no") << std::endl;
+                if (!proc.critical)
+                    out << "      ignoreFail: yes" << std::endl;
                 out << std::endl;
             }
         }

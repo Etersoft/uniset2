@@ -40,7 +40,7 @@ static void signal_handler(int sig)
 // -------------------------------------------------------------------------
 static void print_help(const std::string& prog)
 {
-    cout << prog << " --confile configure.xml [--localNode NodeName] [OPTIONS]\n"
+    cout << prog << " --confile configure.xml [--localNode NodeName] [OPTIONS] [-- ARGS...]\n"
          << "\n"
          << "UniSet2 Process Launcher - manages startup sequence and health monitoring.\n"
          << "\n"
@@ -78,6 +78,14 @@ static void print_help(const std::string& prog)
          << "Whitelist/Blacklist examples:\n"
          << "  --http-whitelist \"192.168.1.0/24,10.0.0.1\"\n"
          << "  --http-blacklist \"192.168.1.100,172.16.0.10-172.16.0.20\"\n"
+         << "\n"
+         << "Argument forwarding:\n"
+         << "  Unknown arguments (e.g. --uniset-port, --lockDir) are automatically\n"
+         << "  forwarded to child processes.\n"
+         << "\n"
+         << "  Arguments after '--' are also passed to children (explicit passthrough).\n"
+         << "  Example: uniset2-launcher --confile config.xml --uniset-port 2809\n"
+         << "  Example: uniset2-launcher --confile config.xml -- --custom-arg value\n"
          << endl;
 }
 // -------------------------------------------------------------------------
@@ -98,10 +106,32 @@ int main(int argc, char* argv[])
     bool noMonitor = false;
     bool verbose = false;
     bool dryRun = false;
+    std::string passthroughArgs;  // Arguments after "--" to pass to child processes
+    std::vector<std::string> unknownArgs;  // Unknown arguments to pass to child processes
 
     for (int i = 1; i < argc; i++)
     {
         std::string arg = argv[i];
+
+        // Everything after "--" is passed to child processes
+        if (arg == "--")
+        {
+            for (int j = i + 1; j < argc; j++)
+            {
+                if (!passthroughArgs.empty())
+                    passthroughArgs += " ";
+
+                // Quote arguments containing spaces
+                std::string parg = argv[j];
+
+                if (parg.find(' ') != std::string::npos)
+                    passthroughArgs += "\"" + parg + "\"";
+                else
+                    passthroughArgs += parg;
+            }
+
+            break;  // Stop parsing launcher arguments
+        }
 
         if (arg == "--help" || arg == "-h")
         {
@@ -192,6 +222,18 @@ int main(int argc, char* argv[])
             verbose = true;
             continue;
         }
+
+        // Collect unknown arguments to pass to child processes
+        if (arg[0] == '-')
+        {
+            unknownArgs.push_back(arg);
+
+            // Check if this argument has a value (next arg doesn't start with -)
+            if (i + 1 < argc && argv[i + 1][0] != '-')
+            {
+                unknownArgs.push_back(argv[++i]);
+            }
+        }
     }
 
     // Validate required arguments
@@ -263,6 +305,29 @@ int main(int argc, char* argv[])
         pm.setHealthCheckInterval(config.healthCheckInterval_msec);
         pm.setRestartWindow(config.restartWindow_msec);
         pm.setCommonArgs(config.commonArgs);
+
+        if (!passthroughArgs.empty())
+        {
+            pm.setPassthroughArgs(passthroughArgs);
+
+            if (verbose)
+                cout << "Passthrough args: " << passthroughArgs << endl;
+        }
+
+        if (!unknownArgs.empty())
+        {
+            pm.setForwardArgs(unknownArgs);
+
+            if (verbose)
+            {
+                cout << "Forwarding args:";
+
+                for (const auto& a : unknownArgs)
+                    cout << " " << a;
+
+                cout << endl;
+            }
+        }
 
         // Setup logging
         if (verbose)
@@ -346,12 +411,15 @@ int main(int argc, char* argv[])
 
         if (!pm.startAll())
         {
-            cerr << "Failed to start all processes" << endl;
+            cerr << "Critical process failed to start" << endl;
             exitCode = 1;
         }
         else
         {
-            cout << "All processes started successfully" << endl;
+            if (pm.allRunning())
+                cout << "All processes started successfully" << endl;
+            else
+                cerr << "Some processes failed to start (non-critical)" << endl;
 
             // Start monitoring
             if (!noMonitor)
