@@ -206,6 +206,7 @@ testsuite/atconfig
 !extensions/Launcher/*.cc
 !extensions/Launcher/*.html
 !extensions/Launcher/*.js
+!extensions/Launcher/*.png
 !extensions/uno/*.h
 !extensions/uno/*.cc
 !extensions/uno/*.md

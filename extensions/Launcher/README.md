@@ -107,8 +107,8 @@ Launcher автоматически:
 ```xml
 <Launcher name="Launcher1"
           healthCheckInterval="5000"
-          restartDelay="3000"
-          maxRestarts="5"
+          restartDelay="1000"
+          maxRestartDelay="30000"
           httpPort="8080"
           commonArgs="--confile ${CONFFILE} --localNode ${NODE_NAME}">
 
@@ -119,8 +119,7 @@ Launcher автоматически:
                      command="omniNames"
                      args="-start -logdir /var/log/omninames"
                      readyCheck="tcp:2809"
-                     readyTimeout="30000"
-                     critical="true"/>
+                     readyTimeout="30000"/>
         </group>
 
         <!-- Группа 1: SharedMemory (после naming) -->
@@ -128,20 +127,23 @@ Launcher автоматически:
             <process name="SharedMemory"
                      command="uniset2-smemory"
                      readyCheck="corba:SharedMemory"
-                     readyTimeout="10000"
-                     critical="true"/>
+                     readyTimeout="10000"/>
         </group>
 
         <!-- Группа 2: Обмены (после SM) -->
         <group name="exchanges" order="2" depends="sharedmemory">
             <process name="UNetExchange"
                      command="uniset2-unetexchange"
-                     restartOnFailure="true"
                      nodeFilter="Node1,Node2"/>
 
-            <!-- Временно отключённый процесс -->
+            <!-- Процесс без перезапуска -->
             <process name="ModbusMaster"
                      command="uniset2-mbtcpmaster"
+                     maxRestarts="-1"/>
+
+            <!-- Временно отключённый процесс -->
+            <process name="MQTTPublisher"
+                     command="uniset2-mqttpublisher"
                      skip="1"/>
         </group>
     </ProcessGroups>
@@ -158,9 +160,10 @@ Launcher автоматически:
 |---------|----------|--------------|
 | `name` | Имя секции Launcher | - |
 | `healthCheckInterval` | Интервал проверки состояния (мс) | 5000 |
-| `restartDelay` | Задержка перед перезапуском (мс) | 3000 |
+| `restartDelay` | Начальная задержка перед перезапуском (мс) | 1000 |
+| `maxRestartDelay` | Максимальная задержка (экспоненциальный backoff) (мс) | 30000 |
 | `restartWindow` | Временное окно для подсчёта перезапусков (мс) | 60000 |
-| `maxRestarts` | Максимальное количество перезапусков по умолчанию | 5 |
+| `maxRestarts` | Максимальное количество перезапусков (0 = бесконечно) | 0 |
 | `httpPort` | Порт HTTP API (0 = отключено) | 0 |
 | `commonArgs` | Общие аргументы, добавляемые ко всем процессам | "" |
 
@@ -201,10 +204,10 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | `readyCheck` | Проверка готовности (см. ниже) | из шаблона |
 | `readyTimeout` | Таймаут проверки готовности (мс) | 10000 |
 | `checkPause` | Пауза между проверками готовности (мс) | 500 |
-| `ignoreFail` | Игнорировать сбой процесса (не останавливать launcher) | false |
-| `restartOnFailure` | Автоперезапуск при падении | true |
-| `maxRestarts` | Максимум попыток перезапуска | 5 |
-| `restartDelay` | Задержка перед перезапуском (мс) | 3000 |
+| `ignoreFail` | Игнорировать сбой процесса (не рестартовать, не останавливать launcher) | false |
+| `maxRestarts` | Попытки перезапуска: -1 = не рестартовать, 0 = бесконечно, >0 = ограничено | 0 |
+| `restartDelay` | Начальная задержка перед перезапуском (мс) | 1000 |
+| `maxRestartDelay` | Максимальная задержка (экспоненциальный backoff) (мс) | 30000 |
 | `nodeFilter` | Запуск на определённых узлах | все |
 | `skip` | Пропустить этот процесс (не запускать) | false |
 | `oneshot` | Процесс запускается один раз и завершается | false |
@@ -268,6 +271,62 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | File | `file:path` | `file:/var/run/service.pid` |
 
 Для отключения проверки готовности используйте `readyCheck="none"`.
+
+### Автоматический перезапуск
+
+По умолчанию все процессы автоматически перезапускаются при падении с экспоненциальным backoff:
+
+```
+delay = min(restartDelay * 2^(attempt-1), maxRestartDelay)
+```
+
+**Логика перезапуска:**
+- `maxRestarts=0` (по умолчанию) — бесконечные перезапуски
+- `maxRestarts=-1` — отключить перезапуск
+- `maxRestarts=N` (N>0) — ограничить количество попыток
+- `ignoreFail="true"` — отключить перезапуск (эквивалент maxRestarts=-1)
+
+**Пример последовательности перезапусков** (restartDelay=1000, maxRestartDelay=30000):
+- Попытка 1: 1 сек
+- Попытка 2: 2 сек
+- Попытка 3: 4 сек
+- Попытка 4: 8 сек
+- Попытка 5: 16 сек
+- Попытка 6+: 30 сек (достигнут максимум)
+
+**Конфигурация на уровне Launcher:**
+```xml
+<Launcher name="Launcher1"
+          restartDelay="1000"
+          maxRestartDelay="30000"
+          maxRestarts="0">
+    <!-- maxRestarts="0" — бесконечные перезапуски (по умолчанию) -->
+</Launcher>
+```
+
+**На уровне процесса:**
+```xml
+<!-- Ограничить до 10 попыток -->
+<process name="UNetExchange" maxRestarts="10"/>
+
+<!-- Отключить перезапуск -->
+<process name="OptionalService" maxRestarts="-1"/>
+<!-- или -->
+<process name="OptionalService" ignoreFail="true"/>
+```
+
+**При исчерпании попыток:**
+- Если процесс критический (по умолчанию) — launcher останавливается
+- Если `ignoreFail="true"` — процесс остаётся в состоянии Failed
+
+**Состояния процесса:**
+- `running` — процесс работает
+- `stopped` — процесс остановлен
+- `failed` — процесс упал (перезапуск отключён или исчерпан)
+- `restarting` — процесс ожидает перезапуска (отображается мигающим в Web UI)
+- `starting` — процесс запускается
+- `stopping` — процесс останавливается
+- `completed` — oneshot-процесс завершился успешно
 
 ### Шаблоны процессов
 
@@ -343,6 +402,8 @@ Total: 3 processes to start
 ## Web UI
 
 При запуске с `--http-port` доступен веб-интерфейс для мониторинга и управления процессами.
+
+![Launcher Web UI](launcher-webui.png)
 
 ### Доступ к Web UI
 

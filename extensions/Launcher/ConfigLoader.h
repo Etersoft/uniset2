@@ -47,9 +47,10 @@ namespace uniset
             {
                 std::string name;
                 size_t healthCheckInterval_msec = 5000;
-                size_t restartDelay_msec = 3000;
+                size_t restartDelay_msec = 1000;
+                size_t maxRestartDelay_msec = 30000;  // Max delay for exponential backoff
                 size_t restartWindow_msec = 60000;
-                int maxRestarts = 5;
+                int maxRestarts = 0;  // 0 = infinite restarts
                 int httpPort = 0;  // 0 = disabled
 
                 std::vector<std::string> commonArgs;  // Common args prepended to all processes

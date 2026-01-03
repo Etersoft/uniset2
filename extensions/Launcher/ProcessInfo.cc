@@ -32,6 +32,9 @@ namespace uniset
 
             case ProcessState::Stopping:
                 return "stopping";
+
+            case ProcessState::Restarting:
+                return "restarting";
         }
 
         return "unknown";

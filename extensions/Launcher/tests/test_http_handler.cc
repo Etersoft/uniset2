@@ -271,8 +271,7 @@ TEST_CASE("HTTP: GET process/{name} - found", "[http][integration]")
     proc.args = {"hello", "world"};
     proc.group = "testgroup";
     proc.critical = true;
-    proc.restartOnFailure = false;
-    proc.maxRestarts = 3;
+    proc.maxRestarts = -1;  // no restart
     fixture.pm().addProcess(proc);
 
     auto json = fixture.httpGet("launcher/process/myprocess");
@@ -282,8 +281,7 @@ TEST_CASE("HTTP: GET process/{name} - found", "[http][integration]")
     REQUIRE(json->getValue<std::string>("state") == "stopped");
     REQUIRE(json->getValue<std::string>("group") == "testgroup");
     REQUIRE(json->getValue<bool>("critical") == true);
-    REQUIRE(json->getValue<bool>("restartOnFailure") == false);
-    REQUIRE(json->getValue<int>("maxRestarts") == 3);
+    REQUIRE(json->getValue<int>("maxRestarts") == -1);
 
     auto args = json->getArray("args");
     REQUIRE(args->size() == 2);

@@ -576,6 +576,9 @@ namespace uniset
 
         mylog->info() << "Restarting process: " << name << std::endl;
 
+        // Set restarting state for UI feedback
+        it->second.state = ProcessState::Restarting;
+
         stopProcess(it->second);
         it->second.reset();
         return startProcess(it->second);
@@ -710,17 +713,38 @@ namespace uniset
         if (onFailed_)
             onFailed_(proc);
 
-        // Critical process - stop everything
-        if (proc.critical)
+        // Automatic restart logic:
+        // - maxRestarts=-1: no restart (explicit disable)
+        // - maxRestarts=0: infinite restarts (default)
+        // - maxRestarts>0: limited restarts
+        // - ignoreFail=true (critical=false): no restart
+        if (!stopping_)
         {
-            mylog->crit() << "Critical process failed, initiating shutdown" << std::endl;
-            stopping_ = true;
-            return;
-        }
+            // Check if restart is disabled
+            bool noRestart = (proc.maxRestarts < 0) || !proc.critical;
 
-        // Automatic restart
-        if (proc.restartOnFailure && !stopping_)
-        {
+            if (noRestart)
+            {
+                if (proc.maxRestarts < 0)
+                {
+                    mylog->info() << proc.name << " restart disabled (maxRestarts=-1)" << std::endl;
+                }
+                else
+                {
+                    mylog->info() << proc.name << " restart disabled (ignoreFail=true)" << std::endl;
+                }
+
+                // Critical process with disabled restart - stop everything
+                if (proc.critical && proc.maxRestarts < 0)
+                {
+                    mylog->crit() << "Critical process " << proc.name
+                                  << " failed, initiating shutdown" << std::endl;
+                    stopping_ = true;
+                }
+
+                return;
+            }
+
             // Check restart window
             auto now = std::chrono::steady_clock::now();
             auto sinceStart = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -730,16 +754,42 @@ namespace uniset
             if (sinceStart > (long)restartWindow_msec_)
                 proc.restartCount = 0;
 
-            if (proc.restartCount < proc.maxRestarts)
+            // maxRestarts=0 means infinite restarts
+            bool canRestart = (proc.maxRestarts == 0) || (proc.restartCount < proc.maxRestarts);
+
+            if (canRestart)
             {
                 proc.restartCount++;
 
-                mylog->info() << "Restarting " << proc.name
-                              << " (attempt " << proc.restartCount << "/" << proc.maxRestarts << ")"
-                              << std::endl;
+                // Exponential backoff: delay = min(initialDelay * 2^(attempt-1), maxDelay)
+                size_t delay = proc.restartDelay_msec;
 
-                // Delay before restart
-                std::this_thread::sleep_for(std::chrono::milliseconds(proc.restartDelay_msec));
+                if (proc.restartCount > 1)
+                {
+                    delay = proc.restartDelay_msec * (1 << (proc.restartCount - 1));
+
+                    if (delay > proc.maxRestartDelay_msec)
+                        delay = proc.maxRestartDelay_msec;
+                }
+
+                // Set restarting state before delay
+                proc.state = ProcessState::Restarting;
+
+                if (proc.maxRestarts == 0)
+                {
+                    mylog->info() << "Restarting " << proc.name
+                                  << " (attempt " << proc.restartCount << ", delay " << delay << "ms)"
+                                  << std::endl;
+                }
+                else
+                {
+                    mylog->info() << "Restarting " << proc.name
+                                  << " (attempt " << proc.restartCount << "/" << proc.maxRestarts
+                                  << ", delay " << delay << "ms)" << std::endl;
+                }
+
+                // Delay before restart (exponential backoff)
+                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 
                 startProcess(proc);
             }
@@ -747,6 +797,14 @@ namespace uniset
             {
                 mylog->crit() << proc.name << " exceeded max restarts ("
                               << proc.maxRestarts << "), giving up" << std::endl;
+
+                // Critical process exhausted restarts - stop everything
+                if (proc.critical)
+                {
+                    mylog->crit() << "Critical process " << proc.name
+                                  << " cannot restart, initiating shutdown" << std::endl;
+                    stopping_ = true;
+                }
             }
         }
     }

@@ -27,7 +27,8 @@ namespace uniset
         Running,    // Running normally
         Completed,  // Oneshot process completed successfully
         Failed,     // Crashed/exited unexpectedly
-        Stopping    // Shutting down
+        Stopping,   // Shutting down
+        Restarting  // Being restarted (waiting for delay)
     };
 
     std::string to_string(ProcessState state);
@@ -76,10 +77,10 @@ namespace uniset
 
         // Command to run after process is ready (e.g. "uniset2-admin --create")
         std::string afterRun;
-        bool critical = true;           // If fails, stop everything (default: true)
-        bool restartOnFailure = true;
-        int maxRestarts = 5;
-        size_t restartDelay_msec = 3000;
+        bool critical = true;           // If fails, try restart (default: true). If false (ignoreFail=true), no restart
+        int maxRestarts = 0;            // -1 = no restart, 0 = infinite restarts, >0 = limited
+        size_t restartDelay_msec = 1000;      // Initial delay before restart
+        size_t maxRestartDelay_msec = 30000;  // Max delay (exponential backoff cap)
 
         std::set<std::string> nodeFilter;  // Which nodes to run on (empty = all)
         std::string group;                  // Process group name
