@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Launcher - {{NODE_NAME}}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status-healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-unhealthy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .refresh-btn {
+            padding: 6px 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+        #token-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #token-form.hidden {
+            display: none;
+        }
+        #token-form input {
+            flex: 1;
+            max-width: 300px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        #token-form button {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #token-form button:hover {
+            background: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .state {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .state-running, .state-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .state-stopped {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .state-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .state-starting, .state-stopping {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .critical-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #dc3545;
+            color: white;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .skip-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #6c757d;
+            color: white;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .oneshot-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #17a2b8;
+            color: white;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-restart {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-restart:hover:not(:disabled) {
+            background: #e0a800;
+        }
+        .btn-stop {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-stop:hover:not(:disabled) {
+            background: #c82333;
+        }
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
+        .btn-start:hover:not(:disabled) {
+            background: #218838;
+        }
+        .error-message {
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        .auto-refresh input {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Launcher: {{NODE_NAME}}</h1>
+
+        <div id="token-form" class="hidden">
+            <span>Control Token:</span>
+            <input type="password" id="token" placeholder="Enter control token">
+            <button onclick="saveToken()">Save</button>
+            <button onclick="clearToken()">Clear</button>
+        </div>
+
+        <div class="status-bar">
+            <div id="status-indicator" class="status-indicator status-healthy">Loading...</div>
+            <button class="refresh-btn" onclick="fetchStatus()">Refresh</button>
+            <label class="auto-refresh">
+                <input type="checkbox" id="auto-refresh" checked>
+                Auto-refresh (5s)
+            </label>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <div id="content">
+            <div class="loading">Loading processes...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "{{API_URL}}";
+        const NODE_NAME = "{{NODE_NAME}}";
+        const CONTROL_ENABLED = {{CONTROL_ENABLED}};
+    </script>
+    <script src="/launcher-app.js"></script>
+</body>
+</html>

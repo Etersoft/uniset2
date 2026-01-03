@@ -142,9 +142,10 @@ namespace uniset
 			httpParams->setMaxQueued(100);
 			httpParams->setMaxThreads(1);
 
-			reqFactory = std::make_shared<UHttpRequestHandlerFactory>(supplier);
+			// HTTPServer takes ownership of factory and will delete it
+			reqFactory = new UHttpRequestHandlerFactory(supplier);
 
-			http = std::make_shared<Poco::Net::HTTPServer>(reqFactory.get(), ServerSocket(sa), httpParams );
+			http = std::make_shared<Poco::Net::HTTPServer>(reqFactory, ServerSocket(sa), httpParams );
 		}
 		catch( std::exception& ex )
 		{
@@ -159,7 +160,7 @@ namespace uniset
 	UHttpServer::~UHttpServer()
 	{
 		if( http )
-			http->stop();
+			http->stopAll(true);  // Wait for all connections to finish
 	}
 	// -------------------------------------------------------------------------
 	void UHttpServer::start()
@@ -169,7 +170,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void UHttpServer::stop()
 	{
-		http->stop();
+		http->stopAll(true);  // Wait for all connections to finish
 	}
 	// -------------------------------------------------------------------------
 	UHttpServer::UHttpServer()

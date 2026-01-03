@@ -53,6 +53,8 @@ namespace uniset
             bool startAll();
             void stopAll();
             bool restartProcess(const std::string& name);
+            bool stopProcess(const std::string& name);
+            bool startProcess(const std::string& name);
 
             // Monitoring
             void startMonitoring();

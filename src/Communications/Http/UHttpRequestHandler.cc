@@ -233,6 +233,14 @@ namespace uniset
         std::vector<std::string> seg;
         uri.getPathSegments(seg);
 
+        // Проверяем, может ли registry обработать статический контент
+        // (для путей вне /api/v2/*)
+        if( seg.empty() || seg[0] != "api" )
+        {
+            if( registry->httpStaticRequest(uri.getPath(), req, resp) )
+                return;  // Обработано registry
+        }
+
         if( seg.size() < 3
                 || seg[0] != "api"
                 || seg[1] != UHTTP_API_VERSION

@@ -25,7 +25,7 @@ namespace uniset
         std::string command;        //!< Command to run (uniset2-smemory, etc.)
         std::string argsPattern;    //!< Arguments pattern (${name} is replaced with process name)
         std::string readyCheck;     //!< Ready check pattern (${name} is replaced, empty = no check)
-        size_t readyTimeout_msec = 30000;  //!< Ready check timeout (total wait time)
+        size_t readyTimeout_msec = 10000;  //!< Ready check timeout (total wait time)
         size_t checkTimeout_msec = 1000;   //!< Single check timeout (for health monitoring)
         size_t checkPause_msec = 1000;     //!< Pause between checks
         int group = 2;              //!< Startup group (0=naming, 1=sharedmemory, 2=exchanges)

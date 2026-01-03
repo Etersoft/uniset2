@@ -729,6 +729,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 
 %files extension-launcher
 %_bindir/%oname-launcher
+%_datadir/%oname/launcher.html
+%_datadir/%oname/launcher-app.js
 
 %files extension-uno
 %_bindir/%oname-uno
