@@ -76,6 +76,35 @@ namespace uniset
         if (cmd == "groups" && method == "GET")
             return handleGroups();
 
+        // /auth - validate control token
+        if (cmd == "auth" && method == "GET")
+        {
+            // Check if control is enabled
+            if (controlToken_.empty())
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "forbidden");
+                obj->set("message", "control operations disabled");
+                return obj;
+            }
+
+            // Check control authorization
+            if (!checkControlAuth(ctx.request))
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "unauthorized");
+                obj->set("message", "invalid control token");
+                return obj;
+            }
+
+            auto obj = new Poco::JSON::Object();
+            obj->set("success", true);
+            obj->set("message", "control token valid");
+            return obj;
+        }
+
         // /process/{name}
         if (cmd == "process" && ctx.depth() >= 2)
         {
@@ -155,6 +184,15 @@ namespace uniset
             obj.set("skip", proc.skip);
             obj.set("oneshot", proc.oneshot);
             obj.set("restartCount", proc.restartCount);
+
+            // Calculate uptime for running processes
+            if (proc.state == ProcessState::Running || proc.state == ProcessState::Completed)
+            {
+                auto now = std::chrono::steady_clock::now();
+                auto uptime = std::chrono::duration_cast<std::chrono::seconds>(
+                                  now - proc.lastStartTime).count();
+                obj.set("uptime", static_cast<int>(uptime));
+            }
 
             if (!proc.lastError.empty())
                 obj.set("lastError", proc.lastError);
@@ -363,6 +401,15 @@ namespace uniset
             Poco::JSON::Object cmd;
             cmd.set("name", "health");
             cmd.set("desc", "Health check for Docker/Kubernetes");
+            cmd.set("method", "GET");
+            commands.add(cmd);
+        }
+
+        // auth
+        {
+            Poco::JSON::Object cmd;
+            cmd.set("name", "auth");
+            cmd.set("desc", "Validate control token (for Take Control)");
             cmd.set("method", "GET");
             commands.add(cmd);
         }
@@ -677,6 +724,16 @@ namespace uniset
         {
             result.replace(pos, 19, controlEnabled);
             pos += controlEnabled.size();
+        }
+
+        // Replace {{READ_AUTH_REQUIRED}}
+        std::string readAuthRequired = readToken_.empty() ? "false" : "true";
+        pos = 0;
+
+        while ((pos = result.find("{{READ_AUTH_REQUIRED}}", pos)) != std::string::npos)
+        {
+            result.replace(pos, 22, readAuthRequired);
+            pos += readAuthRequired.size();
         }
 
         return result;
