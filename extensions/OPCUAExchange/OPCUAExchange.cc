@@ -24,6 +24,7 @@
 #include "Extensions.h"
 #include "OPCUAExchange.h"
 #include "OPCUALogSugar.h"
+#include "IOController.h"
 // -----------------------------------------------------------------------------
 namespace uniset
 {
@@ -204,9 +205,9 @@ namespace uniset
         shm = make_shared<SMInterface>(icID, ui, getId(), ic);
 
         // определяем фильтр
-        s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"));
-        s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"));
-        auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "filter-value-re", it.getProp("filterValueRE"));
+        s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getPropOrProp("filter_field", "filterField"));
+        s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getPropOrProp("filter_value", "filterValue"));
+        auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "filter-value-re", it.getPropOrProp("filter_value_re", "filterValueRe"));
 
         if( !regexp_fvalue.empty() )
         {
@@ -603,8 +604,8 @@ namespace uniset
 
                         // Проверяем критичные ошибки, требующие переподключения и переключения канала
                         if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED ||
-                            ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
-                            ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
+                                ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
+                                ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
                         {
                             ch->client->disconnect();
                             ch->needSubscription = true;  // Потребуется новая подписка при переподключении
@@ -666,8 +667,8 @@ namespace uniset
 
                             // Проверяем критичные ошибки, требующие переподключения и переключения канала
                             if( ret == UA_STATUSCODE_BADSESSIONIDINVALID || ret == UA_STATUSCODE_BADSESSIONCLOSED ||
-                                ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
-                                ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
+                                    ret == UA_STATUSCODE_BADCONNECTIONREJECTED || ret == UA_STATUSCODE_BADCONNECTIONCLOSED ||
+                                    ret == UA_STATUSCODE_BADCOMMUNICATIONERROR || ret == UA_STATUSCODE_BADTIMEOUT )
                             {
                                 ch->client->disconnect();
                                 ch->needSubscription = true;  // Потребуется новая подписка при переподключении
@@ -744,6 +745,11 @@ namespace uniset
                             << " mask=" << io->mask
                             << endl;
                 }
+            }
+            catch( const IOController_i::NameNotFound& ex )
+            {
+                opccrit << myname << "(updateFromSM): sid=" << io->si.id
+                        << " IOController_i::NameNotFound: " << ex.err << endl;
             }
             catch( const std::exception& ex )
             {
@@ -1546,7 +1552,7 @@ namespace uniset
             const std::string& prefix )
     {
         auto conf = uniset_conf();
-        string name = conf->getArgParam("--" + prefix + "-name", "OPCUAExchange1");
+        string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "OPCUAExchange1");
 
         if( name.empty() )
         {
@@ -1563,7 +1569,7 @@ namespace uniset
             return nullptr;
         }
 
-        string confname = conf->getArgParam("--" + prefix + "-confnode", name);
+        string confname = uniset::getArgParam("--" + prefix + "-confnode", argc, argv, name);
         xmlNode* cnode = conf->getNode(confname);
 
         if( !cnode )
@@ -1621,7 +1627,7 @@ namespace uniset
         cout << "--opcua-run-logserver       - run logserver. Default: localhost:id" << endl;
         cout << "--opcua-logserver-host ip   - listen ip. Default: localhost" << endl;
         cout << "--opcua-logserver-port num  - listen port. Default: ID" << endl;
-        cout << LogServer::help_print("prefix-logserver") << endl;
+        cout << LogServer::help_print("opcua-logserver") << endl;
     }
     // -----------------------------------------------------------------------------
     SimpleInfo* OPCUAExchange::getInfo( const char* userparam )
@@ -1913,6 +1919,11 @@ namespace uniset
                     opclog7 << myname << "(timerInfo): channel" << ch->num << " respond=" << (ch->status || !ch->ptTimeout.checkTime()) << endl;
                     shm->localSetValue( ch->respond_it, ch->respond_s, !ch->status && ch->ptTimeout.checkTime() ? 0 : 1, getId());
                 }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    opccrit << myname << "(timerInfo): respond_s=" << ch->respond_s
+                            << " IOController_i::NameNotFound: " << ex.err << endl;
+                }
                 catch( const std::exception& ex )
                 {
                     opclog6 << myname << "(timerInfo): " << ex.what() << endl;
@@ -1921,14 +1932,30 @@ namespace uniset
 
             if( sidRespond != DefaultObjectId )
             {
-                opclog7 << myname << "(timerInfo): respond=" << respondOk << endl;
-                shm->localSetValue(itRespond, sidRespond, respondOk, getId());
+                try
+                {
+                    opclog7 << myname << "(timerInfo): respond=" << respondOk << endl;
+                    shm->localSetValue(itRespond, sidRespond, respondOk, getId());
+                }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    opccrit << myname << "(timerInfo): sidRespond=" << sidRespond
+                            << " IOController_i::NameNotFound: " << ex.err << endl;
+                }
             }
 
             if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
             {
-                shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
-                ptHeartBeat.reset();
+                try
+                {
+                    shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
+                    ptHeartBeat.reset();
+                }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    opccrit << myname << "(timerInfo): sidHeartBeat=" << sidHeartBeat
+                            << " IOController_i::NameNotFound: " << ex.err << endl;
+                }
             }
         }
     }
@@ -2683,6 +2710,7 @@ namespace uniset
 
         // Parse filter parameter
         std::string filterParam;
+
         for( const auto& kv : p )
         {
             if( kv.first == "filter" && !kv.second.empty() )
@@ -2704,11 +2732,13 @@ namespace uniset
         // Build set of requested IDs for fast lookup
         std::unordered_set<uniset::ObjectId> filterIds;
         filterIds.reserve(slist.size());
+
         for( const auto& s : slist )
             filterIds.insert(s.si.id);
 
         // Track resolved names to find unresolved ones
         std::set<std::string> resolvedNames;
+
         for( const auto& s : slist )
             resolvedNames.insert(s.fname);
 
@@ -2792,6 +2822,7 @@ namespace uniset
             {
                 auto slist = uniset::getSInfoList(kv.second, conf);
                 filterIds.reserve(slist.size());
+
                 for( const auto& s : slist )
                     filterIds.insert(s.si.id);
             }
@@ -2801,6 +2832,7 @@ namespace uniset
         if( iotypeFilter == UniversalIO::UnknownIOType && !search.empty() )
         {
             auto t = uniset::getIOType(search);
+
             if( t != UniversalIO::UnknownIOType )
             {
                 iotypeFilter = t;

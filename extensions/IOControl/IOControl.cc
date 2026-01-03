@@ -235,8 +235,8 @@ namespace uniset
         shm = make_shared<SMInterface>(icID, ui, myid, ic);
 
         // определяем фильтр
-        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filterField"));
-        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filterValue"));
+        s_field = conf->getArg2Param("--" + prefix + "-filter-field", it.getPropOrProp("filter_field", "filterField"));
+        s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", it.getPropOrProp("filter_value", "filterValue"));
 
         vmonit(s_field);
         vmonit(s_fvalue);

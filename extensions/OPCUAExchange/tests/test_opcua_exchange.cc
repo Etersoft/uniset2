@@ -1465,6 +1465,7 @@ TEST_CASE("OPCUAExchange: HTTP /sensors (filter by id/name)", "[http][opcuaex][s
 
         // Проверяем что вернулись именно запрошенные ID
         std::set<int> returnedIds;
+
         for(size_t i = 0; i < sensors->size(); i++)
         {
             auto sensor = sensors->getObject(i);

@@ -1763,6 +1763,7 @@ TEST_CASE("MBTCPMaster: HTTP /registers (filter by iotype)", "[http][rest][mbtcp
         REQUIRE(root->get("result").toString() == "OK");
 
         auto registers = root->getArray("registers");
+
         // Все записи должны быть типа AI
         for(size_t i = 0; i < registers->size(); ++i)
         {
@@ -1786,6 +1787,7 @@ TEST_CASE("MBTCPMaster: HTTP /registers (filter by iotype)", "[http][rest][mbtcp
         REQUIRE(root->get("result").toString() == "OK");
 
         auto registers = root->getArray("registers");
+
         for(size_t i = 0; i < registers->size(); ++i)
         {
             auto reg = registers->getObject(i);
@@ -1998,15 +2000,18 @@ TEST_CASE("MBTCPMaster: HTTP /registers (filter by id/name)", "[http][rest][mbtc
         REQUIRE(registers->size() >= 2);
 
         std::unordered_set<int> uniqIds;
+
         for(size_t i = 0; i < registers->size(); i++)
         {
             auto reg = registers->getObject(i);
             int id = reg->getValue<int>("id");
+
             if( uniqIds.insert(id).second )
             {
                 allIds.push_back(id);
                 allNames.push_back(reg->getValue<std::string>("name"));
             }
+
             if( allIds.size() >= 2 )
                 break;
         }
@@ -2036,6 +2041,7 @@ TEST_CASE("MBTCPMaster: HTTP /registers (filter by id/name)", "[http][rest][mbtc
 
         // Проверяем что вернулись именно запрошенные ID
         std::set<int> returnedIds;
+
         for(size_t i = 0; i < registers->size(); i++)
         {
             auto reg = registers->getObject(i);
@@ -2140,15 +2146,18 @@ TEST_CASE("MBTCPMaster: HTTP /get endpoint", "[http][rest][mbtcpmaster][get]")
         REQUIRE(registers->size() >= 2);
 
         std::unordered_set<int> uniqIds;
+
         for(size_t i = 0; i < registers->size(); i++)
         {
             auto reg = registers->getObject(i);
             int id = reg->getValue<int>("id");
+
             if( uniqIds.insert(id).second )
             {
                 allIds.push_back(id);
                 allNames.push_back(reg->getValue<std::string>("name"));
             }
+
             if( allIds.size() >= 2 )
                 break;
         }

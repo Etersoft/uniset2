@@ -38,11 +38,10 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, xmlNode* cnode,
         throw uniset::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
     auto conf = uniset_conf();
-
-    mbconf->prop_prefix = initPropPrefix("tcp_");
-    mbinfo << myname << "(init): prop_prefix=" << mbconf->prop_prefix << endl;
-
     UniXML::iterator it(cnode);
+
+    mbconf->prop_prefix = initPropPrefix( it.getProp2("propPrefix", "tcp_"));
+    mbinfo << myname << "(init): prop_prefix=" << mbconf->prop_prefix << endl;
 
     checktime = conf->getArgPInt("--" + prefix + "-checktime", it.getProp("checkTime"), 5000);
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
@@ -702,7 +701,7 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 {
     auto conf = uniset_conf();
 
-    string name = conf->getArgParam("--" + prefix + "-name", "MBTCPMultiMaster1");
+    string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "MBTCPMultiMaster1");
 
     if( name.empty() )
     {
@@ -720,8 +719,9 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
         return 0;
     }
 
-    string cname = conf->getArgParam("--" + prefix + "-confnode", name);
+    string cname = uniset::getArgParam("--" + prefix + "-confnode", argc, argv, name);
     auto confnode = conf->getNode(cname);
+
     if( !confnode )
     {
         cerr << "(MBTCPMultiMaster): Not found confnode '" << cname << "' in config file" << endl;
@@ -769,8 +769,8 @@ uniset::SimpleInfo* MBTCPMultiMaster::getInfo( const char* userparam )
 // ----------------------------------------------------------------------------
 bool MBTCPMultiMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& newConf )
 {
-    newConf->prop_prefix = initPropPrefix("tcp_");
     UniXML::iterator it(newConf->cnode);
+    newConf->prop_prefix = initPropPrefix(it.getProp2("propPrefix", "tcp_"));
 
     int newChecktime = it.getIntProp("checktime");
 

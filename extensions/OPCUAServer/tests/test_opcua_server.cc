@@ -263,6 +263,7 @@ TEST_CASE("OPCUAServer: HTTP /status", "[http][opcua][status]")
     {
         auto eps = st->getArray("endpoints");
         REQUIRE(eps);
+
         if( eps->size() > 0 )
         {
             auto ep = eps->getObject(0);
@@ -474,6 +475,7 @@ TEST_CASE("OPCUAServer: HTTP /sensors", "[http][opcua][sensors]")
         auto j = r.extract<Poco::JSON::Object::Ptr>();
 
         auto sensors = j->getArray("sensors");
+
         for( size_t i = 0; i < sensors->size(); i++ )
         {
             auto s = sensors->getObject(i);
@@ -497,6 +499,7 @@ TEST_CASE("OPCUAServer: HTTP /sensors", "[http][opcua][sensors]")
         auto j = r.extract<Poco::JSON::Object::Ptr>();
 
         auto sensors = j->getArray("sensors");
+
         for( size_t i = 0; i < sensors->size(); i++ )
         {
             auto s = sensors->getObject(i);

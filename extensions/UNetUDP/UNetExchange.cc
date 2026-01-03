@@ -23,10 +23,37 @@
 #include "UNetLogSugar.h"
 #include "UDPTransport.h"
 #include "MulticastTransport.h"
+#include "IOController.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
+// -----------------------------------------------------------------------------
+// Find my node (localNode) in <nodes> section
+// Returns pointer to <item> node matching localNodeName, or nullptr if not found
+static xmlNode* getMyNode(xmlNode* nodes, const std::string& localNodeName)
+{
+    if( !nodes || localNodeName.empty() )
+        return nullptr;
+
+    UniXML::iterator it(nodes);
+
+    if( !it.goChildren() )
+        return nullptr;
+
+    do
+    {
+        cout << "check node: " << it.getProp("name") << " == " << localNodeName << endl;
+        if( it.getProp("name") == localNodeName )
+        {
+            cout << "FOUND! " << localNodeName << endl;
+            return it.getCurrent();
+        }
+    }
+    while( it.goNext() );
+
+    return nullptr;
+}
 // -----------------------------------------------------------------------------
 UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
     UniSetObject(objId),
@@ -104,14 +131,19 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
     UniXML::iterator n_it(nodes);
 
-    // определяем фильтр
-    s_field = conf->getArg2Param("--" + prefix + "-filter-field", n_it.getProp("filter_field"));
-    s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", n_it.getProp("filter_value"));
-    unetinfo << myname << "(init): read filter-field='" << s_field
-             << "' filter-value='" << s_fvalue << "'" << endl;
+    // Find my node in <nodes> for filter settings
+    xmlNode* myNode = getMyNode(nodes, conf->getLocalNodeName());
+    UniXML::iterator myNodeIt(myNode ? myNode : nodes);  // fallback to <nodes> if not found
 
-    const string n_field = conf->getArg2Param("--" + prefix + "-nodes-filter-field", n_it.getProp("nodes_filter_field"));
-    const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getProp("nodes_filter_value"));
+    // определяем фильтр (из настроек своего узла)
+    s_field = conf->getArg2Param("--" + prefix + "-filter-field", myNodeIt.getPropOrProp("filter_field", "filterField"));
+    s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", myNodeIt.getPropOrProp("filter_value", "filterValue"));
+    unetinfo << myname << "(init): read filter-field='" << s_field
+             << "' filter-value='" << s_fvalue << "'"
+             << " from " << (myNode ? "myNode" : "<nodes>") << endl;
+
+    const string n_field = conf->getArg2Param("--" + prefix + "-nodes-filter-field", n_it.getPropOrProp("nodes_filter_field", "nodesFilterField"));
+    const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getPropOrProp("nodes_filter_value", "nodesFilterValue"));
     unetinfo << myname << "(init): read nodes-filter-field='" << n_field
              << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
@@ -197,12 +229,14 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     }
     else
     {
-        test_id = conf->getSensorID("TestMode_S");
+        string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-test-sid", it.getProp2("smTestSID", "TestMode_S"));
+
+        test_id = conf->getSensorID(sm_ready_sid);
 
         if( test_id == DefaultObjectId )
         {
             ostringstream err;
-            err << myname << "(init): sidTestSMReady unknown. 'TestMode_S' not found...";
+            err << "(init): Unknown ID for sm-test-sid (--" << prefix << "-sm-test-sid)..." << endl;
             unetcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
@@ -238,14 +272,24 @@ bool UNetExchange::checkExistTransport( const std::string& transportID ) noexcep
 // -----------------------------------------------------------------------------
 void UNetExchange::startReceivers()
 {
+    unetinfo << myname << "(startReceivers): starting " << recvlist.size() << " receivers..." << endl;
+
     for( const auto& it : recvlist )
     {
         if( it.r1 )
+        {
+            unetinfo << myname << "(startReceivers): starting receiver for node " << it.r1->getName() << endl;
             it.r1->start();
+        }
 
         if( it.r2 )
+        {
+            unetinfo << myname << "(startReceivers): starting receiver2 for node " << it.r2->getName() << endl;
             it.r2->start();
+        }
     }
+
+    unetinfo << myname << "(startReceivers): done" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetExchange::waitSMReady()
@@ -385,6 +429,8 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
     {
         case SystemMessage::StartUp:
         {
+            unetinfo << myname << "(sysCommand): StartUp received..." << endl;
+
             if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
             {
                 try
@@ -400,8 +446,11 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 
             if( !waitSMReady() )
             {
+                unetcrit << myname << "(sysCommand): waitSMReady FAILED!" << endl;
+
                 if( !cancelled )
-                   uterminate();
+                    uterminate();
+
                 return;
             }
 
@@ -412,7 +461,6 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 
             while( !cancelled && !activated && !ptAct.checkTime() )
             {
-                cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(300);
 
                 if( activated )
@@ -429,7 +477,22 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
                 uniset::uniset_rwmutex_rlock l(mutex_start);
 
                 if( shm->isLocalwork() )
-                    askSensors(UniversalIO::UIONotify);
+                {
+                    try
+                    {
+                        askSensors(UniversalIO::UIONotify);
+                    }
+                    catch( const IOController_i::NameNotFound& ex )
+                    {
+                        unetcrit << myname << "(sysCommand): askSensors IOController_i::NameNotFound: " << ex.err << endl;
+                        throw;
+                    }
+                    catch( const std::exception& ex )
+                    {
+                        unetcrit << myname << "(sysCommand): askSensors exception: " << ex.what() << endl;
+                        throw;
+                    }
+                }
             }
 
             askTimer(tmStep, steptime);
@@ -460,7 +523,22 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
             // то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
             // при заказе датчиков, а если SM вылетит, то вместе с этим процессом(UNetExchange)
             if( shm->isLocalwork() )
-                askSensors(UniversalIO::UIONotify);
+            {
+                try
+                {
+                    askSensors(UniversalIO::UIONotify);
+                }
+                catch( const IOController_i::NameNotFound& ex )
+                {
+                    unetcrit << myname << "(sysCommand): WatchDog: IOController_i::NameNotFound: " << ex.err << endl;
+                    throw;
+                }
+                catch( const std::exception& ex )
+                {
+                    unetcrit << myname << "(sysCommand): WatchDog: exception: " << ex.what() << endl;
+                    throw;
+                }
+            }
         }
         break;
 
@@ -517,12 +595,31 @@ bool UNetExchange::activateObject()
     // блокирование обработки Starsp
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
+    try
     {
         activated = false;
         uniset::uniset_rwmutex_wrlock l(mutex_start);
+        unetinfo << myname << "(activateObject): calling UniSetObject::activateObject..." << endl;
         UniSetObject::activateObject();
+        unetinfo << myname << "(activateObject): calling initIterators..." << endl;
         initIterators();
+        unetinfo << myname << "(activateObject): done" << endl;
         activated = true;
+    }
+    catch( const IOController_i::NameNotFound& ex )
+    {
+        unetcrit << myname << "(activateObject): EXCEPTION IOController_i::NameNotFound: " << ex.err << endl;
+        throw;
+    }
+    catch( const std::exception& ex )
+    {
+        unetcrit << myname << "(activateObject): EXCEPTION std::exception: " << ex.what() << endl;
+        throw;
+    }
+    catch( ... )
+    {
+        unetcrit << myname << "(activateObject): UNKNOWN EXCEPTION" << endl;
+        throw;
     }
 
     return true;
@@ -611,6 +708,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
     cout << "--prefix-recv-max-at-time num    - Максимальное количество сообщений вычитываемых из сети за один раз. По умолчанию: 5" << endl;
     cout << "--prefix-recv-ignore-crc  [0,1]  - Отключить оптимизацию по проверке crc, обновлять данные в SM всегда. По умолчанию: 0" << endl;
     cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
+    cout << "--prefix-sm-test-sid name        - Датчик для проверки готовности SM к работе. По умолчанию TestMode_S" << endl;
     cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
     cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
     cout << endl;
@@ -638,7 +736,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const ch
     auto conf = uniset_conf();
 
     string p("--" + prefix + "-name");
-    string name = conf->getArgParam(p, "UNetExchange1");
+    string name = uniset::getArgParam(p, argc, argv, "UNetExchange1");
 
     if( name.empty() )
     {

@@ -27,6 +27,7 @@ extern "C" {
 #include "Exceptions.h"
 #include "OPCUAServer.h"
 #include "unisetstd.h"
+#include "IOController.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -82,12 +83,12 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     opcconf.setApplicationUri(it.getProp2("appUri", "urn:uniset2.server"));
     opcconf.setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
     opcconf.setLogger([this](auto level, auto category, auto msg)
-                         {
-                             mylog->level5() << myname
-                                             << "[" << getLogLevelName(level) << "] "
-                                             << "[" << getLogCategoryName(category) << "] "
-                                             << msg << std::endl;
-                         });
+    {
+        mylog->level5() << myname
+                        << "[" << getLogLevelName(level) << "] "
+                        << "[" << getLogCategoryName(category) << "] "
+                        << msg << std::endl;
+    });
 
     opcServer = opcua::Server{ std::move(opcconf) };
     namePrefix = it.getProp2("namePrefix", "");
@@ -122,7 +123,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
         loglevel = UA_LOGLEVEL_DEBUG;
 
     // HACK (init loglevel)
-    UA_ServerConfig *sconf = UA_Server_getConfig(opcServer.handle());
+    UA_ServerConfig* sconf = UA_Server_getConfig(opcServer.handle());
     auto slogger = UA_Log_Stdout_new( loglevel );
     sconf->logging = slogger;
 
@@ -133,7 +134,7 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     ioNode = std::make_unique<IONode>(std::move(uroot.addFolder(opcua::NodeId(namespaceIndex, browseName), browseName)));
     ioNode->node.writeDescription({"ru-RU", description});
     ioNode->node.writeDisplayName({"en", browseName});
-//    opcServer->setCustomHostname(ip);
+    //    opcServer->setCustomHostname(ip);
 
     /* Инициализация каталога */
     UniXML::iterator tit = conf->findNode(cnode, "folders");
@@ -146,9 +147,9 @@ OPCUAServer::OPCUAServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectI
     updateThread = unisetstd::make_unique<ThreadCreator<OPCUAServer>>(this, &OPCUAServer::updateLoop);
 
     // определяем фильтр
-    s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"));
-    s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"));
-    auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "filter-value-re", it.getProp("filterValueRE"));
+    s_field = conf->getArg2Param("--" + argprefix + "filter-field", it.getPropOrProp("filter_field", "filterField"));
+    s_fvalue = conf->getArg2Param("--" + argprefix + "filter-value", it.getPropOrProp("filter_value", "filterValue"));
+    auto regexp_fvalue = conf->getArg2Param("--" + argprefix + "filter-value-re", it.getPropOrProp("filter_value_re", "filterValueRe"));
 
     if( !regexp_fvalue.empty() )
     {
@@ -646,7 +647,7 @@ void OPCUAServer::help_print()
     cout << "--opcua-run-logserver      - run logserver. Default: localhost:id" << endl;
     cout << "--opcua-logserver-host ip  - listen ip. Default: localhost" << endl;
     cout << "--opcua-logserver-port num - listen port. Default: ID" << endl;
-    cout << LogServer::help_print("prefix-logserver") << endl;
+    cout << LogServer::help_print("opcua-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<OPCUAServer> OPCUAServer::init_opcua_server(int argc, const char* const* argv,
@@ -655,7 +656,8 @@ std::shared_ptr<OPCUAServer> OPCUAServer::init_opcua_server(int argc, const char
 {
     auto conf = uniset_conf();
 
-    string name = conf->getArgParam("--" + prefix + "-name", "OPCUAServer");
+    // Use passed argc/argv to get parameters
+    string name = uniset::getArgParam("--" + prefix + "-name", argc, argv, "OPCUAServer");
 
     if( name.empty() )
     {
@@ -672,7 +674,7 @@ std::shared_ptr<OPCUAServer> OPCUAServer::init_opcua_server(int argc, const char
         return nullptr;
     }
 
-    string confname = conf->getArgParam("--" + prefix + "-confnode", name);
+    string confname = uniset::getArgParam("--" + prefix + "-confnode", argc, argv, name);
     xmlNode* cnode = conf->getNode(confname);
 
     if( !cnode )
@@ -877,6 +879,11 @@ void OPCUAServer::update()
                 this->shm->localSetValue(it->second.it, it->first, val, this->getId());
             }
         }
+        catch( const IOController_i::NameNotFound& ex )
+        {
+            mycrit << this->myname << "(updateLoop): sid=" << it->first
+                   << " IOController_i::NameNotFound: " << ex.err << endl;
+        }
         catch( const std::exception& ex )
         {
             mycrit << this->myname << "(updateLoop): sid=" << it->first
@@ -949,6 +956,12 @@ UA_StatusCode OPCUAServer::UA_setValueMethod(UA_Server* server,
     {
         srv->shm->localSetValue(it->second.it, it->second.sid, value, srv->getId());
         ret = true;
+    }
+    catch( const IOController_i::NameNotFound& ex )
+    {
+        if(srv->log()->is_crit())
+            srv->log()->crit() << srv->myname << "(UA_setValueMethod): sid=" << it->second.sid
+                               << " IOController_i::NameNotFound: " << ex.err << std::endl;
     }
     catch( const std::exception& ex )
     {
@@ -1187,6 +1200,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
     // endpoints
     {
         Array::Ptr eps = new Array();
+
         for( size_t i = 0; i < opcConfig->endpointsSize; i++ )
         {
             Object::Ptr ep = new Object();
@@ -1194,6 +1208,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpStatus()
             ep->set("name",  UAStringToStdString(opcConfig->endpoints[i].server.applicationName.text));
             eps->add(ep);
         }
+
         st->set("endpoints", eps);
     }
 
@@ -1268,6 +1283,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpSensors( const Poco::URI::QueryParamete
             {
                 auto slist = uniset::getSInfoList(kv.second, conf);
                 filterIds.reserve(slist.size());
+
                 for( const auto& s : slist )
                     filterIds.insert(s.si.id);
             }
@@ -1282,6 +1298,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpSensors( const Poco::URI::QueryParamete
     if( iotypeFilter == UniversalIO::UnknownIOType && !search.empty() )
     {
         auto t = uniset::getIOType(search);
+
         if( t != UniversalIO::UnknownIOType )
         {
             iotypeFilter = t;
@@ -1347,8 +1364,8 @@ Poco::JSON::Object::Ptr OPCUAServer::httpSensors( const Poco::URI::QueryParamete
             else if( var.second.vtype == opcua::DataTypeId::Float )
             {
                 float fval = var.second.precision > 0
-                    ? (float)var.second.value / std::pow(10.0f, var.second.precision)
-                    : (float)var.second.value;
+                             ? (float)var.second.value / std::pow(10.0f, var.second.precision)
+                             : (float)var.second.value;
                 js->set("value", fval);
             }
             else
@@ -1357,8 +1374,10 @@ Poco::JSON::Object::Ptr OPCUAServer::httpSensors( const Poco::URI::QueryParamete
 
         // OPC UA specific info
         js->set("vtype", (int)var.second.vtype);
+
         if( var.second.mask != 0 )
             js->set("mask", (int)var.second.mask);
+
         if( var.second.precision > 0 )
             js->set("precision", (int)var.second.precision);
 
@@ -1391,6 +1410,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpGet( const Poco::URI::QueryParameters& 
         if( (kv.first == "name" || kv.first == "id") && !kv.second.empty() )
         {
             auto slist = uniset::getSInfoList(kv.second, conf);
+
             if( slist.empty() )
                 notFoundNames.push_back(kv.second);
             else
@@ -1414,6 +1434,7 @@ Poco::JSON::Object::Ptr OPCUAServer::httpGet( const Poco::URI::QueryParameters& 
         js->set("id", (int)req.first);
 
         auto it = variables.find(req.first);
+
         if( it != variables.end() )
         {
             js->set("iotype", uniset::iotype2str(it->second.stype));
@@ -1427,8 +1448,8 @@ Poco::JSON::Object::Ptr OPCUAServer::httpGet( const Poco::URI::QueryParameters& 
                 else if( it->second.vtype == opcua::DataTypeId::Float )
                 {
                     float fval = it->second.precision > 0
-                        ? (float)it->second.value / std::pow(10.0f, it->second.precision)
-                        : (float)it->second.value;
+                                 ? (float)it->second.value / std::pow(10.0f, it->second.precision)
+                                 : (float)it->second.value;
                     js->set("value", fval);
                 }
                 else
