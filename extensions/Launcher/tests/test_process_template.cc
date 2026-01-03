@@ -54,7 +54,7 @@ TEST_CASE("ProcessTemplate: findByType returns correct template", "[template]")
         REQUIRE(tmpl->type == "UNetExchange");
         REQUIRE(tmpl->command == "uniset2-unetexchange");
         REQUIRE(tmpl->group == 2);
-        REQUIRE(tmpl->critical == false);
+        REQUIRE(tmpl->critical == true);  // all processes are critical by default now
         REQUIRE(tmpl->needsSharedMemory == true);
     }
 

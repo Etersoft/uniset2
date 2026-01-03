@@ -44,7 +44,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"UNet", "UNetExchange"}
         });
@@ -57,7 +57,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"MBTCPMaster", "MBTCP", "ModbusTCP"}
         });
@@ -70,7 +70,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"MBMultiMaster", "MBTCPMulti", "MBTCPMultiMaster"}
         });
@@ -83,7 +83,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"MBSlave", "ModbusSlave"}
         });
@@ -96,7 +96,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"RTU", "RTUExchange"}
         });
@@ -109,7 +109,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"OPCUAServer", "OPCUASrv"}
         });
@@ -122,7 +122,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"OPCUAExchange", "OPCUAClient"}
         });
@@ -135,7 +135,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"MQTT", "MQTTPublisher"}
         });
@@ -148,7 +148,7 @@ namespace uniset
             "",                     // no ready check
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"LogDB"}
         });
@@ -161,7 +161,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"IOControl", "IO_"}
         });
@@ -174,7 +174,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"ClickHouse", "BackendClickHouse"}
         });
@@ -187,7 +187,7 @@ namespace uniset
             "corba:${name}",
             10000, 1000, 1000,
             2,
-            false,
+            true,   // critical (default)
             true,
             {"WebSocket", "UWebSocket", "UWebSocketGate"}
         });

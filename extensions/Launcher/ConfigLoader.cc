@@ -281,13 +281,10 @@ namespace uniset
             if (it.getProp("checkTimeout").length() > 0)
                 proc.readyCheck.checkTimeout_msec = it.getIntProp("checkTimeout");
 
-            // Critical: use template default if not explicitly specified
-            std::string criticalStr = it.getProp("critical");
-
-            if (criticalStr.empty())
-                proc.critical = tmpl->critical;
-            else
-                proc.critical = (criticalStr == "true" || criticalStr == "1");
+            // ignoreFail: if true, process failure won't stop launcher
+            // Default: ignoreFail=false (process is critical)
+            std::string ignoreFailStr = it.getProp("ignoreFail");
+            proc.critical = !(ignoreFailStr == "true" || ignoreFailStr == "1");
 
             // Track SharedMemory process name
             if (proc.type == "SharedMemory")
@@ -337,9 +334,10 @@ namespace uniset
                 proc.readyCheck.checkTimeout_msec = it.getPIntProp("checkTimeout", proc.readyCheck.checkTimeout_msec);
             }
 
-            // Flags
-            proc.critical = it.getProp("critical") == "true" ||
-                            it.getProp("critical") == "1";
+            // ignoreFail: if true, process failure won't stop launcher
+            // Default: ignoreFail=false (process is critical)
+            std::string ignoreFailStr = it.getProp("ignoreFail");
+            proc.critical = !(ignoreFailStr == "true" || ignoreFailStr == "1");
 
             // Detect SharedMemory in legacy mode (by command name)
             if (proc.command == "uniset2-smemory" && config.sharedMemoryName.empty())
