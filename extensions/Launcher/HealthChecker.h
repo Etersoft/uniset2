@@ -14,6 +14,7 @@
 #include <Poco/Process.h>
 #include "ProcessInfo.h"
 #include "Configuration.h"
+#include "UInterface.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -60,6 +61,7 @@ namespace uniset
             bool checkFile(const std::string& path);
 
             std::shared_ptr<Configuration> conf_;
+            std::shared_ptr<UInterface> ui_;
     };
 
 } // end of namespace uniset
