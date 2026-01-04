@@ -18,7 +18,6 @@
 #include <Poco/Timespan.h>
 #include "HealthChecker.h"
 #include "Debug.h"
-#include "UInterface.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -26,6 +25,8 @@ namespace uniset
     HealthChecker::HealthChecker(std::shared_ptr<Configuration> conf)
         : conf_(conf)
     {
+        if (conf_)
+            ui_ = std::make_shared<UInterface>(conf_);
     }
     // -------------------------------------------------------------------------
     bool HealthChecker::waitForReady(const ReadyCheck& check, size_t timeout_msec)
@@ -135,7 +136,7 @@ namespace uniset
     // -------------------------------------------------------------------------
     bool HealthChecker::checkCORBA(const std::string& objectName, size_t timeout_msec, size_t pause_msec)
     {
-        if (!conf_)
+        if (!ui_)
             return false;
 
         try
@@ -146,9 +147,8 @@ namespace uniset
             if (id == DefaultObjectId)
                 return false;
 
-            auto ui = std::make_shared<UInterface>(conf_);
             // waitReady ждёт готовности объекта с заданным timeout и pause между проверками
-            return ui->waitReady(id, timeout_msec, pause_msec);
+            return ui_->waitReady(id, timeout_msec, pause_msec);
         }
         catch (...)
         {
