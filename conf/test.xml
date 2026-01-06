@@ -23,9 +23,9 @@
 		<ConfDir name="./"/>
 		<DataDir name="./"/>
 		<BinDir name="./"/>
-		<LogDir name="./"/>
+		<LogDir name=""/>
 		<DocDir name="./"/>
-		<LockDir name="/tmp/"/>
+		<LockDir name=""/>
 		<HttpResolver name="HttpResolver"/>
 		<LocalIOR name="0"/>
 		<Services>

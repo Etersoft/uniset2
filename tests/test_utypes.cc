@@ -1,6 +1,7 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <sstream>
+#include <fstream>
 #include <limits>
 #include <iomanip>
 #include <cstdint>
@@ -256,6 +257,49 @@ TEST_CASE("UniSetTypes: directory_exist", "[utypes][directory_exist]" )
 {
     CHECK_FALSE( directory_exist("uknown_dir") );
     CHECK( directory_exist("/") ); // linux only
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: create_directory", "[utypes][create_directory]" )
+{
+    const std::string testDir = "/tmp/uniset_test_create_dir_" + std::to_string(getpid());
+    const std::string nestedDir = testDir + "/sub1/sub2/sub3";
+
+    // cleanup if exists from previous run
+    (void)std::system(("rm -rf " + testDir + " 2>/dev/null").c_str());
+
+    SECTION("create simple directory")
+    {
+        CHECK_FALSE( directory_exist(testDir) );
+        CHECK( create_directory(testDir) );
+        CHECK( directory_exist(testDir) );
+    }
+
+    SECTION("create nested directories with_parents=true")
+    {
+        CHECK_FALSE( directory_exist(nestedDir) );
+        CHECK( create_directory(nestedDir, true) );
+        CHECK( directory_exist(nestedDir) );
+    }
+
+    SECTION("create_directory on existing directory returns true")
+    {
+        CHECK( create_directory(testDir) );
+        CHECK( create_directory(testDir) );  // second call should also succeed
+        CHECK( directory_exist(testDir) );
+    }
+
+    SECTION("create_directory on existing file returns false")
+    {
+        const std::string testFile = testDir + "/testfile";
+        CHECK( create_directory(testDir) );
+        std::ofstream f(testFile);
+        f << "test";
+        f.close();
+        CHECK_FALSE( create_directory(testFile) );  // file exists, not a directory
+    }
+
+    // cleanup
+    (void)std::system(("rm -rf " + testDir + " 2>/dev/null").c_str());
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: check_filter", "[utypes][check_filter]" )

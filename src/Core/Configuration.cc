@@ -42,6 +42,22 @@ using namespace std;
 // -------------------------------------------------------------------------
 static const string UniSetDefaultPort = "2809";
 // -------------------------------------------------------------------------
+// Get default directory with fallback logic: $TMPDIR/uniset -> $HOME/tmp/uniset -> ./
+static string getDefaultDir( const string& subdir = "uniset" )
+{
+    const char* tmpdir = getenv("TMPDIR");
+
+    if( tmpdir && tmpdir[0] != '\0' )
+        return string(tmpdir) + "/" + subdir;
+
+    const char* home = getenv("HOME");
+
+    if( home && home[0] != '\0' )
+        return string(home) + "/tmp/" + subdir;
+
+    return "./" + subdir;
+}
+// -------------------------------------------------------------------------
 static ostream& print_help( ostream& os, int width, const string& cmd,
                             const string& help, const string& tab = "" )
 {
@@ -658,13 +674,16 @@ namespace uniset
                 logDir = it.getProp("name");
 
                 if( logDir.empty() )
-                    logDir = getRootDir();
+                    logDir = getDefaultDir("uniset/logs");
 
                 if( !directory_exist(logDir) )
                 {
-                    ostringstream err;
-                    err << "Configuration: LogDir=" << logDir << " NOT EXISTS";
-                    throw uniset::SystemError(err.str());
+                    if( !create_directory(logDir) )
+                    {
+                        ostringstream err;
+                        err << "Configuration: cannot create LogDir=" << logDir;
+                        throw uniset::SystemError(err.str());
+                    }
                 }
             }
             else if( name == "LockDir" )
@@ -672,13 +691,16 @@ namespace uniset
                 lockDir = it.getProp("name");
 
                 if( lockDir.empty() )
-                    lockDir = getRootDir();
+                    lockDir = getDefaultDir("uniset/locks");
 
                 if( !directory_exist(lockDir) )
                 {
-                    ostringstream err;
-                    err << "Configuration: LockDir=" << lockDir << " NOT EXISTS";
-                    throw uniset::SystemError(err.str());
+                    if( !create_directory(lockDir) )
+                    {
+                        ostringstream err;
+                        err << "Configuration: cannot create LockDir=" << lockDir;
+                        throw uniset::SystemError(err.str());
+                    }
                 }
             }
             else if( name == "ConfDir" )
