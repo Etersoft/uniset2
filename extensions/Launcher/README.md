@@ -49,6 +49,9 @@ uniset2-launcher --confile config.xml -- --custom-arg value
 | `--html-template FILE` | Пользовательский HTML-шаблон |
 | `--health-interval MS` | Интервал проверки состояния в мс (по умолчанию: 5000) |
 | `--stop-timeout MS` | Таймаут graceful shutdown в мс (по умолчанию: 5000) |
+| `--uniset-port PORT` | UniSet/CORBA порт (default: auto=UID+52809) |
+| `--omni-logdir DIR` | Каталог логов omniNames (по умолчанию: $TMPDIR/omniORB) |
+| `--disable-admin-create` | Не вызывать uniset2-admin --create после запуска omniNames |
 | `--no-monitor` | Не мониторить процессы после запуска |
 | `--runlist`, `--dry-run` | Показать что будет запущено без реального запуска |
 | `--verbose` | Подробный вывод |
@@ -616,6 +619,47 @@ JavaScript-файл для веб-интерфейса.
 ### GET /api/v2/launcher/help
 
 Получить справку по доступным командам API.
+
+## Автозапуск omniNames
+
+По умолчанию (если не указан `--localIOR`), Launcher автоматически:
+
+1. Запускает omniNames на порту UID+52809 (если не запущен)
+2. Создаёт репозиторий через `uniset2-admin --create`
+3. Останавливает omniNames при завершении (только если сам запустил)
+
+### Примеры
+
+```bash
+# Минимальный запуск (auto-порт по умолчанию)
+uniset2-launcher --confile configure.xml
+
+# Явный порт
+uniset2-launcher --confile configure.xml --uniset-port 2809
+
+# Без omniNames (localIOR режим)
+uniset2-launcher --confile configure.xml --localIOR
+
+# Без создания репозитория (уже существует)
+uniset2-launcher --confile configure.xml --disable-admin-create
+```
+
+### Формула auto-порта
+
+```
+port = UID + 52809
+```
+
+Для UID=1000 → порт 53809
+Для UID=1001 → порт 53810
+
+Это позволяет нескольким пользователям на одном сервере запускать проекты без конфликтов.
+
+### Каталог логов omniNames
+
+По умолчанию: `$TMPDIR/omniORB` или `$HOME/tmp/omniORB`
+
+Можно переопределить: `--omni-logdir /path/to/logs`
 
 ## Переменные окружения
 

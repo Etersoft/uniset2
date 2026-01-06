@@ -22,7 +22,8 @@ namespace uniset
         // NOTE: Command-line arguments need to be verified against actual extension code
 
         // SharedMemory - group 1 (depends on naming)
-        registerTemplate({
+        registerTemplate(
+        {
             "SharedMemory",                     // type
             "uniset2-smemory",                  // command
             "--smemory-id ${name}",             // argsPattern
@@ -37,7 +38,8 @@ namespace uniset
         });
 
         // UNetExchange - group 2 (depends on sharedmemory)
-        registerTemplate({
+        registerTemplate(
+        {
             "UNetExchange",
             "uniset2-unetexchange",
             "--unet-name ${name}",
@@ -50,7 +52,8 @@ namespace uniset
         });
 
         // MBTCPMaster - Modbus TCP Master
-        registerTemplate({
+        registerTemplate(
+        {
             "MBTCPMaster",
             "uniset2-mbtcpmaster",
             "--mbtcp-name ${name}",
@@ -63,7 +66,8 @@ namespace uniset
         });
 
         // MBTCPMultiMaster - Modbus TCP Multi-Master (uses same --mbtcp-name as MBTCPMaster)
-        registerTemplate({
+        registerTemplate(
+        {
             "MBTCPMultiMaster",
             "uniset2-mbtcpmultimaster",
             "--mbtcp-name ${name}",
@@ -76,7 +80,8 @@ namespace uniset
         });
 
         // MBSlave - Modbus Slave
-        registerTemplate({
+        registerTemplate(
+        {
             "MBSlave",
             "uniset2-mbslave",
             "--mbs-name ${name}",
@@ -89,7 +94,8 @@ namespace uniset
         });
 
         // RTUExchange - Modbus RTU Exchange (uses --rs-name, prefix "rs")
-        registerTemplate({
+        registerTemplate(
+        {
             "RTUExchange",
             "uniset2-rtuexchange",
             "--rs-name ${name}",
@@ -102,7 +108,8 @@ namespace uniset
         });
 
         // OPCUAServer (note: "OPCUA" prefix removed to avoid matching OPCUAExchange)
-        registerTemplate({
+        registerTemplate(
+        {
             "OPCUAServer",
             "uniset2-opcua-server",
             "--opcua-name ${name}",
@@ -115,7 +122,8 @@ namespace uniset
         });
 
         // OPCUAExchange (uses same --opcua-name as OPCUAServer)
-        registerTemplate({
+        registerTemplate(
+        {
             "OPCUAExchange",
             "uniset2-opcua-exchange",
             "--opcua-name ${name}",
@@ -128,7 +136,8 @@ namespace uniset
         });
 
         // MQTTPublisher
-        registerTemplate({
+        registerTemplate(
+        {
             "MQTTPublisher",
             "uniset2-mqttpublisher",
             "--mqtt-name ${name}",
@@ -141,7 +150,8 @@ namespace uniset
         });
 
         // LogDB - no CORBA check
-        registerTemplate({
+        registerTemplate(
+        {
             "LogDB",
             "uniset2-logdb",
             "--logdb-name ${name}",
@@ -154,7 +164,8 @@ namespace uniset
         });
 
         // IOControl
-        registerTemplate({
+        registerTemplate(
+        {
             "IOControl",
             "uniset2-iocontrol",
             "--io-name ${name}",
@@ -167,7 +178,8 @@ namespace uniset
         });
 
         // BackendClickHouse
-        registerTemplate({
+        registerTemplate(
+        {
             "BackendClickHouse",
             "uniset2-backend-clickhouse",
             "--clickhouse-name ${name}",
@@ -180,7 +192,8 @@ namespace uniset
         });
 
         // UWebSocketGate
-        registerTemplate({
+        registerTemplate(
+        {
             "UWebSocketGate",
             "uniset2-uwebsocket-gate",
             "--ws-name ${name}",

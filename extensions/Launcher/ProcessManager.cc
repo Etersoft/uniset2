@@ -239,6 +239,7 @@ namespace uniset
                 catch (const std::exception& waitEx)
                 {
                     mylog->warn() << "wait() exception: " << waitEx.what() << std::endl;
+
                     // Process may have already been reaped, check if it's still alive
                     if (!HealthChecker::isProcessAlive(proc.pid))
                         exitCode = 0;  // Assume success if we can't determine
@@ -253,6 +254,7 @@ namespace uniset
                     if (!line.empty())
                         mylog->info() << "  " << line << std::endl;
                 }
+
                 proc.lastExitCode = exitCode;
                 proc.pid = 0;
 
@@ -1112,6 +1114,7 @@ namespace uniset
 
                 if (!proc.critical)
                     out << "      ignoreFail: yes" << std::endl;
+
                 out << std::endl;
             }
         }

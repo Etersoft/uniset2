@@ -171,6 +171,7 @@ namespace uniset
             /*! указатель на конфигурационный xml */
             const std::shared_ptr<UniXML> getConfXML() const noexcept;
 
+            int getORBPort() const noexcept;
             CORBA::ORB_ptr getORB() const;
             const CORBA::PolicyList getPolicy() const noexcept;
 

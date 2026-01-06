@@ -61,6 +61,7 @@ class HTTPServerTestFixture
                 // Give server time to finish current requests
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
             }
+
             // Reset in order: server first (uses registry), then registry (uses pm)
             server_.reset();
             // Give more time for Poco threads to clean up
@@ -125,7 +126,10 @@ class HTTPServerTestFixture
             return response.getStatus();
         }
 
-        int port() const { return port_; }
+        int port() const
+        {
+            return port_;
+        }
 
     private:
         static int getNextPort()
@@ -500,6 +504,7 @@ class HTTPAuthTestFixture
                 server_->stop();
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
             }
+
             server_.reset();
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             registry_.reset();
@@ -606,7 +611,10 @@ class HTTPAuthTestFixture
             return result.extract<Poco::JSON::Object::Ptr>();
         }
 
-        int port() const { return port_; }
+        int port() const
+        {
+            return port_;
+        }
 
     private:
         static int getNextPort()
