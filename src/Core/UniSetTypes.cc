@@ -269,6 +269,27 @@ bool uniset::directory_exist( const std::string& path )
     return false;
 }
 // -------------------------------------------------------------------------
+bool uniset::create_directory( const std::string& path, bool with_parents )
+{
+    try
+    {
+        Poco::File f(path);
+
+        if( f.exists() )
+            return f.isDirectory();
+
+        if( with_parents )
+            f.createDirectories();
+        else
+            f.createDirectory();
+
+        return true;
+    }
+    catch( ... ) {}
+
+    return false;
+}
+// -------------------------------------------------------------------------
 bool uniset::file_exist( const std::string& filename )
 {
     std::ifstream file;
