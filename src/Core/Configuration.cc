@@ -1236,12 +1236,29 @@ namespace uniset
         string defport(getArgParam("--uniset-port"));
 
         if( !defport.empty() )
+        {
+            // Support "auto" mode: defaultPort + 50000 + UID
+            if( defport == "auto" )
+            {
+                int basePort = port.empty() ? std::stoi(UniSetDefaultPort) : std::stoi(port);
+                return std::to_string(basePort + 50000 + static_cast<int>(getuid()));
+            }
+
             return defport;
+        }
 
         // Порт задан в переменной окружения
         if( getenv("UNISET_PORT") != NULL )
         {
             defport = getenv("UNISET_PORT");
+
+            // Support "auto" mode: defaultPort + 50000 + UID
+            if( defport == "auto" )
+            {
+                int basePort = port.empty() ? std::stoi(UniSetDefaultPort) : std::stoi(port);
+                return std::to_string(basePort + 50000 + static_cast<int>(getuid()));
+            }
+
             return defport;
         }
 
@@ -1251,6 +1268,20 @@ namespace uniset
 
         // Порт по умолчанию
         return UniSetDefaultPort;
+    }
+    // -------------------------------------------------------------------------
+    int Configuration::getORBPort() const noexcept
+    {
+        std::string port = getPort();
+
+        try
+        {
+            return std::stoi(port);
+        }
+        catch (...)
+        {
+            return std::stoi(UniSetDefaultPort);
+        }
     }
     // -------------------------------------------------------------------------
     ObjectId Configuration::getSensorID( const std::string& name ) const noexcept

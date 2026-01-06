@@ -12,7 +12,8 @@ tests_SOURCES = tests.cc \
 	test_process_manager.cc \
 	test_http_handler.cc \
 	test_process_template.cc \
-	test_process_info.cc
+	test_process_info.cc \
+	test_omninames_manager.cc
 
 tests_LDADD = $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \

@@ -209,6 +209,9 @@ testsuite/atconfig
 !extensions/Launcher/*.js
 !extensions/Launcher/*.png
 !extensions/Launcher/*.template
+!extensions/Launcher/tests/
+!extensions/Launcher/tests/*.cc
+!extensions/Launcher/tests/Makefile.am
 !extensions/uno/*.h
 !extensions/uno/*.cc
 !extensions/uno/*.md

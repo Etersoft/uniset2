@@ -14,6 +14,7 @@
 #include "UniSetTypes.h"
 #include "ProcessManager.h"
 #include "ConfigLoader.h"
+#include "OmniNamesManager.h"
 #include "Debug.h"
 #ifndef DISABLE_REST_API
 #include "UHttpServer.h"
@@ -57,6 +58,9 @@ static void print_help(const std::string& prog)
          << "  --html-template FILE Custom HTML template file\n"
          << "  --health-interval MS Health check interval in ms (default: 5000)\n"
          << "  --stop-timeout MS    Graceful shutdown timeout in ms (default: 5000)\n"
+         << "  --uniset-port PORT   UniSet/CORBA port (default: auto=UID+52809)\n"
+         << "  --omni-logdir DIR    omniNames log directory (default: $TMPDIR/omniORB)\n"
+         << "  --disable-admin-create  Don't run uniset2-admin --create after omniNames start\n"
          << "  --no-monitor         Don't monitor processes after startup\n"
          << "  --runlist, --dry-run Show what will be launched without starting\n"
          << "  --verbose            Verbose output\n"
@@ -105,6 +109,9 @@ int main(int argc, char* argv[])
     std::string htmlTemplate;
     size_t healthInterval = 5000;
     size_t stopTimeout = 5000;
+    int unisetPort = OmniNamesManager::calcPortFromUID();  // default: auto (UID + 52809)
+    std::string omniLogDir;
+    bool disableAdminCreate = false;
     bool noMonitor = false;
     bool verbose = false;
     bool dryRun = false;
@@ -213,6 +220,30 @@ int main(int argc, char* argv[])
             continue;
         }
 
+        if (arg == "--omni-logdir" && i + 1 < argc)
+        {
+            omniLogDir = argv[++i];
+            continue;
+        }
+
+        if (arg == "--uniset-port" && i + 1 < argc)
+        {
+            std::string portArg = argv[++i];
+
+            if (portArg == "auto")
+                unisetPort = OmniNamesManager::calcPortFromUID();
+            else
+                unisetPort = std::stoi(portArg);
+
+            continue;
+        }
+
+        if (arg == "--disable-admin-create")
+        {
+            disableAdminCreate = true;
+            continue;
+        }
+
         if (arg == "--no-monitor")
         {
             noMonitor = true;
@@ -257,13 +288,32 @@ int main(int argc, char* argv[])
     signal(SIGINT, signal_handler);
     signal(SIGCHLD, SIG_IGN);  // Prevent zombie processes
 
-    // Set environment variable for child processes (NODE_NAME set after determining nodeName)
+    // Set environment variables for child processes (NODE_NAME set after determining nodeName)
     setenv("CONFFILE", confFile.c_str(), 0);  // Don't override if set
 
     try
     {
+        // Build argv for uniset_init with --uniset-port if specified
+        std::vector<std::string> initArgsStorage;
+        std::vector<char*> initArgv;
+
+        // Copy original argv
+        for (int i = 0; i < argc; i++)
+            initArgv.push_back(argv[i]);
+
+        // Add --uniset-port with calculated value if needed
+        std::string unisetPortStr;
+        if (unisetPort > 0)
+        {
+            unisetPortStr = std::to_string(unisetPort);
+            initArgsStorage.push_back("--uniset-port");
+            initArgsStorage.push_back(unisetPortStr);
+            initArgv.push_back(const_cast<char*>(initArgsStorage[0].c_str()));
+            initArgv.push_back(const_cast<char*>(initArgsStorage[1].c_str()));
+        }
+
         // Initialize UniSet configuration (required for CORBA checks)
-        auto conf = uniset_init(argc, argv, confFile);
+        auto conf = uniset_init(static_cast<int>(initArgv.size()), initArgv.data(), confFile);
 
         if (!conf)
         {
@@ -288,6 +338,36 @@ int main(int argc, char* argv[])
 
         // Set NODE_NAME environment variable for child processes
         setenv("NODE_NAME", nodeName.c_str(), 0);
+
+        // Start omniNames if needed (not localIOR mode and port specified)
+        std::unique_ptr<OmniNamesManager> omniManager;
+
+        if (!conf->isLocalIOR() && unisetPort > 0)
+        {
+            omniManager = std::make_unique<OmniNamesManager>();
+            omniManager->setPort(unisetPort);
+            omniManager->setConfFile(confFile);
+
+            if (!omniLogDir.empty())
+                omniManager->setLogDir(omniLogDir);
+
+            if (verbose)
+                omniManager->log()->addLevel(Debug::ANY);
+
+            cout << "Starting omniNames on port " << unisetPort << "..." << endl;
+
+            if (!omniManager->start(!disableAdminCreate))
+            {
+                cerr << "Failed to start omniNames" << endl;
+                return 1;
+            }
+
+            cout << "omniNames is ready" << endl;
+        }
+        else if (verbose)
+        {
+            cout << "localIOR mode or no port specified - omniNames not started" << endl;
+        }
 
         // Load launcher-specific configuration
         cout << "Loading configuration from " << confFile << endl;
@@ -321,6 +401,13 @@ int main(int argc, char* argv[])
 
             if (verbose)
                 cout << "Passthrough args: " << passthroughArgs << endl;
+        }
+
+        // Add --uniset-port to forwarded args for child processes
+        if (unisetPort > 0)
+        {
+            unknownArgs.push_back("--uniset-port");
+            unknownArgs.push_back(std::to_string(unisetPort));
         }
 
         if (!unknownArgs.empty())
@@ -470,6 +557,13 @@ int main(int argc, char* argv[])
 
         pm.stopMonitoring();
         pm.stopAll();
+
+        // Stop omniNames if we started it
+        if (omniManager && omniManager->wasStartedByUs())
+        {
+            cout << "Stopping omniNames..." << endl;
+            omniManager->stop(stopTimeout);
+        }
 
         cout << "Shutdown complete" << endl;
         return exitCode;

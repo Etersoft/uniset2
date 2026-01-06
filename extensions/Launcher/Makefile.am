@@ -12,7 +12,8 @@ libUniSet2Launcher_la_SOURCES = \
 	ProcessManager.cc \
 	ConfigLoader.cc \
 	LauncherHttpRegistry.cc \
-	ProcessTemplate.cc
+	ProcessTemplate.cc \
+	OmniNamesManager.cc
 
 libUniSet2Launcher_la_LIBADD = $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \

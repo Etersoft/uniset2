@@ -198,7 +198,8 @@ TEST_CASE("ProcessTemplate: template properties", "[template]")
 
     SECTION("Exchanges are in group 2 and need SharedMemory")
     {
-        const char* exchangeTypes[] = {
+        const char* exchangeTypes[] =
+        {
             "UNetExchange", "MBTCPMaster", "MBSlave",
             "OPCUAServer", "OPCUAExchange", "MQTTPublisher"
         };

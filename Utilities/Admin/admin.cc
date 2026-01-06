@@ -165,6 +165,10 @@ int main(int argc, char** argv)
         int optindex = 0;
         int opt = 0;
 
+        // Suppress getopt error messages for unknown options
+        // (they will be processed by uniset_init)
+        opterr = 0;
+
         while(1)
         {
             opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:j:t:d:", longopts, &optindex);
@@ -468,10 +472,8 @@ int main(int argc, char** argv)
 
                 case '?':
                 default:
-                {
-                    short_usage();
-                    return 1;
-                }
+                    // Unknown option - skip it, will be processed by uniset_init
+                    break;
             }
         }
 
