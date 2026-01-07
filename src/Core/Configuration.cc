@@ -48,14 +48,14 @@ static string getDefaultDir( const string& subdir = "uniset" )
     const char* tmpdir = getenv("TMPDIR");
 
     if( tmpdir && tmpdir[0] != '\0' )
-        return string(tmpdir) + "/" + subdir;
+        return string(tmpdir) + "/" + subdir + "/";
 
     const char* home = getenv("HOME");
 
     if( home && home[0] != '\0' )
-        return string(home) + "/tmp/" + subdir;
+        return string(home) + "/tmp/" + subdir + "/";
 
-    return "./" + subdir;
+    return "./" + subdir + "/";
 }
 // -------------------------------------------------------------------------
 static ostream& print_help( ostream& os, int width, const string& cmd,
