@@ -109,7 +109,8 @@ int main(int argc, char* argv[])
     std::string htmlTemplate;
     size_t healthInterval = 5000;
     size_t stopTimeout = 5000;
-    int unisetPort = OmniNamesManager::calcPortFromUID();  // default: auto (UID + 52809)
+    int unisetPort = 0;  // 0 means "not specified", will get from Configuration
+    bool unisetPortSpecified = false;
     std::string omniLogDir;
     bool disableAdminCreate = false;
     bool noMonitor = false;
@@ -229,12 +230,16 @@ int main(int argc, char* argv[])
         if (arg == "--uniset-port" && i + 1 < argc)
         {
             std::string portArg = argv[++i];
+            unisetPortSpecified = true;
 
-            if (portArg == "auto")
-                unisetPort = OmniNamesManager::calcPortFromUID();
-            else
+            // "auto" will be handled by Configuration::getORBPort()
+            // explicit port value is stored here, "auto" leaves unisetPort=0
+            if (portArg != "auto")
                 unisetPort = std::stoi(portArg);
 
+            // Add to unknownArgs to pass to uniset_init and child processes
+            unknownArgs.push_back("--uniset-port");
+            unknownArgs.push_back(portArg);
             continue;
         }
 
@@ -291,26 +296,23 @@ int main(int argc, char* argv[])
     // Set environment variables for child processes (NODE_NAME set after determining nodeName)
     setenv("CONFFILE", confFile.c_str(), 0);  // Don't override if set
 
+    // If --uniset-port not specified, use "auto" mode by default
+    if (!unisetPortSpecified)
+    {
+        unknownArgs.push_back("--uniset-port");
+        unknownArgs.push_back("auto");
+    }
+
     try
     {
-        // Build argv for uniset_init with --uniset-port if specified
-        std::vector<std::string> initArgsStorage;
+        // Build argv for uniset_init: original args + unknownArgs
         std::vector<char*> initArgv;
 
-        // Copy original argv
         for (int i = 0; i < argc; i++)
             initArgv.push_back(argv[i]);
 
-        // Add --uniset-port with calculated value if needed
-        std::string unisetPortStr;
-        if (unisetPort > 0)
-        {
-            unisetPortStr = std::to_string(unisetPort);
-            initArgsStorage.push_back("--uniset-port");
-            initArgsStorage.push_back(unisetPortStr);
-            initArgv.push_back(const_cast<char*>(initArgsStorage[0].c_str()));
-            initArgv.push_back(const_cast<char*>(initArgsStorage[1].c_str()));
-        }
+        for (auto& arg : unknownArgs)
+            initArgv.push_back(const_cast<char*>(arg.c_str()));
 
         // Initialize UniSet configuration (required for CORBA checks)
         auto conf = uniset_init(static_cast<int>(initArgv.size()), initArgv.data(), confFile);
@@ -320,6 +322,9 @@ int main(int argc, char* argv[])
             cerr << "Failed to initialize UniSet configuration" << endl;
             return 1;
         }
+
+        // Get port from Configuration (handles --uniset-port, UNISET_PORT env, "auto" mode)
+        unisetPort = conf->getORBPort();
 
         // Get localNode from config if not specified on command line
         if (nodeName.empty())
@@ -403,11 +408,14 @@ int main(int argc, char* argv[])
                 cout << "Passthrough args: " << passthroughArgs << endl;
         }
 
-        // Add --uniset-port to forwarded args for child processes
-        if (unisetPort > 0)
+        // Replace "auto" with computed port value in unknownArgs for child processes
+        for (size_t i = 0; i + 1 < unknownArgs.size(); i++)
         {
-            unknownArgs.push_back("--uniset-port");
-            unknownArgs.push_back(std::to_string(unisetPort));
+            if (unknownArgs[i] == "--uniset-port" && unknownArgs[i + 1] == "auto")
+            {
+                unknownArgs[i + 1] = std::to_string(unisetPort);
+                break;
+            }
         }
 
         if (!unknownArgs.empty())

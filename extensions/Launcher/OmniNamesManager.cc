@@ -209,6 +209,10 @@ namespace uniset
         args.push_back("-logdir");
         args.push_back(dir);
 
+        // Explicitly set ORB endpoint to override system config
+        args.push_back("-ORBendPoint");
+        args.push_back("giop:tcp::" + std::to_string(port_));
+
         // Start omniNames
         mylog->info() << "Starting omniNames on port " << port_
                       << " (logdir: " << dir << ")" << std::endl;
