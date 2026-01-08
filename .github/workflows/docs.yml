@@ -1,9 +1,9 @@
 name: Build & Deploy Doxygen docs
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+    branches:
+      - master
 
 # Keep deployments atomic and cancel older runs if a new commit arrives.
 concurrency:
