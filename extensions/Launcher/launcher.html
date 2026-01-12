@@ -67,12 +67,20 @@
 
         .node-name {
             font-family: Inter, sans-serif;
-            font-size: 0.85rem;
-            font-weight: 400;
-            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-green);
             letter-spacing: 0;
             text-transform: none;
             margin-left: 1rem;
+        }
+
+        .version {
+            font-family: Inter, sans-serif;
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-left: 0.5rem;
         }
 
         .header-controls {
@@ -205,6 +213,17 @@
             border-color: #e08520;
         }
 
+        .btn-info {
+            background: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover:not(:disabled) {
+            background: #138496;
+            border-color: #138496;
+        }
+
         /* Control mode indicator */
         .control-mode {
             display: flex;
@@ -293,6 +312,11 @@
 
         .process-name .name {
             font-weight: 500;
+            cursor: help;
+        }
+
+        .process-name .name[title]:hover {
+            text-decoration: underline dotted;
         }
 
         /* Badges */
@@ -338,9 +362,10 @@
             color: var(--accent-red);
         }
 
-        .state-starting, .state-stopping {
+        .state-starting, .state-stopping, .state-restarting {
             background: rgba(255, 152, 48, 0.15);
             color: var(--accent-orange);
+            animation: blink 0.8s ease-in-out infinite;
         }
 
         /* PID column */
@@ -361,6 +386,14 @@
         .actions {
             display: flex;
             gap: 0.35rem;
+        }
+
+        .actions-header {
+            white-space: nowrap;
+        }
+
+        .actions-header .btn {
+            margin-left: 0.5rem;
         }
 
         /* Auto-refresh checkbox */
@@ -493,7 +526,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>UNISET-LAUNCHER <span class="node-name">{{NODE_NAME}}</span></h1>
+            <h1>UNISET-LAUNCHER<span id="version" class="version"></span> <span id="node-name" class="node-name"></span></h1>
             <div class="header-controls">
                 <div id="status-indicator" class="status-indicator">
                     <span class="status-dot"></span>

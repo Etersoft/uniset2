@@ -9,6 +9,9 @@
 #include <catch.hpp>
 #include <thread>
 #include <chrono>
+#include <csignal>
+#include <cstdio>
+#include <map>
 #include "ProcessInfo.h"
 #include "ProcessManager.h"
 // -------------------------------------------------------------------------
@@ -524,6 +527,82 @@ TEST_CASE("ProcessManager: startProcess by name - wrong node", "[manager][nodefi
     REQUIRE(pm.startProcess("node2_proc") == false);
 }
 // -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: manual process not started by startAll", "[manager][manual]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"manual_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "manual_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"10"};
+    proc.group = "test";
+    proc.manual = true;  // Manual start only
+    pm.addProcess(proc);
+
+    // startAll should succeed
+    REQUIRE(pm.startAll() == true);
+
+    // Process should NOT have been started (manual=true)
+    auto info = pm.getProcessInfo("manual_proc");
+    REQUIRE(info.state == ProcessState::Stopped);
+    REQUIRE(info.pid == 0);
+
+    // allRunning should still return true (manual process is ignored when stopped)
+    REQUIRE(pm.allRunning() == true);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: manual process can be started via API", "[.integration][manual]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"manual_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "manual_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"60"};
+    proc.group = "test";
+    proc.manual = true;  // Manual start only
+    pm.addProcess(proc);
+
+    // startAll should succeed but not start manual process
+    REQUIRE(pm.startAll() == true);
+
+    auto info1 = pm.getProcessInfo("manual_proc");
+    REQUIRE(info1.state == ProcessState::Stopped);
+
+    // Manual start via API should work
+    REQUIRE(pm.startProcess("manual_proc") == true);
+
+    // Give some time for process to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto info2 = pm.getProcessInfo("manual_proc");
+    REQUIRE(info2.state == ProcessState::Running);
+    REQUIRE(info2.pid > 0);
+
+    // Now allRunning should check the running manual process
+    REQUIRE(pm.allRunning() == true);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
 TEST_CASE("ProcessManager: stopProcess and startProcess by name", "[.integration]")
 {
     ProcessManager pm;
@@ -560,6 +639,253 @@ TEST_CASE("ProcessManager: stopProcess and startProcess by name", "[.integration
     pm.stopAll();
 }
 // -------------------------------------------------------------------------
+// State during startup attempts tests
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: state is 'starting' during failed startup attempts", "[.integration][restart][state]")
+{
+    // This test verifies that process state is "starting" (not "running")
+    // during multiple failed startup attempts with readyCheck timeout
+
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"failing_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "failing_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"60"};  // Process that runs but readyCheck will fail
+    proc.group = "test";
+    proc.maxRestarts = 5;
+    proc.restartDelay_msec = 100;  // Short delay for test
+    proc.maxRestartDelay_msec = 200;
+    proc.critical = false;  // Don't stop launcher on failure
+
+    // Set up a TCP readyCheck that will always fail (no service on this port)
+    proc.readyCheck.type = ReadyCheckType::TCP;
+    proc.readyCheck.target = "localhost:59999";  // Unlikely to have a service here
+    proc.readyCheck.timeout_msec = 200;  // Short timeout
+    proc.readyCheck.pause_msec = 50;
+
+    pm.addProcess(proc);
+
+    // Track states during startup
+    std::vector<ProcessState> observedStates;
+    std::mutex statesMutex;
+
+    // Start in background thread to observe states
+    std::atomic<bool> stopObserving{false};
+    std::thread observer([&]()
+    {
+        while (!stopObserving)
+        {
+            auto state = pm.getProcessState("failing_proc");
+            {
+                std::lock_guard<std::mutex> lock(statesMutex);
+                observedStates.push_back(state);
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    });
+
+    // Start process (will fail readyCheck multiple times)
+    pm.startProcess("failing_proc");
+
+    // Wait for a few restart attempts
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    stopObserving = true;
+    observer.join();
+
+    // Stop the process
+    pm.stopAll();
+
+    // Analyze observed states
+    bool sawStarting = false;
+    bool sawRunningDuringStartup = false;
+    std::map<ProcessState, int> stateCounts;
+
+    {
+        std::lock_guard<std::mutex> lock(statesMutex);
+
+        for (auto state : observedStates)
+        {
+            stateCounts[state]++;
+
+            if (state == ProcessState::Starting)
+                sawStarting = true;
+
+            // If we see Running state, that's the bug - process should be Starting
+            // until readyCheck passes
+            if (state == ProcessState::Running)
+                sawRunningDuringStartup = true;
+        }
+    }
+
+    // Print observed states for debugging
+    UNSCOPED_INFO("Observed states during startup attempts:");
+
+    for (const auto& kv : stateCounts)
+    {
+        UNSCOPED_INFO("  " << to_string(kv.first) << ": " << kv.second << " times");
+    }
+
+    // The process should have been in Starting state during startup attempts
+    REQUIRE(sawStarting == true);
+
+    // The process should NOT have been in Running state (readyCheck always fails)
+    REQUIRE(sawRunningDuringStartup == false);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: restart after exhausted maxRestarts gives new attempts", "[.integration][restart][maxrestarts]")
+{
+    // Simulate process that fails to start (readyCheck always fails)
+    // 1. Start with maxRestarts=3 → fails 3 times → Failed
+    // 2. Manual restart via API
+    // 3. Should get 3 new attempts → Failed again
+
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(500);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"failing_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "failing_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"60"};
+    proc.group = "test";
+    proc.maxRestarts = 3;
+    proc.restartDelay_msec = 50;   // Short delays for test
+    proc.maxRestartDelay_msec = 100;
+    proc.critical = false;
+
+    // TCP readyCheck that always fails
+    proc.readyCheck.type = ReadyCheckType::TCP;
+    proc.readyCheck.target = "localhost:59999";
+    proc.readyCheck.timeout_msec = 100;
+    proc.readyCheck.pause_msec = 20;
+
+    pm.addProcess(proc);
+
+    // Track state changes
+    int startingCount1 = 0;
+
+    // Observer thread
+    std::atomic<bool> stopObserving{false};
+    std::mutex countMutex;
+
+    auto observerFunc = [&]()
+    {
+        ProcessState lastState = ProcessState::Stopped;
+
+        while (!stopObserving)
+        {
+            auto state = pm.getProcessState("failing_proc");
+
+            if (state != lastState)
+            {
+                std::lock_guard<std::mutex> lock(countMutex);
+
+                if (state == ProcessState::Starting)
+                    startingCount1++;
+
+                lastState = state;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    };
+
+    std::thread observer(observerFunc);
+
+    // === Phase 1: First start attempt ===
+    REQUIRE(pm.startProcess("failing_proc") == false);  // Should fail (readyCheck fails)
+
+    // Wait for state to settle
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    stopObserving = true;
+    observer.join();
+
+    // Should have seen Starting state multiple times (3 attempts)
+    {
+        std::lock_guard<std::mutex> lock(countMutex);
+        UNSCOPED_INFO("Phase 1 - Starting count: " << startingCount1);
+        REQUIRE(startingCount1 >= 1);  // At least 1 (may miss some due to timing)
+    }
+
+    // Process should be in Failed state
+    REQUIRE(pm.getProcessState("failing_proc") == ProcessState::Failed);
+
+    // restartCount should be 3 (maxRestarts attempts made)
+    auto info1 = pm.getProcessInfo("failing_proc");
+    UNSCOPED_INFO("Phase 1 - restartCount: " << info1.restartCount);
+    REQUIRE(info1.restartCount == 3);
+
+    // === Phase 2: Manual restart via API ===
+    int startingCount2 = 0;
+    stopObserving = false;
+
+    std::thread observer2([&]()
+    {
+        ProcessState lastState = ProcessState::Failed;
+
+        while (!stopObserving)
+        {
+            auto state = pm.getProcessState("failing_proc");
+
+            if (state != lastState)
+            {
+                std::lock_guard<std::mutex> lock(countMutex);
+
+                if (state == ProcessState::Starting || state == ProcessState::Restarting)
+                    startingCount2++;
+
+                lastState = state;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    });
+
+    // Restart should return false (because readyCheck will fail)
+    pm.restartProcess("failing_proc");
+
+    // Wait for state to settle
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    stopObserving = true;
+    observer2.join();
+
+    // Should have tried to start again
+    {
+        std::lock_guard<std::mutex> lock(countMutex);
+        UNSCOPED_INFO("Phase 2 - Starting/Restarting count: " << startingCount2);
+        REQUIRE(startingCount2 >= 1);  // Should have attempted restart
+    }
+
+    // Process should be in Failed state again
+    auto finalState = pm.getProcessState("failing_proc");
+    REQUIRE(finalState == ProcessState::Failed);
+
+    // restartCount should be 3 again (new round of 3 attempts after manual restart)
+    auto info2 = pm.getProcessInfo("failing_proc");
+    UNSCOPED_INFO("Phase 2 - restartCount: " << info2.restartCount);
+    REQUIRE(info2.restartCount == 3);  // 3 new attempts
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
 // Restart configuration tests
 // -------------------------------------------------------------------------
 TEST_CASE("ProcessInfo: restart defaults", "[process][restart]")
@@ -570,5 +896,77 @@ TEST_CASE("ProcessInfo: restart defaults", "[process][restart]")
     REQUIRE(proc.restartDelay_msec == 1000);  // 1 second initial delay
     REQUIRE(proc.maxRestartDelay_msec == 30000);  // 30 seconds max
     REQUIRE(proc.critical == true);  // critical processes are restarted by default
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: stopProcess kills child processes", "[.integration][processtree]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(2000);  // 2 seconds
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"parent_proc"};
+    pm.addGroup(group);
+
+    // Create a process that spawns children
+    // bash -c spawns a subshell, which runs sleep in background and foreground
+    ProcessInfo proc;
+    proc.name = "parent_proc";
+    proc.command = "/bin/bash";
+    proc.args = {"-c", "sleep 60 & sleep 60 & wait"};
+    proc.group = "test";
+    pm.addProcess(proc);
+
+    // Start
+    REQUIRE(pm.startAll() == true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));  // Let children spawn
+
+    // Get parent PID
+    auto info = pm.getProcessInfo("parent_proc");
+    pid_t parentPid = info.pid;
+    REQUIRE(parentPid > 0);
+    REQUIRE(pm.getProcessState("parent_proc") == ProcessState::Running);
+
+    // Find child processes (sleep commands)
+    std::vector<pid_t> childPids;
+    std::string cmd = "pgrep -P " + std::to_string(parentPid);
+    FILE* fp = popen(cmd.c_str(), "r");
+
+    if (fp)
+    {
+        char buf[64];
+
+        while (fgets(buf, sizeof(buf), fp))
+        {
+            pid_t childPid = std::stoi(buf);
+
+            if (childPid > 0)
+                childPids.push_back(childPid);
+        }
+
+        pclose(fp);
+    }
+
+    // Should have child processes
+    REQUIRE(childPids.size() >= 1);
+
+    // Stop the parent - should kill all children too
+    pm.stopAll();
+
+    // Give time for signals to propagate
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    // Check parent is stopped
+    REQUIRE(pm.getProcessState("parent_proc") == ProcessState::Stopped);
+
+    // Check all children are dead
+    for (pid_t childPid : childPids)
+    {
+        // kill(pid, 0) returns 0 if process exists, -1 if not
+        bool childAlive = (kill(childPid, 0) == 0);
+        REQUIRE(childAlive == false);
+    }
 }
 // -------------------------------------------------------------------------

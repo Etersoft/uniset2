@@ -5,6 +5,7 @@
     const CONTROL_SESSION_TIMEOUT = 5 * 60 * 1000;  // 5 minutes
     const HEARTBEAT_INTERVAL = 30 * 1000;  // 30 seconds
     const TIMER_UPDATE_INTERVAL = 1000;  // 1 second
+    const BULK_OPERATION_TIMEOUT = 30 * 1000;  // 30 seconds - timeout for bulk operation blocking
 
     let readToken = localStorage.getItem('launcher_read_token') || '';
     let controlToken = localStorage.getItem('launcher_control_token') || '';
@@ -13,6 +14,8 @@
     let timerInterval = null;
     let authMode = null;  // 'read' or 'control'
     let hasControl = false;
+    let bulkOperationInProgress = false;
+    let bulkOperationTimeoutId = null;
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
@@ -181,6 +184,16 @@
             errorDiv.style.display = 'none';
             renderProcesses(data);
 
+            // Update header info (version and node)
+            const versionEl = document.getElementById('version');
+            const nodeEl = document.getElementById('node-name');
+            if (data.version && versionEl) {
+                versionEl.textContent = 'v' + data.version;
+            }
+            if (data.node && nodeEl) {
+                nodeEl.textContent = data.node;
+            }
+
             // Update status indicator
             statusDot.className = 'status-dot';
             if (data.allRunning && !data.anyCriticalFailed) {
@@ -205,6 +218,9 @@
     function renderProcesses(data) {
         const contentDiv = document.getElementById('content');
 
+        // Check if bulk operation buttons should be disabled
+        const bulkButtonsDisabled = checkBulkOperationComplete(data.processes);
+
         let html = '<table class="process-table">';
         html += '<thead><tr>';
         html += '<th>Process</th>';
@@ -214,7 +230,10 @@
         html += '<th>Group</th>';
         html += '<th>Restarts</th>';
         if (hasControl) {
-            html += '<th>Actions</th>';
+            html += '<th class="actions-header">Actions ';
+            html += '<button class="btn btn-warning btn-sm" onclick="restartAll()" title="Restart all running processes"' + (bulkButtonsDisabled ? ' disabled' : '') + '>Restart</button> ';
+            html += '<button class="btn btn-info btn-sm" onclick="reloadAll()" title="Stop all, then start all (like on launch)"' + (bulkButtonsDisabled ? ' disabled' : '') + '>Reload</button>';
+            html += '</th>';
         }
         html += '</tr></thead>';
         html += '<tbody>';
@@ -222,10 +241,20 @@
         for (const proc of data.processes) {
             html += '<tr>';
 
-            // Name with badges
-            html += '<td><div class="process-name"><span class="name">' + escapeHtml(proc.name) + '</span>';
+            // Build command line for tooltip
+            let cmdLine = proc.command || '';
+            if (proc.args && proc.args.length > 0) {
+                cmdLine += ' ' + proc.args.join(' ');
+            }
+
+            // Name with badges and tooltip
+            html += '<td><div class="process-name">';
+            html += '<span class="name" title="' + escapeHtml(cmdLine) + '">' + escapeHtml(proc.name) + '</span>';
             if (proc.skip) {
                 html += '<span class="badge badge-muted">skip</span>';
+            }
+            if (proc.manual) {
+                html += '<span class="badge badge-blue">manual</span>';
             }
             if (proc.oneshot) {
                 html += '<span class="badge badge-purple">oneshot</span>';
@@ -251,8 +280,16 @@
             // Group
             html += '<td>' + escapeHtml(proc.group || '-') + '</td>';
 
-            // Restarts
-            html += '<td>' + proc.restartCount + '</td>';
+            // Restarts (format: current/max for limited restarts, just count for infinite)
+            let restartsStr;
+            if (proc.maxRestarts === -1) {
+                restartsStr = '-';  // restart disabled
+            } else if (proc.maxRestarts === 0) {
+                restartsStr = String(proc.restartCount);  // infinite restarts - just show count
+            } else {
+                restartsStr = proc.restartCount + '/' + proc.maxRestarts;  // limited restarts
+            }
+            html += '<td>' + restartsStr + '</td>';
 
             // Actions
             if (hasControl) {
@@ -291,9 +328,8 @@
                 return 'fail';
             case 'starting':
             case 'stopping':
-                return 'warn';
             case 'restarting':
-                return 'warn blink';
+                return 'warn blink';  // blink for all transitional states
             default:
                 return '';
         }
@@ -322,6 +358,40 @@
         const d = Math.floor(h / 24);
         const hh = h % 24;
         return d + 'd ' + hh + 'h';
+    }
+
+    // Bulk operation blocking functions
+    function startBulkOperation() {
+        bulkOperationInProgress = true;
+        // Clear any existing timeout
+        if (bulkOperationTimeoutId) {
+            clearTimeout(bulkOperationTimeoutId);
+        }
+        // Set timeout to auto-clear
+        bulkOperationTimeoutId = setTimeout(function() {
+            bulkOperationInProgress = false;
+            bulkOperationTimeoutId = null;
+            fetchStatus();  // Re-render to enable buttons
+        }, BULK_OPERATION_TIMEOUT);
+    }
+
+    function checkBulkOperationComplete(processes) {
+        // Check if any process is in transitional state
+        const hasTransitional = processes.some(function(p) {
+            const state = p.state.toLowerCase();
+            return state === 'starting' || state === 'stopping' || state === 'restarting';
+        });
+
+        // If no transitional states and bulk operation was in progress, clear it
+        if (!hasTransitional && bulkOperationInProgress) {
+            bulkOperationInProgress = false;
+            if (bulkOperationTimeoutId) {
+                clearTimeout(bulkOperationTimeoutId);
+                bulkOperationTimeoutId = null;
+            }
+        }
+
+        return bulkOperationInProgress || hasTransitional;
     }
 
     async function controlAction(action, name) {
@@ -503,6 +573,126 @@
 
     window.startProcess = function(name) {
         controlAction('start', name);
+    };
+
+    window.restartAll = function() {
+        showConfirm('Restart All', 'Restart all running processes?', 'btn-warning', async function() {
+            const errorDiv = document.getElementById('error');
+
+            if (!controlToken) {
+                errorDiv.textContent = 'Please take control first.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Update heartbeat on user action
+            updateHeartbeat();
+
+            // Start bulk operation blocking
+            startBulkOperation();
+
+            try {
+                const resp = await fetch(API_URL + '/api/v2/launcher/restart-all', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + controlToken
+                    }
+                });
+
+                const data = await resp.json();
+
+                if (resp.status === 401) {
+                    errorDiv.textContent = 'Control token invalid. Please re-authenticate.';
+                    errorDiv.style.display = 'block';
+                    releaseControl();
+                    return;
+                }
+
+                if (resp.status === 403) {
+                    errorDiv.textContent = 'Forbidden: ' + (data.message || 'Control operations disabled');
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!data.success) {
+                    errorDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+
+                // Refresh status immediately to show Restarting state, then poll for completion
+                fetchStatus();
+                setTimeout(fetchStatus, 1000);
+                setTimeout(fetchStatus, 3000);
+                setTimeout(fetchStatus, 6000);
+                setTimeout(fetchStatus, 10000);
+
+            } catch (e) {
+                errorDiv.textContent = 'Error: ' + e.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+    };
+
+    window.reloadAll = function() {
+        showConfirm('Reload All', 'Stop all and restart (like on program launch)?', 'btn-info', async function() {
+            const errorDiv = document.getElementById('error');
+
+            if (!controlToken) {
+                errorDiv.textContent = 'Please take control first.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Update heartbeat on user action
+            updateHeartbeat();
+
+            // Start bulk operation blocking
+            startBulkOperation();
+
+            try {
+                const resp = await fetch(API_URL + '/api/v2/launcher/reload-all', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + controlToken
+                    }
+                });
+
+                const data = await resp.json();
+
+                if (resp.status === 401) {
+                    errorDiv.textContent = 'Control token invalid. Please re-authenticate.';
+                    errorDiv.style.display = 'block';
+                    releaseControl();
+                    return;
+                }
+
+                if (resp.status === 403) {
+                    errorDiv.textContent = 'Forbidden: ' + (data.message || 'Control operations disabled');
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!data.success) {
+                    errorDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+
+                // Refresh status immediately to show Restarting state, then poll for completion
+                fetchStatus();
+                setTimeout(fetchStatus, 1000);
+                setTimeout(fetchStatus, 3000);
+                setTimeout(fetchStatus, 6000);
+                setTimeout(fetchStatus, 10000);
+
+            } catch (e) {
+                errorDiv.textContent = 'Error: ' + e.message;
+                errorDiv.style.display = 'block';
+            }
+        });
     };
 
     window.showControlAuth = showControlAuth;

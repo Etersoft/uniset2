@@ -30,6 +30,14 @@ namespace uniset
     /*!
      * Process Manager - manages process lifecycle.
      * Handles startup order, health monitoring, and automatic restarts.
+     *
+     * Process Tree Termination:
+     * When stopping a process, the manager terminates the entire process tree
+     * (the process and all its descendants). This ensures no orphaned child
+     * processes remain after stop. The termination algorithm:
+     * 1. Send SIGTERM to all processes in the tree (leaves to root)
+     * 2. Wait stopTimeout_msec_ for graceful shutdown
+     * 3. Send SIGKILL to any remaining processes
      */
     class ProcessManager
     {
@@ -55,6 +63,8 @@ namespace uniset
             // Lifecycle management
             bool startAll();
             void stopAll();
+            void restartAll();  //!< Restart all running processes
+            void reloadAll();   //!< Stop all, then start all (except skip, manual)
             bool restartProcess(const std::string& name);
             bool stopProcess(const std::string& name);
             bool startProcess(const std::string& name);
@@ -73,6 +83,9 @@ namespace uniset
             bool allRunning() const;
             bool anyCriticalFailed() const;
 
+            //! Get full arguments list for a process (commonArgs + args + forwardArgs)
+            std::vector<std::string> getFullArgs(const std::string& name) const;
+
             /*!
              * Print run list (dry-run mode).
              * Shows what will be launched, with what parameters, in what order.
@@ -90,12 +103,15 @@ namespace uniset
             std::shared_ptr<DebugStream> log();
 
         private:
-            bool startProcess(ProcessInfo& proc);
+            bool startProcessWithUnlock(ProcessInfo& proc, std::unique_lock<std::mutex>& lock);
+            bool startOneshotWithUnlock(ProcessInfo& proc, std::unique_lock<std::mutex>& lock);
             void stopProcess(ProcessInfo& proc);
-            bool waitForProcessReady(ProcessInfo& proc);
-            int waitForProcessExit(ProcessInfo& proc);
-            void handleProcessExit(ProcessInfo& proc, int exitCode);
+            void handleProcessExitByName(const std::string& name, int exitCode);
             void monitorLoop();
+
+            // Helper methods for process startup
+            std::vector<std::string> prepareProcessArgs(const ProcessInfo& proc);
+            bool launchDaemonProcess(ProcessInfo& proc);
 
             std::vector<std::string> resolveStartOrder();
             void expandEnvironment(std::vector<std::string>& args);
