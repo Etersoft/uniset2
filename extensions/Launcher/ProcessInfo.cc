@@ -95,6 +95,7 @@ namespace uniset
         restartCount = 0;
         lastExitCode = 0;
         lastError.clear();
+        healthFailCount = 0;
     }
     // -------------------------------------------------------------------------
 } // end of namespace uniset

@@ -115,6 +115,9 @@ namespace uniset
         if (lit.getProp("httpPort").length() > 0)
             config.httpPort = lit.getIntProp("httpPort");
 
+        // Default ready check for processes without explicit one
+        config.defaultReadyCheck = lit.getProp("defaultReadyCheck");
+
         // Common arguments prepended to all processes
         std::string commonArgsStr = lit.getProp("commonArgs");
 
@@ -263,6 +266,7 @@ namespace uniset
 
             if (readyCheckStr.empty() && !tmpl->readyCheck.empty())
             {
+                // Use template readyCheck
                 std::string expanded = ProcessTemplateRegistry::expandPattern(tmpl->readyCheck, proc.name);
                 proc.readyCheck = HealthChecker::parseReadyCheck(expanded);
                 proc.readyCheck.timeout_msec = tmpl->readyTimeout_msec;
@@ -271,7 +275,13 @@ namespace uniset
             }
             else if (!readyCheckStr.empty() && readyCheckStr != "none")
             {
+                // Use explicitly specified readyCheck
                 proc.readyCheck = HealthChecker::parseReadyCheck(readyCheckStr);
+            }
+            else if (readyCheckStr.empty() && !config.defaultReadyCheck.empty())
+            {
+                // Use global default readyCheck
+                proc.readyCheck = HealthChecker::parseReadyCheck(config.defaultReadyCheck);
             }
 
             // Apply timeout override if specified
@@ -283,6 +293,21 @@ namespace uniset
 
             if (it.getProp("checkTimeout").length() > 0)
                 proc.readyCheck.checkTimeout_msec = it.getIntProp("checkTimeout");
+
+            // Liveness check (watchdog): restart process if it stops responding
+            std::string healthCheckStr = it.getProp("healthCheck");
+
+            if (!healthCheckStr.empty() && healthCheckStr != "none")
+            {
+                proc.healthCheck = HealthChecker::parseReadyCheck(healthCheckStr);
+
+                // Use readyCheck timeouts as defaults for liveness
+                proc.healthCheck.checkTimeout_msec = proc.readyCheck.checkTimeout_msec;
+                proc.healthCheck.pause_msec = proc.readyCheck.pause_msec;
+            }
+
+            if (it.getProp("healthFailThreshold").length() > 0)
+                proc.healthFailThreshold = it.getIntProp("healthFailThreshold");
 
             // ignoreFail: if true, process failure won't stop launcher
             // Default: ignoreFail=false (process is critical)
@@ -331,11 +356,30 @@ namespace uniset
 
             if (!readyCheckStr.empty() && readyCheckStr != "none")
             {
+                // Use explicitly specified readyCheck
                 proc.readyCheck = HealthChecker::parseReadyCheck(readyCheckStr);
                 proc.readyCheck.timeout_msec = it.getPIntProp("readyTimeout", proc.readyCheck.timeout_msec);
                 proc.readyCheck.pause_msec = it.getPIntProp("checkPause", proc.readyCheck.pause_msec);
                 proc.readyCheck.checkTimeout_msec = it.getPIntProp("checkTimeout", proc.readyCheck.checkTimeout_msec);
             }
+            else if (readyCheckStr.empty() && !config.defaultReadyCheck.empty())
+            {
+                // Use global default readyCheck
+                proc.readyCheck = HealthChecker::parseReadyCheck(config.defaultReadyCheck);
+            }
+
+            // Liveness check (watchdog): restart process if it stops responding
+            std::string healthCheckStr = it.getProp("healthCheck");
+
+            if (!healthCheckStr.empty() && healthCheckStr != "none")
+            {
+                proc.healthCheck = HealthChecker::parseReadyCheck(healthCheckStr);
+                proc.healthCheck.checkTimeout_msec = it.getPIntProp("checkTimeout", proc.healthCheck.checkTimeout_msec);
+                proc.healthCheck.pause_msec = it.getPIntProp("checkPause", proc.healthCheck.pause_msec);
+            }
+
+            if (it.getProp("healthFailThreshold").length() > 0)
+                proc.healthFailThreshold = it.getIntProp("healthFailThreshold");
 
             // ignoreFail: if true, process failure won't stop launcher
             // Default: ignoreFail=false (process is critical)
@@ -393,6 +437,10 @@ namespace uniset
         // Skip flag
         proc.skip = it.getProp("skip") == "true" ||
                     it.getProp("skip") == "1";
+
+        // Manual flag (start only via REST API)
+        proc.manual = it.getProp("manual") == "true" ||
+                      it.getProp("manual") == "1";
 
         // Oneshot flag (process runs once and exits)
         proc.oneshot = it.getProp("oneshot") == "true" ||

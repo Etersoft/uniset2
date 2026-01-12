@@ -60,6 +60,7 @@ TEST_CASE("ProcessInfo: default values", "[processinfo]")
     REQUIRE(proc.group.empty());
     REQUIRE(proc.nodeFilter.empty());
     REQUIRE(proc.skip == false);
+    REQUIRE(proc.manual == false);
     REQUIRE(proc.critical == true);  // default is now true
     REQUIRE(proc.oneshot == false);
     REQUIRE(proc.maxRestarts == 0);  // 0 = infinite restarts, -1 = no restart

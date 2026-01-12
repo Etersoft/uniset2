@@ -60,6 +60,7 @@ static void print_help(const std::string& prog)
          << "  --stop-timeout MS    Graceful shutdown timeout in ms (default: 5000)\n"
          << "  --uniset-port PORT   UniSet/CORBA port (default: auto=UID+52809)\n"
          << "  --omni-logdir DIR    omniNames log directory (default: $TMPDIR/omniORB)\n"
+         << "  --default-ready-check TYPE  Default readyCheck for processes (none, tcp:PORT, etc.)\n"
          << "  --disable-admin-create  Don't run uniset2-admin --create after omniNames start\n"
          << "  --no-monitor         Don't monitor processes after startup\n"
          << "  --runlist, --dry-run Show what will be launched without starting\n"
@@ -112,6 +113,7 @@ int main(int argc, char* argv[])
     int unisetPort = 0;  // 0 means "not specified", will get from Configuration
     bool unisetPortSpecified = false;
     std::string omniLogDir;
+    std::string defaultReadyCheck;
     bool disableAdminCreate = false;
     bool noMonitor = false;
     bool verbose = false;
@@ -224,6 +226,12 @@ int main(int argc, char* argv[])
         if (arg == "--omni-logdir" && i + 1 < argc)
         {
             omniLogDir = argv[++i];
+            continue;
+        }
+
+        if (arg == "--default-ready-check" && i + 1 < argc)
+        {
+            defaultReadyCheck = argv[++i];
             continue;
         }
 
@@ -383,6 +391,9 @@ int main(int argc, char* argv[])
         // Override settings from command line
         if (httpPort > 0)
             config.httpPort = httpPort;
+
+        if (!defaultReadyCheck.empty())
+            config.defaultReadyCheck = defaultReadyCheck;
 
         config.healthCheckInterval_msec = healthInterval;
 
