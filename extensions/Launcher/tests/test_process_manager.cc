@@ -9,6 +9,8 @@
 #include <catch.hpp>
 #include <thread>
 #include <chrono>
+#include <csignal>
+#include <cstdio>
 #include "ProcessInfo.h"
 #include "ProcessManager.h"
 // -------------------------------------------------------------------------
@@ -570,5 +572,77 @@ TEST_CASE("ProcessInfo: restart defaults", "[process][restart]")
     REQUIRE(proc.restartDelay_msec == 1000);  // 1 second initial delay
     REQUIRE(proc.maxRestartDelay_msec == 30000);  // 30 seconds max
     REQUIRE(proc.critical == true);  // critical processes are restarted by default
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: stopProcess kills child processes", "[.integration][processtree]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(2000);  // 2 seconds
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"parent_proc"};
+    pm.addGroup(group);
+
+    // Create a process that spawns children
+    // bash -c spawns a subshell, which runs sleep in background and foreground
+    ProcessInfo proc;
+    proc.name = "parent_proc";
+    proc.command = "/bin/bash";
+    proc.args = {"-c", "sleep 60 & sleep 60 & wait"};
+    proc.group = "test";
+    pm.addProcess(proc);
+
+    // Start
+    REQUIRE(pm.startAll() == true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));  // Let children spawn
+
+    // Get parent PID
+    auto info = pm.getProcessInfo("parent_proc");
+    pid_t parentPid = info.pid;
+    REQUIRE(parentPid > 0);
+    REQUIRE(pm.getProcessState("parent_proc") == ProcessState::Running);
+
+    // Find child processes (sleep commands)
+    std::vector<pid_t> childPids;
+    std::string cmd = "pgrep -P " + std::to_string(parentPid);
+    FILE* fp = popen(cmd.c_str(), "r");
+
+    if (fp)
+    {
+        char buf[64];
+
+        while (fgets(buf, sizeof(buf), fp))
+        {
+            pid_t childPid = std::stoi(buf);
+
+            if (childPid > 0)
+                childPids.push_back(childPid);
+        }
+
+        pclose(fp);
+    }
+
+    // Should have child processes
+    REQUIRE(childPids.size() >= 1);
+
+    // Stop the parent - should kill all children too
+    pm.stopAll();
+
+    // Give time for signals to propagate
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    // Check parent is stopped
+    REQUIRE(pm.getProcessState("parent_proc") == ProcessState::Stopped);
+
+    // Check all children are dead
+    for (pid_t childPid : childPids)
+    {
+        // kill(pid, 0) returns 0 if process exists, -1 if not
+        bool childAlive = (kill(childPid, 0) == 0);
+        REQUIRE(childAlive == false);
+    }
 }
 // -------------------------------------------------------------------------

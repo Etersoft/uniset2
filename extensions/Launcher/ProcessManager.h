@@ -30,6 +30,14 @@ namespace uniset
     /*!
      * Process Manager - manages process lifecycle.
      * Handles startup order, health monitoring, and automatic restarts.
+     *
+     * Process Tree Termination:
+     * When stopping a process, the manager terminates the entire process tree
+     * (the process and all its descendants). This ensures no orphaned child
+     * processes remain after stop. The termination algorithm:
+     * 1. Send SIGTERM to all processes in the tree (leaves to root)
+     * 2. Wait stopTimeout_msec_ for graceful shutdown
+     * 3. Send SIGKILL to any remaining processes
      */
     class ProcessManager
     {

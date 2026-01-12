@@ -16,6 +16,10 @@
 #include "LauncherHttpRegistry.h"
 #include "Exceptions.h"
 #include "Configuration.h"
+
+#ifndef UNISET_DATADIR
+#define UNISET_DATADIR "/usr/share/uniset2/"
+#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -655,11 +659,18 @@ namespace uniset
     // -------------------------------------------------------------------------
     std::string LauncherHttpRegistry::findFile(const std::string& filename)
     {
-        // 1. Current directory
-        if (Poco::File(filename).exists())
-            return filename;
+        // If absolute or relative path specified, use as-is
+        if (!filename.empty() && (filename[0] == '/' || filename[0] == '.'))
+        {
+            if (Poco::File(filename).exists())
+                return filename;
 
-        // 2. Directory from uniset_conf()->getDataDir()
+            return "";
+        }
+
+        // Build search path: current dir, conf->getDataDir(), UNISET_DATADIR
+        std::vector<std::string> paths = { "./" };
+
         try
         {
             auto conf = uniset_conf();
@@ -669,25 +680,23 @@ namespace uniset
                 std::string dataDir = conf->getDataDir();
 
                 if (!dataDir.empty())
-                {
-                    std::string path = dataDir + "/" + filename;
-
-                    if (Poco::File(path).exists())
-                        return path;
-                }
+                    paths.push_back(dataDir + "/");
             }
         }
         catch (...) {}
 
-        // 3. Compiled-in UNISET_DATADIR
 #ifdef UNISET_DATADIR
-        {
-            std::string path = std::string(UNISET_DATADIR) + "/" + filename;
-
-            if (Poco::File(path).exists())
-                return path;
-        }
+        paths.push_back(std::string(UNISET_DATADIR) + "/");
 #endif
+
+        // Search in all paths
+        for (const auto& p : paths)
+        {
+            std::string fullPath = p + filename;
+
+            if (Poco::File(fullPath).exists())
+                return fullPath;
+        }
 
         return "";  // Not found
     }

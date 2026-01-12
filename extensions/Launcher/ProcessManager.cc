@@ -12,7 +12,10 @@
 #include <cerrno>
 #include <cstring>
 #include <regex>
+#include <fstream>
 #include <sys/wait.h>
+#include <signal.h>
+#include <dirent.h>
 #include <Poco/Pipe.h>
 #include <Poco/PipeStream.h>
 #include "ProcessManager.h"
@@ -20,6 +23,102 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
+    // -------------------------------------------------------------------------
+    // Find all child processes of a given PID by reading /proc
+    static std::vector<pid_t> getChildPids(pid_t parentPid)
+    {
+        std::vector<pid_t> children;
+        DIR* dir = opendir("/proc");
+
+        if (!dir)
+            return children;
+
+        struct dirent* entry;
+
+        while ((entry = readdir(dir)) != nullptr)
+        {
+            // Skip non-numeric entries
+            if (entry->d_type != DT_DIR)
+                continue;
+
+            char* endp;
+            long pid = strtol(entry->d_name, &endp, 10);
+
+            if (*endp != '\0' || pid <= 0)
+                continue;
+
+            // Read /proc/<pid>/stat to get ppid
+            std::string statPath = "/proc/" + std::string(entry->d_name) + "/stat";
+            std::ifstream statFile(statPath);
+
+            if (!statFile.is_open())
+                continue;
+
+            std::string line;
+
+            if (!std::getline(statFile, line))
+                continue;
+
+            // Format: pid (comm) state ppid ...
+            // Find the closing ) to skip command name (may contain spaces)
+            size_t pos = line.rfind(')');
+
+            if (pos == std::string::npos || pos + 2 >= line.size())
+                continue;
+
+            // Parse ppid (4th field, after "pid (comm) state")
+            std::istringstream iss(line.substr(pos + 2));
+            char state;
+            pid_t ppid;
+            iss >> state >> ppid;
+
+            if (ppid == parentPid)
+                children.push_back(static_cast<pid_t>(pid));
+        }
+
+        closedir(dir);
+        return children;
+    }
+    // -------------------------------------------------------------------------
+    // Collect all PIDs in process tree (parent + all descendants)
+    static void collectProcessTree(pid_t pid, std::vector<pid_t>& pids)
+    {
+        if (pid <= 0)
+            return;
+
+        pids.push_back(pid);
+
+        std::vector<pid_t> children = getChildPids(pid);
+
+        for (pid_t child : children)
+            collectProcessTree(child, pids);
+    }
+    // -------------------------------------------------------------------------
+    // Send signal to all processes in tree
+    static void signalProcessTree(pid_t pid, int sig)
+    {
+        std::vector<pid_t> pids;
+        collectProcessTree(pid, pids);
+
+        // Send signal to all (children first, then parent)
+        for (auto it = pids.rbegin(); it != pids.rend(); ++it)
+            ::kill(*it, sig);
+    }
+    // -------------------------------------------------------------------------
+    // Check if any process in tree is still alive
+    static bool isTreeAlive(pid_t pid)
+    {
+        std::vector<pid_t> pids;
+        collectProcessTree(pid, pids);
+
+        for (pid_t p : pids)
+        {
+            if (::kill(p, 0) == 0)  // Process exists
+                return true;
+        }
+
+        return false;
+    }
     // -------------------------------------------------------------------------
     ProcessManager::ProcessManager(std::shared_ptr<Configuration> conf)
         : conf_(conf)
@@ -464,12 +563,12 @@ namespace uniset
             }
         }
 
-        // Timeout - kill the process
+        // Timeout - kill the process and its children
         mylog->warn() << proc.name << " oneshot timeout, killing" << std::endl;
 
         try
         {
-            Poco::Process::kill(proc.pid);
+            signalProcessTree(proc.pid, SIGKILL);
             // Wait for process to be reaped
             waitpid(proc.pid, nullptr, 0);
         }
@@ -537,8 +636,8 @@ namespace uniset
         {
             try
             {
-                // Send SIGTERM
-                Poco::Process::requestTermination(proc.pid);
+                // Send SIGTERM to process and all its children
+                signalProcessTree(proc.pid, SIGTERM);
 
                 // Wait for graceful shutdown
                 const size_t checkInterval = 100;  // ms
@@ -546,18 +645,18 @@ namespace uniset
 
                 for (size_t i = 0; i < iterations; i++)
                 {
-                    if (!HealthChecker::isProcessAlive(proc.pid))
+                    if (!isTreeAlive(proc.pid))
                         break;
 
                     std::this_thread::sleep_for(std::chrono::milliseconds(checkInterval));
                 }
 
                 // Force kill if still running
-                if (HealthChecker::isProcessAlive(proc.pid))
+                if (isTreeAlive(proc.pid))
                 {
                     mylog->warn() << proc.name << " did not stop gracefully after "
                                   << stopTimeout_msec_ << "ms, sending SIGKILL" << std::endl;
-                    Poco::Process::kill(proc.pid);
+                    signalProcessTree(proc.pid, SIGKILL);
                 }
             }
             catch (const std::exception& e)
