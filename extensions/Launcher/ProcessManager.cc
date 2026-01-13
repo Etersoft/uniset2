@@ -7,6 +7,7 @@
  */
 // -------------------------------------------------------------------------
 #include <algorithm>
+#include <set>
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
@@ -244,6 +245,13 @@ namespace uniset
                 if (pit->second.skip)
                 {
                     mylog->info() << "Skipping " << procName << " (skip=1)" << std::endl;
+                    continue;
+                }
+
+                // Check manual flag (start only via REST API)
+                if (pit->second.manual)
+                {
+                    mylog->info() << "Skipping " << procName << " (manual=1, start via REST API)" << std::endl;
                     continue;
                 }
 
@@ -622,6 +630,122 @@ namespace uniset
         mylog->info() << "All processes stopped" << std::endl;
     }
     // -------------------------------------------------------------------------
+    void ProcessManager::restartAll()
+    {
+        mylog->info() << "Restarting all processes (respecting dependencies)..." << std::endl;
+
+        // Collect names of processes to restart (those that are running or should be running)
+        std::set<std::string> toRestart;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+
+            for (const auto& kv : processes_)
+            {
+                const auto& proc = kv.second;
+
+                // Skip processes that shouldn't be running
+                if (proc.skip)
+                    continue;
+
+                if (proc.manual && proc.state == ProcessState::Stopped)
+                    continue;  // Manual process not started yet
+
+                if (!proc.shouldRunOnNode(nodeName_))
+                    continue;
+
+                // Restart running or failed processes
+                if (proc.state == ProcessState::Running ||
+                        proc.state == ProcessState::Failed ||
+                        proc.state == ProcessState::Restarting)
+                {
+                    toRestart.insert(proc.name);
+                }
+            }
+        }
+
+        if (toRestart.empty())
+        {
+            mylog->info() << "No processes to restart" << std::endl;
+            return;
+        }
+
+        // Get group order for proper sequencing
+        std::vector<std::string> groupOrder;
+
+        try
+        {
+            groupOrder = depResolver_.resolve();
+        }
+        catch (...)
+        {
+            // If dependency resolution fails, just restart all without order
+            mylog->warn() << "Dependency resolution failed, restarting without order" << std::endl;
+
+            for (const auto& name : toRestart)
+            {
+                mylog->info() << "Restarting: " << name << std::endl;
+                restartProcess(name);
+            }
+
+            return;
+        }
+
+        // Phase 1: Stop all processes in REVERSE order
+        mylog->info() << "Phase 1: Stopping processes in reverse order..." << std::endl;
+        std::vector<std::string> reverseOrder(groupOrder.rbegin(), groupOrder.rend());
+
+        for (const auto& groupName : reverseOrder)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto git = groups_.find(groupName);
+
+            if (git == groups_.end())
+                continue;
+
+            for (const auto& procName : git->second.processes)
+            {
+                if (toRestart.count(procName) == 0)
+                    continue;
+
+                auto pit = processes_.find(procName);
+
+                if (pit != processes_.end())
+                {
+                    mylog->info() << "Stopping: " << procName << std::endl;
+                    stopProcess(pit->second);
+                }
+            }
+        }
+
+        // Phase 2: Start all processes in FORWARD order
+        mylog->info() << "Phase 2: Starting processes in forward order..." << std::endl;
+
+        for (const auto& groupName : groupOrder)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto git = groups_.find(groupName);
+
+            if (git == groups_.end())
+                continue;
+
+            for (const auto& procName : git->second.processes)
+            {
+                if (toRestart.count(procName) == 0)
+                    continue;
+
+                auto pit = processes_.find(procName);
+
+                if (pit != processes_.end())
+                {
+                    mylog->info() << "Starting: " << procName << std::endl;
+                    startProcess(pit->second);
+                }
+            }
+        }
+
+        mylog->info() << "Restart all completed" << std::endl;
+    }
+    // -------------------------------------------------------------------------
     void ProcessManager::stopProcess(ProcessInfo& proc)
     {
         if (proc.state == ProcessState::Stopped ||
@@ -978,6 +1102,10 @@ namespace uniset
             if (!kv.second.shouldRunOnNode(nodeName_))
                 continue;
 
+            // Manual processes are optional - only check if they were started
+            if (kv.second.manual && kv.second.state == ProcessState::Stopped)
+                continue;
+
             // Oneshot processes should be Completed, daemons should be Running
             if (kv.second.oneshot)
             {
@@ -1164,6 +1292,9 @@ namespace uniset
 
                 out << "  [" << processNum++ << "] " << proc.name;
 
+                if (proc.manual)
+                    out << " (manual)";
+
                 if (proc.oneshot)
                     out << " (oneshot)";
 
@@ -1213,6 +1344,9 @@ namespace uniset
 
                 if (!proc.critical)
                     out << "      ignoreFail: yes" << std::endl;
+
+                if (proc.manual)
+                    out << "      manual: yes (start via REST API)" << std::endl;
 
                 out << std::endl;
             }

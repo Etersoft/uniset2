@@ -51,6 +51,7 @@ uniset2-launcher --confile config.xml -- --custom-arg value
 | `--stop-timeout MS` | Таймаут graceful shutdown в мс (по умолчанию: 5000) |
 | `--uniset-port PORT` | UniSet/CORBA порт (default: auto=UID+52809) |
 | `--omni-logdir DIR` | Каталог логов omniNames (по умолчанию: $TMPDIR/omniORB) |
+| `--default-ready-check TYPE` | Проверка готовности по умолчанию (none, tcp:PORT, и т.д.) |
 | `--disable-admin-create` | Не вызывать uniset2-admin --create после запуска omniNames |
 | `--no-monitor` | Не мониторить процессы после запуска |
 | `--runlist`, `--dry-run` | Показать что будет запущено без реального запуска |
@@ -170,6 +171,7 @@ Launcher автоматически:
 | `maxRestarts` | Максимальное количество перезапусков (0 = бесконечно) | 0 |
 | `httpPort` | Порт HTTP API (0 = отключено) | 0 |
 | `commonArgs` | Общие аргументы, добавляемые ко всем процессам | "" |
+| `defaultReadyCheck` | Проверка готовности по умолчанию для процессов без явной | none |
 
 ### Общие аргументы
 
@@ -214,6 +216,7 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | `maxRestartDelay` | Максимальная задержка (экспоненциальный backoff) (мс) | 30000 |
 | `nodeFilter` | Запуск на определённых узлах | все |
 | `skip` | Пропустить этот процесс (не запускать) | false |
+| `manual` | Запуск только вручную через REST API | false |
 | `oneshot` | Процесс запускается один раз и завершается | false |
 | `oneshotTimeout` | Таймаут для oneshot процесса (мс) | 30000 |
 | `afterRun` | Shell-команда для запуска после старта процесса | "" |
@@ -265,6 +268,32 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 - Поэтапного развёртывания
 - Конфигураций для конкретных узлов без дублирования файлов конфигурации
 
+### Ручной запуск процессов (manual)
+
+Используйте `manual="1"` для процессов, которые не должны запускаться автоматически, но могут быть запущены через REST API или Web UI:
+
+```xml
+<process name="DiagTool" command="uniset2-diag" manual="1"/>
+<process name="DebugLogger" command="uniset2-logdb" manual="1" ignoreFail="true"/>
+```
+
+Процессы с `manual="1"`:
+- **Не запускаются** автоматически при старте launcher'а
+- **Не влияют** на статус `allRunning` пока не были запущены
+- Могут быть **запущены через REST API**: `POST /api/v2/launcher/process/{name}/start`
+- После запуска ведут себя как обычные процессы (перезапуск, мониторинг)
+- Отображаются в REST API с `"manual": true`
+- В режиме `--runlist` отмечаются как `(manual)`
+
+**Отличие от `skip`:**
+- `skip="1"` — процесс полностью игнорируется, нельзя запустить через API
+- `manual="1"` — процесс не запускается автоматически, но можно запустить через API
+
+Это полезно для:
+- Диагностических утилит (запускаются по необходимости)
+- Процессов для обслуживания системы
+- Дополнительных сервисов, которые не нужны постоянно
+
 ### Типы проверки готовности
 
 | Тип | Формат | Пример |
@@ -275,6 +304,37 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | File | `file:path` | `file:/var/run/service.pid` |
 
 Для отключения проверки готовности используйте `readyCheck="none"`.
+
+### Проверка готовности по умолчанию
+
+По умолчанию процессы без явного `readyCheck` и без шаблона не имеют проверки готовности.
+Можно задать проверку готовности по умолчанию на уровне Launcher:
+
+**В конфигурации:**
+```xml
+<Launcher name="Launcher1" defaultReadyCheck="tcp:localhost:8080">
+    <ProcessGroups>
+        <group name="services" order="1">
+            <!-- Эти процессы используют defaultReadyCheck -->
+            <process name="CustomService1" command="./service1"/>
+            <process name="CustomService2" command="./service2"/>
+            <!-- Этот процесс переопределяет проверку -->
+            <process name="CustomService3" command="./service3" readyCheck="http://localhost:9000/health"/>
+        </group>
+    </ProcessGroups>
+</Launcher>
+```
+
+**Через командную строку:**
+```bash
+uniset2-launcher --confile config.xml --default-ready-check "tcp:localhost:8080"
+```
+
+**Приоритет (от высшего к низшему):**
+1. Явный `readyCheck` атрибут процесса
+2. `readyCheck` из шаблона процесса (для известных типов)
+3. `defaultReadyCheck` из конфигурации Launcher
+4. Нет проверки (процесс считается готовым сразу)
 
 ### Автоматический перезапуск
 
@@ -528,6 +588,7 @@ uniset2-launcher --http-port 8080 --http-blacklist "192.168.1.100,172.16.0.10-17
       "group": "sharedmemory",
       "critical": true,
       "skip": false,
+      "manual": false,
       "restartCount": 0
     },
     {
@@ -537,6 +598,7 @@ uniset2-launcher --http-port 8080 --http-blacklist "192.168.1.100,172.16.0.10-17
       "group": "exchanges",
       "critical": false,
       "skip": true,
+      "manual": false,
       "restartCount": 0
     }
   ],
@@ -597,6 +659,23 @@ JavaScript-файл для веб-интерфейса.
   "success": true
 }
 ```
+
+### POST /api/v2/launcher/restart-all
+
+Перезапустить все работающие процессы. Требует `--control-token`.
+
+```json
+{
+  "success": true,
+  "message": "Restart all initiated"
+}
+```
+
+Перезапускаются только:
+- Процессы со статусом `running`, `failed`, `restarting`
+- Не пропущенные (`skip=false`)
+- Соответствующие текущему узлу (`nodeFilter`)
+- Manual-процессы только если были запущены
 
 ### GET /api/v2/launcher/health
 

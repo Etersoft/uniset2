@@ -526,6 +526,82 @@ TEST_CASE("ProcessManager: startProcess by name - wrong node", "[manager][nodefi
     REQUIRE(pm.startProcess("node2_proc") == false);
 }
 // -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: manual process not started by startAll", "[manager][manual]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"manual_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "manual_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"10"};
+    proc.group = "test";
+    proc.manual = true;  // Manual start only
+    pm.addProcess(proc);
+
+    // startAll should succeed
+    REQUIRE(pm.startAll() == true);
+
+    // Process should NOT have been started (manual=true)
+    auto info = pm.getProcessInfo("manual_proc");
+    REQUIRE(info.state == ProcessState::Stopped);
+    REQUIRE(info.pid == 0);
+
+    // allRunning should still return true (manual process is ignored when stopped)
+    REQUIRE(pm.allRunning() == true);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: manual process can be started via API", "[.integration][manual]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"manual_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "manual_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"60"};
+    proc.group = "test";
+    proc.manual = true;  // Manual start only
+    pm.addProcess(proc);
+
+    // startAll should succeed but not start manual process
+    REQUIRE(pm.startAll() == true);
+
+    auto info1 = pm.getProcessInfo("manual_proc");
+    REQUIRE(info1.state == ProcessState::Stopped);
+
+    // Manual start via API should work
+    REQUIRE(pm.startProcess("manual_proc") == true);
+
+    // Give some time for process to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto info2 = pm.getProcessInfo("manual_proc");
+    REQUIRE(info2.state == ProcessState::Running);
+    REQUIRE(info2.pid > 0);
+
+    // Now allRunning should check the running manual process
+    REQUIRE(pm.allRunning() == true);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
 TEST_CASE("ProcessManager: stopProcess and startProcess by name", "[.integration]")
 {
     ProcessManager pm;

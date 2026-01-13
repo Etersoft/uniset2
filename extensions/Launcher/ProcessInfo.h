@@ -85,6 +85,7 @@ namespace uniset
         std::set<std::string> nodeFilter;  // Which nodes to run on (empty = all)
         std::string group;                  // Process group name
         bool skip = false;                  // Skip this process (don't start)
+        bool manual = false;                // Manual start only (via REST API)
         bool oneshot = false;               // Oneshot process (exit 0 = success)
         size_t oneshotTimeout_msec = 30000; // Timeout for oneshot process
 

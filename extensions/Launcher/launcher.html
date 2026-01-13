@@ -293,6 +293,11 @@
 
         .process-name .name {
             font-weight: 500;
+            cursor: help;
+        }
+
+        .process-name .name[title]:hover {
+            text-decoration: underline dotted;
         }
 
         /* Badges */
@@ -504,6 +509,7 @@
                     <div id="control-mode" class="control-mode hidden">
                         <span>Control</span>
                         <span id="session-timer" class="session-timer"></span>
+                        <button class="btn btn-warning btn-sm" onclick="restartAll()" title="Restart all running processes">Restart All</button>
                         <button class="btn btn-sm" onclick="releaseControl()">Release</button>
                     </div>
                 </div>

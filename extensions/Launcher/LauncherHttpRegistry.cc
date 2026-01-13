@@ -80,6 +80,32 @@ namespace uniset
         if (cmd == "groups" && method == "GET")
             return handleGroups();
 
+        // /restart-all - restart all running processes
+        if (cmd == "restart-all" && method == "POST")
+        {
+            // Check if control is enabled
+            if (controlToken_.empty())
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "forbidden");
+                obj->set("message", "control operations disabled (--control-token not set)");
+                return obj;
+            }
+
+            // Check control authorization
+            if (!checkControlAuth(ctx.request))
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "unauthorized");
+                obj->set("message", "missing or invalid control token");
+                return obj;
+            }
+
+            return handleRestartAll();
+        }
+
         // /auth - validate control token
         if (cmd == "auth" && method == "GET")
         {
@@ -181,13 +207,21 @@ namespace uniset
         {
             Poco::JSON::Object obj;
             obj.set("name", proc.name);
+            obj.set("command", proc.command);
             obj.set("state", to_string(proc.state));
             obj.set("pid", proc.pid);
             obj.set("group", proc.group);
             obj.set("critical", proc.critical);
             obj.set("skip", proc.skip);
+            obj.set("manual", proc.manual);
             obj.set("oneshot", proc.oneshot);
             obj.set("restartCount", proc.restartCount);
+
+            // Arguments
+            Poco::JSON::Array args;
+            for (const auto& arg : proc.args)
+                args.add(arg);
+            obj.set("args", args);
 
             // Calculate uptime for running processes
             if (proc.state == ProcessState::Running || proc.state == ProcessState::Completed)
@@ -275,6 +309,17 @@ namespace uniset
 
         if (!ok)
             obj->set("error", "Failed to start process");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleRestartAll()
+    {
+        pm_.restartAll();
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("success", true);
+        obj->set("message", "Restart all initiated");
 
         return obj;
     }
@@ -444,6 +489,7 @@ namespace uniset
         obj->set("group", proc.group);
         obj->set("critical", proc.critical);
         obj->set("skip", proc.skip);
+        obj->set("manual", proc.manual);
         obj->set("oneshot", proc.oneshot);
         obj->set("maxRestarts", proc.maxRestarts);
         obj->set("restartCount", proc.restartCount);

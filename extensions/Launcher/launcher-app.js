@@ -222,10 +222,20 @@
         for (const proc of data.processes) {
             html += '<tr>';
 
-            // Name with badges
-            html += '<td><div class="process-name"><span class="name">' + escapeHtml(proc.name) + '</span>';
+            // Build command line for tooltip
+            let cmdLine = proc.command || '';
+            if (proc.args && proc.args.length > 0) {
+                cmdLine += ' ' + proc.args.join(' ');
+            }
+
+            // Name with badges and tooltip
+            html += '<td><div class="process-name">';
+            html += '<span class="name" title="' + escapeHtml(cmdLine) + '">' + escapeHtml(proc.name) + '</span>';
             if (proc.skip) {
                 html += '<span class="badge badge-muted">skip</span>';
+            }
+            if (proc.manual) {
+                html += '<span class="badge badge-blue">manual</span>';
             }
             if (proc.oneshot) {
                 html += '<span class="badge badge-purple">oneshot</span>';
@@ -503,6 +513,59 @@
 
     window.startProcess = function(name) {
         controlAction('start', name);
+    };
+
+    window.restartAll = function() {
+        showConfirm('Restart All', 'Restart all running processes?', 'btn-warning', async function() {
+            const errorDiv = document.getElementById('error');
+
+            if (!controlToken) {
+                errorDiv.textContent = 'Please take control first.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Update heartbeat on user action
+            updateHeartbeat();
+
+            try {
+                const resp = await fetch(API_URL + '/api/v2/launcher/restart-all', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + controlToken
+                    }
+                });
+
+                const data = await resp.json();
+
+                if (resp.status === 401) {
+                    errorDiv.textContent = 'Control token invalid. Please re-authenticate.';
+                    errorDiv.style.display = 'block';
+                    releaseControl();
+                    return;
+                }
+
+                if (resp.status === 403) {
+                    errorDiv.textContent = 'Forbidden: ' + (data.message || 'Control operations disabled');
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!data.success) {
+                    errorDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+
+                // Refresh status after action
+                setTimeout(fetchStatus, 500);
+
+            } catch (e) {
+                errorDiv.textContent = 'Error: ' + e.message;
+                errorDiv.style.display = 'block';
+            }
+        });
     };
 
     window.showControlAuth = showControlAuth;

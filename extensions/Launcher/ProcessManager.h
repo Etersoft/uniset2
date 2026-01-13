@@ -63,6 +63,7 @@ namespace uniset
             // Lifecycle management
             bool startAll();
             void stopAll();
+            void restartAll();  //!< Restart all running processes
             bool restartProcess(const std::string& name);
             bool stopProcess(const std::string& name);
             bool startProcess(const std::string& name);
