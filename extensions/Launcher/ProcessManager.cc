@@ -694,25 +694,43 @@ namespace uniset
         mylog->info() << "Phase 1: Stopping processes in reverse order..." << std::endl;
         std::vector<std::string> reverseOrder(groupOrder.rbegin(), groupOrder.rend());
 
-        for (const auto& groupName : reverseOrder)
+        // Build ordered list of processes to stop (collect under mutex, execute without)
+        std::vector<std::string> stopOrder;
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            auto git = groups_.find(groupName);
 
-            if (git == groups_.end())
-                continue;
-
-            for (const auto& procName : git->second.processes)
+            for (const auto& groupName : reverseOrder)
             {
-                if (toRestart.count(procName) == 0)
+                auto git = groups_.find(groupName);
+
+                if (git == groups_.end())
                     continue;
 
-                auto pit = processes_.find(procName);
-
-                if (pit != processes_.end())
+                for (const auto& procName : git->second.processes)
                 {
-                    mylog->info() << "Stopping: " << procName << std::endl;
+                    if (toRestart.count(procName) > 0)
+                        stopOrder.push_back(procName);
+                }
+            }
+        }
+
+        // Stop processes one by one (each with its own mutex lock)
+        for (const auto& procName : stopOrder)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto pit = processes_.find(procName);
+
+            if (pit != processes_.end())
+            {
+                mylog->info() << "Stopping: " << procName << std::endl;
+
+                try
+                {
                     stopProcess(pit->second);
+                }
+                catch (const std::exception& e)
+                {
+                    mylog->warn() << "Error stopping " << procName << ": " << e.what() << std::endl;
                 }
             }
         }
@@ -720,25 +738,44 @@ namespace uniset
         // Phase 2: Start all processes in FORWARD order
         mylog->info() << "Phase 2: Starting processes in forward order..." << std::endl;
 
-        for (const auto& groupName : groupOrder)
+        // Build ordered list of processes to start
+        std::vector<std::string> startOrder;
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            auto git = groups_.find(groupName);
 
-            if (git == groups_.end())
-                continue;
-
-            for (const auto& procName : git->second.processes)
+            for (const auto& groupName : groupOrder)
             {
-                if (toRestart.count(procName) == 0)
+                auto git = groups_.find(groupName);
+
+                if (git == groups_.end())
                     continue;
 
-                auto pit = processes_.find(procName);
-
-                if (pit != processes_.end())
+                for (const auto& procName : git->second.processes)
                 {
-                    mylog->info() << "Starting: " << procName << std::endl;
+                    if (toRestart.count(procName) > 0)
+                        startOrder.push_back(procName);
+                }
+            }
+        }
+
+        // Start processes one by one
+        for (const auto& procName : startOrder)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto pit = processes_.find(procName);
+
+            if (pit != processes_.end())
+            {
+                mylog->info() << "Starting: " << procName << std::endl;
+
+                try
+                {
+                    pit->second.reset();  // Reset state before starting
                     startProcess(pit->second);
+                }
+                catch (const std::exception& e)
+                {
+                    mylog->crit() << "Error starting " << procName << ": " << e.what() << std::endl;
                 }
             }
         }
