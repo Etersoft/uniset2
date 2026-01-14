@@ -283,7 +283,9 @@ namespace uniset
     {
         mylog->info() << "Starting process: " << proc.name << std::endl;
 
-        proc.state = ProcessState::Starting;
+        // Preserve Restarting state during restartAll/reloadAll for UI feedback
+        if (proc.state != ProcessState::Restarting)
+            proc.state = ProcessState::Starting;
         proc.lastStartTime = std::chrono::steady_clock::now();
 
         // Oneshot processes: run and wait for completion
@@ -587,43 +589,108 @@ namespace uniset
     // -------------------------------------------------------------------------
     void ProcessManager::stopAll()
     {
-        std::lock_guard<std::mutex> lock(mutex_);
-
         mylog->info() << "Stopping all processes..." << std::endl;
-        stopping_ = true;
 
-        // Get groups in reverse order
+        // Collect processes to stop (under mutex)
+        std::vector<std::pair<std::string, pid_t>> toStop;
         std::vector<std::string> groupOrder;
 
-        try
         {
-            groupOrder = depResolver_.resolveReverse();
-        }
-        catch (...)
-        {
-            // If dependency resolution fails, just stop all processes
-            for (auto& kv : processes_)
-                stopProcess(kv.second);
+            std::lock_guard<std::mutex> lock(mutex_);
+            stopping_ = true;
 
-            return;
-        }
-
-        // Stop each group in reverse order
-        for (const auto& groupName : groupOrder)
-        {
-            auto git = groups_.find(groupName);
-
-            if (git == groups_.end())
-                continue;
-
-            mylog->info() << "Stopping group: " << groupName << std::endl;
-
-            for (const auto& procName : git->second.processes)
+            try
             {
+                groupOrder = depResolver_.resolveReverse();
+            }
+            catch (...)
+            {
+                // If dependency resolution fails, collect all processes
+                for (auto& kv : processes_)
+                {
+                    if (kv.second.pid > 0)
+                        toStop.push_back({kv.first, kv.second.pid});
+                }
+
+                groupOrder.clear();
+            }
+
+            // Collect processes in group order
+            if (!groupOrder.empty())
+            {
+                for (const auto& groupName : groupOrder)
+                {
+                    auto git = groups_.find(groupName);
+
+                    if (git == groups_.end())
+                        continue;
+
+                    mylog->info() << "Stopping group: " << groupName << std::endl;
+
+                    for (const auto& procName : git->second.processes)
+                    {
+                        auto pit = processes_.find(procName);
+
+                        if (pit != processes_.end() && pit->second.pid > 0)
+                            toStop.push_back({procName, pit->second.pid});
+                    }
+                }
+            }
+        }
+
+        // Stop processes without holding mutex (allows status queries)
+        for (const auto& item : toStop)
+        {
+            const std::string& procName = item.first;
+            pid_t pid = item.second;
+
+            if (pid > 0 && HealthChecker::isProcessAlive(pid))
+            {
+                mylog->info() << "Stopping process: " << procName << " (PID " << pid << ")" << std::endl;
+
+                try
+                {
+                    signalProcessTree(pid, SIGTERM);
+
+                    const size_t checkInterval = 100;
+                    const size_t iterations = stopTimeout_msec_ / checkInterval;
+
+                    for (size_t i = 0; i < iterations; i++)
+                    {
+                        if (!isTreeAlive(pid))
+                            break;
+
+                        std::this_thread::sleep_for(std::chrono::milliseconds(checkInterval));
+                    }
+
+                    if (isTreeAlive(pid))
+                    {
+                        mylog->warn() << procName << " did not stop gracefully, sending SIGKILL" << std::endl;
+                        signalProcessTree(pid, SIGKILL);
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    mylog->warn() << "Error stopping " << procName << ": " << e.what() << std::endl;
+                }
+            }
+
+            // Update state under mutex
+            {
+                std::lock_guard<std::mutex> lock(mutex_);
                 auto pit = processes_.find(procName);
 
                 if (pit != processes_.end())
-                    stopProcess(pit->second);
+                {
+                    // Keep Restarting state for UI feedback during reloadAll
+                    if (pit->second.state != ProcessState::Restarting)
+                        pit->second.state = ProcessState::Stopped;
+
+                    pit->second.pid = 0;
+
+                    if (onStopped_)
+                        onStopped_(pit->second);
+                }
             }
         }
 
@@ -667,6 +734,19 @@ namespace uniset
         {
             mylog->info() << "No processes to restart" << std::endl;
             return;
+        }
+
+        // Set all processes to Restarting state for UI feedback (blinking)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+
+            for (const auto& name : toRestart)
+            {
+                auto it = processes_.find(name);
+
+                if (it != processes_.end())
+                    it->second.state = ProcessState::Restarting;
+            }
         }
 
         // Get group order for proper sequencing
@@ -714,23 +794,79 @@ namespace uniset
             }
         }
 
-        // Stop processes one by one (each with its own mutex lock)
+        // Stop processes one by one
+        // Note: we release mutex during the actual stop/wait to allow status queries
         for (const auto& procName : stopOrder)
         {
-            std::lock_guard<std::mutex> lock(mutex_);
-            auto pit = processes_.find(procName);
+            pid_t pidToStop = 0;
+            bool shouldStop = false;
 
-            if (pit != processes_.end())
+            // Phase 1: under mutex - get PID and set state
             {
-                mylog->info() << "Stopping: " << procName << std::endl;
+                std::lock_guard<std::mutex> lock(mutex_);
+                auto pit = processes_.find(procName);
 
+                if (pit != processes_.end())
+                {
+                    auto& proc = pit->second;
+
+                    if (proc.state != ProcessState::Stopped &&
+                            proc.state != ProcessState::Completed)
+                    {
+                        mylog->info() << "Stopping: " << procName << std::endl;
+                        pidToStop = proc.pid;
+                        shouldStop = true;
+                        // State should already be Restarting from earlier
+                    }
+                }
+            }
+
+            // Phase 2: without mutex - perform the actual stop/wait
+            if (shouldStop && pidToStop > 0)
+            {
                 try
                 {
-                    stopProcess(pit->second);
+                    if (HealthChecker::isProcessAlive(pidToStop))
+                    {
+                        signalProcessTree(pidToStop, SIGTERM);
+
+                        const size_t checkInterval = 100;
+                        const size_t iterations = stopTimeout_msec_ / checkInterval;
+
+                        for (size_t i = 0; i < iterations; i++)
+                        {
+                            if (!isTreeAlive(pidToStop))
+                                break;
+
+                            std::this_thread::sleep_for(std::chrono::milliseconds(checkInterval));
+                        }
+
+                        if (isTreeAlive(pidToStop))
+                        {
+                            mylog->warn() << procName << " did not stop gracefully, sending SIGKILL" << std::endl;
+                            signalProcessTree(pidToStop, SIGKILL);
+                        }
+                    }
                 }
                 catch (const std::exception& e)
                 {
                     mylog->warn() << "Error stopping " << procName << ": " << e.what() << std::endl;
+                }
+            }
+
+            // Phase 3: under mutex - update state
+            if (shouldStop)
+            {
+                std::lock_guard<std::mutex> lock(mutex_);
+                auto pit = processes_.find(procName);
+
+                if (pit != processes_.end())
+                {
+                    pit->second.pid = 0;
+                    // Keep Restarting state for UI feedback
+
+                    if (onStopped_)
+                        onStopped_(pit->second);
                 }
             }
         }
@@ -783,6 +919,43 @@ namespace uniset
         mylog->info() << "Restart all completed" << std::endl;
     }
     // -------------------------------------------------------------------------
+    void ProcessManager::reloadAll()
+    {
+        mylog->info() << "Reloading all processes (stop all, then start all)..." << std::endl;
+
+        // Set all running processes to Restarting state for UI feedback (blinking)
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+
+            for (auto& kv : processes_)
+            {
+                auto& proc = kv.second;
+
+                if (proc.state == ProcessState::Running ||
+                        proc.state == ProcessState::Failed)
+                {
+                    proc.state = ProcessState::Restarting;
+                }
+            }
+        }
+
+        // Stop all running processes
+        stopAll();
+
+        // Reset all processes before starting
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+
+            for (auto& kv : processes_)
+                kv.second.reset();
+        }
+
+        // Start all processes (except skip and manual)
+        startAll();
+
+        mylog->info() << "Reload all completed" << std::endl;
+    }
+    // -------------------------------------------------------------------------
     void ProcessManager::stopProcess(ProcessInfo& proc)
     {
         if (proc.state == ProcessState::Stopped ||
@@ -791,7 +964,9 @@ namespace uniset
 
         mylog->info() << "Stopping process: " << proc.name << " (PID " << proc.pid << ")" << std::endl;
 
-        proc.state = ProcessState::Stopping;
+        // Preserve Restarting state during restartAll/reloadAll for UI feedback
+        if (proc.state != ProcessState::Restarting)
+            proc.state = ProcessState::Stopping;
 
         if (proc.pid > 0 && HealthChecker::isProcessAlive(proc.pid))
         {
@@ -826,7 +1001,10 @@ namespace uniset
             }
         }
 
-        proc.state = ProcessState::Stopped;
+        // Keep Restarting state for UI feedback during restartAll/reloadAll
+        if (proc.state != ProcessState::Restarting)
+            proc.state = ProcessState::Stopped;
+
         proc.pid = 0;
 
         if (onStopped_)
@@ -1170,6 +1348,46 @@ namespace uniset
         }
 
         return false;
+    }
+    // -------------------------------------------------------------------------
+    std::vector<std::string> ProcessManager::getFullArgs(const std::string& name) const
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        auto it = processes_.find(name);
+
+        if (it == processes_.end())
+            return {};
+
+        const auto& proc = it->second;
+        std::vector<std::string> args;
+
+        // If rawArgs is set, use only rawArgs (no commonArgs)
+        if (!proc.rawArgs.empty())
+        {
+            args = proc.rawArgs;
+        }
+        else
+        {
+            // Use commonArgs + args
+            args.reserve(commonArgs_.size() + proc.args.size());
+
+            for (const auto& arg : commonArgs_)
+                args.push_back(arg);
+
+            for (const auto& arg : proc.args)
+                args.push_back(arg);
+        }
+
+        // Add forwarded args
+        for (const auto& arg : forwardArgs_)
+            args.push_back(arg);
+
+        // Add passthrough args
+        if (!passthroughArgs_.empty())
+            args.push_back(passthroughArgs_);
+
+        return args;
     }
     // -------------------------------------------------------------------------
     void ProcessManager::setOnProcessStarted(ProcessCallback cb)

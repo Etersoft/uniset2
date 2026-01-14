@@ -64,6 +64,7 @@ namespace uniset
             bool startAll();
             void stopAll();
             void restartAll();  //!< Restart all running processes
+            void reloadAll();   //!< Stop all, then start all (except skip, manual)
             bool restartProcess(const std::string& name);
             bool stopProcess(const std::string& name);
             bool startProcess(const std::string& name);
@@ -81,6 +82,9 @@ namespace uniset
 
             bool allRunning() const;
             bool anyCriticalFailed() const;
+
+            //! Get full arguments list for a process (commonArgs + args + forwardArgs)
+            std::vector<std::string> getFullArgs(const std::string& name) const;
 
             /*!
              * Print run list (dry-run mode).

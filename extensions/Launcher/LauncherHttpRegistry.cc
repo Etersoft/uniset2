@@ -10,6 +10,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <fstream>
+#include <thread>
 #include <Poco/JSON/Array.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/File.h>
@@ -106,6 +107,32 @@ namespace uniset
             return handleRestartAll();
         }
 
+        // /reload-all - stop all, then start all (except skip, manual)
+        if (cmd == "reload-all" && method == "POST")
+        {
+            // Check if control is enabled
+            if (controlToken_.empty())
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "forbidden");
+                obj->set("message", "control operations disabled (--control-token not set)");
+                return obj;
+            }
+
+            // Check control authorization
+            if (!checkControlAuth(ctx.request))
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "unauthorized");
+                obj->set("message", "missing or invalid control token");
+                return obj;
+            }
+
+            return handleReloadAll();
+        }
+
         // /auth - validate control token
         if (cmd == "auth" && method == "GET")
         {
@@ -199,6 +226,11 @@ namespace uniset
     {
         auto root = new Poco::JSON::Object();
         root->set("node", pm_.getNodeName());
+#ifdef PACKAGE_VERSION
+        root->set("version", PACKAGE_VERSION);
+#else
+        root->set("version", "unknown");
+#endif
 
         Poco::JSON::Array processes;
         auto allProcs = pm_.getAllProcesses();
@@ -216,10 +248,11 @@ namespace uniset
             obj.set("manual", proc.manual);
             obj.set("oneshot", proc.oneshot);
             obj.set("restartCount", proc.restartCount);
+            obj.set("maxRestarts", proc.maxRestarts);
 
-            // Arguments
+            // Full arguments (commonArgs + args + forwardArgs)
             Poco::JSON::Array args;
-            for (const auto& arg : proc.args)
+            for (const auto& arg : pm_.getFullArgs(proc.name))
                 args.add(arg);
             obj.set("args", args);
 
@@ -315,11 +348,32 @@ namespace uniset
     // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr LauncherHttpRegistry::handleRestartAll()
     {
-        pm_.restartAll();
+        // Run restartAll asynchronously so HTTP response returns immediately
+        // This allows client to poll for "restarting" state during the operation
+        std::thread([this]()
+        {
+            pm_.restartAll();
+        }).detach();
 
         auto obj = new Poco::JSON::Object();
         obj->set("success", true);
         obj->set("message", "Restart all initiated");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleReloadAll()
+    {
+        // Run reloadAll asynchronously so HTTP response returns immediately
+        // This allows client to poll for "restarting" state during the operation
+        std::thread([this]()
+        {
+            pm_.reloadAll();
+        }).detach();
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("success", true);
+        obj->set("message", "Reload all initiated");
 
         return obj;
     }

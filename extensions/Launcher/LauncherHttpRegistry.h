@@ -66,6 +66,7 @@ namespace uniset
             Poco::JSON::Object::Ptr handleStop(const std::string& name);
             Poco::JSON::Object::Ptr handleStart(const std::string& name);
             Poco::JSON::Object::Ptr handleRestartAll();
+            Poco::JSON::Object::Ptr handleReloadAll();
             Poco::JSON::Object::Ptr handleHealth();
             Poco::JSON::Object::Ptr handleGroups();
             Poco::JSON::Object::Ptr handleHelp();
