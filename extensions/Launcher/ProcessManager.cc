@@ -1166,25 +1166,16 @@ namespace uniset
         // - maxRestarts=-1: no restart (explicit disable)
         // - maxRestarts=0: infinite restarts (default)
         // - maxRestarts>0: limited restarts
-        // - ignoreFail=true (critical=false): no restart
+        // - ignoreFail=true (critical=false): restart up to maxRestarts, then don't stop launcher
         if (!stopping_)
         {
-            // Check if restart is disabled
-            bool noRestart = (proc.maxRestarts < 0) || !proc.critical;
-
-            if (noRestart)
+            // Check if restart is explicitly disabled
+            if (proc.maxRestarts < 0)
             {
-                if (proc.maxRestarts < 0)
-                {
-                    mylog->info() << proc.name << " restart disabled (maxRestarts=-1)" << std::endl;
-                }
-                else
-                {
-                    mylog->info() << proc.name << " restart disabled (ignoreFail=true)" << std::endl;
-                }
+                mylog->info() << proc.name << " restart disabled (maxRestarts=-1)" << std::endl;
 
                 // Critical process with disabled restart - stop everything
-                if (proc.critical && proc.maxRestarts < 0)
+                if (proc.critical)
                 {
                     mylog->crit() << "Critical process " << proc.name
                                   << " failed, initiating shutdown" << std::endl;
