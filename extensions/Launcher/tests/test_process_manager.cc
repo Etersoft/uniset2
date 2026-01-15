@@ -9,6 +9,8 @@
 #include <catch.hpp>
 #include <thread>
 #include <chrono>
+#include <csignal>
+#include <cstdio>
 #include "ProcessInfo.h"
 #include "ProcessManager.h"
 // -------------------------------------------------------------------------
@@ -524,6 +526,82 @@ TEST_CASE("ProcessManager: startProcess by name - wrong node", "[manager][nodefi
     REQUIRE(pm.startProcess("node2_proc") == false);
 }
 // -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: manual process not started by startAll", "[manager][manual]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"manual_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "manual_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"10"};
+    proc.group = "test";
+    proc.manual = true;  // Manual start only
+    pm.addProcess(proc);
+
+    // startAll should succeed
+    REQUIRE(pm.startAll() == true);
+
+    // Process should NOT have been started (manual=true)
+    auto info = pm.getProcessInfo("manual_proc");
+    REQUIRE(info.state == ProcessState::Stopped);
+    REQUIRE(info.pid == 0);
+
+    // allRunning should still return true (manual process is ignored when stopped)
+    REQUIRE(pm.allRunning() == true);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: manual process can be started via API", "[.integration][manual]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(1000);
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"manual_proc"};
+    pm.addGroup(group);
+
+    ProcessInfo proc;
+    proc.name = "manual_proc";
+    proc.command = "/bin/sleep";
+    proc.args = {"60"};
+    proc.group = "test";
+    proc.manual = true;  // Manual start only
+    pm.addProcess(proc);
+
+    // startAll should succeed but not start manual process
+    REQUIRE(pm.startAll() == true);
+
+    auto info1 = pm.getProcessInfo("manual_proc");
+    REQUIRE(info1.state == ProcessState::Stopped);
+
+    // Manual start via API should work
+    REQUIRE(pm.startProcess("manual_proc") == true);
+
+    // Give some time for process to start
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    auto info2 = pm.getProcessInfo("manual_proc");
+    REQUIRE(info2.state == ProcessState::Running);
+    REQUIRE(info2.pid > 0);
+
+    // Now allRunning should check the running manual process
+    REQUIRE(pm.allRunning() == true);
+
+    pm.stopAll();
+}
+// -------------------------------------------------------------------------
 TEST_CASE("ProcessManager: stopProcess and startProcess by name", "[.integration]")
 {
     ProcessManager pm;
@@ -570,5 +648,77 @@ TEST_CASE("ProcessInfo: restart defaults", "[process][restart]")
     REQUIRE(proc.restartDelay_msec == 1000);  // 1 second initial delay
     REQUIRE(proc.maxRestartDelay_msec == 30000);  // 30 seconds max
     REQUIRE(proc.critical == true);  // critical processes are restarted by default
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessManager: stopProcess kills child processes", "[.integration][processtree]")
+{
+    ProcessManager pm;
+    pm.setNodeName("Node1");
+    pm.setStopTimeout(2000);  // 2 seconds
+
+    ProcessGroup group;
+    group.name = "test";
+    group.order = 0;
+    group.processes = {"parent_proc"};
+    pm.addGroup(group);
+
+    // Create a process that spawns children
+    // bash -c spawns a subshell, which runs sleep in background and foreground
+    ProcessInfo proc;
+    proc.name = "parent_proc";
+    proc.command = "/bin/bash";
+    proc.args = {"-c", "sleep 60 & sleep 60 & wait"};
+    proc.group = "test";
+    pm.addProcess(proc);
+
+    // Start
+    REQUIRE(pm.startAll() == true);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));  // Let children spawn
+
+    // Get parent PID
+    auto info = pm.getProcessInfo("parent_proc");
+    pid_t parentPid = info.pid;
+    REQUIRE(parentPid > 0);
+    REQUIRE(pm.getProcessState("parent_proc") == ProcessState::Running);
+
+    // Find child processes (sleep commands)
+    std::vector<pid_t> childPids;
+    std::string cmd = "pgrep -P " + std::to_string(parentPid);
+    FILE* fp = popen(cmd.c_str(), "r");
+
+    if (fp)
+    {
+        char buf[64];
+
+        while (fgets(buf, sizeof(buf), fp))
+        {
+            pid_t childPid = std::stoi(buf);
+
+            if (childPid > 0)
+                childPids.push_back(childPid);
+        }
+
+        pclose(fp);
+    }
+
+    // Should have child processes
+    REQUIRE(childPids.size() >= 1);
+
+    // Stop the parent - should kill all children too
+    pm.stopAll();
+
+    // Give time for signals to propagate
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    // Check parent is stopped
+    REQUIRE(pm.getProcessState("parent_proc") == ProcessState::Stopped);
+
+    // Check all children are dead
+    for (pid_t childPid : childPids)
+    {
+        // kill(pid, 0) returns 0 if process exists, -1 if not
+        bool childAlive = (kill(childPid, 0) == 0);
+        REQUIRE(childAlive == false);
+    }
 }
 // -------------------------------------------------------------------------

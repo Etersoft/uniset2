@@ -30,6 +30,14 @@ namespace uniset
     /*!
      * Process Manager - manages process lifecycle.
      * Handles startup order, health monitoring, and automatic restarts.
+     *
+     * Process Tree Termination:
+     * When stopping a process, the manager terminates the entire process tree
+     * (the process and all its descendants). This ensures no orphaned child
+     * processes remain after stop. The termination algorithm:
+     * 1. Send SIGTERM to all processes in the tree (leaves to root)
+     * 2. Wait stopTimeout_msec_ for graceful shutdown
+     * 3. Send SIGKILL to any remaining processes
      */
     class ProcessManager
     {
@@ -55,6 +63,8 @@ namespace uniset
             // Lifecycle management
             bool startAll();
             void stopAll();
+            void restartAll();  //!< Restart all running processes
+            void reloadAll();   //!< Stop all, then start all (except skip, manual)
             bool restartProcess(const std::string& name);
             bool stopProcess(const std::string& name);
             bool startProcess(const std::string& name);
@@ -72,6 +82,9 @@ namespace uniset
 
             bool allRunning() const;
             bool anyCriticalFailed() const;
+
+            //! Get full arguments list for a process (commonArgs + args + forwardArgs)
+            std::vector<std::string> getFullArgs(const std::string& name) const;
 
             /*!
              * Print run list (dry-run mode).

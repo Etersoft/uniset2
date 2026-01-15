@@ -77,7 +77,7 @@ namespace uniset
 
         // Command to run after process is ready (e.g. "uniset2-admin --create")
         std::string afterRun;
-        bool critical = true;           // If fails, try restart (default: true). If false (ignoreFail=true), no restart
+        bool critical = true;           // If true and exhausted maxRestarts - stop launcher. If false (ignoreFail=true) - just leave Failed
         int maxRestarts = 0;            // -1 = no restart, 0 = infinite restarts, >0 = limited
         size_t restartDelay_msec = 1000;      // Initial delay before restart
         size_t maxRestartDelay_msec = 30000;  // Max delay (exponential backoff cap)
@@ -85,6 +85,7 @@ namespace uniset
         std::set<std::string> nodeFilter;  // Which nodes to run on (empty = all)
         std::string group;                  // Process group name
         bool skip = false;                  // Skip this process (don't start)
+        bool manual = false;                // Manual start only (via REST API)
         bool oneshot = false;               // Oneshot process (exit 0 = success)
         size_t oneshotTimeout_msec = 30000; // Timeout for oneshot process
 

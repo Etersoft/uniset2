@@ -54,6 +54,7 @@ namespace uniset
                 int httpPort = 0;  // 0 = disabled
 
                 std::vector<std::string> commonArgs;  // Common args prepended to all processes
+                std::string defaultReadyCheck;        // Default ready check for processes without explicit one
 
                 std::vector<ProcessGroup> groups;
                 std::map<std::string, ProcessInfo> processes;

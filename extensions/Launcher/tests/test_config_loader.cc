@@ -257,6 +257,31 @@ TEST_CASE("ConfigLoader: skip attribute", "[config]")
     REQUIRE(config.processes["proc3"].skip == false);
 }
 // -------------------------------------------------------------------------
+TEST_CASE("ConfigLoader: manual attribute", "[config]")
+{
+    const char* configWithManual = R"(<?xml version="1.0"?>
+<Config>
+  <Launcher name="Test">
+    <ProcessGroups>
+      <group name="test" order="0">
+        <process name="proc1" command="/bin/true" manual="1"/>
+        <process name="proc2" command="/bin/true" manual="true"/>
+        <process name="proc3" command="/bin/true"/>
+      </group>
+    </ProcessGroups>
+  </Launcher>
+</Config>
+)";
+    TempConfigFile cfg(configWithManual);
+
+    ConfigLoader loader;
+    auto config = loader.load(cfg.path(), "Test");
+
+    REQUIRE(config.processes["proc1"].manual == true);
+    REQUIRE(config.processes["proc2"].manual == true);
+    REQUIRE(config.processes["proc3"].manual == false);
+}
+// -------------------------------------------------------------------------
 TEST_CASE("HealthChecker: parseReadyCheck empty", "[healthcheck]")
 {
     auto check = HealthChecker::parseReadyCheck("");
@@ -342,5 +367,60 @@ TEST_CASE("ConfigLoader: commonArgs empty by default", "[config]")
     auto config = loader.load(cfg.path(), "Test");
 
     REQUIRE(config.commonArgs.empty());
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ConfigLoader: defaultReadyCheck attribute", "[config]")
+{
+    const char* configWithDefault = R"(<?xml version="1.0"?>
+<Config>
+  <Launcher name="Test" defaultReadyCheck="tcp:8080">
+    <ProcessGroups>
+      <group name="test" order="0">
+        <process name="proc1" command="/bin/true"/>
+        <process name="proc2" command="/bin/true" readyCheck="tcp:9090"/>
+        <process name="proc3" command="/bin/true" readyCheck="none"/>
+      </group>
+    </ProcessGroups>
+  </Launcher>
+</Config>
+)";
+    TempConfigFile cfg(configWithDefault);
+
+    ConfigLoader loader;
+    auto config = loader.load(cfg.path(), "Test");
+
+    // Process without explicit readyCheck should use defaultReadyCheck
+    REQUIRE(config.processes["proc1"].readyCheck.type == ReadyCheckType::TCP);
+    REQUIRE(config.processes["proc1"].readyCheck.target == "localhost:8080");
+
+    // Process with explicit readyCheck should use its own
+    REQUIRE(config.processes["proc2"].readyCheck.type == ReadyCheckType::TCP);
+    REQUIRE(config.processes["proc2"].readyCheck.target == "localhost:9090");
+
+    // Process with readyCheck="none" should have no check
+    REQUIRE(config.processes["proc3"].readyCheck.type == ReadyCheckType::None);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ConfigLoader: defaultReadyCheck empty by default", "[config]")
+{
+    const char* configNoDefault = R"(<?xml version="1.0"?>
+<Config>
+  <Launcher name="Test">
+    <ProcessGroups>
+      <group name="test" order="0">
+        <process name="proc1" command="/bin/true"/>
+      </group>
+    </ProcessGroups>
+  </Launcher>
+</Config>
+)";
+    TempConfigFile cfg(configNoDefault);
+
+    ConfigLoader loader;
+    auto config = loader.load(cfg.path(), "Test");
+
+    // Process without explicit readyCheck and no defaultReadyCheck should have no check
+    REQUIRE(config.defaultReadyCheck.empty());
+    REQUIRE(config.processes["proc1"].readyCheck.type == ReadyCheckType::None);
 }
 // -------------------------------------------------------------------------
