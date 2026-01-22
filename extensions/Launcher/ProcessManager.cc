@@ -968,7 +968,9 @@ namespace uniset
         if (proc.state != ProcessState::Restarting)
             proc.state = ProcessState::Stopping;
 
-        if (proc.pid > 0 && HealthChecker::isProcessAlive(proc.pid))
+        // Always try to stop if we have a PID, even if process appears dead
+        // This handles cases where process is hung but still has PID
+        if (proc.pid > 0)
         {
             try
             {
