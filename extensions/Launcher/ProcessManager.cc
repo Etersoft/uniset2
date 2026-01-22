@@ -1144,6 +1144,39 @@ namespace uniset
 
                         handleProcessExit(proc, exitCode);
                     }
+                    // Liveness watchdog: check if process responds
+                    else if (!proc.healthCheck.empty() && proc.healthFailThreshold > 0)
+                    {
+                        bool alive = healthChecker_->checkOnce(proc.healthCheck);
+
+                        if (alive)
+                        {
+                            // Reset failure counter on success
+                            if (proc.healthFailCount > 0)
+                            {
+                                mylog->info() << proc.name << " health check passed, resetting fail count" << std::endl;
+                                proc.healthFailCount = 0;
+                            }
+                        }
+                        else
+                        {
+                            proc.healthFailCount++;
+                            mylog->warn() << proc.name << " health check failed ("
+                                          << proc.healthFailCount << "/" << proc.healthFailThreshold << ")" << std::endl;
+
+                            if (proc.healthFailCount >= proc.healthFailThreshold)
+                            {
+                                mylog->crit() << proc.name << " health threshold exceeded, restarting process" << std::endl;
+                                proc.healthFailCount = 0;
+                                proc.lastError = "health check failed";
+
+                                // Restart: stop then start
+                                stopProcess(proc);
+                                proc.state = ProcessState::Restarting;
+                                startProcess(proc);
+                            }
+                        }
+                    }
                 }
             }
 

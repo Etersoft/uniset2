@@ -424,3 +424,68 @@ TEST_CASE("ConfigLoader: defaultReadyCheck empty by default", "[config]")
     REQUIRE(config.processes["proc1"].readyCheck.type == ReadyCheckType::None);
 }
 // -------------------------------------------------------------------------
+TEST_CASE("ConfigLoader: healthCheck attribute", "[config][healthcheck]")
+{
+    const char* configWithLiveness = R"(<?xml version="1.0"?>
+<Config>
+  <Launcher name="Test">
+    <ProcessGroups>
+      <group name="test" order="0">
+        <process name="proc1" command="/bin/true" healthCheck="tcp:8080" healthFailThreshold="5"/>
+        <process name="proc2" command="/bin/true" healthCheck="http://localhost:9090/health"/>
+        <process name="proc3" command="/bin/true"/>
+      </group>
+    </ProcessGroups>
+  </Launcher>
+</Config>
+)";
+    TempConfigFile cfg(configWithLiveness);
+
+    ConfigLoader loader;
+    auto config = loader.load(cfg.path(), "Test");
+
+    // Process with healthCheck should have liveness configured
+    REQUIRE(config.processes["proc1"].healthCheck.type == ReadyCheckType::TCP);
+    REQUIRE(config.processes["proc1"].healthCheck.target == "localhost:8080");
+    REQUIRE(config.processes["proc1"].healthFailThreshold == 5);
+
+    // Process with healthCheck but no threshold should use default (3)
+    REQUIRE(config.processes["proc2"].healthCheck.type == ReadyCheckType::HTTP);
+    REQUIRE(config.processes["proc2"].healthFailThreshold == 3);
+
+    // Process without healthCheck should have no liveness check
+    REQUIRE(config.processes["proc3"].healthCheck.type == ReadyCheckType::None);
+    REQUIRE(config.processes["proc3"].healthFailThreshold == 3);  // default
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ConfigLoader: healthCheck=none disables liveness", "[config][healthcheck]")
+{
+    const char* configWithLivenessNone = R"(<?xml version="1.0"?>
+<Config>
+  <Launcher name="Test">
+    <ProcessGroups>
+      <group name="test" order="0">
+        <process name="proc1" command="/bin/true" healthCheck="none"/>
+      </group>
+    </ProcessGroups>
+  </Launcher>
+</Config>
+)";
+    TempConfigFile cfg(configWithLivenessNone);
+
+    ConfigLoader loader;
+    auto config = loader.load(cfg.path(), "Test");
+
+    REQUIRE(config.processes["proc1"].healthCheck.type == ReadyCheckType::None);
+}
+// -------------------------------------------------------------------------
+TEST_CASE("ProcessInfo: healthFailCount reset", "[processinfo][healthcheck]")
+{
+    ProcessInfo proc;
+    proc.healthFailCount = 5;
+
+    proc.reset();
+
+    REQUIRE(proc.healthFailCount == 0);
+}
+// -------------------------------------------------------------------------

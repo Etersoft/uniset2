@@ -75,6 +75,11 @@ namespace uniset
 
         ReadyCheck readyCheck;
 
+        // Liveness check (watchdog): if fails healthFailThreshold times - restart process
+        ReadyCheck healthCheck;
+        int healthFailThreshold = 3;  // Number of consecutive failures before restart (0 = disabled)
+        int healthFailCount = 0;      // Runtime: current consecutive failure count
+
         // Command to run after process is ready (e.g. "uniset2-admin --create")
         std::string afterRun;
         bool critical = true;           // If true and exhausted maxRestarts - stop launcher. If false (ignoreFail=true) - just leave Failed

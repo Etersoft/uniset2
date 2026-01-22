@@ -294,6 +294,21 @@ namespace uniset
             if (it.getProp("checkTimeout").length() > 0)
                 proc.readyCheck.checkTimeout_msec = it.getIntProp("checkTimeout");
 
+            // Liveness check (watchdog): restart process if it stops responding
+            std::string healthCheckStr = it.getProp("healthCheck");
+
+            if (!healthCheckStr.empty() && healthCheckStr != "none")
+            {
+                proc.healthCheck = HealthChecker::parseReadyCheck(healthCheckStr);
+
+                // Use readyCheck timeouts as defaults for liveness
+                proc.healthCheck.checkTimeout_msec = proc.readyCheck.checkTimeout_msec;
+                proc.healthCheck.pause_msec = proc.readyCheck.pause_msec;
+            }
+
+            if (it.getProp("healthFailThreshold").length() > 0)
+                proc.healthFailThreshold = it.getIntProp("healthFailThreshold");
+
             // ignoreFail: if true, process failure won't stop launcher
             // Default: ignoreFail=false (process is critical)
             std::string ignoreFailStr = it.getProp("ignoreFail");
@@ -352,6 +367,19 @@ namespace uniset
                 // Use global default readyCheck
                 proc.readyCheck = HealthChecker::parseReadyCheck(config.defaultReadyCheck);
             }
+
+            // Liveness check (watchdog): restart process if it stops responding
+            std::string healthCheckStr = it.getProp("healthCheck");
+
+            if (!healthCheckStr.empty() && healthCheckStr != "none")
+            {
+                proc.healthCheck = HealthChecker::parseReadyCheck(healthCheckStr);
+                proc.healthCheck.checkTimeout_msec = it.getPIntProp("checkTimeout", proc.healthCheck.checkTimeout_msec);
+                proc.healthCheck.pause_msec = it.getPIntProp("checkPause", proc.healthCheck.pause_msec);
+            }
+
+            if (it.getProp("healthFailThreshold").length() > 0)
+                proc.healthFailThreshold = it.getIntProp("healthFailThreshold");
 
             // ignoreFail: if true, process failure won't stop launcher
             // Default: ignoreFail=false (process is critical)

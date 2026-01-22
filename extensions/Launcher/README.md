@@ -210,7 +210,9 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | `readyCheck` | Проверка готовности (см. ниже) | из шаблона |
 | `readyTimeout` | Таймаут проверки готовности (мс) | 10000 |
 | `checkPause` | Пауза между проверками готовности (мс) | 500 |
-| `ignoreFail` | Игнорировать сбой процесса (не рестартовать, не останавливать launcher) | false |
+| `healthCheck` | Проверка работоспособности (watchdog) | нет |
+| `healthFailThreshold` | Количество неудачных liveness проверок до рестарта | 3 |
+| `ignoreFail` | Игнорировать сбой процесса (не останавливать launcher после исчерпания попыток) | false |
 | `maxRestarts` | Попытки перезапуска: -1 = не рестартовать, 0 = бесконечно, >0 = ограничено | 0 |
 | `restartDelay` | Начальная задержка перед перезапуском (мс) | 1000 |
 | `maxRestartDelay` | Максимальная задержка (экспоненциальный backoff) (мс) | 30000 |
@@ -336,6 +338,43 @@ uniset2-launcher --confile config.xml --default-ready-check "tcp:localhost:8080"
 3. `defaultReadyCheck` из конфигурации Launcher
 4. Нет проверки (процесс считается готовым сразу)
 
+### Health Check Watchdog
+
+В отличие от `readyCheck` (проверяется при старте), `healthCheck` проверяет работоспособность процесса **во время работы**. Если процесс перестал отвечать (зависание, deadlock), watchdog автоматически перезапустит его.
+
+```xml
+<!-- Проверять TCP порт каждые healthCheckInterval мс -->
+<process name="MyService"
+         command="./my-service"
+         healthCheck="tcp:8080"
+         healthFailThreshold="3"/>
+
+<!-- Проверять HTTP endpoint -->
+<process name="WebService"
+         command="./web-service"
+         healthCheck="http://localhost:9000/health"
+         healthFailThreshold="5"/>
+```
+
+**Логика работы:**
+- Каждые `healthCheckInterval` мс (по умолчанию 5000) проверяется `healthCheck`
+- При неудачной проверке увеличивается счётчик неудач
+- При успешной проверке счётчик сбрасывается
+- Когда счётчик достигает `healthFailThreshold` — процесс перезапускается (SIGTERM → пауза → SIGKILL)
+
+**Атрибуты:**
+- `healthCheck` — проверка (формат такой же как `readyCheck`: `tcp:port`, `http://url`, `corba:Name`, `file:path`)
+- `healthFailThreshold` — количество последовательных неудач до рестарта (по умолчанию 3, 0 = отключить)
+
+**Отличие от обычного мониторинга:**
+- Обычный мониторинг проверяет только **существование процесса** (PID)
+- `healthCheck` проверяет **отклик процесса** (сеть, файл и т.д.)
+
+Это полезно для обнаружения:
+- Зависаний процесса (deadlock)
+- Утечек ресурсов, приводящих к неответу
+- Сетевых проблем в распределённых системах
+
 ### Автоматический перезапуск
 
 По умолчанию все процессы автоматически перезапускаются при падении с экспоненциальным backoff:
@@ -348,7 +387,7 @@ delay = min(restartDelay * 2^(attempt-1), maxRestartDelay)
 - `maxRestarts=0` (по умолчанию) — бесконечные перезапуски
 - `maxRestarts=-1` — отключить перезапуск
 - `maxRestarts=N` (N>0) — ограничить количество попыток
-- `ignoreFail="true"` — отключить перезапуск (эквивалент maxRestarts=-1)
+- `ignoreFail="true"` — после исчерпания попыток **не останавливать launcher** (процесс остаётся в Failed)
 
 **Пример последовательности перезапусков** (restartDelay=1000, maxRestartDelay=30000):
 - Попытка 1: 1 сек
