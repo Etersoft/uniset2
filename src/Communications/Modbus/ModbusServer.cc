@@ -38,7 +38,6 @@ namespace uniset
         replyTimeout_ms(2000),
         aftersend_msec(0),
         sleepPause_msec(10),
-        onBroadcast(false),
         crcNoCheckit(false),
         cleanBeforeSend(false)
     {
@@ -78,16 +77,6 @@ namespace uniset
         return crcNoCheckit;
     }
     // -------------------------------------------------------------------------
-    void ModbusServer::setBroadcastMode( bool set )
-    {
-        onBroadcast = set;
-    }
-    // -------------------------------------------------------------------------
-    bool ModbusServer::getBroadcastMode() const
-    {
-        return onBroadcast;
-    }
-    // -------------------------------------------------------------------------
     void ModbusServer::setCleanBeforeSend(bool set)
     {
         cleanBeforeSend = set;
@@ -122,6 +111,10 @@ namespace uniset
     bool ModbusServer::checkAddr(const std::unordered_set<ModbusAddr>& vaddr, const ModbusRTU::ModbusAddr addr )
     {
         if( addr == ModbusRTU::BroadcastAddr )
+            return true;
+
+        // если в списке есть AnyAddr - пропускаем любые адреса
+        if( vaddr.find(AnyAddr) != vaddr.end() )
             return true;
 
         auto i = vaddr.find(addr);
@@ -605,6 +598,9 @@ namespace uniset
             {
                 bcnt = getNextData((unsigned char*)(&rbuf.pduhead.addr), sizeof(rbuf.pduhead.addr));
 
+                // если по какой-то причине начали читать с середины посылки
+                // ждём первый байт "похожий на наш адрес",
+                // если потом не сойдётся длинна, всё откинем
                 if( bcnt > 0 && checkAddr(vaddr, rbuf.addr()) )
                 {
                     begin = true;
@@ -616,24 +612,6 @@ namespace uniset
 
             if( !begin )
                 return erTimeOut;
-
-            /*! \todo Подумать Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!
-                        // Lav: конечно стоит, нам же надо буфер чистить
-            */
-            // Проверка кому адресован пакет... (только если не включён режим отвечать на любые адреса)
-            if( !(onBroadcast && rbuf.addr() == BroadcastAddr) && !checkAddr(vaddr, rbuf.addr()) )
-            {
-                if( dlog->is_warn() )
-                {
-                    ostringstream err;
-                    err << "(recv): BadNodeAddress. my= " << vaddr2str(vaddr)
-                        << " msg.addr=" << addr2str(rbuf.addr());
-                    dlog->warn() << err.str() << endl;
-                }
-
-                cleanupChannel();
-                return erBadReplyNodeAddress;
-            }
 
             return recv_pdu(rbuf, timeout);
         }
