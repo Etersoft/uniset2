@@ -990,9 +990,58 @@ namespace uniset
             {
                 if( iomap.empty() )
                 {
-                    mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl << flush;
+                    mbcrit << myname << "(sysCommand): iomap EMPTY! "
+                           << "Check configuration: filter-field='" << s_field << "' filter-value='" << s_fvalue << "'. "
+                           << "No sensors found for this MBSlave. Terminated." << endl << flush;
                     uterminate();
                     return;
+                }
+
+                if( sidTestSMReady == DefaultObjectId )
+                {
+                    mbcrit << myname << "(sysCommand): sidTestSMReady=DefaultObjectId! "
+                           << "Cannot check SharedMemory readiness. "
+                           << "Check --" << prefix << "-sm-test-sid or smTestSID parameter. Terminated." << endl << flush;
+                    uterminate();
+                    return;
+                }
+
+                // Early TCP socket check - verify port is available before waitSMReady
+                if( mbtype == "TCP" && tcpserver )
+                {
+                    try
+                    {
+                        // Try to create test socket to verify port is available
+                        // Real socket will be created later in async_run()
+                        UTCPSocket testSock(tcpserver->getInetAddress(), tcpserver->getInetPort());
+                        testSock.close();
+                        mbinfo << myname << "(sysCommand): TCP socket check passed: "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort() << endl;
+                    }
+                    catch( const Poco::Exception& e )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " error: " << e.displayText() << ". Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
+                    catch( const std::exception& e )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " error: " << e.what() << ". Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
+                    catch( ... )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " unknown error. Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
                 }
 
                 if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
