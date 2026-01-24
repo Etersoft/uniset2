@@ -207,47 +207,66 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void MBExchange::help_print( int argc, const char* const* argv )
     {
-        cout << "--prefix-name name              - ObjectId (имя) процесса. По умолчанию: MBExchange1" << endl;
-        cout << "--prefix-confnode name          - Настроечная секция в конф. файле <name>. " << endl;
-        cout << "--prefix-polltime msec          - Пауза между опросами. По умолчанию 100 мсек." << endl;
-        cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
-        cout << "--prefix-timeout msec           - Таймаут для определения отсутствия соединения" << endl;
-        cout << "--prefix-aftersend-pause msec   - Пауза после посылки запроса (каждого). По умолчанию: 0." << endl;
-        cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутствия соединения msec миллисекунд. По умолчанию 10 сек." << endl;
-        cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
-        cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--prefix-force 0,1              - Сохранять значения в SM на каждом шаге, независимо от, того менялось ли значение" << endl;
-        cout << "--prefix-force-out 0,1          - Считывать значения 'выходов' из SM на каждом шаге (а не по изменению)" << endl;
-        cout << "--prefix-initPause msec         - Задержка перед инициализацией (время на активизация процесса)" << endl;
-        cout << "--prefix-no-query-optimization 0,1 - Не оптимизировать запросы (не объединять соседние регистры в один запрос)" << endl;
-        cout << "--prefix-reg-from-id 0,1        - Использовать в качестве регистра sensor ID" << endl;
-        cout << "--prefix-filter-field name      - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
-        cout << "--prefix-filter-value val       - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-        cout << "--prefix-statistic-sec sec      - Выводить статистику опроса каждые sec секунд" << endl;
-        cout << "--prefix-sm-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-        cout << "--prefix-sm-test-sid name       - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
-        cout << "--prefix-exchange-mode-id       - Идентификатор (AI) датчика, позволяющего управлять работой процесса" << endl;
-        cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс." << endl;
-        cout << "--prefix-default-mbtype [rtu|rtu188|mtr]  - У датчиков которых не задан 'mbtype' использовать данный. По умолчанию: 'rtu'" << endl;
-        cout << "--prefix-default-mbadd addr     - У датчиков которых не задан 'mbaddr' использовать данный. По умолчанию: ''" << endl;
-        cout << "--prefix-default-mbinit-ok 0,1  - Флаг инициализации. 1 - не ждать первого обмена с устройством, а сохранить при старте в SM значение 'default'" << endl;
-        cout << "--prefix-query-max-count max    - Максимальное количество запрашиваемых за один раз регистров (При условии no-query-optimization=0). По умолчанию: " << ModbusRTU::MAXDATALEN << "." << endl;
-        cout << "--prefix-init-mbval-changed 0,1 - Инициализация флага изменения значения датчика регистра. Значение по умолчанию при запуске процесса." << endl;
+        cout << " Общие параметры: " << endl;
+        cout << "--prefix-name name              - ObjectId (имя) процесса. Default: MBExchange1" << endl;
+        cout << "--prefix-confnode name          - Настроечная секция в конф. файле <name>" << endl;
+        cout << "--prefix-filter-field name      - Считывать список датчиков, только у которых есть поле field" << endl;
+        cout << "--prefix-filter-value val       - Считывать список датчиков, только у которых field=value" << endl;
+        cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс" << endl;
+        cout << "--prefix-reg-from-id [0|1]      - Использовать в качестве регистра sensor ID" << endl;
+        cout << "--prefix-force [0|1]            - Сохранять значения в SM на каждом шаге" << endl;
+        cout << "--prefix-force-out [0|1]        - Считывать значения 'выходов' из SM на каждом шаге" << endl;
         cout << endl;
+
+        cout << "--prefix-heartbeat-id name      - Roles heartbeat sensor ID" << endl;
+        cout << "--prefix-heartbeat-time msec    - Период heartbeat. Default: HeartBeatTime из конфига" << endl;
+        cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика. Default: 10" << endl;
+        cout << "--prefix-exchange-mode-id       - Датчик (AI) управления режимом работы процесса" << endl;
+        cout << endl;
+
+        cout << "--prefix-sm-ready-timeout msec  - Время ожидания готовности SM. Default: -1 (вечно)" << endl;
+        cout << "--prefix-sm-test-sid name       - Датчик проверки готовности SM. Default: автоопределение" << endl;
+        cout << "--prefix-initPause msec         - Задержка перед инициализацией. Default: 3000 msec" << endl;
+        cout << "--prefix-activate-timeout msec  - Таймаут активации. Default: 20000 msec" << endl;
+        cout << endl;
+
+        cout << " Параметры опроса: " << endl;
+        cout << "--prefix-polltime msec          - Пауза между опросами. Default: 100 msec" << endl;
+        cout << "--prefix-sleepPause-msec msec   - Пауза между циклами. Default: 10 msec" << endl;
+        cout << "--prefix-recv-timeout msec      - Таймаут на приём сообщения. Default: 500 msec" << endl;
+        cout << "--prefix-timeout msec           - Таймаут отсутствия соединения. Default: 5000 msec" << endl;
+        cout << "--prefix-reopen-timeout msec    - Таймаут переоткрытия соединения. Default: timeout*2 msec" << endl;
+        cout << "--prefix-reinit-timeout msec    - Таймаут реинициализации. Default: timeout msec" << endl;
+        cout << "--prefix-aftersend-pause msec   - Пауза после посылки запроса. Default: 0 msec" << endl;
+        cout << "--prefix-no-query-optimization [0|1] - Не объединять соседние регистры в один запрос" << endl;
+        cout << "--prefix-query-max-count max    - Макс. количество регистров за один запрос. Default: " << ModbusRTU::MAXDATALEN << endl;
+        cout << "--prefix-statistic-sec sec      - Выводить статистику каждые sec секунд. Default: 0 (откл)" << endl;
+        cout << endl;
+
+        cout << " Параметры Modbus: " << endl;
+        cout << "--prefix-default-mbtype [rtu|rtu188|mtr] - Тип по умолчанию. Default: rtu" << endl;
+        cout << "--prefix-default-mbaddr addr    - Адрес по умолчанию для датчиков без mbaddr" << endl;
+        cout << "--prefix-default-mbinit-ok [0|1] - Не ждать первого обмена, сохранить 'default' в SM" << endl;
+        cout << "--prefix-init-mbval-changed [0|1] - Инициализация флага изменения значения. Default: 1" << endl;
+        cout << endl;
+
         cout << " HTTP API: " << endl;
-        cout << "--prefix-http-enabled-setparams 1 - Enable API /setparams" << endl;
+        cout << "--prefix-http-control-allow [0|1]     - Allow mode control via HTTP (/takeControl, /mode?set=...)" << endl;
+        cout << "--prefix-http-enabled-setparams [0|1] - Enable API /setparams" << endl;
         cout << endl;
+
         cout << " Logs: " << endl;
-        cout << "--prefix-log-...            - log control" << endl;
-        cout << "             add-levels ...  " << endl;
-        cout << "             del-levels ...  " << endl;
-        cout << "             set-levels ...  " << endl;
-        cout << "             logfile filename" << endl;
-        cout << "             no-debug " << endl;
+        cout << "--prefix-log-add-levels ..." << endl;
+        cout << "--prefix-log-del-levels ..." << endl;
+        cout << "--prefix-log-set-levels ..." << endl;
+        cout << "--prefix-log-logfile filename" << endl;
+        cout << "--prefix-log-no-debug" << endl;
+        cout << endl;
+
         cout << " LogServer: " << endl;
-        cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
-        cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
-        cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+        cout << "--prefix-run-logserver          - Run logserver. Default: localhost:id" << endl;
+        cout << "--prefix-logserver-host ip      - Listen ip. Default: localhost" << endl;
+        cout << "--prefix-logserver-port num     - Listen port. Default: ID" << endl;
         cout << LogServer::help_print("prefix-logserver") << endl;
     }
 
@@ -2377,11 +2396,11 @@ namespace uniset
         {
             sensorExchangeMode.store( (MBConfig::ExchangeMode) sm->value);
 
-            if( !httpControlActive )
+            if( !httpControlActive.load() )
                 exchangeMode.store( (MBConfig::ExchangeMode) sm->value);
 
             mblog3 << myname << "(sensorInfo): exchange MODE=" << sm->value
-                   << " (httpControlActive=" << httpControlActive << ")" << std::endl;
+                   << " (httpControlActive=" << httpControlActive.load() << ")" << std::endl;
             //return; // этот датчик может встречаться и в списке обмена.. поэтому делать return нельзя.
         }
 
@@ -2790,7 +2809,7 @@ namespace uniset
                 return httpDevices(ctx.params);
 
             if( req == "takeControl" )
-                return httpTakeControl(ctx.params);
+                return httpTakeControl(ctx.response, ctx.params);
 
             if( req == "releaseControl" )
                 return httpReleaseControl(ctx.params);
@@ -3160,7 +3179,7 @@ namespace uniset
 
         // HTTP Control
         st->set("httpControlAllow", httpControlAllow ? 1 : 0);
-        st->set("httpControlActive", httpControlActive ? 1 : 0);
+        st->set("httpControlActive", httpControlActive.load() ? 1 : 0);
         st->set("httpEnabledSetParams", httpEnabledSetParams ? 1 : 0);
 
         // Текущие значимые параметры конфигурации (как числа, без перегенерации короткой строки)
@@ -3472,21 +3491,32 @@ namespace uniset
         return out;
     }
     // ----------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr MBExchange::httpTakeControl( const Poco::URI::QueryParameters& /*p*/ )
+    Poco::JSON::Object::Ptr MBExchange::httpTakeControl( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& /*p*/ )
     {
         Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
         if( !httpControlAllow )
         {
+            resp.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
             json->set("result", "ERROR");
             json->set("error", "HTTP control is not allowed. Set httpControlAllow=1 in config.");
             return json;
         }
 
+        if( httpControlActive.load() )
+        {
+            json->set("result", "OK");
+            json->set("message", "HTTP control already active");
+            json->set("currentMode", static_cast<int>(exchangeMode.load()));
+            return json;
+        }
+
+        int prevMode = static_cast<int>(exchangeMode.load());
         httpControlActive = true;
+
         json->set("result", "OK");
-        json->set("httpControlActive", 1);
-        json->set("currentMode", static_cast<int>(exchangeMode.load()));
+        json->set("message", "HTTP control enabled");
+        json->set("previousMode", prevMode);
         return json;
     }
     // ----------------------------------------------------------------------------
@@ -3500,7 +3530,7 @@ namespace uniset
             exchangeMode.store(sensorExchangeMode.load());
 
         json->set("result", "OK");
-        json->set("httpControlActive", 0);
+        json->set("message", "control returned to sensor");
         json->set("currentMode", static_cast<int>(exchangeMode.load()));
         return json;
     }

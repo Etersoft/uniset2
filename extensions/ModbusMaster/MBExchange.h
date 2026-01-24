@@ -127,11 +127,11 @@ namespace uniset
             Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpRegisters( const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpDevices( const Poco::URI::QueryParameters& p );
-            Poco::JSON::Object::Ptr httpTakeControl( const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpTakeControl( Poco::Net::HTTPServerResponse& resp, const Poco::URI::QueryParameters& p );
             Poco::JSON::Object::Ptr httpReleaseControl( const Poco::URI::QueryParameters& p );
 
-            bool httpControlAllow = { false };      /*!< разрешён ли HTTP контроль (из конфига) */
-            bool httpControlActive = { false };     /*!< активен ли сейчас HTTP контроль */
+            bool httpControlAllow = { false };              /*!< разрешён ли HTTP контроль (из конфига) */
+            std::atomic_bool httpControlActive = { false }; /*!< активен ли сейчас HTTP контроль */
             bool httpEnabledSetParams = { false };  /*!< разрешено ли менять параметры через HTTP */
 #endif
             void firstInitRegisters();

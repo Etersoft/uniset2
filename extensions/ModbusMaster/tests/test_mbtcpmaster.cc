@@ -1929,13 +1929,13 @@ TEST_CASE("MBTCPMaster: HTTP /takeControl and /releaseControl", "[http][rest][mb
     HTTPClientSession cs(httpAddr, httpPort);
     Poco::JSON::Parser parser;
 
-    // 1) Пытаемся взять контроль (httpControlAllow=0 в тесте, должен вернуть ошибку)
+    // 1) Пытаемся взять контроль (httpControlAllow=0 в тесте, должен вернуть ошибку 403)
     {
         HTTPRequest req(HTTPRequest::HTTP_GET, "/api/v2/MBTCPMaster1/takeControl", HTTPRequest::HTTP_1_1);
         HTTPResponse res;
         cs.sendRequest(req);
         std::istream& rs = cs.receiveResponse(res);
-        REQUIRE(res.getStatus() == HTTPResponse::HTTP_OK);
+        REQUIRE(res.getStatus() == HTTPResponse::HTTP_FORBIDDEN);
 
         std::stringstream ss;
         ss << rs.rdbuf();
@@ -1963,8 +1963,8 @@ TEST_CASE("MBTCPMaster: HTTP /takeControl and /releaseControl", "[http][rest][mb
         REQUIRE(root);
         REQUIRE(root->has("result"));
         REQUIRE(root->get("result").toString() == "OK");
-        REQUIRE(root->has("httpControlActive"));
-        REQUIRE(root->getValue<int>("httpControlActive") == 0);
+        REQUIRE(root->has("message"));
+        REQUIRE(root->get("message").toString() == "control returned to sensor");
     }
 }
 // -----------------------------------------------------------------------------

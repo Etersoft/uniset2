@@ -58,7 +58,17 @@ GET /api/v2/<object>/reload?confile=/path/to/confile
 Управление режимом обмена:
 - `?get` — текущий режим
 - `?supported=1` — поддерживаемые режимы
-- `?set=<mode>` — установка (если не привязан к датчику; иначе вернёт ошибку «control via sensor is enabled…»)
+- `?set=<mode>` — установка режима
+
+Поддерживаемые режимы:
+- `none` (0) — нормальная работа (по умолчанию)
+- `writeOnly` (1) — только посылка данных (работают только write-функции)
+- `readOnly` (2) — только чтение (работают только read-функции)
+- `skipSaveToSM` (3) — не записывать данные в SM (обмен ведётся полностью, но данные не сохраняются в SharedMemory)
+- `skipExchange` (4) — отключить обмен (при этом данные "из SM" обновляются)
+
+> **Важно:** Для установки режима через `?set=<mode>` необходимо сначала включить HTTP-контроль.
+> См. раздел [/takeControl и /releaseControl](#sec_mbttp_http_api_control).
 
 Примеры:
 
@@ -198,11 +208,70 @@ GET /api/v2/MBTCPMaster1/get?filter=1003,Sensor1_AI,1005
 
 ## /takeControl и /releaseControl {#sec_mbttp_http_api_control}
 
-Переключение в режим управления через HTTP (если в конфиге включён `httpControlAllow=1`):
+Управление режимом через HTTP требует двух шагов:
 
+### 1. Разрешить HTTP-контроль в конфигурации
+
+Через командную строку:
+```bash
+--prefix-http-control-allow 1
+```
+
+Или в XML-конфиге:
+```xml
+<MBTCPMaster1 name="MBTCPMaster1" httpControlAllow="1" ... />
+```
+
+### 2. Взять/освободить контроль через API
+
+**Взять контроль:**
 ```
 GET /api/v2/MBTCPMaster1/takeControl
+```
+
+Ответ при успехе:
+```json
+{ "result": "OK", "message": "HTTP control enabled", "previousMode": 0 }
+```
+
+Ответ если контроль уже активен:
+```json
+{ "result": "OK", "message": "HTTP control already active", "currentMode": 0 }
+```
+
+Ответ при запрете (`httpControlAllow=0`, HTTP 403):
+```json
+{ "result": "ERROR", "error": "HTTP control is not allowed. Set httpControlAllow=1 in config." }
+```
+
+**Освободить контроль:**
+```
 GET /api/v2/MBTCPMaster1/releaseControl
 ```
 
-При запрете в конфиге возвращает `"result": "ERROR"`.
+Ответ:
+```json
+{ "result": "OK", "message": "control returned to sensor", "currentMode": 0 }
+```
+
+### Как это работает
+
+- `httpControlAllow` — разрешение из конфига (по умолчанию `0`)
+- `httpControlActive` — флаг активного HTTP-контроля
+
+Пока `httpControlActive=1`, режим от датчика (`exchangeModeID`) игнорируется — используется режим, установленный через `/mode?set=...`.
+
+При вызове `/releaseControl` восстанавливается режим от датчика.
+
+### Пример использования
+
+```bash
+# 1. Взять контроль
+curl "http://localhost:8080/api/v2/MBTCPMaster1/takeControl"
+
+# 2. Установить режим "только чтение"
+curl "http://localhost:8080/api/v2/MBTCPMaster1/mode?set=readOnly"
+
+# 3. Вернуть управление датчику
+curl "http://localhost:8080/api/v2/MBTCPMaster1/releaseControl"
+```

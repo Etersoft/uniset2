@@ -475,6 +475,7 @@ namespace uniset
             std::shared_ptr<ModbusServerSlot> mbslot;
             std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
             std::string default_mbaddr = { "" };
+            ModbusRTU::ModbusAddr myaddr = { ModbusRTU::BroadcastAddr }; // default
 
             xmlNode* cnode = { 0 };
             std::string s_field = { "" };

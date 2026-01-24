@@ -17,6 +17,7 @@
 --mbtcp-run-logserver \
 --mbtcp-log-add-levels -level3,-level4,level2,info,warn,crit \
 --activator-run-httpserver --activator-httpserver-port 9090 \
+--mbtcp-http-control-allow 1 \
 $*
 
 #--mbtcp-log-add-levels level4,level3 \

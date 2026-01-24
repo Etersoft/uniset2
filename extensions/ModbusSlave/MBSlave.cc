@@ -129,6 +129,13 @@ namespace uniset
 
         vmonit(force);
 
+        auto s_myaddr = conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("myaddr"), "");
+        if( !s_myaddr.empty() )
+        {
+            myaddr = ModbusRTU::str2mbAddr(s_myaddr);
+            vaddr.emplace(myaddr);
+        }
+
         default_mbaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
         default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
@@ -217,6 +224,15 @@ namespace uniset
         }
         else if( mbtype == "TCP" )
         {
+            // for TCP default mbaddr = "Any"
+            if( myaddr == BroadcastAddr )
+            {
+                myaddr = AnyAddr;
+                vaddr.emplace(AnyAddr);
+            }
+
+            mbinfo << myname << "(init): TCP mbaddr=" << (int)myaddr << endl;
+
             string iaddr = conf->getArgParam("--" + prefix + "-inet-addr", it.getProp("iaddr"));
 
             if( iaddr.empty() )
@@ -247,6 +263,9 @@ namespace uniset
 
             if( mblog->is_warn() )
                 l->addLevel(Debug::WARN);
+
+            if( mblog->is_any() )
+                l->addLevel(Debug::ANY);
 
             tcpserver->setLog(l);
             conf->initLogStream(l, prefix + "-exchangelog");
@@ -990,9 +1009,58 @@ namespace uniset
             {
                 if( iomap.empty() )
                 {
-                    mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl << flush;
+                    mbcrit << myname << "(sysCommand): iomap EMPTY! "
+                           << "Check configuration: filter-field='" << s_field << "' filter-value='" << s_fvalue << "'. "
+                           << "No sensors found for this MBSlave. Terminated." << endl << flush;
                     uterminate();
                     return;
+                }
+
+                if( sidTestSMReady == DefaultObjectId )
+                {
+                    mbcrit << myname << "(sysCommand): sidTestSMReady=DefaultObjectId! "
+                           << "Cannot check SharedMemory readiness. "
+                           << "Check --" << prefix << "-sm-test-sid or smTestSID parameter. Terminated." << endl << flush;
+                    uterminate();
+                    return;
+                }
+
+                // Early TCP socket check - verify port is available before waitSMReady
+                if( mbtype == "TCP" && tcpserver )
+                {
+                    try
+                    {
+                        // Try to create test socket to verify port is available
+                        // Real socket will be created later in async_run()
+                        UTCPSocket testSock(tcpserver->getInetAddress(), tcpserver->getInetPort());
+                        testSock.close();
+                        mbinfo << myname << "(sysCommand): TCP socket check passed: "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort() << endl;
+                    }
+                    catch( const Poco::Exception& e )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " error: " << e.displayText() << ". Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
+                    catch( const std::exception& e )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " error: " << e.what() << ". Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
+                    catch( ... )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " unknown error. Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
                 }
 
                 if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
@@ -1297,17 +1365,23 @@ namespace uniset
 
         std::string s_mbaddr = IOBase::initProp(it, "mbaddr", prop_prefix, false, default_mbaddr);
 
-        if( s_mbaddr.empty() )
+        if( s_mbaddr.empty() && myaddr == BroadcastAddr )
         {
             mbcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbaddr' for " << it.getProp("name") << endl;
             return false;
         }
 
         // init sidTestSMReady
-        if(sidTestSMReady == DefaultObjectId )
+        if( sidTestSMReady == DefaultObjectId )
             sidTestSMReady = p.si.id;
 
-        ModbusAddr mbaddr = ModbusRTU::str2mbAddr(s_mbaddr);
+        // если в настройках не задан mbaddr, но задан глобально (myaddr), используем его
+        ModbusAddr mbaddr = s_mbaddr.empty() ? myaddr : ModbusRTU::str2mbAddr(s_mbaddr);
+
+        // если задан режим "любой адрес", всех помещает в AnyAddr
+        // независимо от того, какой адрес указан в конфиге
+        if( myaddr == ModbusRTU::AnyAddr )
+            mbaddr = ModbusRTU::AnyAddr;
 
         // наполняем "таблицу" адресов устройства
         vaddr.emplace(mbaddr); // вставляем всегда (независимо есть или нет уже элемент)
@@ -1330,7 +1404,6 @@ namespace uniset
         }
 
         int mbfunc = IOBase::initIntProp(it, "mbfunc", prop_prefix, false, default_mbfunc);
-
         if( !checkMBFunc )
             mbfunc = default_mbfunc;
 
@@ -1426,6 +1499,7 @@ namespace uniset
         {
             ostringstream err;
             err << myname << "(initItem): FAIL ADD sid='" << it.getProp("name") << "'(" << p.si.id << ")"
+                << " mbaddr=" << (int)mbaddr
                 << " reg='" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")"
                 << " mbfunc=" << mbfunc << " --> regID=" << p.regID
                 << " ALREADY ADDED! for sid='" << uniset_conf()->oind->getMapName(i->second.si.id) << "'("
@@ -1444,7 +1518,7 @@ namespace uniset
         {
             p.vtype = VTypes::vtUnknown;
             p.wnum = 0;
-            mbinfo << myname << "(initItem): add " << p << endl;
+            mbinfo << myname << "(initItem): mbaddr=" << int(mbaddr) << " add " << p << endl;
             rmap[p.regID] = std::move(p);
         }
         else
@@ -1497,7 +1571,7 @@ namespace uniset
             int p_regID = p.regID;
 
             // после std::move  p - использовать нельзя!
-            mbinfo << myname << "(initItem): add " << p << endl;
+            mbinfo << myname << "(initItem): mbaddr=" << int(mbaddr) << " add " << p << endl;
 
             rmap[p_regID] = std::move(p);
 
@@ -1516,7 +1590,7 @@ namespace uniset
                     p_regID = genRegID(p_dummy.mbreg, mbfunc);
                     p_dummy.regID  = p_regID;
 
-                    mbinfo << myname << "(initItem): add " << p_dummy << endl;
+                    mbinfo << myname << "(initItem): mbaddr=" << int(mbaddr) << " add " << p_dummy << endl;
                     rmap[p_regID] = std::move(p_dummy);
                 }
             }
@@ -1585,70 +1659,86 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void MBSlave::help_print( int argc, const char* const* argv )
     {
+        cout << " Общие параметры: " << endl;
         cout << "--run-lock file               - Запустить с защитой от повторного запуска" << endl;
         cout << "--mbs-name  name              - ObjectID. По умолчанию: MBSlave1" << endl;
         cout << "--mbs-confnode cnode          - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
+        cout << "--mbs-type [RTU|TCP]          - Modbus server type" << endl;
+        cout << "--mbs-my-addr                 - Roles addresses (e.g. \"0x01,0x02\" or \"any\")" << endl;
+        cout << "--mbs-default-mbaddr          - Default modbus address for sensors without mbaddr" << endl;
+        cout << "--mbs-reg-from-id [0|1]       - Использовать в качестве регистра sensor ID" << endl;
+        cout << "--mbs-filter-field name       - Считывать список датчиков, только у которых есть поле field" << endl;
+        cout << "--mbs-filter-value val        - Считывать список датчиков, только у которых field=value" << endl;
+        cout << "--mbs-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс" << endl;
+        cout << "--mbs-force [0|1]             - Читать данные из SM каждый раз, а не по изменению" << endl;
         cout << endl;
-        cout << "--mbs-reg-from-id 0,1         - Использовать в качестве регистра sensor ID" << endl;
-        cout << "--mbs-filter-field name       - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
-        cout << "--mbs-filter-value val        - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-        cout << "--mbs-heartbeat-id            - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
-        cout << "--mbs-heartbeat-max           - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-        cout << "--mbs-sm-ready-timeout        - время на ожидание старта SM" << endl;
-        cout << "--mbs-sm-test-sid name        - Датчик для проверки готовности SM к работе. По умолчанию идёт попытка автоопределения." << endl;
-        cout << "--mbs-initPause               - Задержка перед инициализацией (время на активизация процесса)" << endl;
-        cout << "--mbs-force 1                 - Читать данные из SM каждый раз, а не по изменению." << endl;
-        cout << "--mbs-respond-id              - respond sensor id" << endl;
-        cout << "--mbs-respond-invert [0|1]    - invert respond logic" << endl;
-        cout << "--mbs-sm-ready-timeout        - время на ожидание старта SM" << endl;
-        cout << "--mbs-timeout msec            - timeout for check link" << endl;
-        cout << "--mbs-after-send-pause msec   - принудительная пауза после посылки ответа. По умолчанию: 0" << endl;
-        cout << "--mbs-reply-timeout msec      - Контрольное время для формирования ответа. " << endl
-             << "                                   Если обработка запроса превысит это время, ответ не будет послан (timeout)." << endl
-             << "                                   По умолчанию: 3 сек" << endl;
-
-        cout << "--mbs-default-mbfunc [0..255] - Функция по умолчанию, если не указан параметр mbfunc в настройках регистра. Только если включён контроль функций. " << endl;
-        cout << "--mbs-check-mbfunc  [0|1]     - Включить контроль (обработку) свойства mbfunc. По умолчанию: отключён." << endl;
-        cout << "--mbs-no-mbfunc-optimization [0|1] - Отключить принудительное преобразование функций 0x06->0x10,0x05->0x0F" << endl;
-        cout << "--mbs-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
-
-        cout << "--mbs-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
-        cout << "--mbs-my-addr           - адрес текущего узла" << endl;
-        cout << "--mbs-type [RTU|TCP]    - modbus server type." << endl;
-
-        cout << " Настройки протокола RTU: " << endl;
-        cout << "--mbs-dev devname  - файл устройства" << endl;
-        cout << "--mbs-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-        cout << "--mbs-parity val   - Контроль чётности (odd,even,noparity,space,mark)." << endl;
-        cout << "--mbs-charsize val - Битность (cs5, cs6, cs7, cs8). По умолчанию: cs8" << endl;
-        cout << "--mbs-stopbits val - Стоп-биты" << endl;
-        cout << "                    1 - OneBit" << endl;
-        cout << "                    2 - OneAndHalfBits" << endl;
-        cout << "                    3 - TwoBits" << endl;
-        cout << " Настройки протокола TCP: " << endl;
-        cout << "--mbs-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
-        cout << "--mbs-inet-port num - this modbus server port. Default: 502" << endl;
-        cout << "--mbs-update-stat-time msec  - Период обновления статистики работы. По умолчанию: 4 сек." << endl;
-        cout << "--mbs-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
-        cout << "--mbs-session-maxnum num     - Максимальное количество соединений. По умолчанию: 5." << endl;
-        cout << "--mbs-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
-        cout << "--mbs-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
+        cout << "--mbs-heartbeat-id            - Roles heartbeat sensor ID" << endl;
+        cout << "--mbs-heartbeat-time msec     - Период heartbeat. Default: HeartBeatTime из конфига" << endl;
+        cout << "--mbs-heartbeat-max           - Максимальное значение heartbeat-счётчика. Default: 10" << endl;
+        cout << "--mbs-respond-id              - Respond sensor ID" << endl;
+        cout << "--mbs-respond-invert [0|1]    - Invert respond logic" << endl;
+        cout << "--mbs-askcount-id             - Request counter sensor ID" << endl;
         cout << endl;
+        cout << "--mbs-sm-ready-timeout msec   - Время на ожидание старта SM" << endl;
+        cout << "--mbs-sm-test-sid name        - Датчик для проверки готовности SM. Default: автоопределение" << endl;
+        cout << "--mbs-initPause msec          - Задержка перед инициализацией" << endl;
+        cout << "--mbs-activate-timeout msec   - Activate timeout. Default: 20000 msec" << endl;
+        cout << "--mbs-timeout msec            - Timeout for check link" << endl;
+        cout << "--mbs-check-exchange-time msec - Check exchange period. Default: 10000 msec" << endl;
+        cout << "--mbs-after-send-pause msec   - Принудительная пауза после посылки ответа. Default: 0" << endl;
+        cout << "--mbs-reply-timeout msec      - Контрольное время для формирования ответа. Default: 3000 msec" << endl;
+        cout << "                                Если превысит это время, ответ не будет послан (timeout)" << endl;
+        cout << endl;
+        cout << "--mbs-default-mbfunc [0..255] - Функция по умолчанию для регистров без mbfunc (если включён контроль)" << endl;
+        cout << "--mbs-check-mbfunc [0|1]      - Включить контроль свойства mbfunc. Default: отключён" << endl;
+        cout << "--mbs-no-mbfunc-optimization [0|1] - Отключить преобразование 0x06->0x10, 0x05->0x0F" << endl;
+        cout << "--mbs-allow-setdatetime       - Разрешить set date/time (0x50) modbus function" << endl;
+        cout << endl;
+
+        cout << " Modbus RTU: " << endl;
+        cout << "--mbs-dev devname             - Файл устройства" << endl;
+        cout << "--mbs-speed                   - Скорость (9600,19920,38400,57600,115200)" << endl;
+        cout << "--mbs-parity val              - Чётность (odd,even,noparity,space,mark)" << endl;
+        cout << "--mbs-charsize val            - Битность (cs5,cs6,cs7,cs8). Default: cs8" << endl;
+        cout << "--mbs-stopbits val            - Стоп-биты: 1=OneBit, 2=OneAndHalfBits, 3=TwoBits" << endl;
+        cout << "--mbs-use485F [0|1]           - Use RS485 Fastwel controller" << endl;
+        cout << "--mbs-transmit-ctl [0|1]      - Use RTS for transmit control (only for RS485 Fastwel)" << endl;
+        cout << endl;
+
+        cout << " Modbus TCP: " << endl;
+        cout << "--mbs-inet-addr [ip|hostname] - Server address" << endl;
+        cout << "--mbs-inet-port num           - Server port. Default: 502" << endl;
+        cout << "--mbs-session-maxnum num      - Максимальное количество соединений. Default: 5" << endl;
+        cout << "--mbs-session-count-id id     - Датчик текущего количества соединений" << endl;
+        cout << "--mbs-session-timeout msec    - Таймаут закрытия соединения без запросов. Default: 10000 msec" << endl;
+        cout << "--mbs-socket-timeout msec     - Таймаут переоткрытия сокета. Default: 0 (не переоткрывать)" << endl;
+        cout << "--mbs-update-stat-time msec   - Период обновления статистики. Default: 4000 msec" << endl;
+        cout << "--mbs-break-if-fail-run [0|1] - Exit if socket creation fails. Default: 0" << endl;
+        cout << "--mbs-repeat-create-socket msec - Pause before retry socket creation. Default: 30000 msec" << endl;
+        cout << endl;
+
         cout << " HTTP API: " << endl;
-        cout << "--mbs-http-enabled-setparams 1 - Enable API /setparams" << endl;
+        cout << "--mbs-http-enabled-setparams [0|1] - Enable API /setparams" << endl;
         cout << endl;
+
         cout << " Logs: " << endl;
-        cout << "--mbs-log-...            - log control" << endl;
-        cout << "             add-levels ...  " << endl;
-        cout << "             del-levels ...  " << endl;
-        cout << "             set-levels ...  " << endl;
-        cout << "             logfile filename" << endl;
-        cout << "             no-debug " << endl;
+        cout << "--mbs-log-add-levels ..." << endl;
+        cout << "--mbs-log-del-levels ..." << endl;
+        cout << "--mbs-log-set-levels ..." << endl;
+        cout << "--mbs-log-logfile filename" << endl;
+        cout << "--mbs-log-no-debug" << endl;
+        cout << "--mbs-exchangelog-add-levels ..." << endl;
+        cout << "--mbs-exchangelog-del-levels ..." << endl;
+        cout << "--mbs-exchangelog-set-levels ..." << endl;
+        cout << "--mbs-exchangelog-logfile filename" << endl;
+        cout << "--mbs-exchangelog-no-debug" << endl;
+        cout << endl;
+
         cout << " LogServer: " << endl;
-        cout << "--mbs-run-logserver      - run logserver. Default: localhost:id" << endl;
-        cout << "--mbs-logserver-host ip  - listen ip. Default: localhost" << endl;
-        cout << "--mbs-logserver-port num - listen port. Default: ID" << endl;
-        cout << LogServer::help_print("prefix-logserver") << endl;
+        cout << "--mbs-run-logserver           - Run logserver. Default: localhost:id" << endl;
+        cout << "--mbs-logserver-host ip       - Listen ip. Default: localhost" << endl;
+        cout << "--mbs-logserver-port num      - Listen port. Default: ID" << endl;
+        cout << LogServer::help_print("mbs-logserver") << endl;
     }
     // -----------------------------------------------------------------------------
     string MBSlave::amode2str(MBSlave::AccessMode m)
@@ -1736,12 +1826,12 @@ namespace uniset
             ModbusRTU::ReadOutputRetMessage& reply )
     {
         mbinfo << myname << "(readOutputRegisters): " << query << endl;
-
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(readOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(readOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -1782,11 +1872,12 @@ namespace uniset
     {
         mbinfo << myname << "(writeOutputRegisters): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -1805,11 +1896,12 @@ namespace uniset
     {
         mbinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -3040,11 +3132,12 @@ namespace uniset
     {
         mbinfo << myname << "(readInputRegisters): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(readInputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(readInputRegisters): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -3111,11 +3204,12 @@ namespace uniset
     {
         mbinfo << myname << "(readCoilStatus): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(readCoilStatus): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(readCoilStatus): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -3180,11 +3274,12 @@ namespace uniset
     {
         mbinfo << myname << "(readInputStatus): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(readInputStatus): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(readInputStatus): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -3249,11 +3344,12 @@ namespace uniset
     {
         mbinfo << myname << "(forceMultipleCoils): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(forceMultipleCoils): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(forceMultipleCoils): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 
@@ -3286,11 +3382,12 @@ namespace uniset
     {
         mbinfo << myname << "(forceSingleCoil): " << query << endl;
 
-        auto regmap = iomap.find(query.addr);
+        auto addr = myaddr == ModbusRTU::AnyAddr ? myaddr : query.addr;
+        auto regmap = iomap.find(addr);
 
         if( regmap == iomap.end() )
         {
-            mbinfo << myname << "(forceSingleCoil): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+            mbinfo << myname << "(forceSingleCoil): Unknown addr=" << ModbusRTU::addr2str(addr) << endl;
             return ModbusRTU::erTimeOut;
         }
 

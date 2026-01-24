@@ -170,7 +170,10 @@
 		</MBMultiSlave1>
 
 
-		<MBSlave1 aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600" socketTimeout="5000">
+		<MBSlaveTCP1 name="MBSlaveTCP1" default_mbaddr="0x01">
+		</MBSlaveTCP1>
+
+		<MBSlave1 default_mbaddr="0x01" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" modeSensor="MB1_Mode_AS" poll_time="200" reply_timeout="60" speed="9600" socketTimeout="5000">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
 			directory - каталог где лежит файл. Можно не задавать
@@ -363,6 +366,8 @@
 			<item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input" opcua="1" opcua_folder="AI.OUT" opcua_rwmode="w"/>
 			<item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input" opcua="1" opcua_folder="AI.OUT" opcua_rwmode="w"/>
 			<item default="65536045" id="29" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
+			<item default="2" id="35" iotype="AI" mbaddr="0x01" mbreg="0x19" mbfunc="0x03" mbtcp="2" mbtype="rtu" name="MB4_F03_AS" priority="Medium" textname="Analog input"/>
+			<item default="3" id="36" iotype="AI" mbaddr="0x01" mbreg="0x19" mbfunc="0x04" mbtcp="2" mbtype="rtu" name="MB4_F04_AS" priority="Medium" textname="Analog input"/>
 			<item id="30" iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
 			<item id="31" iotype="AI" mb_vtype="I2" mbreg="43" name="imitator_performance1" precision="6" rs="mbslave" textname="Производительность танка 1"/>
 			<item id="32" iotype="AI" mbtcp_mbaddr="1" mbtcp_mbfunc="0x04" mbtcp_mbreg="43" mbtcp_mbtype="rtu" mbtcp_vtype="I2" name="performance1" noprecision="1" precision="6" rs="mbmaster" textname="Производительность танка 1"/>
@@ -405,7 +410,7 @@
 			<item id="92" iotype="AO" name="JS_AO1_C" textname="JS: AO1 test output"/>
 			<item id="93" iotype="AO" name="JS_AO2_C" textname="JS: AO2 test output"/>
 
-			<item id="100" iotype="AI" name="AI100_AS" textname="AI100" mbaddr="0x01" mbfunc="0x03" mbreg="100" mbtype="rtu" tcp="6" vtype="F2" precision="1" mbtcp="3"/>
+			<item id="100" iotype="AI" name="AI100_AS" textname="AI100" mbaddr="0x01" mbfunc="0x03" mbreg="100" mbtype="rtu" tcp="6" vtype="F2" precision="1"/>
 			<item id="102" iotype="AI" name="AI102_AS" textname="AI101" mbaddr="0x01" mbfunc="0x03" mbreg="102" mbtype="rtu" tcp="6"/>
 			<item id="103" iotype="AI" name="AI103_AS" textname="AI102" mbaddr="0x01" mbfunc="0x03" mbreg="99" mbtype="rtu" tcp="6"/>
 
@@ -435,7 +440,12 @@
 			<item id="2053" mbtcp="3" mbaddr="1" iotype="DI" name="Threshold1" textname="Порог N1" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" />
 			<item id="2054" mbtcp="3" mbaddr="1" iotype="DI" name="Threshold2" textname="Порог N2" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" threshold_invert="1"/>
 
-			<item id="2055" mbtcp="3" mbaddr="2" mbreg="263" iotype="AI" name="AIMBADD2" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+			<item id="2055" mbtcp="3" mbreg="100" iotype="AI" name="MB100" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+			<item id="2056" mbtcp="3" mbreg="105" iotype="AI" name="MB101" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+			<item id="2057" mbtcp="3" mbreg="106" iotype="AI" name="MB102" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+			<item id="2058" mbtcp="3" mbreg="107" iotype="AI" name="MB103" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+			<item id="2059" mbtcp="3" mbreg="110" mbfunc="0x06" iotype="AI" name="MB110W" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+			<item id="2060" mbtcp="3" mbreg="110" mbfunc="0x04" iotype="AI" name="MB110К" textname="Тестовый регистр для проверки чтения по второму устройству"/>
 
 
 
@@ -463,8 +473,8 @@
 			<item id="234" iotype="AI" name="OPCUA_Float1_AS" textname="OPCUA: sensor1" opc="1" opcua="1" opcua_nodeid="Float1" opcua_type="float" precision="2" opcua_rwmode="w" opcua_method="1" opcua_folder="AI.FOUT"/>
 
 			<!-- unet exchange mode -->
-			<item id="219" iotype="AI" name="Node1_RecvMode1_S" textname="Node1: unet receive mode"/>
-			<item id="220" iotype="AI" name="Localhost_SendMode1_S" textname="Localhost: unet send mode"/>
+			<item id="225" iotype="AI" name="Node1_RecvMode1_S" textname="Node1: unet receive mode"/>
+			<item id="236" iotype="AI" name="Localhost_SendMode1_S" textname="Localhost: unet send mode"/>
 			
 			<!-- IO TEST -->
 			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->
@@ -5562,6 +5572,7 @@
 			<item id="6002" name="IOControl"/>
 			<item id="6003" name="RTUExchange"/>
 			<item id="6004" name="MBSlave1"/>
+			<item id="6098" name="MBSlaveTCP1"/>
 			<item id="6005" name="MBMaster1"/>
 			<item id="6006" name="UDPExchange"/>
 			<item id="6007" name="UDPExchange2"/>
