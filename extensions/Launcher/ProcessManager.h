@@ -111,6 +111,11 @@ namespace uniset
             void handleProcessExit(ProcessInfo& proc, int exitCode);
             void monitorLoop();
 
+            // Helper methods for process startup
+            std::vector<std::string> prepareProcessArgs(const ProcessInfo& proc);
+            bool launchDaemonProcess(ProcessInfo& proc);
+            bool finalizeProcessStart(ProcessInfo& proc);
+
             std::vector<std::string> resolveStartOrder();
             void expandEnvironment(std::vector<std::string>& args);
             std::string expandEnvVar(const std::string& s);
