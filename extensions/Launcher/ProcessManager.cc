@@ -195,7 +195,7 @@ namespace uniset
     // -------------------------------------------------------------------------
     bool ProcessManager::startAll()
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::unique_lock<std::mutex> lock(mutex_);
 
         mylog->info() << "Starting all processes..." << std::endl;
 
@@ -263,7 +263,8 @@ namespace uniset
                     continue;
                 }
 
-                if (!startProcess(pit->second))
+                // Start process with unlocking during waitForReady
+                if (!startProcessWithUnlock(pit->second, lock))
                 {
                     if (pit->second.critical)
                     {
@@ -276,6 +277,151 @@ namespace uniset
         }
 
         mylog->info() << "All processes started" << std::endl;
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    bool ProcessManager::startProcessWithUnlock(ProcessInfo& proc, std::unique_lock<std::mutex>& lock)
+    {
+        // This version unlocks mutex during waitForReady to allow HTTP requests
+        mylog->info() << "Starting process: " << proc.name << std::endl;
+
+        // Set state to Starting (under lock)
+        if (proc.state != ProcessState::Restarting)
+            proc.state = ProcessState::Starting;
+        proc.lastStartTime = std::chrono::steady_clock::now();
+
+        // Handle oneshot processes (keep lock - they are usually fast)
+        if (proc.oneshot)
+        {
+            return startProcess(proc);
+        }
+
+        // Prepare and launch process (under lock)
+        std::vector<std::string> args;
+
+        if (!proc.rawArgs.empty())
+        {
+            args = proc.rawArgs;
+        }
+        else
+        {
+            args.reserve(commonArgs_.size() + proc.args.size());
+
+            for (const auto& arg : commonArgs_)
+                args.push_back(arg);
+
+            for (const auto& arg : proc.args)
+                args.push_back(arg);
+        }
+
+        for (const auto& arg : forwardArgs_)
+            args.push_back(arg);
+
+        if (!passthroughArgs_.empty())
+            args.push_back(passthroughArgs_);
+
+        expandEnvironment(args);
+
+        Poco::Process::Env env;
+
+        for (const auto& kv : proc.env)
+            env[kv.first] = expandEnvVar(kv.second);
+
+        try
+        {
+            std::string workDir = proc.workDir.empty() ? "." : proc.workDir;
+
+            Poco::ProcessHandle ph = Poco::Process::launch(
+                                         proc.command,
+                                         args,
+                                         workDir,
+                                         nullptr,
+                                         nullptr,
+                                         nullptr,
+                                         env
+                                     );
+
+            proc.pid = ph.id();
+            mylog->info() << proc.name << " started with PID " << proc.pid << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+            proc.state = ProcessState::Failed;
+            proc.lastError = e.what();
+            mylog->crit() << "Failed to start " << proc.name << ": " << e.what() << std::endl;
+
+            if (onFailed_)
+                onFailed_(proc);
+
+            return false;
+        }
+
+        // Copy readyCheck info before unlocking
+        ReadyCheck readyCheck = proc.readyCheck;
+        std::string procName = proc.name;
+        std::string afterRun = proc.afterRun;
+
+        // Unlock mutex during waitForReady to allow HTTP requests to read state
+        lock.unlock();
+
+        // Wait for ready check (without lock - allows HTTP to show "starting" state)
+        bool readyOk = true;
+
+        if (!readyCheck.empty())
+        {
+            readyOk = healthChecker_->waitForReady(readyCheck, readyCheck.timeout_msec);
+        }
+
+        // Re-lock to update state
+        lock.lock();
+
+        // Find process again (map may have changed, though unlikely during startAll)
+        auto pit = processes_.find(procName);
+
+        if (pit == processes_.end())
+        {
+            mylog->warn() << "Process " << procName << " disappeared from map" << std::endl;
+            return false;
+        }
+
+        ProcessInfo& procRef = pit->second;
+
+        if (!readyOk)
+        {
+            mylog->warn() << procRef.name << " ready check failed" << std::endl;
+            procRef.state = ProcessState::Failed;
+            procRef.lastError = "Ready check timeout";
+
+            if (onFailed_)
+                onFailed_(procRef);
+
+            return false;
+        }
+
+        // Run afterRun hook if specified
+        if (!afterRun.empty())
+        {
+            mylog->info() << "Running afterRun hook for " << procRef.name << ": " << afterRun << std::endl;
+
+            std::string afterRunCmd = expandEnvVar(afterRun);
+            int ret = std::system(afterRunCmd.c_str());
+
+            if (ret != 0)
+            {
+                mylog->warn() << "afterRun hook failed with code " << ret << std::endl;
+            }
+            else
+            {
+                mylog->info() << "afterRun hook completed successfully" << std::endl;
+            }
+        }
+
+        procRef.state = ProcessState::Running;
+        mylog->info() << procRef.name << " is ready" << std::endl;
+
+        if (onStarted_)
+            onStarted_(procRef);
+
         return true;
     }
     // -------------------------------------------------------------------------

@@ -104,6 +104,7 @@ namespace uniset
 
         private:
             bool startProcess(ProcessInfo& proc);
+            bool startProcessWithUnlock(ProcessInfo& proc, std::unique_lock<std::mutex>& lock);
             void stopProcess(ProcessInfo& proc);
             bool waitForProcessReady(ProcessInfo& proc);
             int waitForProcessExit(ProcessInfo& proc);
