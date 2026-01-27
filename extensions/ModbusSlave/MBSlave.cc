@@ -248,6 +248,9 @@ namespace uniset
             if( mblog->is_warn() )
                 l->addLevel(Debug::WARN);
 
+            if( mblog->is_any() )
+                l->addLevel(Debug::ANY);
+
             tcpserver->setLog(l);
             conf->initLogStream(l, prefix + "-exchangelog");
 
@@ -1688,6 +1691,12 @@ namespace uniset
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--mbs-log-...            - log control" << endl;
+        cout << "             add-levels ...  " << endl;
+        cout << "             del-levels ...  " << endl;
+        cout << "             set-levels ...  " << endl;
+        cout << "             logfile filename" << endl;
+        cout << "             no-debug " << endl;
+        cout << "--mbs-exchangelog-...     - exchange log control" << endl;
         cout << "             add-levels ...  " << endl;
         cout << "             del-levels ...  " << endl;
         cout << "             set-levels ...  " << endl;
