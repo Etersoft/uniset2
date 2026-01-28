@@ -129,6 +129,13 @@ namespace uniset
 
         vmonit(force);
 
+        auto s_myaddr = conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("myaddr"), "");
+        if( !s_myaddr.empty() )
+        {
+            myaddr = ModbusRTU::str2mbAddr(s_myaddr);
+            vaddr.emplace(myaddr);
+        }
+
         default_mbaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
         default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
@@ -217,6 +224,13 @@ namespace uniset
         }
         else if( mbtype == "TCP" )
         {
+            // for TCP default mbaddr = "Any"
+            if( myaddr == BroadcastAddr )
+            {
+                myaddr = AnyAddr;
+                vaddr.emplace(AnyAddr);
+            }
+
             string iaddr = conf->getArgParam("--" + prefix + "-inet-addr", it.getProp("iaddr"));
 
             if( iaddr.empty() )
@@ -1349,17 +1363,18 @@ namespace uniset
 
         std::string s_mbaddr = IOBase::initProp(it, "mbaddr", prop_prefix, false, default_mbaddr);
 
-        if( s_mbaddr.empty() )
+        if( s_mbaddr.empty() && myaddr == BroadcastAddr )
         {
             mbcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbaddr' for " << it.getProp("name") << endl;
             return false;
         }
 
         // init sidTestSMReady
-        if(sidTestSMReady == DefaultObjectId )
+        if( sidTestSMReady == DefaultObjectId )
             sidTestSMReady = p.si.id;
 
-        ModbusAddr mbaddr = ModbusRTU::str2mbAddr(s_mbaddr);
+        // если в настройках не задан mbaddr, но задан глобально (myaddr), используем его
+        ModbusAddr mbaddr = s_mbaddr.empty() ? myaddr : ModbusRTU::str2mbAddr(s_mbaddr);
 
         // наполняем "таблицу" адресов устройства
         vaddr.emplace(mbaddr); // вставляем всегда (независимо есть или нет уже элемент)

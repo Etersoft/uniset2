@@ -38,7 +38,6 @@ namespace uniset
         replyTimeout_ms(2000),
         aftersend_msec(0),
         sleepPause_msec(10),
-        onBroadcast(false),
         crcNoCheckit(false),
         cleanBeforeSend(false)
     {
@@ -78,16 +77,6 @@ namespace uniset
         return crcNoCheckit;
     }
     // -------------------------------------------------------------------------
-    void ModbusServer::setBroadcastMode( bool set )
-    {
-        onBroadcast = set;
-    }
-    // -------------------------------------------------------------------------
-    bool ModbusServer::getBroadcastMode() const
-    {
-        return onBroadcast;
-    }
-    // -------------------------------------------------------------------------
     void ModbusServer::setCleanBeforeSend(bool set)
     {
         cleanBeforeSend = set;
@@ -122,6 +111,10 @@ namespace uniset
     bool ModbusServer::checkAddr(const std::unordered_set<ModbusAddr>& vaddr, const ModbusRTU::ModbusAddr addr )
     {
         if( addr == ModbusRTU::BroadcastAddr )
+            return true;
+
+        // если в списке есть AnyAddr - пропускаем любые адреса
+        if( vaddr.find(AnyAddr) != vaddr.end() )
             return true;
 
         auto i = vaddr.find(addr);
@@ -617,11 +610,11 @@ namespace uniset
             if( !begin )
                 return erTimeOut;
 
+
             /*! \todo Подумать Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!
                         // Lav: конечно стоит, нам же надо буфер чистить
             */
-            // Проверка кому адресован пакет... (только если не включён режим отвечать на любые адреса)
-            if( !(onBroadcast && rbuf.addr() == BroadcastAddr) && !checkAddr(vaddr, rbuf.addr()) )
+            if( !checkAddr(vaddr, rbuf.addr()) )
             {
                 if( dlog->is_warn() )
                 {
