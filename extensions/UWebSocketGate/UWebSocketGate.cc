@@ -429,36 +429,47 @@ std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const cha
 // -----------------------------------------------------------------------------
 void UWebSocketGate::help_print()
 {
-    cout << "--ws-name name                      - Имя. Для поиска настроечной секции в configure.xml" << endl;
-    cout << "--uniset-object-size-message-queue num  - Размер uniset-очереди сообщений. По умолчанию: 10000" << endl;
-    cout << "--ws-msg-check-time msec            - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
-    cout << "--ws-max-messages-processing num    - Количество uniset-сообщений обрабатываемых за один раз. По умолчанию: 100" << endl;
+    cout << " Общие параметры: " << endl;
+    cout << "--ws-name name                 - Имя процесса. Default: UWebSocketGate" << endl;
+    cout << "--uniset-object-size-message-queue num - Размер uniset-очереди сообщений. Default: 10000" << endl;
+    cout << "--ws-msg-check-time msec       - Период опроса очереди сообщений. Default: 10 msec" << endl;
+    cout << "--ws-max-messages-processing num - Количество сообщений за один раз. Default: 100" << endl;
+    cout << endl;
 
-    cout << "websockets: " << endl;
-    cout << "--ws-max-conn num             - Максимальное количество одновременных подключений (клиентов). По умолчанию: 50" << endl;
-    cout << "--ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-    cout << "--ws-send-time msec           - Период посылки сообщений. По умолчанию: 200 мсек" << endl;
-    cout << "--ws-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
-    cout << "--ws-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
-    cout << "--ws-pong-timeout msec        - Таймаут на ответ на сообщение ping. По умолчанию: 5000" << endl;
-    cout << "--ws-max-lifetime msec        - Максимальное время жизни соединения. 0 = без ограничений. По умолчанию: 0" << endl;
+    cout << " WebSocket: " << endl;
+    cout << "--ws-max-conn num              - Макс. количество подключений. Default: 50" << endl;
+    cout << "--ws-heartbeat-time msec       - Период heartbeat. Default: 3000 msec" << endl;
+    cout << "--ws-send-time msec            - Период посылки сообщений. Default: 200 msec" << endl;
+    cout << "--ws-max-send num              - Макс. сообщений за один раз. Default: 5000" << endl;
+    cout << "--ws-max-cmd num               - Макс. команд за один раз. Default: 200" << endl;
+    cout << "--ws-pong-timeout msec         - Таймаут ответа на ping. Default: 5000 msec" << endl;
+    cout << "--ws-max-lifetime msec         - Макс. время жизни соединения. Default: 0 (без ограничений)" << endl;
+    cout << endl;
 
-    cout << "http: " << endl;
-    cout << "--ws-host ip                  - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--ws-port num                 - Порт на котором принимать запросы. По умолчанию: 8081" << endl;
-    cout << "--ws-max-queued num           - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--ws-max-threads num          - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--ws-cors-allow addr          - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << " HTTP Server: " << endl;
+    cout << "--ws-host ip                   - IP сервера. Default: localhost" << endl;
+    cout << "--ws-port num                  - Порт сервера. Default: 8081" << endl;
+    cout << "--ws-max-queued num            - Размер очереди запросов. Default: 100" << endl;
+    cout << "--ws-max-threads num           - Количество потоков. Default: 3" << endl;
+    cout << "--ws-cors-allow addr           - CORS Access-Control-Allow-Origin. Default: *" << endl;
+    cout << endl;
 
-    cout << "logs: " << endl;
-    cout << "--ws-log-add-levels [crit,warn,info..]   - Уровень логов" << endl;
-    cout << "--ws-log-verbosity N                     - Уровень подробностей [1...5]" << endl;
-    cout << "  Пример параметров для запуска с подробными логами: " << endl;
-    cout << "  --ws-log-add-levels any --ws-log-verbosity 5" << endl;
+    cout << " Cache/Pool: " << endl;
+    cout << "--ws-max-ui-cache-size num     - Размер кэша UI сообщений. Default: 5000" << endl;
+    cout << "--ws-pool-capacity num         - Ёмкость пула JSON объектов" << endl;
+    cout << "--ws-pool-peak-capacity num    - Пиковая ёмкость пула JSON объектов" << endl;
+    cout << endl;
+
+    cout << " Logs: " << endl;
+    cout << "--ws-log-add-levels [crit,warn,info..] - Уровень логов" << endl;
+    cout << "--ws-log-verbosity N           - Уровень подробностей [1...5]" << endl;
+    cout << "  Пример: --ws-log-add-levels any --ws-log-verbosity 5" << endl;
+    cout << endl;
+
     cout << " LogServer: " << endl;
-    cout << "--ws-run-logserver      - run logserver. Default: localhost:id" << endl;
-    cout << "--ws-logserver-host ip  - listen ip. Default: localhost" << endl;
-    cout << "--ws-logserver-port num - listen port. Default: ID" << endl;
+    cout << "--ws-run-logserver             - Run logserver. Default: localhost:id" << endl;
+    cout << "--ws-logserver-host ip         - Listen ip. Default: localhost" << endl;
+    cout << "--ws-logserver-port num        - Listen port. Default: ID" << endl;
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::run( bool async )
