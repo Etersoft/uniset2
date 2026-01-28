@@ -129,6 +129,13 @@ namespace uniset
 
         vmonit(force);
 
+        auto s_myaddr = conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("myaddr"), "");
+        if( !s_myaddr.empty() )
+        {
+            myaddr = ModbusRTU::str2mbAddr(s_myaddr);
+            vaddr.emplace(myaddr);
+        }
+
         default_mbaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
         default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
@@ -217,6 +224,13 @@ namespace uniset
         }
         else if( mbtype == "TCP" )
         {
+            // for TCP default mbaddr = "Any"
+            if( myaddr == BroadcastAddr )
+            {
+                myaddr = AnyAddr;
+                vaddr.emplace(AnyAddr);
+            }
+
             string iaddr = conf->getArgParam("--" + prefix + "-inet-addr", it.getProp("iaddr"));
 
             if( iaddr.empty() )
@@ -247,6 +261,9 @@ namespace uniset
 
             if( mblog->is_warn() )
                 l->addLevel(Debug::WARN);
+
+            if( mblog->is_any() )
+                l->addLevel(Debug::ANY);
 
             tcpserver->setLog(l);
             conf->initLogStream(l, prefix + "-exchangelog");
@@ -990,9 +1007,58 @@ namespace uniset
             {
                 if( iomap.empty() )
                 {
-                    mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl << flush;
+                    mbcrit << myname << "(sysCommand): iomap EMPTY! "
+                           << "Check configuration: filter-field='" << s_field << "' filter-value='" << s_fvalue << "'. "
+                           << "No sensors found for this MBSlave. Terminated." << endl << flush;
                     uterminate();
                     return;
+                }
+
+                if( sidTestSMReady == DefaultObjectId )
+                {
+                    mbcrit << myname << "(sysCommand): sidTestSMReady=DefaultObjectId! "
+                           << "Cannot check SharedMemory readiness. "
+                           << "Check --" << prefix << "-sm-test-sid or smTestSID parameter. Terminated." << endl << flush;
+                    uterminate();
+                    return;
+                }
+
+                // Early TCP socket check - verify port is available before waitSMReady
+                if( mbtype == "TCP" && tcpserver )
+                {
+                    try
+                    {
+                        // Try to create test socket to verify port is available
+                        // Real socket will be created later in async_run()
+                        UTCPSocket testSock(tcpserver->getInetAddress(), tcpserver->getInetPort());
+                        testSock.close();
+                        mbinfo << myname << "(sysCommand): TCP socket check passed: "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort() << endl;
+                    }
+                    catch( const Poco::Exception& e )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " error: " << e.displayText() << ". Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
+                    catch( const std::exception& e )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " error: " << e.what() << ". Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
+                    catch( ... )
+                    {
+                        mbcrit << myname << "(sysCommand): Cannot bind TCP socket "
+                               << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+                               << " unknown error. Terminated." << endl << flush;
+                        uterminate();
+                        return;
+                    }
                 }
 
                 if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
@@ -1297,17 +1363,18 @@ namespace uniset
 
         std::string s_mbaddr = IOBase::initProp(it, "mbaddr", prop_prefix, false, default_mbaddr);
 
-        if( s_mbaddr.empty() )
+        if( s_mbaddr.empty() && myaddr == BroadcastAddr )
         {
             mbcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbaddr' for " << it.getProp("name") << endl;
             return false;
         }
 
         // init sidTestSMReady
-        if(sidTestSMReady == DefaultObjectId )
+        if( sidTestSMReady == DefaultObjectId )
             sidTestSMReady = p.si.id;
 
-        ModbusAddr mbaddr = ModbusRTU::str2mbAddr(s_mbaddr);
+        // если в настройках не задан mbaddr, но задан глобально (myaddr), используем его
+        ModbusAddr mbaddr = s_mbaddr.empty() ? myaddr : ModbusRTU::str2mbAddr(s_mbaddr);
 
         // наполняем "таблицу" адресов устройства
         vaddr.emplace(mbaddr); // вставляем всегда (независимо есть или нет уже элемент)
@@ -1639,6 +1706,12 @@ namespace uniset
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--mbs-log-...            - log control" << endl;
+        cout << "             add-levels ...  " << endl;
+        cout << "             del-levels ...  " << endl;
+        cout << "             set-levels ...  " << endl;
+        cout << "             logfile filename" << endl;
+        cout << "             no-debug " << endl;
+        cout << "--mbs-exchangelog-...     - exchange log control" << endl;
         cout << "             add-levels ...  " << endl;
         cout << "             del-levels ...  " << endl;
         cout << "             set-levels ...  " << endl;

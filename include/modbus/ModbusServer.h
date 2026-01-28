@@ -96,9 +96,6 @@ namespace uniset
             void setCRCNoCheckit( bool set );
             bool isCRCNoCheckit() const;
 
-            void setBroadcastMode( bool set );
-            bool getBroadcastMode() const;
-
             void setCleanBeforeSend( bool set );
             bool getCleanBeforeSend() const;
 
@@ -108,7 +105,6 @@ namespace uniset
             static ModbusRTU::mbErrCode replySetDateTime( const ModbusRTU::SetDateTimeMessage& query,
                     ModbusRTU::SetDateTimeRetMessage& reply,
                     std::shared_ptr<DebugStream> dlog = nullptr );
-
 
             /*! Вспомогательная функция реализующая обработку передачи файла
                 \param fname - запрашиваемый файл.
@@ -297,7 +293,6 @@ namespace uniset
             timeout_t replyTimeout_ms = { 2000 };    /*!< таймаут на формирование ответа */
             timeout_t aftersend_msec = { 0 };        /*!< пауза после посылки ответа */
             timeout_t sleepPause_msec = { 10 };     /*!< пауза между попытками чтения символа из канала */
-            bool onBroadcast = { false };        /*!< включен режим работы с broadcst-сообщениями */
             bool crcNoCheckit = { false };
             bool cleanBeforeSend = { false };
 

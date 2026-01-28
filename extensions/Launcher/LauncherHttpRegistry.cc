@@ -10,12 +10,17 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <fstream>
+#include <thread>
 #include <Poco/JSON/Array.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/File.h>
 #include "LauncherHttpRegistry.h"
 #include "Exceptions.h"
 #include "Configuration.h"
+
+#ifndef UNISET_DATADIR
+#define UNISET_DATADIR "/usr/share/uniset2/"
+#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -75,6 +80,58 @@ namespace uniset
 
         if (cmd == "groups" && method == "GET")
             return handleGroups();
+
+        // /restart-all - restart all running processes
+        if (cmd == "restart-all" && method == "POST")
+        {
+            // Check if control is enabled
+            if (controlToken_.empty())
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "forbidden");
+                obj->set("message", "control operations disabled (--control-token not set)");
+                return obj;
+            }
+
+            // Check control authorization
+            if (!checkControlAuth(ctx.request))
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "unauthorized");
+                obj->set("message", "missing or invalid control token");
+                return obj;
+            }
+
+            return handleRestartAll();
+        }
+
+        // /reload-all - stop all, then start all (except skip, manual)
+        if (cmd == "reload-all" && method == "POST")
+        {
+            // Check if control is enabled
+            if (controlToken_.empty())
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "forbidden");
+                obj->set("message", "control operations disabled (--control-token not set)");
+                return obj;
+            }
+
+            // Check control authorization
+            if (!checkControlAuth(ctx.request))
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "unauthorized");
+                obj->set("message", "missing or invalid control token");
+                return obj;
+            }
+
+            return handleReloadAll();
+        }
 
         // /auth - validate control token
         if (cmd == "auth" && method == "GET")
@@ -169,6 +226,11 @@ namespace uniset
     {
         auto root = new Poco::JSON::Object();
         root->set("node", pm_.getNodeName());
+#ifdef PACKAGE_VERSION
+        root->set("version", PACKAGE_VERSION);
+#else
+        root->set("version", "unknown");
+#endif
 
         Poco::JSON::Array processes;
         auto allProcs = pm_.getAllProcesses();
@@ -177,13 +239,22 @@ namespace uniset
         {
             Poco::JSON::Object obj;
             obj.set("name", proc.name);
+            obj.set("command", proc.command);
             obj.set("state", to_string(proc.state));
             obj.set("pid", proc.pid);
             obj.set("group", proc.group);
             obj.set("critical", proc.critical);
             obj.set("skip", proc.skip);
+            obj.set("manual", proc.manual);
             obj.set("oneshot", proc.oneshot);
             obj.set("restartCount", proc.restartCount);
+            obj.set("maxRestarts", proc.maxRestarts);
+
+            // Full arguments (commonArgs + args + forwardArgs)
+            Poco::JSON::Array args;
+            for (const auto& arg : pm_.getFullArgs(proc.name))
+                args.add(arg);
+            obj.set("args", args);
 
             // Calculate uptime for running processes
             if (proc.state == ProcessState::Running || proc.state == ProcessState::Completed)
@@ -271,6 +342,38 @@ namespace uniset
 
         if (!ok)
             obj->set("error", "Failed to start process");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleRestartAll()
+    {
+        // Run restartAll asynchronously so HTTP response returns immediately
+        // This allows client to poll for "restarting" state during the operation
+        std::thread([this]()
+        {
+            pm_.restartAll();
+        }).detach();
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("success", true);
+        obj->set("message", "Restart all initiated");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleReloadAll()
+    {
+        // Run reloadAll asynchronously so HTTP response returns immediately
+        // This allows client to poll for "restarting" state during the operation
+        std::thread([this]()
+        {
+            pm_.reloadAll();
+        }).detach();
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("success", true);
+        obj->set("message", "Reload all initiated");
 
         return obj;
     }
@@ -440,6 +543,7 @@ namespace uniset
         obj->set("group", proc.group);
         obj->set("critical", proc.critical);
         obj->set("skip", proc.skip);
+        obj->set("manual", proc.manual);
         obj->set("oneshot", proc.oneshot);
         obj->set("maxRestarts", proc.maxRestarts);
         obj->set("restartCount", proc.restartCount);
@@ -655,11 +759,18 @@ namespace uniset
     // -------------------------------------------------------------------------
     std::string LauncherHttpRegistry::findFile(const std::string& filename)
     {
-        // 1. Current directory
-        if (Poco::File(filename).exists())
-            return filename;
+        // If absolute or relative path specified, use as-is
+        if (!filename.empty() && (filename[0] == '/' || filename[0] == '.'))
+        {
+            if (Poco::File(filename).exists())
+                return filename;
 
-        // 2. Directory from uniset_conf()->getDataDir()
+            return "";
+        }
+
+        // Build search path: current dir, conf->getDataDir(), UNISET_DATADIR
+        std::vector<std::string> paths = { "./" };
+
         try
         {
             auto conf = uniset_conf();
@@ -669,25 +780,23 @@ namespace uniset
                 std::string dataDir = conf->getDataDir();
 
                 if (!dataDir.empty())
-                {
-                    std::string path = dataDir + "/" + filename;
-
-                    if (Poco::File(path).exists())
-                        return path;
-                }
+                    paths.push_back(dataDir + "/");
             }
         }
         catch (...) {}
 
-        // 3. Compiled-in UNISET_DATADIR
 #ifdef UNISET_DATADIR
-        {
-            std::string path = std::string(UNISET_DATADIR) + "/" + filename;
-
-            if (Poco::File(path).exists())
-                return path;
-        }
+        paths.push_back(std::string(UNISET_DATADIR) + "/");
 #endif
+
+        // Search in all paths
+        for (const auto& p : paths)
+        {
+            std::string fullPath = p + filename;
+
+            if (Poco::File(fullPath).exists())
+                return fullPath;
+        }
 
         return "";  // Not found
     }

@@ -20,7 +20,8 @@ libUniSet2Launcher_la_LIBADD = $(top_builddir)/lib/libUniSet2.la \
 	$(SIGC_LIBS) $(POCO_LIBS)
 
 libUniSet2Launcher_la_CPPFLAGS = $(SIGC_CFLAGS) $(POCO_CFLAGS) \
-	-I$(top_builddir)/extensions/include
+	-I$(top_builddir)/extensions/include \
+	-DPACKAGE_VERSION=\"$(VERSION)\"
 
 # Binary
 bin_PROGRAMS = @PACKAGE@-launcher

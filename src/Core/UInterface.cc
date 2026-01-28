@@ -170,11 +170,6 @@ namespace uniset
             rcache.erase(id, node);
             throw uniset::AccessDenied("UI(getValue): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(id, node);
-            throw uniset::AccessDenied("UI(getValue): " + string(ex.err));
-        }
         catch( const uniset::ORepFailed& )
         {
             rcache.erase(id, node);
@@ -268,11 +263,6 @@ namespace uniset
             rcache.erase(si.id, si.node);
             throw uniset::AccessDenied("UI(setUndefinedState): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(setUndefinedState): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(si.id, si.node);
@@ -347,11 +337,6 @@ namespace uniset
         {
             rcache.erase(si.id, si.node);
             throw uniset::IOBadParam("UI(freezeValue): " + string(ex.err));
-        }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(freezeValue): " + string(ex.err));
         }
         catch(const IOController_i::AccessDenied& ex)
         {
@@ -1939,12 +1924,7 @@ namespace uniset
             }
         }
         catch( const uniset::TimeOut& ) {}
-        catch(const IOController_i::AccessDenied&  ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(getThresholdInfo): " + string(ex.err));
-        }
-        catch(const IOController_i::NameNotFound&  ex)
+        catch(const IOController_i::NameNotFound& ex)
         {
             rcache.erase(si.id, si.node);
             throw uniset::NameNotFound("UI(getThresholdInfo): " + string(ex.err));
@@ -2045,11 +2025,6 @@ namespace uniset
             rcache.erase(si.id, si.node);
             throw uniset::AccessDenied("UI(getRawValue): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied&  ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(getRawValue): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(si.id, si.node);
@@ -2145,11 +2120,6 @@ namespace uniset
             rcache.erase(si.id, si.node);
             throw uniset::AccessDenied("UI(calibrate): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(calibrate): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(si.id, si.node);
@@ -2230,11 +2200,6 @@ namespace uniset
         {
             rcache.erase(si.id, si.node);
             throw uniset::IOBadParam("UI(getCalibrateInfo): " + string(ex.err));
-        }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(getCalibrateInfo): " + string(ex.err));
         }
         catch(const IOController_i::AccessDenied& ex)
         {
@@ -2327,11 +2292,6 @@ namespace uniset
             rcache.erase(sid, uconf->getLocalNode());
             throw uniset::AccessDenied("UI(getSensorSeq): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(sid, uconf->getLocalNode());
-            throw uniset::AccessDenied("UI(getSensorSeq): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(sid, uconf->getLocalNode());
@@ -2415,11 +2375,6 @@ namespace uniset
             rcache.erase(si.id, si.node);
             throw uniset::AccessDenied("UI(getSensorIOInfo): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(si.id, si.node);
-            throw uniset::AccessDenied("UI(getSensorIOInfo): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(si.id, si.node);
@@ -2496,11 +2451,6 @@ namespace uniset
         {
             rcache.erase(lst[0].si.id, lst[0].si.node);
             throw uniset::IOBadParam("UI(setOutputSeq): " + string(ex.err));
-        }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(lst[0].si.id, lst[0].si.node);
-            throw uniset::AccessDenied("UI(setOutputSeq): " + string(ex.err));
         }
         catch(const IOController_i::AccessDenied& ex)
         {
@@ -2604,11 +2554,6 @@ namespace uniset
             rcache.erase(sid, uconf->getLocalNode());
             throw uniset::AccessDenied("UI(getSensorSeq): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(sid, uconf->getLocalNode());
-            throw uniset::AccessDenied("UI(getSensorSeq): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(sid, uconf->getLocalNode());
@@ -2689,11 +2634,6 @@ namespace uniset
         {
             rcache.erase(id, node);
             throw uniset::IOBadParam("UI(getSensors): " + string(ex.err));
-        }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(id, node);
-            throw uniset::AccessDenied("UI(getSensors): " + string(ex.err));
         }
         catch(const IOController_i::AccessDenied& ex)
         {
@@ -2786,11 +2726,6 @@ namespace uniset
             rcache.erase(id, node);
             throw uniset::AccessDenied("UI(getSensorsMap): " + string(ex.err));
         }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(id, node);
-            throw uniset::AccessDenied("UI(getSensorsMap): " + string(ex.err));
-        }
         catch(const uniset::ORepFailed& )
         {
             rcache.erase(id, node);
@@ -2870,11 +2805,6 @@ namespace uniset
         {
             rcache.erase(id, node);
             throw uniset::IOBadParam("UI(getThresholdsList): " + string(ex.err));
-        }
-        catch(const IOController_i::AccessDenied& ex)
-        {
-            rcache.erase(id, node);
-            throw uniset::AccessDenied("UI(getThresholdsList): " + string(ex.err));
         }
         catch(const IOController_i::AccessDenied& ex)
         {
