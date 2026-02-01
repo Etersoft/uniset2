@@ -116,6 +116,7 @@ namespace uniset
             channels[i].num = i + 1;
             channels[i].idx = i;
             channels[i].client = make_shared<OPCUAClient>();
+            channels[i].client->log()->level( opclog->level() );
             const std::string num = std::to_string(i + 1);
             const std::string defAddr = (i == 0 ? "opc.tcp://localhost:4840" : "");
             channels[i].addr = conf->getArg2Param("--" + argprefix + "addr" + num, it.getProp("addr" + num), defAddr);
@@ -150,7 +151,7 @@ namespace uniset
 
             channels[i].client->onSubscriptionInactive([this, i](opcua::ua::IntegerId id)
             {
-                opclog3 << myname << " Subscription [" << id << "] innactive for channel " << i << endl;
+                opclog3 << myname << " Subscription [" << id << "] inactive for channel " << i << endl;
             });
         }
 
@@ -489,9 +490,6 @@ namespace uniset
                     opclog3 << myname << " Server_ServerCapabilities_OperationLimits_MaxNodesPerWrite: " << node.readValue().to<uint32_t>() << endl;
                     node = ch->client->createNode(opcua::VariableId::Server_ServerCapabilities_OperationLimits_MaxMonitoredItemsPerCall);
                     opclog3 << myname << " Server_ServerCapabilities_OperationLimits_MaxMonitoredItemsPerCall: " << node.readValue().to<uint32_t>() << endl;
-                    /*
-                    ServerType_ServerCapabilities_OperationLimits_MaxNodesPerRead???
-                    */
                     opclog3 << myname << " End server info >>>>>>> " << endl;
                 }
 
@@ -666,8 +664,10 @@ namespace uniset
                         ch->client->runIterate(timeoutIterate);
                     }
                     else
-                        opcwarn << myname << "(channel" << ch->num << "Thread): subscription does not ready" << endl;
-                        
+                    {
+                        opcwarn << myname << "(channel" << ch->num << "Thread): subscription is not ready" << endl;
+                    }
+
                 }
                 catch (const opcua::BadDisconnect& ex)
                 {
@@ -1080,7 +1080,7 @@ namespace uniset
         return gr->results[grNumber][grIndex].get();
     }
     // ------------------------------------------------------------------------------------------
-    const opcua::StatusCode OPCUAExchange::OPCAttribute::RdValue::status()
+    opcua::StatusCode OPCUAExchange::OPCAttribute::RdValue::status()
     {
         if( !gr )
             return opcua::StatusCode{ UA_STATUSCODE_BADUNEXPECTEDERROR };
@@ -1189,12 +1189,12 @@ namespace uniset
 
         if( wv.value().value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
         {
-            *(float*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<float>() = val;
             return true;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
         {
-            *(double*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<double>() = val;
             return true;
         }
 
@@ -1210,44 +1210,43 @@ namespace uniset
 
         if( wv.value().value().isType(&UA_TYPES[UA_TYPES_BOOLEAN]) )
         {
-            bool set = val != 0;
-            *(bool*)(wv.value().value().data()) = set;
+            wv.value().value().scalar<bool>() = (val != 0);
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_INT16]) )
         {
-            *(int16_t*)(wv.value().value().data()) = (int16_t)val;
+            wv.value().value().scalar<int16_t>() = (int16_t)val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_UINT16]) )
         {
-            *(uint16_t*)(wv.value().value().data()) = (uint16_t)val;
+            wv.value().value().scalar<uint16_t>() = (uint16_t)val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_INT32]) )
         {
-            *(int32_t*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<int32_t>() = val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_UINT32]) )
         {
-            *(uint32_t*)(wv.value().value().data()) = (uint32_t)val;
+            wv.value().value().scalar<uint32_t>() = (uint32_t)val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_BYTE]) )
         {
-            *(uint8_t*)(wv.value().value().data()) = (uint8_t)val;
+            wv.value().value().scalar<uint8_t>() = (uint8_t)val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_UINT64]) )
         {
-            *(uint64_t*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<uint64_t>() = val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_INT64]) )
         {
-            *(int64_t*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<int64_t>() = val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
         {
-            *(float*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<float>() = val;
         }
         else if( wv.value().value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
         {
-            *(double*)(wv.value().value().data()) = val;
+            wv.value().value().scalar<double>() = val;
         }
         else
         {
@@ -1257,7 +1256,7 @@ namespace uniset
         return true;
     }
     // ------------------------------------------------------------------------------------------
-    const opcua::StatusCode OPCUAExchange::OPCAttribute::WrValue::status()
+    opcua::StatusCode OPCUAExchange::OPCAttribute::WrValue::status()
     {
         if( !gr )
             return opcua::StatusCode{ UA_STATUSCODE_BADUNEXPECTEDERROR };
@@ -1328,7 +1327,7 @@ namespace uniset
         if( maxItem >= iolist.size() )
             iolist.resize(maxItem + 30);
 
-        inf->tick = enableSubscription ? (uint8_t)0 : (uint8_t)IOBase::initIntProp(it, "opcua_tick", prop_prefix, false); ;
+        inf->tick = enableSubscription ? (uint8_t)0 : (uint8_t)IOBase::initIntProp(it, "opcua_tick", prop_prefix, false);
 
         std::string smask = IOBase::initProp(it, "opcua_mask", prop_prefix, false);
 
@@ -1599,50 +1598,86 @@ namespace uniset
     // -----------------------------------------------------------------------------
     void OPCUAExchange::help_print( int argc, const char* const* argv )
     {
+        cout << " Общие параметры: " << endl;
         cout << "--run-lock file                - Запустить с защитой от повторного запуска" << endl;
-        cout << "--opcua-confnode name          - Использовать для настройки указанный xml-узел" << endl;
         cout << "--opcua-name name              - ID процесса. По умолчанию OPCUAExchange1." << endl;
+        cout << "--opcua-confnode name          - Использовать для настройки указанный xml-узел" << endl;
         cout << "--opcua-polltime msec          - Пауза между циклами обмена. По умолчанию 100 мсек." << endl;
         cout << "--opcua-updatetime msec        - Период обновления данных в/из SM. По умолчанию 100 мсек." << endl;
-        cout << "--opcua-filtersize val         - Размерность фильтра для аналоговых входов." << endl;
-        cout << "--opcua-filterT val            - Постоянная:: времени фильтра." << endl;
-        cout << "--opcua-filter-field           - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-        cout << "--opcua-filter-value           - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+
+        cout << "--opcua-filter-field name      - Считывать список датчиков с указанным полем" << endl;
+        cout << "--opcua-filter-value val       - Считывать список датчиков с field=value" << endl;
+        cout << "--opcua-filter-value-re regexp - Regexp для filter-value" << endl;
+
         cout << "--opcua-heartbeat-id           - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
         cout << "--opcua-heartbeat-max          - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
         cout << "--opcua-sm-ready-timeout       - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
         cout << "--opcua-sm-test-sid            - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
-        cout << "--opcua-force                  - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-        cout << "--opcua-force-out              - Обновлять выходы принудительно (не по заказу)" << endl;
-        cout << "--opcua-write-to-all-channels  - Всегда писать(write) по всем каналам обмена. По умолчанию только в активном" << endl;
-        cout << "--opcua-maxNodesPerRead        - Количество элементов для чтения в одном запросе. По-умолчанию неограниченно" << endl;
-        cout << "--opcua-maxNodesPerWrite       - Количество элементов для записи в одном запросе. По-умолчанию неограниченно" << endl;
-        cout << "--opcua-enable-subscription    - Включить режим подписки. По-умолчанию выключено" << endl;
+        cout << "--opcua-force [0|1]            - Сохранять значения в SM на каждом шаге" << endl;
+        cout << "--opcua-force-out [0|1]        - Обновлять выходы принудительно" << endl;
+        cout << endl;
 
-        cout << "--opcua-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
-        cout << "--opcua-default-exchange-mode  - Режим обмена по-умолчанию при старте процесса" << endl;
+        cout << "--opcua-heartbeat-id name      - Roles heartbeat sensor ID" << endl;
+        cout << "--opcua-heartbeat-max val      - Максимальное значение heartbeat-счётчика. Default: 10" << endl;
+        cout << "--opcua-respond name           - Roles respond sensor ID (общий)" << endl;
+        cout << "--opcua-exchange-mode-id name  - Датчик (AI) управления режимом работы" << endl;
+        cout << "--opcua-default-exchange-mode  - Режим обмена при старте. Default: 0" << endl;
         cout << endl;
-        cout << " OPC UA: N=[1,2]" << endl;
-        cout << "--opcua-addrN addr        - OPC UA server N address (channelN). Default: opc.tcp://localhost:4840/" << endl;
-        cout << "--opcua-userN user        - OPC UA server N auth user (channelN). Default: ''(not used)" << endl;
-        cout << "--opcua-passM pass        - OPC UA server N auth pass (channelN). Default: ''(not used)" << endl;
-        cout << "--opcua-reconnectPause msec  - Pause between reconnect to server, milliseconds" << endl;
+
+        cout << "--opcua-sm-ready-timeout msec  - Время ожидания готовности SM. Default: -1 (вечно)" << endl;
+        cout << "--opcua-sm-test-sid name       - Датчик проверки готовности SM. Default: автоопределение" << endl;
+        cout << "--opcua-activate-timeout msec  - Таймаут активации. Default: 25000 msec" << endl;
         cout << endl;
+
+        cout << " Параметры опроса: " << endl;
+        cout << "--opcua-polltime msec          - Пауза между циклами обмена. Default: 100 msec" << endl;
+        cout << "--opcua-updatetime msec        - Период обновления данных в/из SM. Default: 100 msec" << endl;
+        cout << "--opcua-timeout msec           - Таймаут соединения. Default: 5000 msec" << endl;
+        cout << "--opcua-timeout-iterate msec   - Таймаут итерации. Default: 0 (откл)" << endl;
+        cout << "--opcua-reconnectPause msec    - Пауза между переподключениями. Default: 10000 msec" << endl;
+        cout << "--opcua-stop-on-error [0|1]    - Остановить при ошибке. Default: 0" << endl;
+        cout << "--opcua-maxNodesPerRead num    - Макс. элементов в одном read-запросе. Default: 0 (без ограничений)" << endl;
+        cout << "--opcua-maxNodesPerWrite num   - Макс. элементов в одном write-запросе. Default: 0 (без ограничений)" << endl;
+        cout << "--opcua-error-history-max num  - Макс. размер истории ошибок. Default: 100" << endl;
+        cout << "--opcua-skip-init-output [0|1] - Не инициализировать выходы при старте" << endl;
+        cout << endl;
+
+        cout << " Фильтр аналоговых входов: " << endl;
+        cout << "--opcua-filtersize val         - Размерность медианного фильтра. Default: 1" << endl;
+        cout << "--opcua-filterT val            - Постоянная времени фильтра" << endl;
+        cout << endl;
+
+        cout << " OPC UA Subscription: " << endl;
+        cout << "--opcua-enable-subscription    - Включить режим подписки. По-умолчанию выключено" << endl;
+        cout << "--opcua-publishing-interval ms - Интервал публикации. Default: 0 (откл)" << endl;
+        cout << "--opcua-sampling-interval ms   - Интервал выборки. Default: 0 (откл)" << endl;
+        cout << endl;
+
+        cout << " OPC UA Channels (N=1,2): " << endl;
+        cout << "--opcua-addrN addr             - OPC UA server address. Default: opc.tcp://localhost:4840/" << endl;
+        cout << "--opcua-userN user             - OPC UA server auth user. Default: '' (not used)" << endl;
+        cout << "--opcua-passN pass             - OPC UA server auth pass. Default: '' (not used)" << endl;
+        cout << "--opcua-respondN name          - Respond sensor ID для канала N" << endl;
+        cout << "--opcua-write-to-all-channels [0|1] - Писать по всем каналам. Default: только активный" << endl;
+        cout << endl;
+
         cout << " HTTP API: " << endl;
-        cout << "--opcua-http-enabled-setparams 1 - Enable API /setparams" << endl;
+        cout << "--opcua-http-control-allow [0|1]     - Allow mode control via HTTP (/takeControl, /mode?set=...)" << endl;
+        cout << "--opcua-http-enabled-setparams [0|1] - Enable API /setparams" << endl;
         cout << endl;
+
         cout << " Logs: " << endl;
+        cout << "--opcua-log-add-levels ..." << endl;
+        cout << "--opcua-log-del-levels ..." << endl;
+        cout << "--opcua-log-set-levels ..." << endl;
+        cout << "--opcua-log-logfile filename" << endl;
+        cout << "--opcua-log-no-debug" << endl;
         cout << endl;
-        cout << "--opcua-log-...            - log control" << endl;
-        cout << "             add-levels ..." << endl;
-        cout << "             del-levels ..." << endl;
-        cout << "             set-levels ..." << endl;
-        cout << "             logfile filename" << endl;
-        cout << "             no-debug " << endl;
+
         cout << " LogServer: " << endl;
-        cout << "--opcua-run-logserver       - run logserver. Default: localhost:id" << endl;
-        cout << "--opcua-logserver-host ip   - listen ip. Default: localhost" << endl;
-        cout << "--opcua-logserver-port num  - listen port. Default: ID" << endl;
+        cout << "--opcua-run-logserver          - Run logserver. Default: localhost:id" << endl;
+        cout << "--opcua-logserver-host ip      - Listen ip. Default: localhost" << endl;
+        cout << "--opcua-logserver-port num     - Listen port. Default: ID" << endl;
         cout << LogServer::help_print("opcua-logserver") << endl;
     }
     // -----------------------------------------------------------------------------
@@ -2072,7 +2107,6 @@ namespace uniset
                     opcinfo << myname << " Create subscription part " << i++ << endl;
                     const opcua::StatusCode result = channels[nchannel].client->subscribeDataChanges(it, *rit++, samplingInterval, publishingInterval);
                     opcinfo << myname << " Created subscription status: " << result.name() << endl;
-                    //result.statusCode().throwIfBad();-> todo result array!
 
                 }catch(const std::exception& ex)
                 {

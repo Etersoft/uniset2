@@ -253,7 +253,7 @@ namespace uniset
                     size_t grNumber = {0}; // Номер группы запроса в общем списке
                     int32_t get();
                     float getF();
-                    const opcua::StatusCode status();
+                    opcua::StatusCode status();
                     const opcua::ua::ReadValueId& ref();
                     // Subscription
                     uint32_t subscriptionId = {0U};
@@ -269,7 +269,7 @@ namespace uniset
                     size_t grNumber = {0}; // Номер группы запроса в общем списке
                     bool set( int32_t val );
                     bool setF( float val );
-                    const opcua::StatusCode status();
+                    opcua::StatusCode status();
                     const opcua::ua::WriteValue& ref();
                     static opcua::Variant initValue(const std::string& stype, int32_t defvalue );
                 };

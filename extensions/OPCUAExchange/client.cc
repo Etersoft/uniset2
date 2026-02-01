@@ -259,7 +259,7 @@ int main(int argc, char* argv[])
                     cout << "write:" << endl;
 
                 for( size_t i = 0; i < attrs.size(); i++ )
-                    cout << attrs[i]  << " = " << (*(int32_t*)wvalues[i].value().value().data()) << endl;
+                    cout << attrs[i]  << " = " << wvalues[i].value().value().scalar<int32_t>() << endl;
 
                 if( verb )
                     cout << endl;

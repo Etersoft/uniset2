@@ -615,38 +615,54 @@ bool OPCUAServer::deactivateObject()
 // -----------------------------------------------------------------------------
 void OPCUAServer::help_print()
 {
-    cout << "--run-lock file            - Запустить с защитой от повторного запуска" << endl;
-    cout << "--opcua-name               - ID for rrdstorage. Default: OPCUAServer1. " << endl;
-    cout << "--opcua-confnode           - configuration section name. Default: <NAME name='NAME'...> " << endl;
-    cout << "--opcua-heartbeat-id name  - ID for heartbeat sensor." << endl;
-    cout << "--opcua-heartbeat-max val  - max value for heartbeat sensor." << endl;
-    cout << "--opcua-filter-field name  - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
-    cout << "--opcua-filter-value val   - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-    cout << "--opcua-sm-ready-timeout   - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-    cout << "--opcua-sm-test-sid        - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+    cout << " Общие параметры: " << endl;
+    cout << "--run-lock file              - Запустить с защитой от повторного запуска" << endl;
+    cout << "--opcua-name name            - ID процесса. Default: OPCUAServer1" << endl;
+    cout << "--opcua-confnode name        - Настроечная секция в конф. файле. Default: name" << endl;
+    cout << "--opcua-filter-field name    - Считывать список датчиков с указанным полем" << endl;
+    cout << "--opcua-filter-value val     - Считывать список датчиков с field=value" << endl;
+    cout << "--opcua-filter-value-re re   - Regexp для filter-value" << endl;
+    cout << "--opcua-prop-prefix prefix   - Префикс свойств датчиков" << endl;
+    cout << endl;
 
+    cout << "--opcua-heartbeat-id name    - Roles heartbeat sensor ID" << endl;
+    cout << "--opcua-heartbeat-max val    - Максимальное значение heartbeat-счётчика" << endl;
     cout << endl;
-    cout << "OPC UA:" << endl;
-    cout << "--opcua-updatetime msec      - Пауза между обновлением информации в/из SM. По умолчанию 200" << endl;
-    cout << "--opcua-host ip              - IP на котором слушает OPC UA сервер" << endl;
-    cout << "--opcua-port port            - Порт на котором слушает OPC UA сервер" << endl;
-    cout << "--opcua-maxSubscriptions num - Максимальное количество подписок" << endl;
-    cout << "--opcua-maxSessions num      - Максимальное количество сессий" << endl;
+
+    cout << "--opcua-sm-ready-timeout msec - Время ожидания готовности SM. Default: -1 (вечно)" << endl;
+    cout << "--opcua-sm-test-sid name     - Датчик проверки готовности SM. Default: автоопределение" << endl;
     cout << endl;
+
+    cout << " OPC UA Server: " << endl;
+    cout << "--opcua-host ip              - IP на котором слушает сервер. Default: 0.0.0.0" << endl;
+    cout << "--opcua-port port            - Порт сервера. Default: 4840" << endl;
+    cout << "--opcua-updatetime msec      - Период обновления данных в/из SM. Default: 200 msec" << endl;
+    cout << endl;
+
+    cout << " OPC UA Limits: " << endl;
+    cout << "--opcua-maxSubscriptions num - Макс. количество подписок" << endl;
+    cout << "--opcua-maxSessions num      - Макс. количество сессий" << endl;
+    cout << "--opcua-maxSecureChannels num - Макс. количество защищённых каналов" << endl;
+    cout << "--opcua-maxSessionTimeout msec - Таймаут сессии. Default: 5000 msec" << endl;
+    cout << "--opcua-maxSecurityTokenLifetime msec - Время жизни токена безопасности" << endl;
+    cout << endl;
+
     cout << " HTTP API: " << endl;
-    cout << "--opcua-http-enabled-setparams 1 - Enable API /setparams" << endl;
+    cout << "--opcua-http-enabled-setparams [0|1] - Enable API /setparams" << endl;
     cout << endl;
-    cout << "Logs:" << endl;
-    cout << "--opcua-log-...            - log control" << endl;
-    cout << "             add-levels ...  " << endl;
-    cout << "             del-levels ...  " << endl;
-    cout << "             set-levels ...  " << endl;
-    cout << "             logfile filename" << endl;
-    cout << "             no-debug " << endl;
-    cout << "LogServer: " << endl;
-    cout << "--opcua-run-logserver      - run logserver. Default: localhost:id" << endl;
-    cout << "--opcua-logserver-host ip  - listen ip. Default: localhost" << endl;
-    cout << "--opcua-logserver-port num - listen port. Default: ID" << endl;
+
+    cout << " Logs: " << endl;
+    cout << "--opcua-log-add-levels ..." << endl;
+    cout << "--opcua-log-del-levels ..." << endl;
+    cout << "--opcua-log-set-levels ..." << endl;
+    cout << "--opcua-log-logfile filename" << endl;
+    cout << "--opcua-log-no-debug" << endl;
+    cout << endl;
+
+    cout << " LogServer: " << endl;
+    cout << "--opcua-run-logserver        - Run logserver. Default: localhost:id" << endl;
+    cout << "--opcua-logserver-host ip    - Listen ip. Default: 0.0.0.0" << endl;
+    cout << "--opcua-logserver-port num   - Listen port. Default: ID" << endl;
     cout << LogServer::help_print("opcua-logserver") << endl;
 }
 // -----------------------------------------------------------------------------

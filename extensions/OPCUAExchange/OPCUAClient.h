@@ -28,6 +28,7 @@
 #include "open62541pp/detail/client_utils.hpp"
 
 #include "Exceptions.h"
+#include "DebugStream.h"
 //--------------------------------------------------------------------------
 namespace uniset
 {
@@ -74,11 +75,11 @@ namespace uniset
                 }
             };
 
-            const opcua::StatusCode read(const std::vector<opcua::ua::ReadValueId>& attrs, std::vector<ResultVar>& results);
-            const opcua::StatusCode write32( std::vector<opcua::ua::WriteValue>& values );
-            const opcua::StatusCode write32( const std::string& attr, int32_t value );
-            const opcua::StatusCode set( const std::string& attr, bool set );
-            const opcua::StatusCode write( const opcua::ua::WriteValue& writeValue );
+            opcua::StatusCode read(const std::vector<opcua::ua::ReadValueId>& attrs, std::vector<ResultVar>& results);
+            opcua::StatusCode write32( std::vector<opcua::ua::WriteValue>& values );
+            opcua::StatusCode write32( const std::string& attr, int32_t value );
+            opcua::StatusCode set( const std::string& attr, bool set );
+            opcua::StatusCode write( const opcua::ua::WriteValue& writeValue );
             
             static opcua::ua::WriteValue makeWriteValue32( const std::string& name, int32_t val );
             static opcua::ua::ReadValueId makeReadValue32( const std::string& name );
@@ -131,7 +132,7 @@ namespace uniset
                 exceptionCatcher.rethrow(); // Работает только один раз, после повторной отправки удаляется!
             }
 
-            const opcua::StatusCode subscribeDataChanges(std::vector<opcua::ua::ReadValueId>& ids,
+            opcua::StatusCode subscribeDataChanges(std::vector<opcua::ua::ReadValueId>& ids,
                                                                                    std::vector<OPCUAClient::ResultVar>& results,
                                                                                    float samplingInterval,
                                                                                    float publishingInterval);
@@ -146,7 +147,7 @@ namespace uniset
                 return count;
             }
 
-            const opcua::StatusCode deleteSubscription(opcua::ua::IntegerId subId)
+            opcua::StatusCode deleteSubscription(opcua::ua::IntegerId subId)
             {
                 return opcua::services::deleteSubscription(client, subId); 
             }
@@ -156,12 +157,16 @@ namespace uniset
                 return opcua::Node{client, nodeName};
             }
 
+            std::shared_ptr<DebugStream> log();
+            void setLog( const std::shared_ptr<DebugStream>& dlog );
+
         protected:
 
             opcua::Client client;
+            std::shared_ptr<DebugStream> dlog;
 
         private:
-            void processResult(opcua::String node_name, const opcua::DataValue& in, ResultVar& out);
+            void processResult(const opcua::String& node_name, const opcua::DataValue& in, ResultVar& out);
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset

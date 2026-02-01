@@ -14,12 +14,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
-#include <sstream>
-
-#include <limits>
-#include <iomanip>
-#include <chrono>
-
 #include <open62541pp/open62541pp.hpp>
 #include "OPCUAClient.h"
 
@@ -27,76 +21,19 @@
 using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
-/// Get name of log level.
-constexpr std::string_view getLogLevelName(opcua::LogLevel level)
-{
-    switch (level)
-    {
-        case opcua::LogLevel::Trace:
-            return "trace";
-
-        case opcua::LogLevel::Debug:
-            return "debug";
-
-        case opcua::LogLevel::Info:
-            return "info";
-
-        case opcua::LogLevel::Warning:
-            return "warning";
-
-        case opcua::LogLevel::Error:
-            return "error";
-
-        case opcua::LogLevel::Fatal:
-            return "fatal";
-
-        default:
-            return "unknown";
-    }
-}
-
-/// Get name of log category.
-constexpr std::string_view getLogCategoryName(opcua::LogCategory category)
-{
-    switch (category)
-    {
-        case opcua::LogCategory::Network:
-            return "network";
-
-        case opcua::LogCategory::SecureChannel:
-            return "channel";
-
-        case opcua::LogCategory::Session:
-            return "session";
-
-        case opcua::LogCategory::Server:
-            return "server";
-
-        case opcua::LogCategory::Client:
-            return "client";
-
-        case opcua::LogCategory::Userland:
-            return "userland";
-
-        case opcua::LogCategory::SecurityPolicy:
-            return "securitypolicy";
-
-        default:
-            return "unknown";
-    }
-}
-// -----------------------------------------------------------------------------
-namespace opcua
-{
-    static auto log = [](Client& client, auto level, auto category, auto msg)
-    {
-        std::cout << "[" << getLogLevelName(level) << "] "
-                  << "[" << getLogCategoryName(category) << "] " << msg << std::endl;
-    };
-}
-// -----------------------------------------------------------------------------
 OPCUAClient::OPCUAClient()
+    : dlog( make_shared<DebugStream>() )
 {
+}
+// -----------------------------------------------------------------------------
+std::shared_ptr<DebugStream> OPCUAClient::log()
+{
+    return dlog;
+}
+// -----------------------------------------------------------------------------
+void OPCUAClient::setLog( const std::shared_ptr<DebugStream>& _dlog )
+{
+    dlog = _dlog;
 }
 // -----------------------------------------------------------------------------
 OPCUAClient::~OPCUAClient()
@@ -118,8 +55,8 @@ bool OPCUAClient::connect( const std::string& addr )
     }
     catch( const std::exception& ex )
     {
-        //cerr << addr << " (exception) "<< ex.what()<<endl;
-        opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
+        if( dlog->debugging(Debug::CRIT) )
+            dlog->crit() << addr << " (exception) " << ex.what() << endl;
         return false;
     }
 
@@ -145,8 +82,8 @@ bool OPCUAClient::connect( const std::string& addr, const std::string& user, con
     }
     catch( const std::exception& ex )
     {
-        //cerr << addr << " (exception) " << ex.what() << endl;
-        opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, addr + " (exception) " + ex.what());
+        if( dlog->debugging(Debug::CRIT) )
+            dlog->crit() << addr << " (exception) " << ex.what() << endl;
         return false;
     }
 
@@ -195,86 +132,90 @@ int32_t OPCUAClient::ResultVar::get()
     return 0;
 }
 // -----------------------------------------------------------------------------
-void OPCUAClient::processResult(opcua::String node_name, const opcua::DataValue& in, OPCUAClient::ResultVar& out)
+void OPCUAClient::processResult(const opcua::String& node_name, const opcua::DataValue& in, OPCUAClient::ResultVar& out)
 {
-    std::stringstream ss;
-    ss << " Read nodeId: [" << node_name;
     out.status = in.status();
- 
-    if(in.status().isGood())
+
+    if( !in.status().isGood() )
     {
-        
-        ss << "] status: [" << in.status().name();
-        if ( in.value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
-        {
-            out.type = VarType::Float;
-            out.value = (float)in.value().to<double>();
-            ss << "] value(double): [" << out.as<float>();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
-        {
-            out.type = VarType::Float;
-            out.value = (float)in.value().to<float>();
-            ss << "] value(float): [" << out.as<float>();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_BOOLEAN]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<bool>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_INT32]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<int32_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_UINT32]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<uint32_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_INT64]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<int64_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_UINT64]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<uint64_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_INT16]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<int16_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_UINT16]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<uint16_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        } else if ( in.value().isType(&UA_TYPES[UA_TYPES_BYTE]) )
-        {
-            out.type = VarType::Int32;
-            out.value = (int32_t)in.value().to<uint8_t>();
-            ss << "] value(int32_t): [" << (int32_t)out.get();
-        }
-        else
-        {
-            ss << " unknown type: [" << in.value().type()->typeName << "]";
-            opcua::log( client, opcua::LogLevel::Error, opcua::LogCategory::Client, ss.str());
-            return;
-        }     
-        ss << "]";
-        opcua::log( client, opcua::LogLevel::Info, opcua::LogCategory::Client, ss.str());
+        if( dlog->debugging(Debug::CRIT) )
+            dlog->crit() << " Read nodeId: [" << node_name
+                         << "] error with status: [" << in.status().name() << "]" << endl;
+        return;
+    }
+
+    if( in.value().isType(&UA_TYPES[UA_TYPES_DOUBLE]) )
+    {
+        out.type = VarType::Float;
+        out.value = (float)in.value().to<double>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_FLOAT]) )
+    {
+        out.type = VarType::Float;
+        out.value = (float)in.value().to<float>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_BOOLEAN]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<bool>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_INT32]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<int32_t>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_UINT32]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<uint32_t>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_INT64]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<int64_t>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_UINT64]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<uint64_t>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_INT16]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<int16_t>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_UINT16]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<uint16_t>();
+    }
+    else if( in.value().isType(&UA_TYPES[UA_TYPES_BYTE]) )
+    {
+        out.type = VarType::Int32;
+        out.value = (int32_t)in.value().to<uint8_t>();
     }
     else
-    { 
-        ss << "] error with status: [" << in.status().name() << "]";
-        opcua::log( client, opcua::LogLevel::Error, opcua::LogCategory::Client, ss.str());
+    {
+        if( dlog->debugging(Debug::CRIT) )
+            dlog->crit() << " Read nodeId: [" << node_name
+                         << "] unknown type: [" << in.value().type()->typeName << "]" << endl;
+        return;
+    }
+
+    if( dlog->debugging(Debug::LEVEL4) )
+    {
+        if( out.type == VarType::Float )
+            dlog->level4() << " Read nodeId: [" << node_name << "] value: [" << out.as<float>() << "]" << endl;
+        else
+            dlog->level4() << " Read nodeId: [" << node_name << "] value: [" << out.get() << "]" << endl;
     }
 }
 // -----------------------------------------------------------------------------
-const opcua::StatusCode OPCUAClient::read(const std::vector<opcua::ua::ReadValueId>& attrs, std::vector<OPCUAClient::ResultVar>& results )
+opcua::StatusCode OPCUAClient::read(const std::vector<opcua::ua::ReadValueId>& attrs, std::vector<OPCUAClient::ResultVar>& results )
 {
-    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "Read attributes");
+    if( dlog->debugging(Debug::LEVEL4) )
+        dlog->level4() << "Read attributes" << endl;
+
     const auto request = opcua::services::detail::makeReadRequest(opcua::ua::TimestampsToReturn{}, attrs);
     const auto response = opcua::services::read(client, opcua::asWrapper<opcua::ua::ReadRequest>(request));
     const opcua::StatusCode serviceResult = opcua::services::detail::getServiceResult(response);
@@ -283,9 +224,8 @@ const opcua::StatusCode OPCUAClient::read(const std::vector<opcua::ua::ReadValue
     {
         if( response.results().size() > results.size() )
         {
-            std::stringstream ss;
-            ss << "Response items size mismatched: " << response.results().size() << " != " << results.size();
-            opcua::log(client, opcua::LogLevel::Error, opcua::LogCategory::Client, ss.str());
+            if( dlog->debugging(Debug::CRIT) )
+                dlog->crit() << "Response items size mismatched: " << response.results().size() << " != " << results.size() << endl;
             return opcua::StatusCode{ UA_STATUSCODE_BADRESPONSETOOLARGE };
         } else
         {
@@ -298,16 +238,17 @@ const opcua::StatusCode OPCUAClient::read(const std::vector<opcua::ua::ReadValue
     return serviceResult;
 }
 // -----------------------------------------------------------------------------
-const opcua::StatusCode OPCUAClient::write32( std::vector<opcua::ua::WriteValue>& values )
+opcua::StatusCode OPCUAClient::write32( std::vector<opcua::ua::WriteValue>& values )
 {
-    opcua::log(client, opcua::LogLevel::Info, opcua::LogCategory::Client, "Write attributes");
+    if( dlog->debugging(Debug::LEVEL4) )
+        dlog->level4() << "Write attributes" << endl;
     const auto request = opcua::services::detail::makeWriteRequest({values.data(), values.size()});
     const auto response = opcua::services::write(client, opcua::asWrapper<opcua::ua::WriteRequest>(request));
     const opcua::StatusCode serviceResult = opcua::services::detail::getServiceResult(response);
     return serviceResult;
 }
 // -----------------------------------------------------------------------------
-const opcua::StatusCode OPCUAClient::write( const opcua::ua::WriteValue& writeValue )
+opcua::StatusCode OPCUAClient::write( const opcua::ua::WriteValue& writeValue )
 {
     const auto request = opcua::services::detail::makeWriteRequest({&writeValue, 1});
     const auto response = opcua::services::write(client, opcua::asWrapper<opcua::ua::WriteRequest>(request));
@@ -315,7 +256,7 @@ const opcua::StatusCode OPCUAClient::write( const opcua::ua::WriteValue& writeVa
     return serviceResult;
 }
 // -----------------------------------------------------------------------------
-const opcua::StatusCode OPCUAClient::set( const std::string& attr, bool set )
+opcua::StatusCode OPCUAClient::set( const std::string& attr, bool set )
 {
     const opcua::StatusCode serviceResult = opcua::services::writeAttribute(client,
                                             opcua::NodeId::parse(attr.c_str()),
@@ -324,7 +265,7 @@ const opcua::StatusCode OPCUAClient::set( const std::string& attr, bool set )
     return serviceResult;
 }
 // -----------------------------------------------------------------------------
-const opcua::StatusCode OPCUAClient::write32( const std::string& attr, int32_t value )
+opcua::StatusCode OPCUAClient::write32( const std::string& attr, int32_t value )
 {
     const opcua::StatusCode serviceResult = opcua::services::writeAttribute(client,
                                             opcua::NodeId::parse(attr.c_str()),
@@ -346,12 +287,13 @@ opcua::ua::ReadValueId OPCUAClient::makeReadValue32( const std::string& name )
     return opcua::ua::ReadValueId{opcua::NodeId::parse(name.c_str()), opcua::AttributeId::Value};
 }
 // -----------------------------------------------------------------------------
-const opcua::StatusCode OPCUAClient::subscribeDataChanges(std::vector<opcua::ua::ReadValueId>& ids,
+opcua::StatusCode OPCUAClient::subscribeDataChanges(std::vector<opcua::ua::ReadValueId>& ids,
                                                           std::vector<OPCUAClient::ResultVar>& results,
                                                           float samplingInterval,
                                                           float publishingInterval)
 {
-    assert(ids.size() == results.size());
+    if( ids.size() != results.size() )
+        throw uniset::SystemError("subscribeDataChanges: ids.size(" + std::to_string(ids.size()) + ") != results.size(" + std::to_string(results.size()) + ")");
 
     opcua::SubscriptionParameters subscriptionParameters{};
     subscriptionParameters.publishingInterval = publishingInterval;
