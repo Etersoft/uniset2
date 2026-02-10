@@ -766,6 +766,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %changelog
 * Mon Jan 12 2026 Pavel Vainerman <pv@altlinux.ru> 2.44.3-alt1
 - (launcher): minor fixes
+- (opcua): subscription refactoring
+- (modbus): minor refactoring
 
 * Thu Jan 08 2026 Pavel Vainerman <pv@altlinux.ru> 2.44.2-alt3
 - (docs): update
