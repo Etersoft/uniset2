@@ -716,6 +716,67 @@ JavaScript-файл для веб-интерфейса.
 - Соответствующие текущему узлу (`nodeFilter`)
 - Manual-процессы только если были запущены
 
+Если все процессы остановлены (например, после `stop-all`), запускает все процессы кроме `skip`, `manual`, `oneshot`.
+
+Если `restart-all` уже выполняется, повторный вызов возвращает OK:
+```json
+{"success": true, "message": "Restart already in progress"}
+```
+
+Если выполняется другая операция (`reload-all`, `stop-all`), возвращается ошибка:
+```json
+{"success": false, "error": "Another operation in progress"}
+```
+
+### POST /api/v2/launcher/reload-all
+
+Полная перезагрузка: остановить все процессы, затем запустить заново. Требует `--control-token`.
+
+```json
+{
+  "success": true,
+  "message": "Reload all initiated"
+}
+```
+
+В отличие от `restart-all`, который перезапускает только работающие процессы по отдельности,
+`reload-all` выполняет полный цикл: остановка всех → сброс состояния → запуск всех в порядке зависимостей.
+
+Поведение:
+- Процессы с `skip=true` — пропускаются
+- Процессы с `manual=true` — пропускаются
+- Процессы `oneshot` — запускаются заново
+
+Если `reload-all` уже выполняется, повторный вызов возвращает OK:
+```json
+{"success": true, "message": "Reload already in progress"}
+```
+
+Если выполняется другая операция (`restart-all`, `stop-all`), возвращается ошибка:
+```json
+{"success": false, "error": "Another operation in progress"}
+```
+
+### POST /api/v2/launcher/stop-all
+
+Остановить все процессы. Требует `--control-token`.
+
+```json
+{
+  "success": true,
+  "message": "Stop all initiated"
+}
+```
+
+Особенности:
+- Может **прервать** текущую `restart-all` или `reload-all` — фаза запуска процессов будет остановлена
+- После завершения остановки можно снова вызвать `restart-all` или `reload-all`
+
+Если `stop-all` уже выполняется, повторный вызов возвращает OK:
+```json
+{"success": true, "message": "Stop already in progress"}
+```
+
 ### GET /api/v2/launcher/health
 
 Проверка состояния для Docker/Kubernetes.

@@ -232,7 +232,8 @@
         if (hasControl) {
             html += '<th class="actions-header">Actions ';
             html += '<button class="btn btn-warning btn-sm" onclick="restartAll()" title="Restart all running processes"' + (bulkButtonsDisabled ? ' disabled' : '') + '>Restart</button> ';
-            html += '<button class="btn btn-info btn-sm" onclick="reloadAll()" title="Stop all, then start all (like on launch)"' + (bulkButtonsDisabled ? ' disabled' : '') + '>Reload</button>';
+            html += '<button class="btn btn-info btn-sm" onclick="reloadAll()" title="Stop all, then start all (like on launch)"' + (bulkButtonsDisabled ? ' disabled' : '') + '>Reload</button> ';
+            html += '<button class="btn btn-danger btn-sm" onclick="stopAll()" title="Stop all processes"' + (bulkButtonsDisabled ? ' disabled' : '') + '>Stop</button>';
             html += '</th>';
         }
         html += '</tr></thead>';
@@ -687,6 +688,61 @@
                 setTimeout(fetchStatus, 3000);
                 setTimeout(fetchStatus, 6000);
                 setTimeout(fetchStatus, 10000);
+
+            } catch (e) {
+                errorDiv.textContent = 'Error: ' + e.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+    };
+
+    window.stopAll = function() {
+        showConfirm('Stop All', 'Stop all processes?', 'btn-danger', async function() {
+            const errorDiv = document.getElementById('error');
+
+            if (!controlToken) {
+                errorDiv.textContent = 'Please take control first.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Update heartbeat on user action
+            updateHeartbeat();
+
+            try {
+                const resp = await fetch(API_URL + '/api/v2/launcher/stop-all', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + controlToken
+                    }
+                });
+
+                const data = await resp.json();
+
+                if (resp.status === 401) {
+                    errorDiv.textContent = 'Control token invalid. Please re-authenticate.';
+                    errorDiv.style.display = 'block';
+                    releaseControl();
+                    return;
+                }
+
+                if (resp.status === 403) {
+                    errorDiv.textContent = 'Forbidden: ' + (data.message || 'Control operations disabled');
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!data.success) {
+                    errorDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+
+                // Refresh status to show Stopping state
+                fetchStatus();
+                setTimeout(fetchStatus, 1000);
+                setTimeout(fetchStatus, 3000);
 
             } catch (e) {
                 errorDiv.textContent = 'Error: ' + e.message;

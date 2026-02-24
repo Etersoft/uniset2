@@ -264,7 +264,7 @@ namespace uniset
     ProcessManager::~ProcessManager()
     {
         stopMonitoring();
-        stopAll();
+        doStopAll();
     }
     // -------------------------------------------------------------------------
     void ProcessManager::setNodeName(const std::string& name)
@@ -329,9 +329,13 @@ namespace uniset
     {
         std::unique_lock<std::mutex> lock(mutex_);
 
-        mylog->info() << "Starting all processes..." << std::endl;
+        if (stopping_)
+        {
+            mylog->info() << "startAll: stopping in progress, aborting" << std::endl;
+            return false;
+        }
 
-        stopping_ = false;
+        mylog->info() << "Starting all processes..." << std::endl;
 
         // Get groups in dependency order
         std::vector<std::string> groupOrder;
@@ -496,12 +500,15 @@ namespace uniset
         std::string workDir = proc.workDir.empty() ? "." : proc.workDir;
         std::string command = proc.command;
 
-        mylog->info() << "Running oneshot: " << command;
+        if (mylog->is_info())
+        {
+            auto& os = mylog->info() << "Running oneshot: " << command;
 
-        for (const auto& arg : args)
-            *mylog << " " << arg;
+            for (const auto& arg : args)
+                os << " " << arg;
 
-        *mylog << std::endl;
+            os << std::endl;
+        }
 
         // Launch process under lock
         Poco::Pipe outPipe;
@@ -617,13 +624,16 @@ namespace uniset
         // Retry loop
         while (true)
         {
-            mylog->info() << "Starting process: " << procName
-                          << " (attempt " << (proc.restartCount + 1);
+            if (mylog->is_info())
+            {
+                auto& os = mylog->info() << "Starting process: " << procName
+                              << " (attempt " << (proc.restartCount + 1);
 
-            if (maxRestarts > 0)
-                *mylog << "/" << maxRestarts;
+                if (maxRestarts > 0)
+                    os << "/" << maxRestarts;
 
-            *mylog << ")" << std::endl;
+                os << ")" << std::endl;
+            }
 
             if (proc.state != ProcessState::Restarting)
                 proc.state = ProcessState::Starting;
@@ -787,7 +797,54 @@ namespace uniset
         }
     }
     // -------------------------------------------------------------------------
+    bool ProcessManager::isBulkOperationInProgress() const
+    {
+        return currentBulkOp_.load() != BulkOperation::None;
+    }
+    // -------------------------------------------------------------------------
+    BulkOperation ProcessManager::currentBulkOperation() const
+    {
+        return currentBulkOp_.load();
+    }
+    // -------------------------------------------------------------------------
     void ProcessManager::stopAll()
+    {
+        // If already stopping, nothing to do
+        if (stopping_.exchange(true))
+        {
+            mylog->info() << "stopAll: already stopping, skipping" << std::endl;
+            return;
+        }
+
+        auto expected = BulkOperation::None;
+
+        if (!currentBulkOp_.compare_exchange_strong(expected, BulkOperation::Stop))
+        {
+            // Another bulk operation is running (restartAll/reloadAll),
+            // stopping_ flag will interrupt startAll inside it.
+            // Wait for it to finish, then stop remaining processes.
+            mylog->info() << "stopAll: waiting for current bulk operation to finish..." << std::endl;
+
+            while (currentBulkOp_.load() != BulkOperation::None)
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            // Acquire the flag and stop whatever is left
+            expected = BulkOperation::None;
+
+            if (!currentBulkOp_.compare_exchange_strong(expected, BulkOperation::Stop))
+            {
+                mylog->warn() << "stopAll: another operation started, skipping" << std::endl;
+                stopping_ = false;
+                return;
+            }
+        }
+
+        doStopAll();
+        currentBulkOp_ = BulkOperation::None;
+        stopping_ = false;
+    }
+    // -------------------------------------------------------------------------
+    void ProcessManager::doStopAll()
     {
         mylog->info() << "Stopping all processes..." << std::endl;
 
@@ -797,7 +854,6 @@ namespace uniset
 
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            stopping_ = true;
 
             try
             {
@@ -809,7 +865,12 @@ namespace uniset
                 for (auto& kv : processes_)
                 {
                     if (kv.second.pid > 0)
+                    {
+                        if (kv.second.state != ProcessState::Restarting)
+                            kv.second.state = ProcessState::Stopping;
+
                         toStop.push_back({kv.first, kv.second.pid});
+                    }
                 }
 
                 groupOrder.clear();
@@ -832,7 +893,12 @@ namespace uniset
                         auto pit = processes_.find(procName);
 
                         if (pit != processes_.end() && pit->second.pid > 0)
+                        {
+                            if (pit->second.state != ProcessState::Restarting)
+                                pit->second.state = ProcessState::Stopping;
+
                             toStop.push_back({procName, pit->second.pid});
+                        }
                     }
                 }
             }
@@ -883,6 +949,15 @@ namespace uniset
     // -------------------------------------------------------------------------
     void ProcessManager::restartAll()
     {
+        // Guard against concurrent bulk operations
+        auto expected = BulkOperation::None;
+
+        if (!currentBulkOp_.compare_exchange_strong(expected, BulkOperation::Restart))
+        {
+            mylog->warn() << "restartAll: bulk operation already in progress, skipping" << std::endl;
+            return;
+        }
+
         mylog->info() << "Restarting all processes (respecting dependencies)..." << std::endl;
 
         // Collect names of processes to restart (those that are running or should be running)
@@ -914,10 +989,32 @@ namespace uniset
             }
         }
 
+        // If all processes are stopped, start all (except skip, manual, oneshot)
         if (toRestart.empty())
         {
-            mylog->info() << "No processes to restart" << std::endl;
-            return;
+            std::lock_guard<std::mutex> lock(mutex_);
+
+            for (const auto& kv : processes_)
+            {
+                const auto& proc = kv.second;
+
+                if (proc.skip || proc.manual || proc.oneshot)
+                    continue;
+
+                if (!proc.shouldRunOnNode(nodeName_))
+                    continue;
+
+                toRestart.insert(proc.name);
+            }
+
+            if (toRestart.empty())
+            {
+                currentBulkOp_ = BulkOperation::None;
+                mylog->info() << "No processes to restart" << std::endl;
+                return;
+            }
+
+            mylog->info() << "All processes stopped, starting all..." << std::endl;
         }
 
         // Set all processes to Restarting state for UI feedback (blinking)
@@ -951,6 +1048,7 @@ namespace uniset
                 restartProcess(name);
             }
 
+            currentBulkOp_ = BulkOperation::None;
             return;
         }
 
@@ -982,6 +1080,9 @@ namespace uniset
         // Note: we release mutex during the actual stop/wait to allow status queries
         for (const auto& procName : stopOrder)
         {
+            if (stopping_)
+                break;
+
             pid_t pidToStop = 0;
             bool shouldStop = false;
 
@@ -1062,6 +1163,9 @@ namespace uniset
         // Start processes one by one (with unlock during waitForReady)
         for (const auto& procName : startOrder)
         {
+            if (stopping_)
+                break;
+
             std::unique_lock<std::mutex> lock(mutex_);
             auto pit = processes_.find(procName);
 
@@ -1081,11 +1185,21 @@ namespace uniset
             }
         }
 
+        currentBulkOp_ = BulkOperation::None;
         mylog->info() << "Restart all completed" << std::endl;
     }
     // -------------------------------------------------------------------------
     void ProcessManager::reloadAll()
     {
+        // Guard against concurrent bulk operations
+        auto expected = BulkOperation::None;
+
+        if (!currentBulkOp_.compare_exchange_strong(expected, BulkOperation::Reload))
+        {
+            mylog->warn() << "reloadAll: bulk operation already in progress, skipping" << std::endl;
+            return;
+        }
+
         mylog->info() << "Reloading all processes (stop all, then start all)..." << std::endl;
 
         // Set all running processes to Restarting state for UI feedback (blinking)
@@ -1105,7 +1219,7 @@ namespace uniset
         }
 
         // Stop all running processes
-        stopAll();
+        doStopAll();
 
         // Reset all processes before starting
         {
@@ -1115,9 +1229,18 @@ namespace uniset
                 kv.second.reset();
         }
 
+        // If stopAll was called while we were stopping, don't start
+        if (stopping_)
+        {
+            mylog->info() << "reloadAll: interrupted by stopAll, skipping start phase" << std::endl;
+            currentBulkOp_ = BulkOperation::None;
+            return;
+        }
+
         // Start all processes (except skip and manual)
         startAll();
 
+        currentBulkOp_ = BulkOperation::None;
         mylog->info() << "Reload all completed" << std::endl;
     }
     // -------------------------------------------------------------------------
