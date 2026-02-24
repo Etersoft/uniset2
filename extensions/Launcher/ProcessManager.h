@@ -39,6 +39,14 @@ namespace uniset
      * 2. Wait stopTimeout_msec_ for graceful shutdown
      * 3. Send SIGKILL to any remaining processes
      */
+    enum class BulkOperation : int
+    {
+        None = 0,
+        Restart,
+        Reload,
+        Stop
+    };
+
     class ProcessManager
     {
         public:
@@ -65,6 +73,8 @@ namespace uniset
             void stopAll();
             void restartAll();  //!< Restart all running processes
             void reloadAll();   //!< Stop all, then start all (except skip, manual)
+            bool isBulkOperationInProgress() const;
+            BulkOperation currentBulkOperation() const;
             bool restartProcess(const std::string& name);
             bool stopProcess(const std::string& name);
             bool startProcess(const std::string& name);
@@ -106,6 +116,7 @@ namespace uniset
             bool startProcessWithUnlock(ProcessInfo& proc, std::unique_lock<std::mutex>& lock);
             bool startOneshotWithUnlock(ProcessInfo& proc, std::unique_lock<std::mutex>& lock);
             void stopProcess(ProcessInfo& proc);
+            void doStopAll();  //!< Internal stopAll without bulk guard
             void handleProcessExitByName(const std::string& name, int exitCode);
             void monitorLoop();
 
@@ -128,6 +139,7 @@ namespace uniset
             std::thread monitorThread_;
             std::atomic<bool> running_{false};
             std::atomic<bool> stopping_{false};
+            std::atomic<BulkOperation> currentBulkOp_{BulkOperation::None};
             mutable std::mutex mutex_;
 
             size_t healthCheckInterval_msec_ = 5000;

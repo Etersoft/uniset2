@@ -133,6 +133,32 @@ namespace uniset
             return handleReloadAll();
         }
 
+        // /stop-all - stop all processes
+        if (cmd == "stop-all" && method == "POST")
+        {
+            // Check if control is enabled
+            if (controlToken_.empty())
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "forbidden");
+                obj->set("message", "control operations disabled (--control-token not set)");
+                return obj;
+            }
+
+            // Check control authorization
+            if (!checkControlAuth(ctx.request))
+            {
+                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+                auto obj = new Poco::JSON::Object();
+                obj->set("error", "unauthorized");
+                obj->set("message", "missing or invalid control token");
+                return obj;
+            }
+
+            return handleStopAll();
+        }
+
         // /auth - validate control token
         if (cmd == "auth" && method == "GET")
         {
@@ -348,6 +374,26 @@ namespace uniset
     // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr LauncherHttpRegistry::handleRestartAll()
     {
+        auto op = pm_.currentBulkOperation();
+
+        if (op != uniset::BulkOperation::None)
+        {
+            auto obj = new Poco::JSON::Object();
+
+            if (op == uniset::BulkOperation::Restart)
+            {
+                obj->set("success", true);
+                obj->set("message", "Restart already in progress");
+            }
+            else
+            {
+                obj->set("success", false);
+                obj->set("error", "Another operation in progress");
+            }
+
+            return obj;
+        }
+
         // Run restartAll asynchronously so HTTP response returns immediately
         // This allows client to poll for "restarting" state during the operation
         std::thread([this]()
@@ -364,6 +410,26 @@ namespace uniset
     // -------------------------------------------------------------------------
     Poco::JSON::Object::Ptr LauncherHttpRegistry::handleReloadAll()
     {
+        auto op = pm_.currentBulkOperation();
+
+        if (op != uniset::BulkOperation::None)
+        {
+            auto obj = new Poco::JSON::Object();
+
+            if (op == uniset::BulkOperation::Reload)
+            {
+                obj->set("success", true);
+                obj->set("message", "Reload already in progress");
+            }
+            else
+            {
+                obj->set("success", false);
+                obj->set("error", "Another operation in progress");
+            }
+
+            return obj;
+        }
+
         // Run reloadAll asynchronously so HTTP response returns immediately
         // This allows client to poll for "restarting" state during the operation
         std::thread([this]()
@@ -374,6 +440,32 @@ namespace uniset
         auto obj = new Poco::JSON::Object();
         obj->set("success", true);
         obj->set("message", "Reload all initiated");
+
+        return obj;
+    }
+    // -------------------------------------------------------------------------
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleStopAll()
+    {
+        auto op = pm_.currentBulkOperation();
+
+        // If stop is already in progress, don't spawn another thread
+        if (op == uniset::BulkOperation::Stop)
+        {
+            auto obj = new Poco::JSON::Object();
+            obj->set("success", true);
+            obj->set("message", "Stop already in progress");
+            return obj;
+        }
+
+        // stopAll can interrupt running bulk operations (restartAll/reloadAll)
+        std::thread([this]()
+        {
+            pm_.stopAll();
+        }).detach();
+
+        auto obj = new Poco::JSON::Object();
+        obj->set("success", true);
+        obj->set("message", "Stop all initiated");
 
         return obj;
     }
@@ -496,6 +588,15 @@ namespace uniset
             params.add(param);
             cmd.set("parameters", params);
 
+            commands.add(cmd);
+        }
+
+        // stop-all
+        {
+            Poco::JSON::Object cmd;
+            cmd.set("name", "stop-all");
+            cmd.set("desc", "Stop all processes (requires control token)");
+            cmd.set("method", "POST");
             commands.add(cmd);
         }
 

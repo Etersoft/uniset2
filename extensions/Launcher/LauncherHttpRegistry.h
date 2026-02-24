@@ -30,6 +30,8 @@ namespace uniset
      * - POST /api/v2/launcher/process/{name}/stop    - Stop process
      * - POST /api/v2/launcher/process/{name}/start   - Start process
      * - POST /api/v2/launcher/restart-all  - Restart all running processes
+     * - POST /api/v2/launcher/reload-all   - Stop all, then start all
+     * - POST /api/v2/launcher/stop-all     - Stop all processes
      * - GET  /api/v2/launcher/health       - Health check
      * - GET  /api/v2/launcher/groups       - Process groups
      * - GET  /api/v2/launcher/help         - API help
@@ -67,6 +69,7 @@ namespace uniset
             Poco::JSON::Object::Ptr handleStart(const std::string& name);
             Poco::JSON::Object::Ptr handleRestartAll();
             Poco::JSON::Object::Ptr handleReloadAll();
+            Poco::JSON::Object::Ptr handleStopAll();
             Poco::JSON::Object::Ptr handleHealth();
             Poco::JSON::Object::Ptr handleGroups();
             Poco::JSON::Object::Ptr handleHelp();
