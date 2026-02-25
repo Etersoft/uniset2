@@ -31,11 +31,10 @@ static void signal_handler(int sig)
 {
     if (sig == SIGTERM || sig == SIGINT)
     {
-        std::cerr << "Received signal " << sig << ", terminating..." << std::endl;
         g_shutdown = true;
 
         if (g_pm)
-            g_pm->stopMonitoring();
+            g_pm->requestStop();
     }
 }
 // -------------------------------------------------------------------------

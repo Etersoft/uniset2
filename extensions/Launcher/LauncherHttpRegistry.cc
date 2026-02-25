@@ -84,77 +84,33 @@ namespace uniset
         // /restart-all - restart all running processes
         if (cmd == "restart-all" && method == "POST")
         {
-            // Check if control is enabled
-            if (controlToken_.empty())
-            {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "forbidden");
-                obj->set("message", "control operations disabled (--control-token not set)");
-                return obj;
-            }
+            if (auto err = checkControlAccess(ctx)) return err;
 
-            // Check control authorization
-            if (!checkControlAuth(ctx.request))
+            return handleBulkOp(BulkOperation::Restart,
+                                [this]()
             {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "unauthorized");
-                obj->set("message", "missing or invalid control token");
-                return obj;
-            }
-
-            return handleRestartAll();
+                pm_.restartAll();
+            },
+            "Restart already in progress", "Restart all initiated");
         }
 
         // /reload-all - stop all, then start all (except skip, manual)
         if (cmd == "reload-all" && method == "POST")
         {
-            // Check if control is enabled
-            if (controlToken_.empty())
-            {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "forbidden");
-                obj->set("message", "control operations disabled (--control-token not set)");
-                return obj;
-            }
+            if (auto err = checkControlAccess(ctx)) return err;
 
-            // Check control authorization
-            if (!checkControlAuth(ctx.request))
+            return handleBulkOp(BulkOperation::Reload,
+                                [this]()
             {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "unauthorized");
-                obj->set("message", "missing or invalid control token");
-                return obj;
-            }
-
-            return handleReloadAll();
+                pm_.reloadAll();
+            },
+            "Reload already in progress", "Reload all initiated");
         }
 
         // /stop-all - stop all processes
         if (cmd == "stop-all" && method == "POST")
         {
-            // Check if control is enabled
-            if (controlToken_.empty())
-            {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "forbidden");
-                obj->set("message", "control operations disabled (--control-token not set)");
-                return obj;
-            }
-
-            // Check control authorization
-            if (!checkControlAuth(ctx.request))
-            {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "unauthorized");
-                obj->set("message", "missing or invalid control token");
-                return obj;
-            }
+            if (auto err = checkControlAccess(ctx)) return err;
 
             return handleStopAll();
         }
@@ -162,25 +118,7 @@ namespace uniset
         // /auth - validate control token
         if (cmd == "auth" && method == "GET")
         {
-            // Check if control is enabled
-            if (controlToken_.empty())
-            {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "forbidden");
-                obj->set("message", "control operations disabled");
-                return obj;
-            }
-
-            // Check control authorization
-            if (!checkControlAuth(ctx.request))
-            {
-                ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
-                auto obj = new Poco::JSON::Object();
-                obj->set("error", "unauthorized");
-                obj->set("message", "invalid control token");
-                return obj;
-            }
+            if (auto err = checkControlAccess(ctx)) return err;
 
             auto obj = new Poco::JSON::Object();
             obj->set("success", true);
@@ -196,36 +134,33 @@ namespace uniset
             // Control operations (POST)
             if (ctx.depth() >= 3 && method == "POST")
             {
+                if (auto err = checkControlAccess(ctx)) return err;
+
                 const std::string& action = ctx[2];
 
-                // Check if control is enabled
-                if (controlToken_.empty())
-                {
-                    ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
-                    auto obj = new Poco::JSON::Object();
-                    obj->set("error", "forbidden");
-                    obj->set("message", "control operations disabled (--control-token not set)");
-                    return obj;
-                }
-
-                // Check control authorization
-                if (!checkControlAuth(ctx.request))
-                {
-                    ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
-                    auto obj = new Poco::JSON::Object();
-                    obj->set("error", "unauthorized");
-                    obj->set("message", "missing or invalid control token");
-                    return obj;
-                }
-
                 if (action == "restart")
-                    return handleRestart(processName);
+                    return handleProcessAction(processName,
+                                               [this](const std::string & n)
+                {
+                    return pm_.restartProcess(n);
+                },
+                "Failed to restart process");
 
                 if (action == "stop")
-                    return handleStop(processName);
+                    return handleProcessAction(processName,
+                                               [this](const std::string & n)
+                {
+                    return pm_.stopProcess(n);
+                },
+                "Failed to stop process");
 
                 if (action == "start")
-                    return handleStart(processName);
+                    return handleProcessAction(processName,
+                                               [this](const std::string & n)
+                {
+                    return pm_.startProcess(n);
+                },
+                "Failed to start process");
             }
 
             // GET /process/{name}
@@ -278,8 +213,10 @@ namespace uniset
 
             // Full arguments (commonArgs + args + forwardArgs)
             Poco::JSON::Array args;
+
             for (const auto& arg : pm_.getFullArgs(proc.name))
                 args.add(arg);
+
             obj.set("args", args);
 
             // Calculate uptime for running processes
@@ -330,49 +267,28 @@ namespace uniset
         return processToJSON(proc);
     }
     // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleRestart(const std::string& name)
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleProcessAction(
+        const std::string& name,
+        std::function<bool(const std::string&)> action,
+        const std::string& errorMessage)
     {
-        bool ok = pm_.restartProcess(name);
+        bool ok = action(name);
 
         auto obj = new Poco::JSON::Object();
         obj->set("process", name);
         obj->set("success", ok);
 
         if (!ok)
-            obj->set("error", "Failed to restart process");
+            obj->set("error", errorMessage);
 
         return obj;
     }
     // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleStop(const std::string& name)
-    {
-        bool ok = pm_.stopProcess(name);
-
-        auto obj = new Poco::JSON::Object();
-        obj->set("process", name);
-        obj->set("success", ok);
-
-        if (!ok)
-            obj->set("error", "Failed to stop process");
-
-        return obj;
-    }
-    // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleStart(const std::string& name)
-    {
-        bool ok = pm_.startProcess(name);
-
-        auto obj = new Poco::JSON::Object();
-        obj->set("process", name);
-        obj->set("success", ok);
-
-        if (!ok)
-            obj->set("error", "Failed to start process");
-
-        return obj;
-    }
-    // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleRestartAll()
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleBulkOp(
+        BulkOperation opType,
+        std::function<void()> action,
+        const std::string& alreadyMsg,
+        const std::string& initiatedMsg)
     {
         auto op = pm_.currentBulkOperation();
 
@@ -380,10 +296,10 @@ namespace uniset
         {
             auto obj = new Poco::JSON::Object();
 
-            if (op == uniset::BulkOperation::Restart)
+            if (op == opType)
             {
                 obj->set("success", true);
-                obj->set("message", "Restart already in progress");
+                obj->set("message", alreadyMsg);
             }
             else
             {
@@ -394,52 +310,14 @@ namespace uniset
             return obj;
         }
 
-        // Run restartAll asynchronously so HTTP response returns immediately
-        // This allows client to poll for "restarting" state during the operation
-        std::thread([this]()
+        std::thread([action]()
         {
-            pm_.restartAll();
+            action();
         }).detach();
 
         auto obj = new Poco::JSON::Object();
         obj->set("success", true);
-        obj->set("message", "Restart all initiated");
-
-        return obj;
-    }
-    // -------------------------------------------------------------------------
-    Poco::JSON::Object::Ptr LauncherHttpRegistry::handleReloadAll()
-    {
-        auto op = pm_.currentBulkOperation();
-
-        if (op != uniset::BulkOperation::None)
-        {
-            auto obj = new Poco::JSON::Object();
-
-            if (op == uniset::BulkOperation::Reload)
-            {
-                obj->set("success", true);
-                obj->set("message", "Reload already in progress");
-            }
-            else
-            {
-                obj->set("success", false);
-                obj->set("error", "Another operation in progress");
-            }
-
-            return obj;
-        }
-
-        // Run reloadAll asynchronously so HTTP response returns immediately
-        // This allows client to poll for "restarting" state during the operation
-        std::thread([this]()
-        {
-            pm_.reloadAll();
-        }).detach();
-
-        auto obj = new Poco::JSON::Object();
-        obj->set("success", true);
-        obj->set("message", "Reload all initiated");
+        obj->set("message", initiatedMsg);
 
         return obj;
     }
@@ -725,10 +603,10 @@ namespace uniset
         }
 
         if (path == "/" || path == "/ui" || path == "/launcher.html")
-            return sendHtmlFile("launcher.html", req, resp);
+            return sendStaticFile("launcher.html", "text/html; charset=UTF-8", true, req, resp);
 
         if (path == "/launcher-app.js")
-            return sendJsFile("launcher-app.js", req, resp);
+            return sendStaticFile("launcher-app.js", "application/javascript; charset=UTF-8", false, req, resp);
 
         return false;  // Not our path
     }
@@ -766,15 +644,41 @@ namespace uniset
         return auth.substr(7) == expectedToken;
     }
     // -------------------------------------------------------------------------
-    bool LauncherHttpRegistry::sendHtmlFile(
+    Poco::JSON::Object::Ptr LauncherHttpRegistry::checkControlAccess(
+        const UHttp::HttpRequestContext& ctx)
+    {
+        if (controlToken_.empty())
+        {
+            ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_FORBIDDEN);
+            auto obj = new Poco::JSON::Object();
+            obj->set("error", "forbidden");
+            obj->set("message", "control operations disabled (--control-token not set)");
+            return obj;
+        }
+
+        if (!checkControlAuth(ctx.request))
+        {
+            ctx.response.setStatus(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            auto obj = new Poco::JSON::Object();
+            obj->set("error", "unauthorized");
+            obj->set("message", "missing or invalid control token");
+            return obj;
+        }
+
+        return nullptr;
+    }
+    // -------------------------------------------------------------------------
+    bool LauncherHttpRegistry::sendStaticFile(
         const std::string& filename,
+        const std::string& contentType,
+        bool applyVars,
         Poco::Net::HTTPServerRequest& req,
         Poco::Net::HTTPServerResponse& resp)
     {
         std::string filepath;
 
         // Use custom template if specified
-        if (!htmlTemplatePath_.empty() && filename == "launcher.html")
+        if (applyVars && !htmlTemplatePath_.empty() && filename == "launcher.html")
             filepath = htmlTemplatePath_;
         else
             filepath = findFile(filename);
@@ -803,53 +707,10 @@ namespace uniset
 
         std::ostringstream ss;
         ss << file.rdbuf();
-        std::string content = applyTemplateVars(ss.str());
+        std::string content = applyVars ? applyTemplateVars(ss.str()) : ss.str();
 
         resp.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-        resp.setContentType("text/html; charset=UTF-8");
-        resp.setContentLength(content.size());
-        std::ostream& out = resp.send();
-        out << content;
-        out.flush();
-
-        return true;
-    }
-    // -------------------------------------------------------------------------
-    bool LauncherHttpRegistry::sendJsFile(
-        const std::string& filename,
-        Poco::Net::HTTPServerRequest& req,
-        Poco::Net::HTTPServerResponse& resp)
-    {
-        std::string filepath = findFile(filename);
-
-        if (filepath.empty())
-        {
-            resp.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
-            resp.setContentType("application/json");
-            std::ostream& out = resp.send();
-            out << R"({"error":"not found","message":")" << filename << R"( not found"})";
-            out.flush();
-            return true;
-        }
-
-        std::ifstream file(filepath);
-
-        if (!file.is_open())
-        {
-            resp.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
-            resp.setContentType("application/json");
-            std::ostream& out = resp.send();
-            out << R"({"error":"internal error","message":"failed to open )" << filename << R"("})";
-            out.flush();
-            return true;
-        }
-
-        std::ostringstream ss;
-        ss << file.rdbuf();
-        std::string content = ss.str();
-
-        resp.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-        resp.setContentType("application/javascript; charset=UTF-8");
+        resp.setContentType(contentType);
         resp.setContentLength(content.size());
         std::ostream& out = resp.send();
         out << content;
@@ -916,14 +777,11 @@ namespace uniset
             pos += nodeName.size();
         }
 
-        // Replace {{API_URL}} - empty string means relative URLs (same origin)
+        // Remove {{API_URL}} - empty means relative URLs (same origin)
         pos = 0;
 
         while ((pos = result.find("{{API_URL}}", pos)) != std::string::npos)
-        {
-            result.replace(pos, 11, "");
-            pos += 0;
-        }
+            result.erase(pos, 11);
 
         // Replace {{CONTROL_ENABLED}}
         std::string controlEnabled = controlToken_.empty() ? "false" : "true";

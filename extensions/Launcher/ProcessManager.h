@@ -73,6 +73,7 @@ namespace uniset
             void stopAll();
             void restartAll();  //!< Restart all running processes
             void reloadAll();   //!< Stop all, then start all (except skip, manual)
+            void requestStop(); //!< Set stopping_ flag (async-signal-safe)
             bool isBulkOperationInProgress() const;
             BulkOperation currentBulkOperation() const;
             bool restartProcess(const std::string& name);
@@ -121,8 +122,13 @@ namespace uniset
             void monitorLoop();
 
             // Helper methods for process startup
+            std::vector<std::string> assembleArgs(const ProcessInfo& proc) const;
             std::vector<std::string> prepareProcessArgs(const ProcessInfo& proc);
             bool launchDaemonProcess(ProcessInfo& proc);
+
+            //! Sleep in small chunks, checking cancelFlag. Returns true if cancelled.
+            static bool interruptibleSleep(size_t msec, const std::atomic<bool>& cancelFlag,
+                                           size_t pollInterval_msec = 500);
 
             std::vector<std::string> resolveStartOrder();
             void expandEnvironment(std::vector<std::string>& args);
