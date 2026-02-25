@@ -12,6 +12,7 @@
 #ifndef DISABLE_REST_API
 // -------------------------------------------------------------------------
 #include <memory>
+#include <functional>
 #include "UHttpRequestHandler.h"
 #include "ProcessManager.h"
 // -------------------------------------------------------------------------
@@ -64,11 +65,15 @@ namespace uniset
             Poco::JSON::Object::Ptr handleStatus();
             Poco::JSON::Object::Ptr handleProcesses();
             Poco::JSON::Object::Ptr handleProcess(const std::string& name);
-            Poco::JSON::Object::Ptr handleRestart(const std::string& name);
-            Poco::JSON::Object::Ptr handleStop(const std::string& name);
-            Poco::JSON::Object::Ptr handleStart(const std::string& name);
-            Poco::JSON::Object::Ptr handleRestartAll();
-            Poco::JSON::Object::Ptr handleReloadAll();
+            Poco::JSON::Object::Ptr handleProcessAction(
+                const std::string& name,
+                std::function<bool(const std::string&)> action,
+                const std::string& errorMessage);
+            Poco::JSON::Object::Ptr handleBulkOp(
+                BulkOperation opType,
+                std::function<void()> action,
+                const std::string& alreadyMsg,
+                const std::string& initiatedMsg);
             Poco::JSON::Object::Ptr handleStopAll();
             Poco::JSON::Object::Ptr handleHealth();
             Poco::JSON::Object::Ptr handleGroups();
@@ -80,16 +85,16 @@ namespace uniset
             // Authorization helpers
             bool checkReadAuth(const Poco::Net::HTTPServerRequest& req);
             bool checkControlAuth(const Poco::Net::HTTPServerRequest& req);
+            Poco::JSON::Object::Ptr checkControlAccess(const UHttp::HttpRequestContext& ctx);
             static bool validateBearerToken(const Poco::Net::HTTPServerRequest& req,
                                             const std::string& expectedToken);
 
             // File serving helpers
-            bool sendHtmlFile(const std::string& filename,
-                              Poco::Net::HTTPServerRequest& req,
-                              Poco::Net::HTTPServerResponse& resp);
-            bool sendJsFile(const std::string& filename,
-                            Poco::Net::HTTPServerRequest& req,
-                            Poco::Net::HTTPServerResponse& resp);
+            bool sendStaticFile(const std::string& filename,
+                                const std::string& contentType,
+                                bool applyVars,
+                                Poco::Net::HTTPServerRequest& req,
+                                Poco::Net::HTTPServerResponse& resp);
             std::string findFile(const std::string& filename);
             std::string applyTemplateVars(const std::string& content);
 

@@ -11,6 +11,7 @@
 // -------------------------------------------------------------------------
 #include <memory>
 #include <string>
+#include <atomic>
 #include <Poco/Process.h>
 #include "ProcessInfo.h"
 #include "Configuration.h"
@@ -37,6 +38,16 @@ namespace uniset
             bool waitForReady(const ReadyCheck& check, size_t timeout_msec);
 
             /*!
+             * Check if process is ready, with cancellation support.
+             * \param check ReadyCheck configuration
+             * \param timeout_msec Maximum wait time in milliseconds
+             * \param cancelFlag Checked periodically; if true, returns false early
+             * \return true if ready, false if timeout or cancelled
+             */
+            bool waitForReady(const ReadyCheck& check, size_t timeout_msec,
+                              const std::atomic<bool>& cancelFlag);
+
+            /*!
              * Single check (non-blocking).
              * \return true if check passes
              */
@@ -57,6 +68,8 @@ namespace uniset
         private:
             bool checkTCP(const std::string& hostPort, size_t timeout_msec);
             bool checkCORBA(const std::string& objectName, size_t timeout_msec, size_t pause_msec);
+            bool checkCORBA(const std::string& objectName, size_t timeout_msec, size_t pause_msec,
+                            const std::atomic<bool>& cancelFlag);
             bool checkHTTP(const std::string& url, size_t timeout_msec);
             bool checkFile(const std::string& path);
 

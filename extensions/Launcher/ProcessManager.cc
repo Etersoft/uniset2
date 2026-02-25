@@ -416,7 +416,7 @@ namespace uniset
         return true;
     }
     // -------------------------------------------------------------------------
-    std::vector<std::string> ProcessManager::prepareProcessArgs(const ProcessInfo& proc)
+    std::vector<std::string> ProcessManager::assembleArgs(const ProcessInfo& proc) const
     {
         std::vector<std::string> args;
 
@@ -441,6 +441,12 @@ namespace uniset
         if (!passthroughArgs_.empty())
             args.push_back(passthroughArgs_);
 
+        return args;
+    }
+    // -------------------------------------------------------------------------
+    std::vector<std::string> ProcessManager::prepareProcessArgs(const ProcessInfo& proc)
+    {
+        auto args = assembleArgs(proc);
         expandEnvironment(args);
         return args;
     }
@@ -627,7 +633,7 @@ namespace uniset
             if (mylog->is_info())
             {
                 auto& os = mylog->info() << "Starting process: " << procName
-                              << " (attempt " << (proc.restartCount + 1);
+                           << " (attempt " << (proc.restartCount + 1);
 
                 if (maxRestarts > 0)
                     os << "/" << maxRestarts;
@@ -654,7 +660,7 @@ namespace uniset
             lock.unlock();
 
             bool readyOk = readyCheck.empty() ||
-                           healthChecker_->waitForReady(readyCheck, readyCheck.timeout_msec);
+                           healthChecker_->waitForReady(readyCheck, readyCheck.timeout_msec, stopping_);
 
             // Re-lock to check result and update state
             lock.lock();
@@ -773,7 +779,21 @@ namespace uniset
 
             // Unlock during delay to allow HTTP requests to see "restarting" state
             lock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+
+            if (interruptibleSleep(delay, stopping_))
+            {
+                lock.lock();
+                auto it = processes_.find(procName);
+
+                if (it != processes_.end())
+                {
+                    it->second.state = ProcessState::Failed;
+                    it->second.lastError = "Startup cancelled";
+                }
+
+                return false;
+            }
+
             lock.lock();
 
             // Re-find process after delay
@@ -805,6 +825,29 @@ namespace uniset
     BulkOperation ProcessManager::currentBulkOperation() const
     {
         return currentBulkOp_.load();
+    }
+    // -------------------------------------------------------------------------
+    void ProcessManager::requestStop()
+    {
+        stopping_ = true;
+    }
+    // -------------------------------------------------------------------------
+    bool ProcessManager::interruptibleSleep(size_t msec, const std::atomic<bool>& cancelFlag,
+                                            size_t pollInterval_msec)
+    {
+        size_t remaining = msec;
+
+        while (remaining > 0)
+        {
+            if (cancelFlag.load(std::memory_order_relaxed))
+                return true;
+
+            size_t chunk = std::min(remaining, pollInterval_msec);
+            std::this_thread::sleep_for(std::chrono::milliseconds(chunk));
+            remaining -= chunk;
+        }
+
+        return cancelFlag.load(std::memory_order_relaxed);
     }
     // -------------------------------------------------------------------------
     void ProcessManager::stopAll()
@@ -1473,7 +1516,8 @@ namespace uniset
                 }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(healthCheckInterval_msec_));
+            if (interruptibleSleep(healthCheckInterval_msec_, stopping_))
+                break;
         }
     }
     // -------------------------------------------------------------------------
@@ -1585,7 +1629,8 @@ namespace uniset
         // Phase 2: Delay (without lock - HTTP API can query state)
         if (shouldRestart && delay > 0)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            if (interruptibleSleep(delay, stopping_))
+                shouldRestart = false;
         }
 
         // Phase 3: Restart (with lock released during waitForReady)
@@ -1702,35 +1747,7 @@ namespace uniset
         if (it == processes_.end())
             return {};
 
-        const auto& proc = it->second;
-        std::vector<std::string> args;
-
-        // If rawArgs is set, use only rawArgs (no commonArgs)
-        if (!proc.rawArgs.empty())
-        {
-            args = proc.rawArgs;
-        }
-        else
-        {
-            // Use commonArgs + args
-            args.reserve(commonArgs_.size() + proc.args.size());
-
-            for (const auto& arg : commonArgs_)
-                args.push_back(arg);
-
-            for (const auto& arg : proc.args)
-                args.push_back(arg);
-        }
-
-        // Add forwarded args
-        for (const auto& arg : forwardArgs_)
-            args.push_back(arg);
-
-        // Add passthrough args
-        if (!passthroughArgs_.empty())
-            args.push_back(passthroughArgs_);
-
-        return args;
+        return assembleArgs(it->second);
     }
     // -------------------------------------------------------------------------
     void ProcessManager::setOnProcessStarted(ProcessCallback cb)

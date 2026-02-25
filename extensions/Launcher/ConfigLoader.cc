@@ -162,20 +162,7 @@ namespace uniset
                     std::string dependsStr = git.getProp("depends");
 
                     if (!dependsStr.empty())
-                    {
-                        std::istringstream iss(dependsStr);
-                        std::string dep;
-
-                        while (std::getline(iss, dep, ','))
-                        {
-                            // Trim whitespace
-                            dep.erase(0, dep.find_first_not_of(" \t"));
-                            dep.erase(dep.find_last_not_of(" \t") + 1);
-
-                            if (!dep.empty())
-                                group.depends.insert(dep);
-                        }
-                    }
+                        group.depends = parseNodeFilter(dependsStr);
 
                     // Load processes in this group
                     UniXML::iterator pit(git.getCurrent());

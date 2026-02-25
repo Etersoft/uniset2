@@ -53,6 +53,48 @@ namespace uniset
         return false;
     }
     // -------------------------------------------------------------------------
+    bool HealthChecker::waitForReady(const ReadyCheck& check, size_t timeout_msec,
+                                     const std::atomic<bool>& cancelFlag)
+    {
+        if (check.empty())
+            return true;
+
+        // Для CORBA используем waitReadyWithCancellation
+        if (check.type == ReadyCheckType::CORBA)
+            return checkCORBA(check.target, timeout_msec, check.pause_msec, cancelFlag);
+
+        // Для остальных типов — цикл с периодическими проверками и cancelFlag
+        auto start = std::chrono::steady_clock::now();
+        auto deadline = start + std::chrono::milliseconds(timeout_msec);
+
+        while (std::chrono::steady_clock::now() < deadline)
+        {
+            if (cancelFlag.load(std::memory_order_relaxed))
+                return false;
+
+            if (checkOnce(check))
+                return true;
+
+            // Sleep in small chunks checking cancelFlag
+            size_t remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   deadline - std::chrono::steady_clock::now()).count();
+            size_t sleepTime = std::min(remaining, static_cast<size_t>(check.pause_msec));
+            const size_t chunk = 500;
+
+            while (sleepTime > 0)
+            {
+                if (cancelFlag.load(std::memory_order_relaxed))
+                    return false;
+
+                size_t c = std::min(sleepTime, chunk);
+                std::this_thread::sleep_for(std::chrono::milliseconds(c));
+                sleepTime -= c;
+            }
+        }
+
+        return false;
+    }
+    // -------------------------------------------------------------------------
     bool HealthChecker::checkOnce(const ReadyCheck& check)
     {
         switch (check.type)
@@ -149,6 +191,29 @@ namespace uniset
 
             // waitReady ждёт готовности объекта с заданным timeout и pause между проверками
             return ui_->waitReady(id, timeout_msec, pause_msec);
+        }
+        catch (...)
+        {
+            return false;
+        }
+    }
+    // -------------------------------------------------------------------------
+    bool HealthChecker::checkCORBA(const std::string& objectName, size_t timeout_msec,
+                                   size_t pause_msec, const std::atomic<bool>& cancelFlag)
+    {
+        if (!ui_)
+            return false;
+
+        try
+        {
+            ObjectId id = conf_->getAnyObjectID(objectName);
+
+            if (id == DefaultObjectId)
+                return false;
+
+            // Use cancellable version of waitReady
+            return ui_->waitReadyWithCancellation(id, timeout_msec,
+                    const_cast<std::atomic_bool&>(cancelFlag), pause_msec);
         }
         catch (...)
         {
