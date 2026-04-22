@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <regex>
+#include <sstream>
 #include "SQLiteInterface.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
