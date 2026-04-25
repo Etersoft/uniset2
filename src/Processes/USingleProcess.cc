@@ -15,6 +15,7 @@
  */
 //--------------------------------------------------------------------------
 #include <ostream>
+#include <sstream>
 #include "Exceptions.h"
 #include "UniSetTypes.h"
 #include "USingleProcess.h"
