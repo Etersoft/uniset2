@@ -212,6 +212,16 @@ testsuite/atconfig
 !extensions/Launcher/tests/
 !extensions/Launcher/tests/*.cc
 !extensions/Launcher/tests/Makefile.am
+!extensions/Launcher/tests/crash-daemon.sh
+!extensions/Launcher/tests/unready-daemon.sh
+!extensions/Launcher/tests/slowstart-daemon.sh
+!extensions/Launcher/tests/test-signal-shutdown.sh
+!extensions/Launcher/tests/test-signal-shutdown-http.sh
+!extensions/Launcher/tests/test-signal-shutdown-unready.sh
+!extensions/Launcher/tests/test-signal-shutdown-slowstart.sh
+!extensions/Launcher/tests/test-signal-shutdown.xml
+!extensions/Launcher/tests/test-signal-shutdown-unready.xml
+!extensions/Launcher/tests/test-signal-shutdown-slowstart.xml
 !extensions/uno/*.h
 !extensions/uno/*.cc
 !extensions/uno/*.md
