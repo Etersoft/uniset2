@@ -93,7 +93,7 @@ namespace uniset
         state = ProcessState::Stopped;
         pid = 0;
         restartCount = 0;
-        lastExitCode = 0;
+        lastExitCode = -1;  // -1 = unknown (sentinel)
         lastError.clear();
         healthFailCount = 0;
     }

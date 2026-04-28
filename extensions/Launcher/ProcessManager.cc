@@ -14,6 +14,7 @@
 #include <cstring>
 #include <regex>
 #include <fstream>
+#include <sstream>
 #include <sys/wait.h>
 #include <dirent.h>
 #include <Poco/Pipe.h>
@@ -297,7 +298,7 @@ namespace uniset
         commonArgs_ = args;
     }
     // -------------------------------------------------------------------------
-    void ProcessManager::setPassthroughArgs(const std::string& args)
+    void ProcessManager::setPassthroughArgs(const std::vector<std::string>& args)
     {
         passthroughArgs_ = args;
     }
@@ -438,8 +439,8 @@ namespace uniset
         for (const auto& arg : forwardArgs_)
             args.push_back(arg);
 
-        if (!passthroughArgs_.empty())
-            args.push_back(passthroughArgs_);
+        for (const auto& a : passthroughArgs_)
+            args.push_back(a);
 
         return args;
     }
@@ -547,28 +548,115 @@ namespace uniset
         // Unlock during wait (can be long)
         lock.unlock();
 
+        // Drain pipe in background to avoid full-buffer deadlock:
+        // child may write more than the pipe capacity (~64KB) and would
+        // otherwise block on write while parent waits for it to exit.
+        // No mutex needed: drainThread is the sole writer; readers run only
+        // after the explicit join() below establishes happens-before.
+        std::string capturedOut;
+        std::thread drainThread([&]()
+        {
+            try
+            {
+                Poco::PipeInputStream istr(outPipe);
+                std::string ln;
+
+                while (std::getline(istr, ln))
+                    capturedOut += ln + "\n";
+            }
+            catch (...)
+            {
+                // pipe closed / EOF
+            }
+        });
+
         int exitCode = -1;
 
         try
         {
-            exitCode = phPtr->wait();
+            // Poll until process exits OR oneshotTimeout fires.
+            // oneshotTimeout_msec == 0 means "no timeout" (wait indefinitely).
+            const size_t timeout_msec = proc.oneshotTimeout_msec;
+            const auto deadline = (timeout_msec > 0)
+                                  ? std::chrono::steady_clock::now()
+                                  + std::chrono::milliseconds(timeout_msec)
+                                  : std::chrono::steady_clock::time_point::max();
+
+            const Poco::Process::PID childPid = phPtr->id();
+            bool timedOut = false;
+
+            // Use isProcessRunning() (not Poco::Process::isRunning) because
+            // Poco's check uses kill(pid, 0) which returns success for zombies.
+            // After SIGCHLD = SIG_IGN was removed, a fast-exit oneshot becomes
+            // a zombie until phPtr->wait() reaps it — Poco would otherwise
+            // loop here until oneshotTimeout fired. isProcessRunning consults
+            // /proc state and treats Z/X as "not running", so we exit promptly.
+            while (isProcessRunning(childPid))
+            {
+                if (timeout_msec > 0
+                        && std::chrono::steady_clock::now() > deadline)
+                {
+                    timedOut = true;
+                    mylog->warn() << procName << ": oneshot timeout ("
+                                  << timeout_msec << "ms), killing pid "
+                                  << childPid << std::endl;
+
+                    // Kill the whole tree: a shell wrapper launching `sleep 3600`
+                    // would otherwise leave the descendant alive holding the pipe,
+                    // blocking the drain thread forever.
+                    try
+                    {
+                        killProcessTree(childPid);
+                    }
+                    catch (...) {}
+
+                    break;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+
+            try
+            {
+                exitCode = phPtr->wait();
+            }
+            catch (const std::exception& waitEx)
+            {
+                mylog->warn() << "wait() exception: " << waitEx.what() << std::endl;
+                exitCode = -1;  // unknown — caller treats !=0 as failure
+            }
+
+            if (timedOut)
+                exitCode = -1;
         }
-        catch (const std::exception& waitEx)
+        catch (...)
         {
-            mylog->warn() << "wait() exception: " << waitEx.what() << std::endl;
-            exitCode = 0;
+            // Ensure drain thread is joined on any exceptional path before
+            // capturedOut goes out of scope (the thread captures it by ref).
+            if (drainThread.joinable())
+                drainThread.join();
+
+            delete phPtr;
+            throw;
         }
 
         delete phPtr;
 
-        // Read output (without lock)
-        Poco::PipeInputStream istr(outPipe);
-        std::string line;
+        // Drain thread should finish quickly after process exit closes pipe.
+        // join() establishes happens-before for the read of capturedOut below.
+        if (drainThread.joinable())
+            drainThread.join();
 
-        while (std::getline(istr, line))
+        // Log captured output (no lock needed — drain thread has been joined).
         {
-            if (!line.empty())
-                mylog->info() << "  " << line << std::endl;
+            std::istringstream is(capturedOut);
+            std::string ln;
+
+            while (std::getline(is, ln))
+            {
+                if (!ln.empty())
+                    mylog->info() << "  " << ln << std::endl;
+            }
         }
 
         mylog->info() << procName << " exited with code " << exitCode << std::endl;
@@ -706,7 +794,10 @@ namespace uniset
                 }
 
                 pit->second.state = ProcessState::Running;
-                pit->second.restartCount = 0;  // Reset on success
+                // Don't reset restartCount on ready: a daemon that becomes ready
+                // then crashes immediately could otherwise bypass maxRestarts.
+                // The monitor loop resets via `sinceStart > restartWindow_msec_`
+                // (see crash-restart logic), which is the correct trigger.
                 mylog->info() << pit->second.name << " is ready" << std::endl;
 
                 if (onStarted_)
@@ -829,6 +920,17 @@ namespace uniset
     // -------------------------------------------------------------------------
     void ProcessManager::requestStop()
     {
+        shutdownRequested_ = true;
+        stopping_ = true;
+    }
+    // -------------------------------------------------------------------------
+    void ProcessManager::cancelStartup()
+    {
+        // Only set stopping_ — do NOT touch shutdownRequested_.
+        // Used by HTTP stop-all to interrupt an in-flight restartAll/reloadAll
+        // without marking the launcher process for shutdown. stopAll() will
+        // restore stopping_ to shutdownRequested_.load() on completion, so
+        // subsequent bulk ops can be re-armed.
         stopping_ = true;
     }
     // -------------------------------------------------------------------------
@@ -852,12 +954,25 @@ namespace uniset
     // -------------------------------------------------------------------------
     void ProcessManager::stopAll()
     {
-        // If already stopping, nothing to do
-        if (stopping_.exchange(true))
+        // Reentrancy guard: another stopAll() already running.
+        // NOTE: stopping_ may already be true (set by requestStop() from the
+        // signal handler) — that means "cancel waits", not "skip stopAll".
+        if (stopAllRunning_.exchange(true))
         {
-            mylog->info() << "stopAll: already stopping, skipping" << std::endl;
+            mylog->info() << "stopAll: already running, skipping" << std::endl;
             return;
         }
+
+        // Always assert stopping_ at entry so interruptibleSleep / retry loops
+        // see "cancel". On exit we restore stopping_ to whatever
+        // shutdownRequested_ holds: shutdownRequested_ is monotonic
+        // (false→true, never reset), so reading it at exit always reflects
+        // whether SIGINT/SIGTERM was received at any point during stopAll.
+        // This is race-free with requestStop() firing concurrently.
+        //
+        // stopping_ remains true iff shutdown was requested; otherwise reset
+        // so HTTP-driven stopAll callers can re-arm via startAll().
+        stopping_ = true;
 
         auto expected = BulkOperation::None;
 
@@ -871,20 +986,23 @@ namespace uniset
             while (currentBulkOp_.load() != BulkOperation::None)
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-            // Acquire the flag and stop whatever is left
             expected = BulkOperation::None;
 
             if (!currentBulkOp_.compare_exchange_strong(expected, BulkOperation::Stop))
             {
                 mylog->warn() << "stopAll: another operation started, skipping" << std::endl;
-                stopping_ = false;
+
+                stopping_ = shutdownRequested_.load();
+                stopAllRunning_ = false;
                 return;
             }
         }
 
         doStopAll();
         currentBulkOp_ = BulkOperation::None;
-        stopping_ = false;
+
+        stopping_ = shutdownRequested_.load();
+        stopAllRunning_ = false;
     }
     // -------------------------------------------------------------------------
     void ProcessManager::doStopAll()
@@ -1280,7 +1398,9 @@ namespace uniset
             return;
         }
 
-        // Start all processes (except skip and manual)
+        // Start all processes (except skip and manual). Oneshot processes
+        // ARE re-run because the reset() above cleared their Completed/Failed
+        // state, so startAll() picks them up like any other process.
         startAll();
 
         currentBulkOp_ = BulkOperation::None;
@@ -1444,22 +1564,35 @@ namespace uniset
                     if (proc.state != ProcessState::Running)
                         continue;
 
-                    if (!HealthChecker::isProcessAlive(proc.pid))
+                    // Non-blocking reap: detects dead-but-zombie children that
+                    // kill(pid, 0) would still report as "alive".
+                    int status = 0;
+                    pid_t reaped = ::waitpid(proc.pid, &status, WNOHANG);
+                    bool died = false;
+                    int exitCode = -1;
+
+                    if (reaped == proc.pid)
+                    {
+                        if (WIFEXITED(status))
+                            exitCode = WEXITSTATUS(status);
+                        else if (WIFSIGNALED(status))
+                            exitCode = 128 + WTERMSIG(status);
+
+                        proc.lastExitCode = exitCode;
+                        died = true;
+                    }
+                    else if (!HealthChecker::isProcessAlive(proc.pid))
+                    {
+                        // Process gone but already reaped elsewhere; use stored code.
+                        exitCode = proc.lastExitCode;
+                        died = true;
+                    }
+
+                    if (died)
                     {
                         mylog->warn() << proc.name << " (PID " << proc.pid
-                                      << ") is no longer running" << std::endl;
+                                      << ") exited with code " << exitCode << std::endl;
 
-                        // Try to get exit code
-                        int exitCode = -1;
-
-                        try
-                        {
-                            // Note: This may not work if process already reaped
-                            exitCode = proc.lastExitCode;
-                        }
-                        catch (...) {}
-
-                        // Mark for restart outside the loop (to allow mutex unlock)
                         processesToRestart.emplace_back(proc.name, exitCode);
                     }
                     // Liveness watchdog: check if process responds
@@ -1943,8 +2076,8 @@ namespace uniset
                     out << " " << arg;
 
                 // Add passthrough args
-                if (!passthroughArgs_.empty())
-                    out << " " << passthroughArgs_;
+                for (const auto& arg : passthroughArgs_)
+                    out << " " << arg;
 
                 out << std::endl;
 

@@ -40,14 +40,14 @@ uniset2-launcher --confile config.xml -- --custom-arg value
 | `--confile FILE` | Конфигурационный файл (обязательно) |
 | `--localNode NAME` | Имя локального узла (по умолчанию: из атрибута `localNode` в конфиге) |
 | `--launcher-name NAME` | Имя секции Launcher в конфиге |
-| `--http-port PORT` | Порт HTTP API (0 = отключено) |
+| `--http-port PORT` | Порт HTTP API (0 = явно отключить; если флаг не указан — берётся из конфига) |
 | `--http-host HOST` | Хост HTTP API (по умолчанию: 0.0.0.0) |
 | `--http-whitelist IPs` | Whitelist IP/подсетей через запятую |
 | `--http-blacklist IPs` | Blacklist IP/подсетей через запятую |
 | `--read-token TOKEN` | Bearer-токен для доступа к чтению (UI, GET API) |
 | `--control-token TOKEN` | Bearer-токен для управления (POST restart/stop/start) |
 | `--html-template FILE` | Пользовательский HTML-шаблон |
-| `--health-interval MS` | Интервал проверки состояния в мс (по умолчанию: 5000) |
+| `--health-interval MS` | Интервал проверки состояния в мс (>0; если флаг не указан — берётся из конфига, fallback 5000) |
 | `--stop-timeout MS` | Таймаут graceful shutdown в мс (по умолчанию: 5000) |
 | `--uniset-port PORT` | UniSet/CORBA порт (default: auto=UID+52809) |
 | `--omni-logdir DIR` | Каталог логов omniNames (по умолчанию: $TMPDIR/omniORB) |
@@ -220,7 +220,7 @@ uniset2-unetexchange --confile ${CONFFILE} --localNode ${NODE_NAME} --unet-name 
 | `skip` | Пропустить этот процесс (не запускать) | false |
 | `manual` | Запуск только вручную через REST API | false |
 | `oneshot` | Процесс запускается один раз и завершается | false |
-| `oneshotTimeout` | Таймаут для oneshot процесса (мс) | 30000 |
+| `oneshotTimeout` | Таймаут для oneshot процесса (мс), 0 = без таймаута | 30000 |
 | `afterRun` | Shell-команда для запуска после старта процесса | "" |
 
 ### Фильтрация по узлам (nodeFilter)
@@ -388,6 +388,8 @@ delay = min(restartDelay * 2^(attempt-1), maxRestartDelay)
 - `maxRestarts=-1` — отключить перезапуск
 - `maxRestarts=N` (N>0) — ограничить количество попыток
 - `ignoreFail="true"` — после исчерпания попыток **не останавливать launcher** (процесс остаётся в Failed)
+
+Счётчик `restartCount` сбрасывается, **только** если процесс прожил дольше `restartWindow` (по умолчанию 60000 мс) — переход в `running`/`ready` сам по себе бюджет не пополняет. Это значит, что демон, который успевает выйти на `ready` и тут же падает, упрётся в `maxRestarts` ровно как и любой crash-loop.
 
 **Пример последовательности перезапусков** (restartDelay=1000, maxRestartDelay=30000):
 - Попытка 1: 1 сек

@@ -16,9 +16,8 @@ SHUTDOWN_TIMEOUT_SEC=8
 PRE_SIGNAL_DELAY_SEC=3
 HTTP_PORT=18099
 
-LAUNCHER="$LAUNCHER_DIR/.libs/uniset2-launcher"
-[ ! -x "$LAUNCHER" ] && LAUNCHER="$LAUNCHER_DIR/uniset2-launcher"
-[ ! -x "$LAUNCHER" ] && { echo "ERROR: launcher binary not found at $LAUNCHER_DIR"; exit 1; }
+. "$SCRIPT_DIR/launcher-test-env.sh"
+LAUNCHER="$(resolve_launcher "$LAUNCHER_DIR")" || exit 1
 command -v curl >/dev/null 2>&1 || { echo "SKIP: curl not available"; exit 77; }
 
 LAUNCHER_PID=""
@@ -63,6 +62,14 @@ http_loader() {
              "http://localhost:$HTTP_PORT/api/v2/launcher/status" \
              >/dev/null 2>&1 || true
         sleep 0.05
+        curl -s -X POST "http://127.0.0.1:$HTTP_PORT/api/v2/launcher/restart-all" \
+             --max-time 1 -o /dev/null 2>/dev/null || true
+        curl -s -X POST "http://127.0.0.1:$HTTP_PORT/api/v2/launcher/reload-all" \
+             --max-time 1 -o /dev/null 2>/dev/null || true
+        # stop-all in the same tight loop: must interrupt any in-flight
+        # restart-all/reload-all without marking the launcher for shutdown.
+        curl -s -X POST "http://127.0.0.1:$HTTP_PORT/api/v2/launcher/stop-all" \
+             --max-time 1 -o /dev/null 2>/dev/null || true
         i=$((i+1))
         [ $i -gt 1000 ] && break
     done

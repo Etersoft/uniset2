@@ -16,9 +16,8 @@ SHUTDOWN_TIMEOUT_SEC=8
 PRE_SIGNAL_DELAY_SEC=4
 MARKER_FILE="/tmp/launcher-never-ready.marker"
 
-LAUNCHER="$LAUNCHER_DIR/.libs/uniset2-launcher"
-[ ! -x "$LAUNCHER" ] && LAUNCHER="$LAUNCHER_DIR/uniset2-launcher"
-[ ! -x "$LAUNCHER" ] && { echo "ERROR: launcher binary not found at $LAUNCHER_DIR"; exit 1; }
+. "$SCRIPT_DIR/launcher-test-env.sh"
+LAUNCHER="$(resolve_launcher "$LAUNCHER_DIR")" || exit 1
 
 LAUNCHER_PID=""
 

@@ -48,14 +48,14 @@ static void print_help(const std::string& prog)
          << "  --confile FILE       Configuration file (required)\n"
          << "  --localNode NAME     Local node name (default: from config localNode attribute)\n"
          << "  --launcher-name NAME Launcher section name in config\n"
-         << "  --http-port PORT     HTTP API port (0 = disabled)\n"
+         << "  --http-port PORT     HTTP API port (0 = disabled, default: from config)\n"
          << "  --http-host HOST     HTTP API host (default: 0.0.0.0)\n"
          << "  --http-whitelist IPs Comma-separated whitelist (CIDR, ranges, IPs)\n"
          << "  --http-blacklist IPs Comma-separated blacklist (CIDR, ranges, IPs)\n"
          << "  --read-token TOKEN   Bearer token for read access (UI, GET API)\n"
          << "  --control-token TOKEN Bearer token for control (POST restart/stop/start)\n"
          << "  --html-template FILE Custom HTML template file\n"
-         << "  --health-interval MS Health check interval in ms (default: 5000)\n"
+         << "  --health-interval MS Health check interval in ms (default: from config, fallback 5000)\n"
          << "  --stop-timeout MS    Graceful shutdown timeout in ms (default: 5000)\n"
          << "  --uniset-port PORT   UniSet/CORBA port (default: auto=UID+52809)\n"
          << "  --omni-logdir DIR    omniNames log directory (default: $TMPDIR/omniORB)\n"
@@ -100,14 +100,14 @@ int main(int argc, char* argv[])
     std::string confFile;
     std::string nodeName;
     std::string launcherName;
-    int httpPort = 0;
+    int httpPort = -1;        // -1 = not set on CLI; 0 = explicit "disabled"
     std::string httpHost = "0.0.0.0";
     std::string httpWhitelist;
     std::string httpBlacklist;
     std::string readToken;
     std::string controlToken;
     std::string htmlTemplate;
-    size_t healthInterval = 5000;
+    long healthInterval = -1; // -1 = not set on CLI
     size_t stopTimeout = 5000;
     int unisetPort = 0;  // 0 means "not specified", will get from Configuration
     bool unisetPortSpecified = false;
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     bool noMonitor = false;
     bool verbose = false;
     bool dryRun = false;
-    std::string passthroughArgs;  // Arguments after "--" to pass to child processes
+    std::vector<std::string> passthroughArgs;  // Arguments after "--" to pass to child processes
     std::vector<std::string> unknownArgs;  // Unknown arguments to pass to child processes
 
     for (int i = 1; i < argc; i++)
@@ -128,18 +128,7 @@ int main(int argc, char* argv[])
         if (arg == "--")
         {
             for (int j = i + 1; j < argc; j++)
-            {
-                if (!passthroughArgs.empty())
-                    passthroughArgs += " ";
-
-                // Quote arguments containing spaces
-                std::string parg = argv[j];
-
-                if (parg.find(' ') != std::string::npos)
-                    passthroughArgs += "\"" + parg + "\"";
-                else
-                    passthroughArgs += parg;
-            }
+                passthroughArgs.emplace_back(argv[j]);
 
             break;  // Stop parsing launcher arguments
         }
@@ -212,7 +201,12 @@ int main(int argc, char* argv[])
 
         if (arg == "--health-interval" && i + 1 < argc)
         {
-            healthInterval = std::stoul(argv[++i]);
+            healthInterval = std::stol(argv[++i]);
+            if (healthInterval <= 0)
+            {
+                cerr << "Error: --health-interval must be > 0 (got " << healthInterval << ")" << endl;
+                return 1;
+            }
             continue;
         }
 
@@ -298,7 +292,8 @@ int main(int argc, char* argv[])
     // Setup signal handlers
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
-    signal(SIGCHLD, SIG_IGN);  // Prevent zombie processes
+    // SIGCHLD: do NOT ignore. We reap children explicitly via waitpid()
+    // in the monitor loop, otherwise we lose real exit codes.
 
     // Set environment variables for child processes (NODE_NAME set after determining nodeName)
     setenv("CONFFILE", confFile.c_str(), 0);  // Don't override if set
@@ -387,14 +382,17 @@ int main(int argc, char* argv[])
         ConfigLoader loader;
         auto config = loader.load(confFile, launcherName);
 
-        // Override settings from command line
-        if (httpPort > 0)
+        // Override settings from command line.
+        // Sentinel -1 = not set on CLI, leave XML value intact.
+        // For --http-port, 0 IS an explicit value meaning "disable HTTP".
+        if (httpPort >= 0)
             config.httpPort = httpPort;
 
         if (!defaultReadyCheck.empty())
             config.defaultReadyCheck = defaultReadyCheck;
 
-        config.healthCheckInterval_msec = healthInterval;
+        if (healthInterval > 0)
+            config.healthCheckInterval_msec = static_cast<size_t>(healthInterval);
 
         // Apply environment variables from config
         for (const auto& kv : config.environment)
@@ -415,7 +413,14 @@ int main(int argc, char* argv[])
             pm.setPassthroughArgs(passthroughArgs);
 
             if (verbose)
-                cout << "Passthrough args: " << passthroughArgs << endl;
+            {
+                cout << "Passthrough args:";
+
+                for (const auto& a : passthroughArgs)
+                    cout << " " << a;
+
+                cout << endl;
+            }
         }
 
         // Replace "auto" with computed port value in unknownArgs for child processes

@@ -93,7 +93,7 @@ TEST_CASE("ProcessInfo: reset", "[process]")
     REQUIRE(proc.state == ProcessState::Stopped);
     REQUIRE(proc.pid == 0);
     REQUIRE(proc.restartCount == 0);
-    REQUIRE(proc.lastExitCode == 0);
+    REQUIRE(proc.lastExitCode == -1);
     REQUIRE(proc.lastError.empty());
     // name should not be reset
     REQUIRE(proc.name == "test");

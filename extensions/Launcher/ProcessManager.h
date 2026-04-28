@@ -61,7 +61,7 @@ namespace uniset
             void setRestartWindow(size_t msec);
             void setStopTimeout(size_t msec);
             void setCommonArgs(const std::vector<std::string>& args);
-            void setPassthroughArgs(const std::string& args);
+            void setPassthroughArgs(const std::vector<std::string>& args);
             void setForwardArgs(const std::vector<std::string>& args);
 
             // Process registration
@@ -72,8 +72,21 @@ namespace uniset
             bool startAll();
             void stopAll();
             void restartAll();  //!< Restart all running processes
-            void reloadAll();   //!< Stop all, then start all (except skip, manual)
+            void reloadAll();   //!< Stop all, then start all (except skip, manual). Oneshot processes ARE re-run.
             void requestStop(); //!< Set stopping_ flag (async-signal-safe)
+
+            /*!
+             * Interrupt any active startup phase WITHOUT marking the process
+             * for shutdown. Sets only stopping_=true (not shutdownRequested_),
+             * so an in-flight restartAll()/reloadAll() bails out of its
+             * startAll() phase quickly while the launcher process keeps
+             * running. Suitable for HTTP-driven stop-all that wants to abort
+             * an active bulk operation but does not want to terminate the
+             * launcher itself. After the subsequent stopAll() completes,
+             * stopping_ is restored to shutdownRequested_ (false here),
+             * allowing restart-all/reload-all to be re-armed.
+             */
+            void cancelStartup();
             bool isBulkOperationInProgress() const;
             BulkOperation currentBulkOperation() const;
             bool restartProcess(const std::string& name);
@@ -145,6 +158,8 @@ namespace uniset
             std::thread monitorThread_;
             std::atomic<bool> running_{false};
             std::atomic<bool> stopping_{false};
+            std::atomic<bool> stopAllRunning_{false};
+            std::atomic<bool> shutdownRequested_{false};  // monotonic: SIGINT/SIGTERM was received
             std::atomic<BulkOperation> currentBulkOp_{BulkOperation::None};
             mutable std::mutex mutex_;
 
@@ -152,7 +167,7 @@ namespace uniset
             size_t restartWindow_msec_ = 60000;
             size_t stopTimeout_msec_ = 5000;  // Time to wait for graceful shutdown before SIGKILL
             std::vector<std::string> commonArgs_;
-            std::string passthroughArgs_;  // Arguments after "--" passed to all child processes
+            std::vector<std::string> passthroughArgs_;  // Arguments after "--" passed to all child processes
             std::vector<std::string> forwardArgs_;  // Unknown arguments forwarded to child processes
 
             ProcessCallback onStarted_;
