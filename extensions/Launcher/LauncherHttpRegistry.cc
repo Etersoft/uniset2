@@ -30,6 +30,19 @@ namespace uniset
     {
     }
     // -------------------------------------------------------------------------
+    LauncherHttpRegistry::~LauncherHttpRegistry()
+    {
+        joinBulkOp_();
+    }
+    // -------------------------------------------------------------------------
+    void LauncherHttpRegistry::joinBulkOp_()
+    {
+        std::lock_guard<std::mutex> lk(bulkThreadMutex_);
+
+        if (bulkOpThread_.joinable())
+            bulkOpThread_.join();
+    }
+    // -------------------------------------------------------------------------
     void LauncherHttpRegistry::setReadToken(const std::string& token)
     {
         readToken_ = token;
@@ -310,10 +323,17 @@ namespace uniset
             return obj;
         }
 
-        std::thread([action]()
         {
-            action();
-        }).detach();
+            std::lock_guard<std::mutex> lk(bulkThreadMutex_);
+
+            if (bulkOpThread_.joinable())
+                bulkOpThread_.join();
+
+            bulkOpThread_ = std::thread([action]()
+            {
+                action();
+            });
+        }
 
         auto obj = new Poco::JSON::Object();
         obj->set("success", true);
@@ -335,11 +355,26 @@ namespace uniset
             return obj;
         }
 
+        // Interrupt any active bulk-op (restartAll/reloadAll) BEFORE joining
+        // the previous bulk thread. cancelStartup() sets stopping_=true (but
+        // not shutdownRequested_), so the in-flight startAll() phase bails
+        // out quickly, the join below completes fast, and our new stopAll()
+        // thread can take over. Without this, an active reload-all would
+        // finish its full startup phase before we got a chance to stop.
+        pm_.cancelStartup();
+
         // stopAll can interrupt running bulk operations (restartAll/reloadAll)
-        std::thread([this]()
         {
-            pm_.stopAll();
-        }).detach();
+            std::lock_guard<std::mutex> lk(bulkThreadMutex_);
+
+            if (bulkOpThread_.joinable())
+                bulkOpThread_.join();
+
+            bulkOpThread_ = std::thread([this]()
+            {
+                pm_.stopAll();
+            });
+        }
 
         auto obj = new Poco::JSON::Object();
         obj->set("success", true);

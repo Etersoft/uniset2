@@ -98,7 +98,7 @@ namespace uniset
         ProcessState state = ProcessState::Stopped;
         Poco::Process::PID pid = 0;
         int restartCount = 0;
-        int lastExitCode = 0;
+        int lastExitCode = -1;  // -1 = unknown (sentinel); never reaped or reset
         std::chrono::steady_clock::time_point lastStartTime;
         std::chrono::steady_clock::time_point lastFailTime;
         std::string lastError;

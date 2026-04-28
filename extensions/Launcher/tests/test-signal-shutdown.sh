@@ -10,9 +10,8 @@ LOG_FILE="/tmp/launcher-signal-shutdown-test.log"
 SHUTDOWN_TIMEOUT_SEC=5
 PRE_SIGNAL_DELAY_SEC=3
 
-LAUNCHER="$LAUNCHER_DIR/.libs/uniset2-launcher"
-[ ! -x "$LAUNCHER" ] && LAUNCHER="$LAUNCHER_DIR/uniset2-launcher"
-[ ! -x "$LAUNCHER" ] && { echo "ERROR: launcher binary not found at $LAUNCHER_DIR"; exit 1; }
+. "$SCRIPT_DIR/launcher-test-env.sh"
+LAUNCHER="$(resolve_launcher "$LAUNCHER_DIR")" || exit 1
 
 LAUNCHER_PID=""
 
@@ -50,6 +49,14 @@ for i in $(seq 1 "$MAX_ITER"); do
         wait "$LAUNCHER_PID" 2>/dev/null
         EXIT_CODE=$?
         echo "[PASS] Launcher exited within $((i * STEP_MS))ms (exit=$EXIT_CODE)"
+
+        if grep -q "stopAll: already stopping, skipping" "$LOG_FILE"; then
+            echo "[FAIL] explicit shutdown path was skipped (stopAll bailed out)"
+            echo "--- log: ---"
+            cat "$LOG_FILE"
+            exit 1
+        fi
+
         exit 0
     fi
     sleep 0.1

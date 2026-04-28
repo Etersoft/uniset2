@@ -13,6 +13,8 @@
 // -------------------------------------------------------------------------
 #include <memory>
 #include <functional>
+#include <mutex>
+#include <thread>
 #include "UHttpRequestHandler.h"
 #include "ProcessManager.h"
 // -------------------------------------------------------------------------
@@ -43,7 +45,7 @@ namespace uniset
     {
         public:
             explicit LauncherHttpRegistry(ProcessManager& pm);
-            virtual ~LauncherHttpRegistry() = default;
+            virtual ~LauncherHttpRegistry();
 
             // Configuration
             void setReadToken(const std::string& token);
@@ -102,6 +104,11 @@ namespace uniset
             std::string readToken_;
             std::string controlToken_;
             std::string htmlTemplatePath_;
+
+            std::mutex bulkThreadMutex_;
+            std::thread bulkOpThread_;
+
+            void joinBulkOp_();
     };
 
 } // end of namespace uniset
