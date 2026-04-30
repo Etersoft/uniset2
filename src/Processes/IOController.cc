@@ -423,7 +423,7 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
     bool changed = false;
     bool blockChanged = false;
     bool freezeChanged = false;
-    long retValue = value;
+    long retValue = usi->value;
 
     {
         // lock
