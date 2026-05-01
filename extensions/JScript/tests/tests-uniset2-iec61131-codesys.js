@@ -4,6 +4,7 @@
  */
 
 load("uniset2-iec61131-codesys.js");
+var codesysModuleExports = (typeof module !== 'undefined' && module.exports) ? module.exports : null;
 
 function sleep(ms)
 {
@@ -35,6 +36,11 @@ function runCodesysTests()
     function assert(condition, message) { if (!condition) throw new Error(message || "Assertion failed"); }
     function assertEqual(a, b, msg) { if (a !== b) throw new Error((msg||"")+" - Expected: "+b+", Got: "+a); }
     function assertNear(a, b, tol, msg) { if (Math.abs(a-b) > tol) throw new Error((msg||"")+" - Expected: "+b+" +/-"+tol+", Got: "+a); }
+    function assertThrows(fn, msg) {
+        var threw = false;
+        try { fn(); } catch (e) { threw = true; }
+        if (!threw) throw new Error(msg || "Expected exception");
+    }
 
     // =====================================================================
     console.log("\n=== BLINK ===\n");
@@ -99,6 +105,30 @@ function runCodesysTests()
         sleep(50);
         b.update(true);
         assertEqual(b.OUT, true, "high again (50 > 40)");
+    });
+
+    test("Codesys strict mode rejects invalid BLINK parameters", function() {
+        IEC61131_STRICT = true;
+        try {
+            assertThrows(function() { new BLINK(undefined, 100); }, "undefined TIMEHIGH must fail");
+            assertThrows(function() { new BLINK(100, -1); }, "negative TIMELOW must fail");
+        } finally {
+            IEC61131_STRICT = false;
+        }
+    });
+
+    test("Codesys module export exposes IEC61131_STRICT accessors", function() {
+        if (!codesysModuleExports)
+            return;
+
+        codesysModuleExports.IEC61131_STRICT = true;
+        try {
+            assertEqual(IEC61131_STRICT, true);
+            assertThrows(function() { new BLINK(undefined, 100); }, "exported strict flag must enable validation");
+        } finally {
+            codesysModuleExports.IEC61131_STRICT = false;
+        }
+        assertEqual(IEC61131_STRICT, false);
     });
 
     // =====================================================================
@@ -260,6 +290,17 @@ function runCodesysTests()
         r.update(0, false);
         assert(r.OUT < 100, "moved down");
         assert(r.OUT > 50, "rate-limited, got " + r.OUT);
+    });
+
+    test("Codesys strict mode rejects invalid RAMP_REAL parameters", function() {
+        IEC61131_STRICT = true;
+        try {
+            assertThrows(function() { new RAMP_REAL(-1, 100, 1000); }, "negative ASCEND must fail");
+            assertThrows(function() { new RAMP_REAL(100, -1, 1000); }, "negative DESCEND must fail");
+            assertThrows(function() { new RAMP_REAL(100, 100, -1); }, "negative TIMEBASE must fail");
+        } finally {
+            IEC61131_STRICT = false;
+        }
     });
 
     // =====================================================================

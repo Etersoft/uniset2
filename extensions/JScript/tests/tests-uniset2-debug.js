@@ -274,6 +274,22 @@ function runDebugTests()
         delete globalThis.myFB;
     });
 
+    test("collectSnapshot with _debug_meta excludes private FB internals", function ()
+    {
+        resetState();
+        function FakeFB() { this.Q = true; this._running = true; this._startTime = 123; }
+        FakeFB._debug_meta = {
+            type: "timer",
+            fields: { Q: { type: "bool" } }
+        };
+        globalThis.myFB = new FakeFB();
+        var snap = internals.collectSnapshot();
+        assertEqual(snap.vars["myFB.Q"], true);
+        assert(!("myFB._running" in snap.vars), "private _running field must not be exported");
+        assert(!("myFB._startTime" in snap.vars), "private _startTime field must not be exported");
+        delete globalThis.myFB;
+    });
+
     // ==================================================================
     // Ring buffer
     // ==================================================================
@@ -426,6 +442,15 @@ function runDebugTests()
         assert(body.error.indexOf("var") >= 0, "error should mention 'var'");
     });
 
+    test("malformed query string returns 400", function ()
+    {
+        resetState();
+        var resp = internals.handleDebugRequest(mkReq({ path: "/debug/history?var=%ZZ" }));
+        assertEqual(resp.status, 400);
+        var body = JSON.parse(resp.body);
+        assert(body.error.indexOf("query") >= 0, "error should mention query");
+    });
+
     // ==================================================================
     // HTTP endpoint: GET /debug/info
     // ==================================================================
@@ -459,6 +484,7 @@ function runDebugTests()
     test("POST /debug/force sets a forced variable", function ()
     {
         resetState();
+        globalThis.in_Temp = 10;
         var resp = internals.handleDebugRequest(mkReq({
             method: "POST",
             path: "/debug/force",
@@ -469,6 +495,19 @@ function runDebugTests()
         assertEqual(body.ok, true);
         var forced = internals.getForced();
         assertEqual(forced["in_Temp"], 99);
+        delete globalThis.in_Temp;
+    });
+
+    test("POST /debug/force rejects unknown global names", function ()
+    {
+        resetState();
+        var resp = internals.handleDebugRequest(mkReq({
+            method: "POST",
+            path: "/debug/force",
+            body: JSON.stringify({ "var": "arbitraryGlobal", value: 99 })
+        }));
+        assertEqual(resp.status, 400);
+        assertEqual(internals.getForced()["arbitraryGlobal"], undefined);
     });
 
     test("POST /debug/force returns 400 for missing var", function ()
@@ -564,13 +603,13 @@ function runDebugTests()
     // HTTP endpoint: GET /debug/ui
     // ==================================================================
 
-    test("GET /debug/ui returns HTML placeholder", function ()
+    test("GET /debug/ui returns fallback HTML", function ()
     {
         resetState();
         var resp = internals.handleDebugRequest(mkReq({ path: "/debug/ui" }));
         assertEqual(resp.status, 200);
         assert(resp.headers['Content-Type'].indexOf('text/html') >= 0, "should be HTML");
-        assert(resp.body.indexOf('Debug UI placeholder') >= 0, "should contain placeholder text");
+        assert(resp.body.indexOf('UI HTML not loaded') >= 0, "should contain fallback text");
     });
 
     // ==================================================================
