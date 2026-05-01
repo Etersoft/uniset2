@@ -1,0 +1,23 @@
+# Thermostat sensor mapping for UniSet2
+#
+# Maps ST variables to UniSet sensor names.
+# Scale factor: integer sensor value / scale = REAL value
+#   e.g. AI_Temperature_S = 2350 → CurrentTemp = 23.50°C
+
+inputs:
+  CurrentTemp:
+    sensor: AI_Temperature_S
+    type: REAL
+    scale: 100
+  Enable:
+    sensor: DI_Enable_S
+  Reset:
+    sensor: DI_Reset_S
+
+outputs:
+  HeaterOn:
+    sensor: DO_Heater_C
+  AlarmHigh:
+    sensor: DO_AlarmHigh_C
+  CycleCount:
+    sensor: AO_CycleCount_C

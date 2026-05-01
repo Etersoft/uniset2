@@ -7,3 +7,8 @@ AT_SETUP([JScript OPCUA tests])
 AT_SKIP_IF([$abs_top_builddir/config.status --config | grep disable-opcua])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/JScript/tests tests_with_opcua_sm.sh],[0],[ignore],[ignore])
 AT_CLEANUP
+
+AT_SETUP([st2js converter tests])
+AT_SKIP_IF([$abs_top_builddir/config.status --config | grep disable-st2js])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/JScript/tools/st2js run_tests.sh],[0],[ignore],[ignore])
+AT_CLEANUP

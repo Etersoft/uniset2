@@ -1,0 +1,2350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="" productName="CODESYS" productVersion="CODESYS V3.5 SP16" creationDateTime="2021-03-25T19:26:30.1030266" />
+  <contentHeader name="Traffic control simulator" version="1.0" modificationDateTime="2021-03-25T19:26:13.0193121" organization="TK Automation" author="Toni Kucic">
+    <Comment>Traffic control is often used a simple introduction into sequencing when programming PLCs. As a part of my portfolio I have written a simple timing controller and a simulator for two crossroads that are one way streets with pedestrians going in all directions. The project is meant for begginers and for educational purposes. It is published under MIT license. Written in CODESYS 3.5 and in structured text language.</Comment>
+    <coordinateInfo>
+      <fbd>
+        <scaling x="1" y="1" />
+      </fbd>
+      <ld>
+        <scaling x="1" y="1" />
+      </ld>
+      <sfc>
+        <scaling x="1" y="1" />
+      </sfc>
+    </coordinateInfo>
+    <addData>
+      <data name="http://www.3s-software.com/plcopenxml/projectinformation" handleUnknown="implementation">
+        <ProjectInformation>
+          <property name="Author" type="string">Toni Kucic</property>
+          <property name="Company" type="string">TK Automation</property>
+          <property name="CompiledLibraryCompatibilityVersion" type="string">CODESYS V3.5 SP9 Patch 2</property>
+          <property name="Description" type="string">Traffic control is often used a simple introduction into sequencing when programming PLCs. As a part of my portfolio I have written a simple timing controller and a simulator for two crossroads that are one way streets with pedestrians going in all directions. The project is meant for begginers and for educational purposes. It is published under MIT license. Written in CODESYS 3.5 and in structured text language.</property>
+          <property name="Project" type="string">plc_traffic_control</property>
+          <property name="Title" type="string">Traffic control simulator</property>
+          <property name="Version" type="version">1.0</property>
+        </ProjectInformation>
+      </data>
+    </addData>
+  </contentHeader>
+  <types>
+    <dataTypes>
+      <dataType name="SpriteDef_typ">
+        <baseType>
+          <struct>
+            <variable name="x">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Initial position of the sprite</xhtml>
+              </documentation>
+            </variable>
+            <variable name="y">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Initial position of the sprite</xhtml>
+              </documentation>
+            </variable>
+            <variable name="speed">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Initial speed of the sprite</xhtml>
+              </documentation>
+            </variable>
+            <variable name="width">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprites width</xhtml>
+              </documentation>
+            </variable>
+            <variable name="height">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprites height</xhtml>
+              </documentation>
+            </variable>
+            <variable name="screenWidth">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Screen width</xhtml>
+              </documentation>
+            </variable>
+            <variable name="screenHeight">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Screen height</xhtml>
+              </documentation>
+            </variable>
+          </struct>
+        </baseType>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>dd2e24dd-3e1f-4233-8c8b-e6d621ed9666</ObjectId>
+          </data>
+        </addData>
+      </dataType>
+    </dataTypes>
+    <pous>
+      <pou name="isSpriteColliding" pouType="function">
+        <interface>
+          <returnType>
+            <BOOL />
+          </returnType>
+          <inputVars>
+            <variable name="sprite1">
+              <type>
+                <derived name="Sprite" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite 1 function block</xhtml>
+              </documentation>
+            </variable>
+            <variable name="sprite2">
+              <type>
+                <derived name="Sprite" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite 2 function block</xhtml>
+              </documentation>
+            </variable>
+          </inputVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Calculate if these two sprites are overlapping*)
+IF sprite1.actX &lt; (sprite2.actX + sprite2.init.width) AND
+   (sprite1.actX + sprite1.init.width) &gt; sprite2.actX AND
+   sprite1.actY &lt; (sprite2.actY + sprite2.init.height) AND
+  ( sprite1.init.height + sprite1.actY) &gt; sprite2.actY THEN
+   isSpriteColliding := TRUE;
+ELSE
+	isSpriteColliding := FALSE;
+END_IF</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>d815f5ac-8dbf-4260-ad60-1105e7b065ec</ObjectId>
+          </data>
+        </addData>
+      </pou>
+      <pou name="Sprite" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="init">
+              <type>
+                <derived name="SpriteDef_typ" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite initialization pars</xhtml>
+              </documentation>
+            </variable>
+            <variable name="goTo">
+              <type>
+                <array>
+                  <dimension lower="0" upper="1" />
+                  <baseType>
+                    <INT />
+                  </baseType>
+                </array>
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite moves to x,y destination</xhtml>
+              </documentation>
+            </variable>
+            <variable name="moveX">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Moves the sprite by given ammount on the X axis</xhtml>
+              </documentation>
+            </variable>
+            <variable name="moveY">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Moves the sprite by given ammount on the Y axis</xhtml>
+              </documentation>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="x">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">X position of the sprite</xhtml>
+              </documentation>
+            </variable>
+            <variable name="y">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Y position of the sprite</xhtml>
+              </documentation>
+            </variable>
+            <variable name="atDestination">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Flag to say it has arrived at its destination</xhtml>
+              </documentation>
+            </variable>
+            <variable name="actX">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Actual position on the screen, X axis</xhtml>
+              </documentation>
+            </variable>
+            <variable name="actY">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Actual position on the screen, Y axis</xhtml>
+              </documentation>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="vInit">
+              <type>
+                <BOOL />
+              </type>
+              <initialValue>
+                <simpleValue value="TRUE" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Initialization flag</xhtml>
+              </documentation>
+            </variable>
+            <variable name="vSpriteDef">
+              <type>
+                <derived name="SpriteDef_typ" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Used sprite definition</xhtml>
+              </documentation>
+            </variable>
+            <variable name="vActualX">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Actual position on the screen, X axis</xhtml>
+              </documentation>
+            </variable>
+            <variable name="vActualY">
+              <type>
+                <INT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Actual position on the screen, Y axis</xhtml>
+              </documentation>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Initialize sprite on first scan*)
+IF vInit THEN
+	vSpriteDef := init;
+	vInit := FALSE;
+END_IF
+
+(* Actual moving of the coordinates *)
+vSpriteDef.x := vSpriteDef.x + moveX;
+vSpriteDef.y := vSpriteDef.y + moveY;
+
+(* Reseting the position if sprite goes off screen *)
+(* If moving left to right *)
+IF vSpriteDef.x &gt; vSpriteDef.screenWidth THEN
+	vSpriteDef.x := -vSpriteDef.width;
+(* If moving right to left *)
+ELSIF vSpriteDef.x &lt; -vSpriteDef.width THEN
+	vSpriteDef.x := vSpriteDef.screenWidth;	
+END_IF
+(* If moving from up, down *)
+IF vSpriteDef.y &gt; vSpriteDef.screenHeight THEN
+	vSpriteDef.y := -vSpriteDef.height;
+(* If moving from down, up *)
+ELSIF vSpriteDef.y &lt; -vSpriteDef.height THEN
+	vSpriteDef.y := vSpriteDef.screenHeight;	
+END_IF
+
+(*x, y will be used to connect to absoulte movements of the graphic element*)
+x := vSpriteDef.x - init.x;
+y := vSpriteDef.y - init.y;
+
+(*ActX and ActY will be used in the logic for e.g. object collision detection*)
+actX := vSpriteDef.x;
+actY := vSpriteDef.y;</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>75fe69fa-9c1b-4c2e-a08e-ab7d20dc4f5c</ObjectId>
+          </data>
+        </addData>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="SoftPLC">
+        <resource name="Application">
+          <task name="VISU_TASK" interval="PT0.05S" priority="31">
+            <pouInstance name="VisuElems.Visu_Prg" typeName="">
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml" />
+              </documentation>
+            </pouInstance>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/tasksettings" handleUnknown="implementation">
+                <TaskSettings KindOfTask="Cyclic" Interval="50" IntervalUnit="ms" WithinSPSTimeSlicing="true">
+                  <Watchdog Enabled="false" TimeUnit="ms" />
+                </TaskSettings>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>36dd8743-addf-4031-9feb-dce731836678</ObjectId>
+              </data>
+            </addData>
+          </task>
+          <task name="Task" interval="PT0.005S" priority="1">
+            <pouInstance name="main" typeName="">
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml" />
+              </documentation>
+            </pouInstance>
+            <pouInstance name="simulator" typeName="">
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml" />
+              </documentation>
+            </pouInstance>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/tasksettings" handleUnknown="implementation">
+                <TaskSettings KindOfTask="Cyclic" Interval="t#5ms" WithinSPSTimeSlicing="true">
+                  <Watchdog Enabled="false" TimeUnit="ms" Sensitivity="1" />
+                </TaskSettings>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>c932c134-12d7-42e6-b914-4e02f89670bf</ObjectId>
+              </data>
+            </addData>
+          </task>
+          <globalVars name="gIO">
+            <variable name="Cross1CarU">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 1 - Cars going up to down</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1CarD">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 1 - Cars going down to up</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1CarL">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 1 - Cars going left to right</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1CarR">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 1 - Cars going right to left</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2CarU">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 2 - Cars going up to down</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2CarD">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 2 - Cars going down to up</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2CarL">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 2 - Cars going left to right</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2CarR">
+              <type>
+                <derived name="trafficLightCars" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light DO - Crossroad 2 - Cars going right to left</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedLUD">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going up to down on left side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedLDU">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going down to up on left side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedRUD">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going up to down on right side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedRDU">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going down to up on right side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedULR">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going left to right on upper side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedURL">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going right to left on upper side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedDLR">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going left to right on lower side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross1PedDRL">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 1 - Pedestrians going right to left on lower side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedLUD">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going up to down on left side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedLDU">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going down to up on left side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedRUD">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going up to down on right side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedRDU">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going down to up on right side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedULR">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going left to right on upper side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedURL">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going right to left on upper side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedDLR">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going left to right on lower side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Cross2PedDRL">
+              <type>
+                <derived name="trafficLightPed" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light DO - Crossroad 2 - Pedestrians going right to left on lower side</xhtml>
+              </documentation>
+            </variable>
+            <variable name="PoliceModeActivated">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">DI Police mode is activated</xhtml>
+              </documentation>
+            </variable>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/attributes" handleUnknown="implementation">
+                <Attributes>
+                  <Attribute Name="qualified_only" Value="" />
+                </Attributes>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>45b9d55d-90d0-48a9-8d7e-2af6e1714d26</ObjectId>
+              </data>
+            </addData>
+          </globalVars>
+          <addData>
+            <data name="http://www.3s-software.com/plcopenxml/datatype" handleUnknown="implementation">
+              <dataType name="trafficLightCars">
+                <baseType>
+                  <struct>
+                    <variable name="RedLamp">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Red lamp is on</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="YellowLamp">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Yellow lamp is on</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="GreenLamp">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Green lamp is on</xhtml>
+                      </documentation>
+                    </variable>
+                  </struct>
+                </baseType>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>6c9cfcbc-87cf-42f1-a329-51e332d1b9d8</ObjectId>
+                  </data>
+                </addData>
+              </dataType>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/datatype" handleUnknown="implementation">
+              <dataType name="trafficLightPed">
+                <baseType>
+                  <struct>
+                    <variable name="RedLight">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Red lamp is on</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="GreenLight">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Green lamp is on</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="TimeToSequenceChange">
+                      <type>
+                        <UINT />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Time in seconds until next light change</xhtml>
+                      </documentation>
+                    </variable>
+                  </struct>
+                </baseType>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>ed37e448-fe2e-4c3e-bcbe-421400098762</ObjectId>
+                  </data>
+                </addData>
+              </dataType>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/pou" handleUnknown="implementation">
+              <pou name="simulator" pouType="program">
+                <interface>
+                  <localVars>
+                    <variable name="carC1HR">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="80" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="200" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="568" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="264" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling car C1HR</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="carC1HL">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="80" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="200" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="-50" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="370" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling car C1HL</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="carC1VU">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="200" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="80" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="270" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="-50" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling car C1VU</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="carC1VD">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="200" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="80" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="372" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="565" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling car C1VD</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="carC2VU">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="200" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="80" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="1528" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="-50" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling car C2VU</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="carC2VD">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="200" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="80" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="1631" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="580" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling car C2VD</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="pedC1VU">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="171" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="7" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling pedestrian C1VU</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="pedC1VD">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="486" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="657" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling pedestrian C1VD</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="pedC2VU">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="1427" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="2" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling pedestrian C2VU</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="pedC2VD">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="1742" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="654" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling pedestrian C2VD</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="pedC1HL">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="9" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="491" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling pedestrian C1HL</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="pedC2HR">
+                      <type>
+                        <derived name="Sprite" />
+                      </type>
+                      <initialValue>
+                        <structValue>
+                          <value member="init">
+                            <structValue>
+                              <value member="screenHeight">
+                                <simpleValue value="720" />
+                              </value>
+                              <value member="screenWidth">
+                                <simpleValue value="1980" />
+                              </value>
+                              <value member="height">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="width">
+                                <simpleValue value="50" />
+                              </value>
+                              <value member="x">
+                                <simpleValue value="1916" />
+                              </value>
+                              <value member="y">
+                                <simpleValue value="174" />
+                              </value>
+                            </structValue>
+                          </value>
+                        </structValue>
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Sprite controling pedestrian C1HR</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1CarU">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light - Crossroad 1 - Cars going up to down</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1CarD">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light - Crossroad 1 - Cars going down to up</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1CarL">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light - Crossroad 1 - Cars going left to right</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1CarR">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car traffic light - Crossroad 1 - Cars going right to left</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2CarU">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car light - Crossroad 2 - Cars going up to down</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2CarD">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car light - Crossroad 2 - Cars going down to up</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2CarL">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car light - Crossroad 2 - Cars going left to right</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2CarR">
+                      <type>
+                        <derived name="trafficLightCars" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Car light - Crossroad 2 - Cars going right to left</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedLUD">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going up to down on left side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedLDU">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going down to up on left side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedRUD">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going up to down on right side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedRDU">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going down to up on right side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedULR">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going left to right on upper side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedURL">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going right to left on upper side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedDLR">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going left to right on lower side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross1PedDRL">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 1 - Pedestrians going right to left on lower side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedLUD">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going up to down on left side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedLDU">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going down to up on left side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedRUD">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going up to down on right side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedRDU">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going down to up on right side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedULR">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going left to right on upper side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedURL">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going right to left on upper side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedDLR">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going left to right on lower side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Cross2PedDRL">
+                      <type>
+                        <derived name="trafficLightPed" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Pedestrian light - Crossroad 2 - Pedestrians going right to left on lower side</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vCollision">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Collission has occured </xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vDangerousCombination">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Dangerous combination of lights has been detected </xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vPoliceControl">
+                      <type>
+                        <BOOL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Police control activated </xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vCrashFlagX">
+                      <type>
+                        <INT />
+                      </type>
+                      <initialValue>
+                        <simpleValue value="-200" />
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">If collission is detected, holds position of collission x axis </xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vCrashFlagY">
+                      <type>
+                        <INT />
+                      </type>
+                      <initialValue>
+                        <simpleValue value="-200" />
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">If collission is detected, holds position of collission y axis </xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="Blinker">
+                      <type>
+                        <derived name="BLINK" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Code that blinks a variable</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vFaultReason">
+                      <type>
+                        <string length="255" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">If collission or dangerous combination detected, holds more information where it has occured</xhtml>
+                      </documentation>
+                    </variable>
+                  </localVars>
+                </interface>
+                <actions>
+                  <action name="CHECK_COLLISSIONS">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Check for collisions between each car with another car and pedestrian*)
+vCollision := FALSE;
+
+(*Collission car -&gt; car*)
+IF isSpriteColliding(carC1HR, carC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := carC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND CAR C1HL';
+END_IF
+IF isSpriteColliding(carC1HR, carC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := carC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND CAR C1VU';
+END_IF
+IF isSpriteColliding(carC1HR, carC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := carC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND CAR C1VD';
+END_IF
+IF isSpriteColliding(carC1HR, carC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := carC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND CAR C2VD';
+END_IF
+IF isSpriteColliding(carC1HR, carC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := carC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND CAR C2VU';
+END_IF
+IF isSpriteColliding(carC1HL, carC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := carC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND CAR C1VU';
+END_IF
+IF isSpriteColliding(carC1HL, carC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := carC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND CAR C1VD';
+END_IF
+IF isSpriteColliding(carC1HL, carC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := carC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND CAR C2VU';
+END_IF
+IF isSpriteColliding(carC1HL, carC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := carC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND CAR C2VD';
+END_IF
+IF isSpriteColliding(carC1VU, carC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := carC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND CAR C1VD';
+END_IF
+IF isSpriteColliding(carC1VU, carC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := carC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND CAR C2VD';
+END_IF
+IF isSpriteColliding(carC1VU, carC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := carC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND CAR C2VU';
+END_IF
+IF isSpriteColliding(carC1VD, carC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := carC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND CAR C2VD';
+END_IF
+IF isSpriteColliding(carC1VD, carC2VU) THEN
+	vCollision := TRUE; 
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := carC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND CAR C2VU';
+END_IF
+IF isSpriteColliding(carC2VD, carC2VU) THEN
+	vCollision := TRUE; 
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := carC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND CAR C2VU';
+END_IF
+
+(*Check collission car -&gt; pedestrian*)
+IF isSpriteColliding(carC1HR, pedC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := pedC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND PEDESTRIAN C1HL';
+END_IF
+IF isSpriteColliding(carC1HR, pedC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := pedC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND PEDESTRIAN C1VU';
+END_IF
+IF isSpriteColliding(carC1HR, pedC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := pedC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND PEDESTRIAN C1VD';
+END_IF
+IF isSpriteColliding(carC1HR, pedC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := pedC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND PEDESTRIAN C2VU';
+END_IF
+IF isSpriteColliding(carC1HR, pedC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := pedC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND PEDESTRIAN C2VD';
+END_IF
+IF isSpriteColliding(carC1HR, pedC2HR) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HR.actX;
+	vCrashFlagY := pedC2HR.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HR AND PEDESTRIAN C2HR';
+END_IF
+
+
+IF isSpriteColliding(carC1HL, pedC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := pedC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND PEDESTRIAN C1HL';
+END_IF
+IF isSpriteColliding(carC1HL, pedC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := pedC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND PEDESTRIAN C1VU';
+END_IF
+IF isSpriteColliding(carC1HL, pedC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := pedC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND PEDESTRIAN C1VD';
+END_IF
+IF isSpriteColliding(carC1HL, pedC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := pedC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND PEDESTRIAN C2VU';
+END_IF
+IF isSpriteColliding(carC1HL, pedC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := pedC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND PEDESTRIAN C2VD';
+END_IF
+IF isSpriteColliding(carC1HL, pedC2HR) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1HL.actX;
+	vCrashFlagY := pedC2HR.actY;
+	vFaultReason := 'COLLISSION AT CAR C1HL AND PEDESTRIAN C2HR';
+END_IF
+
+
+IF isSpriteColliding(carC1VU, pedC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := pedC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND PEDESTRIAN C1HL';
+END_IF
+IF isSpriteColliding(carC1VU, pedC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := pedC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND PEDESTRIAN C1VU';
+END_IF
+IF isSpriteColliding(carC1VU, pedC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := pedC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND PEDESTRIAN C1VD';
+END_IF
+IF isSpriteColliding(carC1VU, pedC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := pedC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND PEDESTRIAN C2VU';
+END_IF
+IF isSpriteColliding(carC1VU, pedC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := pedC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND PEDESTRIAN C2VD';
+END_IF
+IF isSpriteColliding(carC1VU, pedC2HR) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VU.actX;
+	vCrashFlagY := pedC2HR.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VU AND PEDESTRIAN C2HR';
+END_IF
+
+
+IF isSpriteColliding(carC1VD, pedC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := pedC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND PEDESTRIAN C1HL';
+END_IF
+IF isSpriteColliding(carC1VD, pedC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := pedC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND PEDESTRIAN C1VU';
+END_IF
+IF isSpriteColliding(carC1VD, pedC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := pedC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND PEDESTRIAN C1VD';
+END_IF
+IF isSpriteColliding(carC1VD, pedC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := pedC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND PEDESTRIAN C2VU';
+END_IF
+IF isSpriteColliding(carC1VD, pedC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := pedC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND PEDESTRIAN C2VD';
+END_IF
+IF isSpriteColliding(carC1VD, pedC2HR) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC1VD.actX;
+	vCrashFlagY := pedC2HR.actY;
+	vFaultReason := 'COLLISSION AT CAR C1VD AND PEDESTRIAN C2HR';
+END_IF
+
+
+IF isSpriteColliding(carC2VU, pedC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VU.actX;
+	vCrashFlagY := pedC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VU AND PEDESTRIAN C1HL';
+END_IF
+IF isSpriteColliding(carC2VU, pedC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VU.actX;
+	vCrashFlagY := pedC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VU AND PEDESTRIAN C1VU';
+END_IF
+IF isSpriteColliding(carC2VU, pedC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VU.actX;
+	vCrashFlagY := pedC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VU AND PEDESTRIAN C1VD';
+END_IF
+IF isSpriteColliding(carC2VU, pedC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VU.actX;
+	vCrashFlagY := pedC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VU AND PEDESTRIAN C2VU';
+END_IF
+IF isSpriteColliding(carC2VU, pedC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VU.actX;
+	vCrashFlagY := pedC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VU AND PEDESTRIAN C2VD';
+END_IF
+IF isSpriteColliding(carC2VU, pedC2HR) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VU.actX;
+	vCrashFlagY := pedC2HR.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VU AND PEDESTRIAN C2HR';
+END_IF
+
+
+IF isSpriteColliding(carC2VD, pedC1HL) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := pedC1HL.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND PEDESTRIAN C1HL';
+END_IF
+IF isSpriteColliding(carC2VD, pedC1VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := pedC1VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND PEDESTRIAN pedC1VU';
+END_IF
+IF isSpriteColliding(carC2VD, pedC1VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := pedC1VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND PEDESTRIAN C1VD';
+END_IF
+IF isSpriteColliding(carC2VD, pedC2VU) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := pedC2VU.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND PEDESTRIAN C2VU';
+END_IF
+IF isSpriteColliding(carC2VD, pedC2VD) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := pedC2VD.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND PEDESTRIAN C2VD';
+END_IF
+IF isSpriteColliding(carC2VD, pedC2HR) THEN
+	vCollision := TRUE;
+	vCrashFlagX := carC2VD.actX;
+	vCrashFlagY := pedC2HR.actY;
+	vFaultReason := 'COLLISSION AT CAR C2VD AND PEDESTRIAN C2HR';
+END_IF
+
+(*Hide the crash flag if there is no collission*)
+IF NOT vCollision THEN
+	vCrashFlagX := -200;
+	vCrashFlagY := -200;
+END_IF
+</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>06df541c-fc0f-4e5f-8864-eeec453b0732</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="MOVE_CARS">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Car C1 HL. Moves from left to right, stops at the crossroads and moves if only green is lit*)
+IF carC1HL.actX = -49 THEN
+	IF (Cross1CarL.GreenLamp AND NOT (Cross1CarL.RedLamp OR Cross1CarL.YellowLamp)) THEN
+		carC1HL.moveX := 1;
+	ELSE
+		carC1HL.moveX := 0;
+	END_IF
+ELSIF carC1HL.actX = 1211 THEN
+	IF (Cross2CarL.GreenLamp AND NOT (Cross2CarL.RedLamp OR Cross2CarL.YellowLamp)) THEN
+		carC1HL.moveX := 1;
+	ELSE
+		carC1HL.moveX := 0;
+	END_IF
+ELSE
+	carC1HL.moveX := 1;
+END_IF
+
+(*Car C1 HR. Moves from right to left, stops at the crossroads and moves if only green is lit*)
+IF carC1HR.actX = 567 THEN
+	IF (Cross1CarR.GreenLamp AND NOT (Cross1CarR.RedLamp OR Cross1CarR.YellowLamp)) THEN
+		carC1HR.moveX := -1;
+	ELSE
+		carC1HR.moveX := 0;
+	END_IF
+ELSIF carC1HR.actX = 1829 THEN
+	IF (Cross2CarR.GreenLamp AND NOT (Cross2CarR.RedLamp OR Cross2CarR.YellowLamp)) THEN
+		carC1HR.moveX := -1;
+	ELSE
+		carC1HR.moveX := 0;
+	END_IF
+ELSE
+	carC1HR.moveX := -1;
+END_IF
+(*Car C1 VU. Moves from up to down, stops at the crossroads and moves if only green is lit*)
+IF carC1VU.actY = -49 THEN
+	IF (Cross1CarU.GreenLamp AND NOT (Cross1CarU.RedLamp OR Cross1CarU.YellowLamp)) THEN
+		carC1VU.moveY := 1;
+	ELSE
+		carC1VU.moveY := 0;
+	END_IF
+ELSE
+	carC1VU.moveY := 1;
+END_IF
+(*Car C2 VU. Moves from up to down, stops at the crossroads and moves if only green is lit*)
+IF carC2VU.actY = -49 THEN
+	IF (Cross2CarU.GreenLamp AND NOT (Cross2CarU.RedLamp OR Cross2CarU.YellowLamp)) THEN
+		carC2VU.moveY := 1;
+	ELSE
+		carC2VU.moveY := 0;
+	END_IF
+ELSE
+	carC2VU.moveY := 1;
+END_IF
+(*Car C1 VD. Moves from down to up, stops at the crossroads and moves if only green is lit*)
+IF carC1VD.actY = 564 THEN
+	IF (Cross1CarD.GreenLamp AND NOT (Cross1CarD.RedLamp OR Cross1CarD.YellowLamp)) THEN
+		carC1VD.moveY := -1;
+	ELSE
+		carC1VD.moveY := 0;
+	END_IF
+ELSE
+	carC1VD.moveY := -1;
+END_IF
+(*Car C2 VD. Moves from down to up, stops at the crossroads and moves if only green is lit*)
+IF carC2VD.actY = 564 THEN
+	IF (Cross2CarD.GreenLamp AND NOT (Cross2CarD.RedLamp OR Cross2CarD.YellowLamp)) THEN
+		carC2VD.moveY := -1;
+	ELSE
+		carC2VD.moveY := 0;
+	END_IF
+ELSE
+	carC2VD.moveY := -1;
+END_IF</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>ed37403c-0a24-46dc-b7c0-a282de63709a</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="MOVE_PEDESTRIANS">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Pedestrian C1 VU. Moves from up to down, stops at the crossroads and moves if only green is lit*)
+IF pedC1VU.actY = 180 THEN
+	IF Cross1PedLUD.GreenLight AND NOT Cross1PedLUD.RedLight THEN
+		pedC1VU.moveY := 1;
+	ELSE
+		pedC1VU.moveY := 0;
+	END_IF
+ELSE
+	pedC1VU.moveY := 1;
+END_IF
+(*Pedestrian C2 VU. Moves from up to down, stops at the crossroads and moves if only green is lit*)
+IF pedC2VU.actY = 180 THEN
+	IF Cross2PedLUD.GreenLight AND NOT Cross2PedLUD.RedLight THEN
+		pedC2VU.moveY := 1;
+	ELSE
+		pedC2VU.moveY := 0;
+	END_IF
+ELSE
+	pedC2VU.moveY := 1;
+END_IF
+(*Pedestrian C1 VD. Moves from down to up, stops at the crossroads and moves if only green is lit*)
+IF pedC1VD.actY = 480 THEN
+	IF Cross1PedLDU.GreenLight AND NOT Cross1PedLDU.RedLight THEN
+		pedC1VD.moveY := -1;
+	ELSE
+		pedC1VD.moveY := 0;
+	END_IF
+ELSE
+	pedC1VD.moveY := -1;
+END_IF
+(*Pedestrian C1 VD. Moves from down to up, stops at the crossroads and moves if only green is lit*)
+IF pedC2VD.actY = 480 THEN
+	IF Cross2PedLDU.GreenLight AND NOT Cross2PedLDU.RedLight THEN
+		pedC2VD.moveY := -1;
+	ELSE
+		pedC2VD.moveY := 0;
+	END_IF
+ELSE
+	pedC2VD.moveY := -1;
+END_IF
+(*Pedestrian C1 HL. Moves from left to right, stops at the crossroads and moves if only green is lit*)
+IF pedC1HL.actX = 190 THEN
+	IF Cross1PedDLR.GreenLight AND NOT Cross1PedDLR.RedLight THEN
+		pedC1HL.moveX := 1;
+	ELSE
+		pedC1HL.moveX := 0;
+	END_IF
+ELSIF pedC1HL.actX = 1450 THEN
+	IF Cross2PedDLR.GreenLight AND NOT Cross2PedDLR.RedLight THEN
+		pedC1HL.moveX := 1;
+	ELSE
+		pedC1HL.moveX := 0;
+	END_IF
+ELSE
+	pedC1HL.moveX := 1;
+END_IF
+(*Pedestrian C1 HR. Moves from right to left, stops at the crossroads and moves if only green is lit*)
+IF pedC2HR.actX = 1740 THEN
+	IF Cross2PedURL.GreenLight AND NOT Cross2PedURL.RedLight THEN
+		pedC2HR.moveX := -1;
+	ELSE
+		pedC2HR.moveX := 0;
+	END_IF
+ELSIF pedC2HR.actX = 480 THEN
+	IF Cross1PedURL.GreenLight AND NOT Cross1PedURL.RedLight THEN
+		pedC2HR.moveX := -1;
+	ELSE
+		pedC2HR.moveX := 0;
+	END_IF
+ELSE
+	pedC2HR.moveX := -1;
+END_IF</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>6192887b-548d-4f46-a96d-80ca823e2952</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="UPDATE_OBJECTS">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">// Update sprites
+carC1HR();
+carC1HL();
+carC1VD();
+carC1VU();
+carC2VD();
+carC2VU();
+pedC1VU();
+pedC1VD();
+pedC2VU();
+pedC2VD();
+pedC1HL();
+pedC2HR();</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>eea3e191-f523-4da2-a41f-bcb86b3fec17</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="CONTROL_LIGHTS">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Cross1CarU := gIO.Cross1CarU;
+Cross1CarD := gIO.Cross1CarD;
+Cross1CarL := gIO.Cross1CarL;
+Cross1CarR := gIO.Cross1CarR;
+
+Cross2CarU := gIO.Cross2CarU;
+Cross2CarD := gIO.Cross2CarD;
+Cross2CarL := gIO.Cross2CarL;
+Cross2CarR := gIO.Cross2CarR;
+
+Cross1PedLUD := gIO.Cross1PedLUD;
+Cross1PedLDU := gIO.Cross1PedLDU;
+Cross1PedRUD := gIO.Cross1PedRUD;
+Cross1PedRDU := gIO.Cross1PedRDU;
+
+Cross1PedULR := gIO.Cross1PedULR;
+Cross1PedURL := gIO.Cross1PedURL;
+Cross1PedDLR := gIO.Cross1PedDLR;
+Cross1PedDRL := gIO.Cross1PedDRL;
+
+Cross2PedLUD := gIO.Cross2PedLUD;
+Cross2PedLDU := gIO.Cross2PedLDU;
+Cross2PedRUD := gIO.Cross2PedRUD;
+Cross2PedRDU := gIO.Cross2PedRDU;
+
+Cross2PedULR := gIO.Cross2PedULR;
+Cross2PedURL := gIO.Cross2PedURL;
+Cross2PedDLR := gIO.Cross2PedDLR;
+Cross2PedDRL := gIO.Cross2PedDRL;</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>d6856cd7-1759-4a2c-b510-e9b300223c02</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="FAULT_MONITOR">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Checks if dangerous situations occur, horizontal wave and vertical wave green at the same time*)
+vDangerousCombination := FALSE;
+(*Green vertical and horizontal pedestrians green*)
+IF Cross1CarU.GreenLamp AND (Cross1PedULR.GreenLight OR Cross1PedURL.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS1 -&gt; VERTICAL CARS AND HORIZONTAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+IF Cross2CarU.GreenLamp AND (Cross2PedULR.GreenLight OR Cross2PedURL.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS2 -&gt; VERTICAL CARS AND HORIZONTAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+IF Cross1CarD.GreenLamp AND (Cross1PedDLR.GreenLight OR Cross1PedDRL.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS1 -&gt; VERTICAL CARS AND HORIZONTAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+IF Cross2CarD.GreenLamp AND (Cross2PedDLR.GreenLight OR Cross2PedDRL.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS2 -&gt; VERTICAL CARS AND HORIZONTAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+
+(*Green horizontal and vertical pedestrians green*)
+IF Cross1CarL.GreenLamp AND (Cross1PedLUD.GreenLight OR Cross1PedLDU.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS1 -&gt; HORIZONTAL CARS AND VERTICAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+IF Cross1CarR.GreenLamp AND (Cross1PedRUD.GreenLight OR Cross1PedRDU.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS1 -&gt; HORIZONTAL CARS AND VERTICAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+IF Cross2CarL.GreenLamp AND (Cross2PedLUD.GreenLight OR Cross2PedLDU.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS2 -&gt; HORIZONTAL CARS AND VERTICAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+IF Cross2CarR.GreenLamp AND (Cross2PedRUD.GreenLight OR Cross2PedRDU.GreenLight) THEN
+	vDangerousCombination := TRUE;
+	vFaultReason := 'DANGEROUS COMBINATION AT CROSS2 -&gt; HORIZONTAL CARS AND VERTICAL PEDESTRIANS GREEN AT THE SAME TIME';
+END_IF
+
+(*Checks if there was a collission with car-car and ped - car*)
+CHECK_COLLISSIONS();</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>218e8ada-f249-4eba-bc00-610b6cba06ca</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="BLINK_DANGER_SIGNAL">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Cross1CarU.GreenLamp := FALSE;
+Cross1CarU.YellowLamp := FALSE;
+Cross1CarU.RedLamp := Blinker.OUT;
+
+Cross1CarD := Cross1CarU;
+Cross1CarL := Cross1CarU;
+Cross1CarR := Cross1CarU;
+
+Cross2CarU := Cross1CarU;
+Cross2CarD := Cross1CarU;
+Cross2CarL := Cross1CarU;
+Cross2CarR := Cross1CarU;
+
+Cross1PedLUD.GreenLight := FALSE;
+Cross1PedLUD.RedLight := Blinker.OUT;
+Cross1PedLUD.TimeToSequenceChange := 0;
+
+Cross1PedLDU := Cross1PedLUD;
+Cross1PedRUD := Cross1PedLUD;
+Cross1PedRDU := Cross1PedLUD;
+
+Cross1PedULR := Cross1PedLUD;
+Cross1PedURL := Cross1PedLUD;
+Cross1PedDLR := Cross1PedLUD;
+Cross1PedDRL := Cross1PedLUD;
+
+Cross2PedLUD := Cross1PedLUD;
+Cross2PedLDU := Cross1PedLUD;
+Cross2PedRUD := Cross1PedLUD;
+Cross2PedRDU := Cross1PedLUD;
+
+Cross2PedULR := Cross1PedLUD;
+Cross2PedURL := Cross1PedLUD;
+Cross2PedDLR := Cross1PedLUD;
+Cross2PedDRL := Cross1PedLUD;</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>87d62bc1-fd3f-4af8-b468-432e2cb03c33</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                  <action name="BLINK_YELLOW_SIGNAL">
+                    <body>
+                      <ST>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Cross1CarU.GreenLamp := FALSE;
+Cross1CarU.YellowLamp := Blinker.OUT;
+Cross1CarU.RedLamp := FALSE;
+
+Cross1CarD := Cross1CarU;
+Cross1CarL := Cross1CarU;
+Cross1CarR := Cross1CarU;
+
+Cross2CarU := Cross1CarU;
+Cross2CarD := Cross1CarU;
+Cross2CarL := Cross1CarU;
+Cross2CarR := Cross1CarU;
+
+Cross1PedLUD.GreenLight := FALSE;
+Cross1PedLUD.RedLight := FALSE;
+Cross1PedLUD.TimeToSequenceChange := 0;
+
+Cross1PedLDU := Cross1PedLUD;
+Cross1PedRUD := Cross1PedLUD;
+Cross1PedRDU := Cross1PedLUD;
+
+Cross1PedULR := Cross1PedLUD;
+Cross1PedURL := Cross1PedLUD;
+Cross1PedDLR := Cross1PedLUD;
+Cross1PedDRL := Cross1PedLUD;
+
+Cross2PedLUD := Cross1PedLUD;
+Cross2PedLDU := Cross1PedLUD;
+Cross2PedRUD := Cross1PedLUD;
+Cross2PedRDU := Cross1PedLUD;
+
+Cross2PedULR := Cross1PedLUD;
+Cross2PedURL := Cross1PedLUD;
+Cross2PedDLR := Cross1PedLUD;
+Cross2PedDRL := Cross1PedLUD;</xhtml>
+                      </ST>
+                    </body>
+                    <addData>
+                      <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                        <ObjectId>8b909b29-f96c-4e34-bb68-efb6ea190a22</ObjectId>
+                      </data>
+                    </addData>
+                  </action>
+                </actions>
+                <body>
+                  <ST>
+                    <xhtml xmlns="http://www.w3.org/1999/xhtml">MOVE_CARS();
+MOVE_PEDESTRIANS();
+
+(*Blink yellow signal if the police is under control*)
+IF vPoliceControl THEN
+	UPDATE_OBJECTS();
+	BLINK_YELLOW_SIGNAL();
+(*Freeze situation if a collission or dangerous situation has occured*)
+ELSIF vCollision OR vDangerousCombination THEN
+	BLINK_DANGER_SIGNAL();
+ELSE
+	(*Everything is fine so move objects and let the main control the lights*)
+	UPDATE_OBJECTS();
+	CONTROL_LIGHTS();
+	vFaultReason := '';
+END_IF
+FAULT_MONITOR();
+gIO.PoliceModeActivated := vPoliceControl;
+Blinker(ENABLE:=TRUE, TIMELOW:=T#1S, TIMEHIGH:=T#1S);
+
+
+</xhtml>
+                  </ST>
+                </body>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>58484771-4ae7-4686-b08a-b3c90c27b274</ObjectId>
+                  </data>
+                </addData>
+              </pou>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/pou" handleUnknown="implementation">
+              <pou name="main" pouType="program">
+                <interface>
+                  <localVars>
+                    <variable name="TactTimer">
+                      <type>
+                        <derived name="TON" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Timer to provide tact for all lights in a synchronized system</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vPeriodTime">
+                      <type>
+                        <TIME />
+                      </type>
+                      <initialValue>
+                        <simpleValue value="TIME#1m2s0ms" />
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Period after the sequence repeats</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vElapsedTime">
+                      <type>
+                        <TIME />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Elapsed time of the sequence</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vTimeToSequenceChange">
+                      <type>
+                        <UDINT />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Time in seconds to next sequence change</xhtml>
+                      </documentation>
+                    </variable>
+                  </localVars>
+                </interface>
+                <body>
+                  <ST>
+                    <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Functional description:
+This is a program that needs to control two crossroads with cars and pedestrians. The crossroads are one way streets
+so cars and pedestrians move in only one direction. It needs to control the traffic lights synchronously
+so green wave is kept on the vertical and horizontal lines.
+Pedestrian lights work opposite of the car lights so if the vertical line for the cars is green,
+the horizontal pedestrians are not allowed to cross and vice versa.
+For the pedestrians a time needs to be calculated to show when the green/red light is going to change.
+
+This program implements the sequence diagram given below.
+H R   0-30
+H Y   28-30 &amp;&amp; 60-62
+H G   30-60
+V R   28-60
+V Y   26-28 &amp;&amp; 58-60
+V G   0-26  &amp;&amp; 60-62
+P H R 28-60
+P H G 0-28
+P V R 0-28
+P V G 28-60
+
+Simulator decription:
+The simulator moves the objects on the road/side walk until they reach a decision point. Decision points
+are located next to the related traffic lights. The objects will move only if the traffic light is green
+for their direction.
+In the simulator the fault monitoring is also active which will stop the objects moving and freeze the lights
+so the operator can check where it went wrong. It will also display a message on the screen with the location
+and fault reason. During collission or dangerous lights combination all red lights will blink.
+To get through the fault situation the operator must enable police control which puts all lights in blinking yellow mode.*)
+
+(*Start the timer and reset it after it expired. Basically count to 85s and then start over*)
+TactTimer(IN:=TRUE, PT:=vPeriodTime, ET =&gt; vElapsedTime);
+IF TactTimer.Q THEN
+	TactTimer(IN:=FALSE);
+END_IF
+(*Calculate next sequence change*)
+IF vElapsedTime &lt;= T#28S THEN
+	vTimeToSequenceChange := TIME_TO_UDINT(T#28S - vElapsedTime)/1000;
+ELSIF vElapsedTime &lt;= T#62S THEN
+	vTimeToSequenceChange := TIME_TO_UDINT(T#62S - vElapsedTime)/1000;
+END_IF
+(* Direction Up, Down traffic light *)
+gIO.Cross1CarU.RedLamp    := vElapsedTime &gt;= T#0S  AND vElapsedTime &lt;= T#30S;
+gIO.Cross1CarU.YellowLamp := vElapsedTime &gt;= T#28S AND vElapsedTime &lt;= T#30S OR vElapsedTime &gt;= T#60S AND vElapsedTime &lt;= T#62S;
+gIO.Cross1CarU.GreenLamp  := vElapsedTime &gt;= T#30S AND vElapsedTime &lt;= T#60S;
+
+(* Mirror the other side of the Up, Down direction *)
+gIO.Cross1CarD := gIO.Cross1CarU;
+gIO.Cross2CarD := gIO.Cross1CarU;
+gIO.Cross2CarU := gIO.Cross1CarU;
+
+(* Direction Left, Right traffic light *)
+gIO.Cross1CarL.RedLamp    := vElapsedTime &gt;= T#28S AND vElapsedTime &lt;= T#60S;
+gIO.Cross1CarL.YellowLamp := vElapsedTime &gt;= T#26S AND vElapsedTime &lt;= T#28S OR vElapsedTime &gt;= T#58S AND vElapsedTime &lt;= T#60S;
+gIO.Cross1CarL.GreenLamp  := vElapsedTime &gt;= T#0S  AND vElapsedTime &lt;= T#26S OR vElapsedTime &gt;= T#60S AND vElapsedTime &lt;= T#62S;
+
+(* Mirror the other side of the Left, Right direction *)
+gIO.Cross1CarR := gIO.Cross1CarL;
+gIO.Cross2CarR := gIO.Cross1CarL;
+gIO.Cross2CarL := gIO.Cross1CarL;
+
+(*Pedestrians*)
+(*If left &lt;-&gt; right cars are going. Up &lt;-&gt; down pedestrians stop. Else go*)
+IF gIO.Cross1CarL.GreenLamp OR gIO.Cross1CarL.YellowLamp  THEN
+	gIO.Cross1PedLDU.RedLight := TRUE;
+	gIO.Cross1PedLDU.GreenLight := FALSE;
+	
+ELSIF gIO.Cross1CarL.RedLamp THEN
+	gIO.Cross1PedLDU.RedLight := FALSE;
+	gIO.Cross1PedLDU.GreenLight := TRUE;
+
+END_IF
+gIO.Cross1PedLDU.TimeToSequenceChange := UDINT_TO_UINT(vTimeToSequenceChange);
+
+(*Just copy all of the up and downs as they behave the same*)
+gIO.Cross1PedLUD := gIO.Cross1PedLDU;
+gIO.Cross1PedRUD := gIO.Cross1PedLDU;
+gIO.Cross1PedRDU := gIO.Cross1PedLDU;
+gIO.Cross2PedLDU := gIO.Cross1PedLDU;
+gIO.Cross2PedLUD := gIO.Cross1PedLDU;
+gIO.Cross2PedRUD := gIO.Cross1PedLDU;
+gIO.Cross2PedRDU := gIO.Cross1PedLDU;
+
+(*If up &lt;-&gt; Down cars are going. Left &lt;-&gt; right pedestrians stop. Else go*)
+IF gIO.Cross1CarU.GreenLamp OR gIO.Cross1CarU.YellowLamp THEN
+	gIO.Cross1PedULR.RedLight := TRUE;
+	gIO.Cross1PedULR.GreenLight := FALSE;
+
+ELSIF gIO.Cross1CarU.RedLamp THEN
+	gIO.Cross1PedULR.RedLight := FALSE;
+	gIO.Cross1PedULR.GreenLight := TRUE;
+END_IF
+gIO.Cross1PedULR.TimeToSequenceChange := UDINT_TO_UINT(vTimeToSequenceChange);
+
+(*Just copy all of the lefts and rights as they behave the same*)
+gIO.Cross1PedURL := gIO.Cross1PedULR;
+gIO.Cross1PedDLR := gIO.Cross1PedULR;
+gIO.Cross1PedDRL := gIO.Cross1PedULR;
+gIO.Cross2PedULR := gIO.Cross1PedULR;
+gIO.Cross2PedURL := gIO.Cross1PedULR;
+gIO.Cross2PedDLR := gIO.Cross1PedULR;
+gIO.Cross2PedDRL := gIO.Cross1PedULR;</xhtml>
+                  </ST>
+                </body>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>4d91704b-07a3-4bb1-8388-5c8d07f74044</ObjectId>
+                  </data>
+                </addData>
+              </pou>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/libraries" handleUnknown="implementation">
+              <Libraries>
+                <Library Name="#Standard" Namespace="Standard" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="Standard, * (System)" />
+                <Library Name="#Util" Namespace="Util" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="Util, * (System)">
+                  <Parameters>
+                    <Parameter Name="IBLOCKSIZE" Value="22800" />
+                  </Parameters>
+                </Library>
+                <Library Name="#Standard64" Namespace="Standard64" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="Standard64, * (System)" />
+                <Library Name="#VisuDialogs" Namespace="VisuDialogs" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="VisuDialogs, * (System)" />
+                <Library Name="#BreakpointLogging" Namespace="BPLog" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="Breakpoint Logging Functions, 3.5.5.0 (3S - Smart Software Solutions GmbH)" />
+                <Library Name="#System_VisuElems" Namespace="VisuElems" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElems, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemMeter" Namespace="VisuElemMeter" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemMeter, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemsSpecialControls" Namespace="VisuElemsSpecialControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsSpecialControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemsWinControls" Namespace="VisuElemsWinControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsWinControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemTextEditor" Namespace="VisuElemTextEditor" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTextEditor, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemTrace" Namespace="VisuElemTrace" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTrace, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuNativeControl" Namespace="VisuNativeControl" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuNativeControl, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemsAlarm" Namespace="VisuElemsAlarm" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsAlarm, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemCamDisplayer" Namespace="VisuElemCamDisplayer" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemCamDisplayer, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+                  <Parameters>
+                    <Parameter Name="GC_POINTS_PER_CAM" Value="100" />
+                  </Parameters>
+                </Library>
+                <Library Name="#System_VisuElem3DPath" Namespace="VisuElem3DPath" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElem3DPath, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+                  <Parameters>
+                    <Parameter Name="GC_POINTS_PER_POLYGON" Value="100" />
+                  </Parameters>
+                </Library>
+                <Library Name="#System_VisuElemsDateTime" Namespace="VisuElemsDateTime" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsDateTime, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemXYChart" Namespace="VisuElemXYChart" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemXYChart, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#system_visuinputs" Namespace="visuinputs" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="visuinputs, 3.5.16.0 (system)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#IoStandard" Namespace="IoStandard" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="true" DefaultResolution="IoStandard, 3.5.16.0 (System)" />
+                <Library Name="#3SLicense" Namespace="_3S_LICENSE" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="3SLicense, 0.0.0.0 (3S - Smart Software Solutions GmbH)" ResolverGuid="97c3b452-d9fa-4ac2-9d0c-3d420aa6d95b" />
+                <Library Name="#CAA Device Diagnosis" Namespace="DED" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="CAA Device Diagnosis, 3.5.15.0 (CAA Technical Workgroup)" />
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>29e9a39f-d9e1-4ae5-8462-7b18ca48243c</ObjectId>
+                  </data>
+                </addData>
+              </Libraries>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+              <ObjectId>e86a3aad-ca93-4d44-88a5-66019f089c92</ObjectId>
+            </data>
+          </addData>
+        </resource>
+        <addData>
+          <data name="Device" handleUnknown="discard">
+            <Device xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="">
+              <DeviceType>
+                <DeviceIdentification>
+                  <Type>4096</Type>
+                  <Id>0000 0004</Id>
+                  <Version>3.5.16.0</Version>
+                </DeviceIdentification>
+                <Connector moduleType="256" interface="Common.PCI" connectorId="0">
+                  <HostParameterSet />
+                </Connector>
+                <Connector moduleType="769" interface="SafetyInterface" connectorId="1">
+                  <HostParameterSet />
+                </Connector>
+                <DeviceParameterSet />
+              </DeviceType>
+            </Device>
+          </data>
+          <data name="configurations" handleUnknown="discard">
+            <configurations />
+          </data>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>83075d4d-9f61-4b3f-9b20-72bffe864b6d</ObjectId>
+          </data>
+        </addData>
+      </configuration>
+    </configurations>
+  </instances>
+  <addData>
+    <data name="http://www.3s-software.com/plcopenxml/libraries" handleUnknown="implementation">
+      <Libraries>
+        <Library Name="VisuSymbols, 3.5.10.0 (System)" Namespace="VisuSymbols" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" />
+        <Library Name="#System_VisuElems" Namespace="VisuElems" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElems, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemMeter" Namespace="VisuElemMeter" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemMeter, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemsSpecialControls" Namespace="VisuElemsSpecialControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsSpecialControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemsWinControls" Namespace="VisuElemsWinControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsWinControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemTextEditor" Namespace="VisuElemTextEditor" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTextEditor, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemTrace" Namespace="VisuElemTrace" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTrace, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuNativeControl" Namespace="VisuNativeControl" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuNativeControl, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemsAlarm" Namespace="VisuElemsAlarm" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsAlarm, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemCamDisplayer" Namespace="VisuElemCamDisplayer" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemCamDisplayer, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+          <Parameters>
+            <Parameter Name="GC_POINTS_PER_CAM" Value="100" />
+          </Parameters>
+        </Library>
+        <Library Name="#System_VisuElem3DPath" Namespace="VisuElem3DPath" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElem3DPath, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+          <Parameters>
+            <Parameter Name="GC_POINTS_PER_POLYGON" Value="100" />
+          </Parameters>
+        </Library>
+        <Library Name="#System_VisuElemsDateTime" Namespace="VisuElemsDateTime" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsDateTime, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemXYChart" Namespace="VisuElemXYChart" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemXYChart, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#system_visuinputs" Namespace="visuinputs" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="visuinputs, 3.5.16.0 (system)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>497477f5-d561-4978-840d-bbcb3520b9e4</ObjectId>
+          </data>
+        </addData>
+      </Libraries>
+    </data>
+    <data name="http://www.3s-software.com/plcopenxml/projectstructure" handleUnknown="discard">
+      <ProjectStructure>
+        <Object Name="SoftPLC" ObjectId="83075d4d-9f61-4b3f-9b20-72bffe864b6d">
+          <Object Name="Application" ObjectId="e86a3aad-ca93-4d44-88a5-66019f089c92">
+            <Object Name="Library Manager" ObjectId="29e9a39f-d9e1-4ae5-8462-7b18ca48243c" />
+            <Object Name="VISU_TASK" ObjectId="36dd8743-addf-4031-9feb-dce731836678" />
+            <Object Name="Task" ObjectId="c932c134-12d7-42e6-b914-4e02f89670bf" />
+            <Object Name="gIO" ObjectId="45b9d55d-90d0-48a9-8d7e-2af6e1714d26" />
+            <Object Name="trafficLightCars" ObjectId="6c9cfcbc-87cf-42f1-a329-51e332d1b9d8" />
+            <Object Name="trafficLightPed" ObjectId="ed37e448-fe2e-4c3e-bcbe-421400098762" />
+            <Object Name="simulator" ObjectId="58484771-4ae7-4686-b08a-b3c90c27b274">
+              <Object Name="CHECK_COLLISSIONS" ObjectId="06df541c-fc0f-4e5f-8864-eeec453b0732" />
+              <Object Name="MOVE_CARS" ObjectId="ed37403c-0a24-46dc-b7c0-a282de63709a" />
+              <Object Name="MOVE_PEDESTRIANS" ObjectId="6192887b-548d-4f46-a96d-80ca823e2952" />
+              <Object Name="UPDATE_OBJECTS" ObjectId="eea3e191-f523-4da2-a41f-bcb86b3fec17" />
+              <Object Name="CONTROL_LIGHTS" ObjectId="d6856cd7-1759-4a2c-b510-e9b300223c02" />
+              <Object Name="FAULT_MONITOR" ObjectId="218e8ada-f249-4eba-bc00-610b6cba06ca" />
+              <Object Name="BLINK_DANGER_SIGNAL" ObjectId="87d62bc1-fd3f-4af8-b468-432e2cb03c33" />
+              <Object Name="BLINK_YELLOW_SIGNAL" ObjectId="8b909b29-f96c-4e34-bb68-efb6ea190a22" />
+            </Object>
+            <Object Name="main" ObjectId="4d91704b-07a3-4bb1-8388-5c8d07f74044" />
+          </Object>
+        </Object>
+        <Object Name="Library Manager" ObjectId="497477f5-d561-4978-840d-bbcb3520b9e4" />
+        <Object Name="Project Information" ObjectId="11c0fc3a-9bcf-4dd8-ac38-efb93363e521" />
+        <Object Name="isSpriteColliding" ObjectId="d815f5ac-8dbf-4260-ad60-1105e7b065ec" />
+        <Object Name="Sprite" ObjectId="75fe69fa-9c1b-4c2e-a08e-ab7d20dc4f5c" />
+        <Object Name="SpriteDef_typ" ObjectId="dd2e24dd-3e1f-4233-8c8b-e6d621ed9666" />
+      </ProjectStructure>
+    </data>
+  </addData>
+</project>

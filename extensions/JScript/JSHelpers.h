@@ -91,6 +91,7 @@ namespace uniset
         // ----------------------------------------------------------------------
         JSModuleDef* module_loader_with_path( JSContext* ctx, const char* module_name, void* opaque );
         JSValue js_load_file_with_data( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv );
+        JSValue js_read_text_file( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv );
         std::string find_file( const std::string filename, const std::vector<std::string>& search_paths );
         JSModuleDef* qjs_module_loader(JSContext* ctx, const char* module_name, void* opaque);
         char* qjs_module_normalize(JSContext* ctx, const char* base_name, const char* name, void* opaque);

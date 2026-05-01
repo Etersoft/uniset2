@@ -1,0 +1,57 @@
+# External library type definitions for st2js
+# Usage: python -m st2js input.xml --lib owen_types.yaml
+#
+# This file defines FB types from the Owen PLC library (OwenTypes)
+# that are not included in the PLCopen XML export.
+# Auto-stubs are generated for types not listed here.
+
+function_blocks:
+  OwenTypes.TRG_Buzzer:
+    inputs:
+      Enable: BOOL
+      Duration: TIME
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_Debug:
+    inputs:
+      Enable: BOOL
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_Drives:
+    inputs:
+      Enable: BOOL
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_RTC:
+    inputs:
+      Enable: BOOL
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_OwenCloud:
+    inputs:
+      Enable: BOOL
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_Info:
+    inputs:
+      Enable: BOOL
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_Watchdog:
+    inputs:
+      Enable: BOOL
+      Timeout: TIME
+    outputs:
+      Q: BOOL
+
+  OwenTypes.TRG_PLC210_12:
+    inputs:
+      Enable: BOOL
+    outputs:
+      Q: BOOL

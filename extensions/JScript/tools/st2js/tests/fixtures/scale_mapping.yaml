@@ -1,0 +1,19 @@
+inputs:
+  Temperature:
+    sensor: AI_Temp_S
+    type: REAL
+    scale: 100
+  Pressure:
+    sensor: AI_Press_S
+    type: REAL
+    scale: 10
+  StartButton:
+    sensor: DI_Start_S
+
+outputs:
+  ValvePos:
+    sensor: AO_Valve_C
+    type: REAL
+    scale: 100
+  Alarm:
+    sensor: DO_Alarm_C

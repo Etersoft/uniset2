@@ -1,0 +1,18 @@
+inputs:
+  sensor.value:
+    sensor: AI_Value_S
+  sensor.valid:
+    sensor: DI_Valid_S
+  threshold:
+    sensor: AI_Threshold_S
+
+outputs:
+  result.value:
+    sensor: AO_Result_C
+  result.status:
+    sensor: DO_Status_C
+  alarm:
+    sensor: DO_Alarm_C
+
+options:
+  struct_flatten: true

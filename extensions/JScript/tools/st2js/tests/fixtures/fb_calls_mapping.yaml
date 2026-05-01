@@ -1,0 +1,16 @@
+inputs:
+  Enable:
+    sensor: DI_Enable_S
+  Pulse:
+    sensor: DI_Pulse_S
+  ResetCmd:
+    sensor: DI_Reset_S
+
+outputs:
+  Output:
+    sensor: DO_Output_C
+  Count:
+    sensor: AI_Count_C
+
+options:
+  struct_flatten: false

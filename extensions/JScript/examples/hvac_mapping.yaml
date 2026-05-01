@@ -1,0 +1,33 @@
+inputs:
+  OutdoorTemp:
+    sensor: AI_OutdoorTemp_S
+    type: REAL
+    scale: 100
+  Zone1Temp:
+    sensor: AI_Zone1Temp_S
+    type: REAL
+    scale: 100
+  Zone2Temp:
+    sensor: AI_Zone2Temp_S
+    type: REAL
+    scale: 100
+  Enable:
+    sensor: DI_Enable_S
+  Reset:
+    sensor: DI_Reset_S
+  ManualMode:
+    sensor: DI_ManualMode_S
+
+outputs:
+  Zone1Heater:
+    sensor: DO_Zone1Heater_C
+  Zone2Cooler:
+    sensor: DO_Zone2Cooler_C
+  AlarmZone1:
+    sensor: DO_AlarmZone1_C
+  AlarmZone2:
+    sensor: DO_AlarmZone2_C
+  AlarmCommon:
+    sensor: DO_AlarmCommon_C
+  RunHours:
+    sensor: AO_RunHours_C

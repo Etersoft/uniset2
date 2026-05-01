@@ -380,3 +380,19 @@ TEST_CASE("JSEngine: modbus client", "[jscript][modbus][14]")
     REQUIRE(ExecuteUITest(14, 0, 0, 3000));
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("JSEngine: IEC 61131-3 function blocks", "[jscript][iec61131][15]")
+{
+    InitTest();
+    ResetUITestState();
+
+    REQUIRE(ExecuteUITest(15, -1, -1, 30000));
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("JSEngine: Codesys Util function blocks", "[jscript][codesys][16]")
+{
+    InitTest();
+    ResetUITestState();
+
+    REQUIRE(ExecuteUITest(16, -1, -1, 30000));
+}
+// -----------------------------------------------------------------------------

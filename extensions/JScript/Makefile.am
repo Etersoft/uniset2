@@ -49,7 +49,7 @@ JSProxy_SK.cc JSProxy_SK.h: $(top_builddir)/Utilities/codegen/@PACKAGE@-codegen 
 
 # install
 jsdir = $(datadir)/@PACKAGE@/js
-js_DATA = js/*.js
+js_DATA = js/*.js js/*.html
 
 # SUBDIRS=tests
 

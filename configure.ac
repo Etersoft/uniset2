@@ -493,6 +493,23 @@ fi
 AM_CONDITIONAL(DISABLE_JSCRIPT, test ${jscript} = false)
 AM_CONDITIONAL(ENABLE_JSCRIPT, test ${jscript} = true)
 
+#check st2js (ST-to-JS converter, requires python3 + blark)
+AC_MSG_CHECKING([st2js (ST to JS converter)])
+st2js=false
+if test ${jscript} = true && test ${buildpython} = true; then
+	st2js=true
+fi
+AC_ARG_ENABLE(st2js, AC_HELP_STRING([--disable-st2js], [disable ST-to-JS converter]),
+[ if test $enableval = yes; then st2js=true; else st2js=false; fi],[ ])
+
+if test ${st2js} = true; then
+	AC_MSG_RESULT([enabled])
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(ENABLE_ST2JS, test ${st2js} = true)
+
 
 COV_LIBS=
 COV_CFLAGS=
@@ -710,6 +727,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/OPCUAExchange/libUniSet2OPCUAExchange.pc
 				 extensions/JScript/Makefile
 				 extensions/JScript/tests/Makefile
+				 extensions/JScript/tools/st2js/Makefile
 				 extensions/Launcher/Makefile
 				 extensions/Launcher/tests/Makefile
 				 extensions/uno/Makefile

@@ -1,0 +1,18 @@
+inputs:
+  Temperature:
+    sensor: AI_Temp_S
+    type: REAL
+    scale: 100
+  StartButton:
+    sensor: DI_Start_S
+
+outputs:
+  Heater:
+    sensor: DO_Heater_C
+  Alarm:
+    sensor: AO_Alarm_C
+    type: REAL
+    scale: 10
+
+options:
+  struct_flatten: false

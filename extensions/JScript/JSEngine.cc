@@ -129,6 +129,7 @@ void JSEngine::initGlobal( JSContext* ctx )
 
     JS_SetPropertyStr(ctx, __g, jshelper::js_search_paths_object.c_str(), search_paths_array);
     JS_SetPropertyStr(ctx, __g, "load", JS_NewCFunction(ctx, jshelper::js_load_file_with_data, "load", 1));
+    JS_SetPropertyStr(ctx, __g, "loadFile", JS_NewCFunction(ctx, jshelper::js_read_text_file, "loadFile", 1));
 
     JSValue log_func = JS_NewCFunction(ctx, jsLog_wrapper, "uniset_internal_log", 2);
     JS_SetPropertyStr(ctx, __g, "uniset_internal_log", log_func);
