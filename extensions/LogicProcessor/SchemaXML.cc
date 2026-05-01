@@ -81,7 +81,7 @@ namespace uniset
             else if( type == "Delay" )
             {
                 int delayMS = xml.getIntProp(it, "delayMS");
-                manage( make_shared<TDelay>(ID, delayMS, inCount) );
+                manage( make_shared<TDelay>(ID, delayMS) );
             }
             else if( type == "NOT" )
             {

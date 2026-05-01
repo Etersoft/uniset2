@@ -138,7 +138,7 @@ namespace uniset
             struct INLink
             {
                 INLink(std::shared_ptr<Element> f, std::shared_ptr<Element> t, int ni):
-                    numInput(ni) {}
+                    from(f), to(t), numInput(ni) {}
                 INLink(): numInput(0) {}
 
                 std::shared_ptr<Element> from;

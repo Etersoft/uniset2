@@ -97,6 +97,7 @@
 			<modules>
 				<module path="/tmp/js"/>
 				<module path="./js"/>
+				<module path="./examples"/>
 			</modules>
 		</JSProxy>
 		<LostTestProc name="TestProc1" sensor_s="Input4_S"/>
@@ -5539,6 +5540,26 @@
 			<item id="15097" losttest="3" mbperf="100" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="97" mbtype="rtu" name="Sensor15097_S" textname="test sensor 15097"/>
 			<item id="15098" losttest="3" mbperf="100" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="99" mbtype="rtu" name="Sensor15098_S" textname="test sensor 15098"/>
 			<item id="15099" losttest="3" mbperf="100" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="101" mbtype="rtu" name="Sensor15099_S" textname="test sensor 15099"/>
+
+			<!-- Thermostat example (examples/main-plc.js) -->
+			<item id="15100" iotype="AI" name="AI_Temperature_S" textname="Temperature sensor (x100)"/>
+			<item id="15101" iotype="DI" name="DI_Enable_S" textname="Enable button"/>
+			<item id="15102" iotype="DI" name="DI_Reset_S" textname="Reset button"/>
+			<item id="15103" iotype="DO" name="DO_Heater_C" textname="Heater output"/>
+			<item id="15104" iotype="DO" name="DO_AlarmHigh_C" textname="High temperature alarm"/>
+			<item id="15105" iotype="AO" name="AO_CycleCount_C" textname="Heater cycle count"/>
+
+			<!-- HVAC example (examples/hvac-plc.js) -->
+			<item id="15110" iotype="AI" name="AI_OutdoorTemp_S" textname="Outdoor temperature (x100)"/>
+			<item id="15111" iotype="AI" name="AI_Zone1Temp_S" textname="Zone 1 temperature (x100)"/>
+			<item id="15112" iotype="AI" name="AI_Zone2Temp_S" textname="Zone 2 temperature (x100)"/>
+			<item id="15113" iotype="DI" name="DI_ManualMode_S" textname="Manual mode switch"/>
+			<item id="15114" iotype="DO" name="DO_Zone1Heater_C" textname="Zone 1 heater"/>
+			<item id="15115" iotype="DO" name="DO_Zone2Cooler_C" textname="Zone 2 cooler"/>
+			<item id="15116" iotype="DO" name="DO_AlarmZone1_C" textname="Zone 1 alarm"/>
+			<item id="15117" iotype="DO" name="DO_AlarmZone2_C" textname="Zone 2 alarm"/>
+			<item id="15118" iotype="DO" name="DO_AlarmCommon_C" textname="Common alarm"/>
+			<item id="15119" iotype="AO" name="AO_RunHours_C" textname="Run hours counter"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor name="AI_AS">

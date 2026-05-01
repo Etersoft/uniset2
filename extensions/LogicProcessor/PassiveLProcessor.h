@@ -27,6 +27,10 @@
 #include "SMInterface.h"
 #include "LProcessor.h"
 #include "USingleProcess.h"
+#ifndef DISABLE_REST_API
+#include <Poco/JSON/Object.h>
+#include "UHttpRequestHandler.h"
+#endif
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -73,6 +77,18 @@ namespace uniset
             virtual bool deactivateObject() override;
 
             std::shared_ptr<SMInterface> shm;
+
+#ifndef DISABLE_REST_API
+            virtual Poco::JSON::Object::Ptr httpRequest( const UHttp::HttpRequestContext& ctx ) override;
+            virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+
+        private:
+            Poco::JSON::Object::Ptr httpSchema();
+            Poco::JSON::Object::Ptr httpSchemaElements();
+            Poco::JSON::Object::Ptr httpSchemaInputs();
+            Poco::JSON::Object::Ptr httpSchemaOutputs();
+            Poco::JSON::Object::Ptr httpSchemaConnections();
+#endif
 
         private:
             PassiveTimer ptHeartBeat;
