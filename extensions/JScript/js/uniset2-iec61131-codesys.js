@@ -17,6 +17,41 @@
 // --------------------------------------------------------------------------
 var unisetIEC61131CodesysModuleVersion = "v1"
 // --------------------------------------------------------------------------
+if (typeof IEC61131_STRICT === 'undefined')
+    var IEC61131_STRICT = false;
+
+var IEC61131_MS_PER_SECOND = 1000.0;
+var IEC61131_DERIVATIVE_SAMPLES = 4;
+var IEC61131_DERIVATIVE_READY_SAMPLES = 3;
+var IEC61131_FOUR_POINT_DENOMINATOR = 6.0;
+
+function _codesys_checkBool(name, value)
+{
+    if (typeof value !== 'boolean')
+        throw new TypeError("IEC61131 Codesys [" + name + "]: expected boolean, got " + typeof value + " (" + value + ")");
+}
+
+function _codesys_checkFiniteNumber(name, value)
+{
+    if (typeof value !== 'number' || !isFinite(value))
+        throw new RangeError("IEC61131 Codesys [" + name + "]: expected finite number, got " + value);
+}
+
+function _codesys_checkFiniteNonNegative(name, value)
+{
+    _codesys_checkFiniteNumber(name, value);
+    if (value < 0)
+        throw new RangeError("IEC61131 Codesys [" + name + "]: expected non-negative finite number, got " + value);
+}
+
+function _codesys_makeSampleBuffer(value)
+{
+    var buf = [];
+    for (var i = 0; i < IEC61131_DERIVATIVE_SAMPLES; i++)
+        buf.push(value);
+    return buf;
+}
+// --------------------------------------------------------------------------
 /**
  * Codesys Util Library — popular function blocks
  * Reference: https://content.helpme-codesys.com/en/libs/Util/Current/
@@ -53,6 +88,12 @@ class BLINK
 {
     constructor(TIMEHIGH, TIMELOW)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNonNegative("BLINK.TIMEHIGH", TIMEHIGH);
+            _codesys_checkFiniteNonNegative("BLINK.TIMELOW", TIMELOW);
+        }
+
         this.TIMEHIGH = TIMEHIGH;
         this.TIMELOW = TIMELOW;
         this.OUT = false;
@@ -66,6 +107,9 @@ class BLINK
      */
     update(ENABLE)
     {
+        if (IEC61131_STRICT)
+            _codesys_checkBool("BLINK.ENABLE", ENABLE);
+
         if (!ENABLE)
         {
             // Codesys spec: output keeps its value when ENABLE=false
@@ -121,6 +165,13 @@ class HYSTERESIS
      */
     update(IN, HIGH, LOW)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("HYSTERESIS.IN", IN);
+            _codesys_checkFiniteNumber("HYSTERESIS.HIGH", HIGH);
+            _codesys_checkFiniteNumber("HYSTERESIS.LOW", LOW);
+        }
+
         if (IN < LOW)
             this.OUT = true;
         else if (IN > HIGH)
@@ -155,6 +206,13 @@ class LIMITALARM
      */
     update(IN, HIGH, LOW)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("LIMITALARM.IN", IN);
+            _codesys_checkFiniteNumber("LIMITALARM.HIGH", HIGH);
+            _codesys_checkFiniteNumber("LIMITALARM.LOW", LOW);
+        }
+
         this.O = IN > HIGH;
         this.U = IN < LOW;
         this.IL = !this.O && !this.U;
@@ -179,6 +237,14 @@ class LIN_TRAFO
 {
     constructor(IN_MIN, IN_MAX, OUT_MIN, OUT_MAX)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("LIN_TRAFO.IN_MIN", IN_MIN);
+            _codesys_checkFiniteNumber("LIN_TRAFO.IN_MAX", IN_MAX);
+            _codesys_checkFiniteNumber("LIN_TRAFO.OUT_MIN", OUT_MIN);
+            _codesys_checkFiniteNumber("LIN_TRAFO.OUT_MAX", OUT_MAX);
+        }
+
         this.IN_MIN = IN_MIN;
         this.IN_MAX = IN_MAX;
         this.OUT_MIN = OUT_MIN;
@@ -193,6 +259,9 @@ class LIN_TRAFO
      */
     update(IN)
     {
+        if (IEC61131_STRICT)
+            _codesys_checkFiniteNumber("LIN_TRAFO.IN", IN);
+
         var range_in = this.IN_MAX - this.IN_MIN;
 
         if (range_in === 0)
@@ -232,6 +301,13 @@ class RAMP_REAL
 {
     constructor(ASCEND, DESCEND, TIMEBASE)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNonNegative("RAMP_REAL.ASCEND", ASCEND);
+            _codesys_checkFiniteNonNegative("RAMP_REAL.DESCEND", DESCEND);
+            _codesys_checkFiniteNonNegative("RAMP_REAL.TIMEBASE", TIMEBASE || 0);
+        }
+
         this.ASCEND = ASCEND;
         this.DESCEND = DESCEND;
         this.TIMEBASE = TIMEBASE || 0;
@@ -247,6 +323,12 @@ class RAMP_REAL
      */
     update(IN, RESET)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("RAMP_REAL.IN", IN);
+            _codesys_checkBool("RAMP_REAL.RESET", RESET);
+        }
+
         var now = Date.now();
 
         if (!this._initialized)
@@ -316,6 +398,15 @@ class PID
 {
     constructor(KP, TN, TV, Y_MIN, Y_MAX)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("PID.KP", KP);
+            _codesys_checkFiniteNonNegative("PID.TN", TN);
+            _codesys_checkFiniteNonNegative("PID.TV", TV);
+            _codesys_checkFiniteNumber("PID.Y_MIN", Y_MIN);
+            _codesys_checkFiniteNumber("PID.Y_MAX", Y_MAX);
+        }
+
         this.KP = KP;
         this.TN = TN;
         this.TV = TV;
@@ -341,6 +432,13 @@ class PID
      */
     update(ACTUAL, SET_POINT, RESET)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("PID.ACTUAL", ACTUAL);
+            _codesys_checkFiniteNumber("PID.SET_POINT", SET_POINT);
+            _codesys_checkBool("PID.RESET", RESET);
+        }
+
         var now = Date.now();
 
         if (RESET || !this._initialized)
@@ -364,7 +462,7 @@ class PID
             return this.Y;
         }
 
-        var dt = (now - this._lastTime) / 1000.0;
+        var dt = (now - this._lastTime) / IEC61131_MS_PER_SECOND;
         this._lastTime = now;
 
         if (dt <= 0)
@@ -449,7 +547,7 @@ class DERIVATIVE
     constructor()
     {
         this.OUT = 0;
-        this._buf = [0, 0, 0, 0]; // 4-sample ring buffer [newest..oldest]
+        this._buf = _codesys_makeSampleBuffer(0); // newest..oldest
         this._count = 0;
         this._lastTime = 0;
         this._initialized = false;
@@ -463,11 +561,18 @@ class DERIVATIVE
      */
     update(IN, TM, RESET)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("DERIVATIVE.IN", IN);
+            _codesys_checkFiniteNonNegative("DERIVATIVE.TM", TM || 0);
+            _codesys_checkBool("DERIVATIVE.RESET", RESET);
+        }
+
         var now = Date.now();
 
         if (RESET || !this._initialized)
         {
-            this._buf = [IN, IN, IN, IN];
+            this._buf = _codesys_makeSampleBuffer(IN);
             this._count = 0;
             this._lastTime = now;
             this._initialized = true;
@@ -497,13 +602,13 @@ class DERIVATIVE
         if (dt_ms <= 0)
             return this.OUT;
 
-        var dt_sec = dt_ms / 1000.0;
+        var dt_sec = dt_ms / IEC61131_MS_PER_SECOND;
 
-        if (this._count >= 3)
+        if (this._count >= IEC61131_DERIVATIVE_READY_SAMPLES)
         {
             // 4-point derivative: (IN[0] + 3*IN[1] - 3*IN[2] - IN[3]) / (6*dt)
             this.OUT = (this._buf[0] + 3 * this._buf[1] - 3 * this._buf[2] - this._buf[3])
-                     / (6.0 * dt_sec);
+                     / (IEC61131_FOUR_POINT_DENOMINATOR * dt_sec);
         }
         else
         {
@@ -543,6 +648,13 @@ class INTEGRAL
      */
     update(IN, TM, RESET)
     {
+        if (IEC61131_STRICT)
+        {
+            _codesys_checkFiniteNumber("INTEGRAL.IN", IN);
+            _codesys_checkFiniteNonNegative("INTEGRAL.TM", TM || 0);
+            _codesys_checkBool("INTEGRAL.RESET", RESET);
+        }
+
         var now = Date.now();
 
         if (RESET || !this._initialized)
@@ -569,7 +681,7 @@ class INTEGRAL
         if (dt_ms <= 0)
             return this.OUT;
 
-        var dt_sec = dt_ms / 1000.0;
+        var dt_sec = dt_ms / IEC61131_MS_PER_SECOND;
         this.OUT += IN * dt_sec;
 
         // Overflow check
@@ -636,7 +748,7 @@ INTEGRAL._debug_meta = {
 // Export for use in Node.js or other environments
 if (typeof module !== 'undefined' && module.exports)
 {
-    module.exports = { BLINK, HYSTERESIS, LIMITALARM, LIN_TRAFO, RAMP_REAL, PID, DERIVATIVE, INTEGRAL };
+    module.exports = { BLINK, HYSTERESIS, LIMITALARM, LIN_TRAFO, RAMP_REAL, PID, DERIVATIVE, INTEGRAL, get IEC61131_STRICT() { return IEC61131_STRICT; }, set IEC61131_STRICT(v) { IEC61131_STRICT = v; } };
 }
 // --------------------------------------------------------------------------
 try

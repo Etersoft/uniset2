@@ -92,6 +92,14 @@ var unisetDebugModuleVersion = "v1";
     var _lastSnapshotCycle = 0;
 
     // ---- Query string parser ----
+    function safeDecodeURIComponent(value) {
+        try {
+            return { ok: true, value: decodeURIComponent(value) };
+        } catch (e) {
+            return { ok: false };
+        }
+    }
+
     function parseQuery(qs) {
         var out = {};
         if (!qs) return out;
@@ -100,8 +108,12 @@ var unisetDebugModuleVersion = "v1";
             var pair = parts[i];
             if (!pair) continue;
             var eqIdx = pair.indexOf('=');
-            var key = eqIdx >= 0 ? decodeURIComponent(pair.slice(0, eqIdx)) : decodeURIComponent(pair);
-            var val = eqIdx >= 0 ? decodeURIComponent(pair.slice(eqIdx + 1)) : '';
+            var keyDecoded = safeDecodeURIComponent(eqIdx >= 0 ? pair.slice(0, eqIdx) : pair);
+            var valDecoded = eqIdx >= 0 ? safeDecodeURIComponent(pair.slice(eqIdx + 1)) : { ok: true, value: '' };
+            if (!keyDecoded.ok || !valDecoded.ok)
+                return { _error: "invalid query string" };
+            var key = keyDecoded.value;
+            var val = valDecoded.value;
             out[key] = val;
         }
         return out;
@@ -171,10 +183,8 @@ var unisetDebugModuleVersion = "v1";
         return target;
     }
 
-    // Scan FB instance fields into target object; if fullScan is true,
-    // also include _debug_meta fields (for full snapshot), otherwise
-    // only enumerable properties (for ring buffer entry).
-    function scanFBFields(target, fullScan) {
+    // Scan FB instance fields declared by _debug_meta into target object.
+    function scanFBFields(target) {
         var keys = Object.keys(g);
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
@@ -184,27 +194,49 @@ var unisetDebugModuleVersion = "v1";
             if (obj === null || obj === undefined || typeof obj !== 'object' || Array.isArray(obj)) continue;
             var ctor = obj.constructor;
             if (ctor && ctor._debug_meta) {
-                if (fullScan) {
-                    var meta = ctor._debug_meta;
-                    var fields = meta.fields || {};
-                    var fieldNames = Object.keys(fields);
-                    for (var fi = 0; fi < fieldNames.length; fi++) {
-                        var fieldName = fieldNames[fi];
-                        var dotName = key + '.' + fieldName;
-                        try { target[dotName] = obj[fieldName]; } catch (e) { target[dotName] = null; }
-                    }
+                var meta = ctor._debug_meta;
+                var fields = meta.fields || {};
+                var fieldNames = Object.keys(fields);
+                for (var fi = 0; fi < fieldNames.length; fi++) {
+                    var fieldName = fieldNames[fi];
+                    var dotName = key + '.' + fieldName;
+                    try { target[dotName] = obj[fieldName]; } catch (e) { target[dotName] = null; }
                 }
-                var propNames = Object.keys(obj);
-                for (var pi = 0; pi < propNames.length; pi++) {
-                    var propName = propNames[pi];
-                    var dotProp = key + '.' + propName;
-                    if (!(dotProp in target)) {
-                        try { target[dotProp] = obj[propName]; } catch (e) { target[dotProp] = null; }
-                    }
-                }
+                continue;
             }
         }
         return target;
+    }
+
+    function isKnownDebugName(name) {
+        if (name in _watched) return true;
+        if ((name.indexOf('in_') === 0 || name.indexOf('out_') === 0) && (name in g))
+            return true;
+
+        var dot = name.indexOf('.');
+        if (dot > 0) {
+            var instName = name.slice(0, dot);
+            var fieldName = name.slice(dot + 1);
+            var obj = g[instName];
+            var meta = obj && obj.constructor ? obj.constructor._debug_meta : null;
+            return !!(meta && meta.fields && (fieldName in meta.fields));
+        }
+
+        var metaProgram = g._program_meta;
+        if (!metaProgram) return false;
+
+        function listHasName(list) {
+            if (!list) return false;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i] && list[i].name === name) return true;
+            }
+            return false;
+        }
+
+        return listHasName(metaProgram.inputs)
+            || listHasName(metaProgram.outputs)
+            || listHasName(metaProgram.locals)
+            || listHasName(metaProgram.globals);
     }
 
     function scanGlobals() {
@@ -215,7 +247,7 @@ var unisetDebugModuleVersion = "v1";
 
     function scanFBInstances() {
         var instances = {};
-        scanFBFields(instances, true);
+        scanFBFields(instances);
         return instances;
     }
 
@@ -270,7 +302,7 @@ var unisetDebugModuleVersion = "v1";
     function collectRingEntry() {
         var vals = {};
         scanInOutVars(vals);
-        scanFBFields(vals, false);
+        scanFBFields(vals);
 
         // Watched variables
         var watchNames = Object.keys(_watched);
@@ -350,6 +382,224 @@ var unisetDebugModuleVersion = "v1";
         };
     }
 
+    function parseJsonBody(req) {
+        try {
+            return { ok: true, value: JSON.parse(req.body || '{}') };
+        } catch (e) {
+            return { ok: false, response: jsonResponse(400, { error: "invalid JSON body" }) };
+        }
+    }
+
+    function handleHistory(query) {
+        var varName = query['var'] || query.var;
+        if (!varName) {
+            return jsonResponse(400, { error: "missing 'var' parameter" });
+        }
+        var depth = parseInt(query.depth || query['depth'], 10);
+        if (isNaN(depth) || depth <= 0) {
+            depth = _config.history_depth;
+        }
+        var entries = ringEntries(depth);
+        var data = [];
+        for (var hi = 0; hi < entries.length; hi++) {
+            var entry = entries[hi];
+            if (varName in entry.vars) {
+                data.push([entry.ts, entry.vars[varName]]);
+            }
+        }
+        return jsonResponse(200, {
+            'var': varName,
+            data: data
+        });
+    }
+
+    function handleInfo() {
+        var programName = '';
+        if (g._program_meta && g._program_meta.name) {
+            programName = g._program_meta.name;
+        }
+        var varsCount = 0;
+        var gKeys = Object.keys(g);
+        for (var vi = 0; vi < gKeys.length; vi++) {
+            var gk = gKeys[vi];
+            if (gk.indexOf('in_') === 0 || gk.indexOf('out_') === 0) {
+                varsCount++;
+            }
+        }
+        varsCount += Object.keys(_watched).length;
+        return jsonResponse(200, {
+            version: unisetDebugModuleVersion,
+            program: programName,
+            cycle_ms: _dtMs,
+            vars_count: varsCount,
+            history_depth: _config.history_depth,
+            uptime_ms: Date.now() - _startTime,
+            cycle: _cycle,
+            trace_enabled: _config.trace_enabled
+        });
+    }
+
+    function handleForce(req) {
+        var parsed = parseJsonBody(req);
+        if (!parsed.ok) return parsed.response;
+        var body = parsed.value;
+        var name = body['var'];
+        if (!name || typeof name !== 'string') {
+            return jsonResponse(400, { error: "missing 'var' in request body" });
+        }
+        if (!('value' in body)) {
+            return jsonResponse(400, { error: "missing 'value' in request body" });
+        }
+        if (!isKnownDebugName(name)) {
+            return jsonResponse(400, { error: "unknown or non-debug variable: " + name });
+        }
+        _forced[name] = body.value;
+        return jsonResponse(200, { ok: true });
+    }
+
+    function handleUnforce(req) {
+        var parsed = parseJsonBody(req);
+        if (!parsed.ok) return parsed.response;
+        var body = parsed.value;
+        var name = body['var'];
+        if (!name || typeof name !== 'string') {
+            return jsonResponse(400, { error: "missing 'var' in request body" });
+        }
+        delete _forced[name];
+        return jsonResponse(200, { ok: true });
+    }
+
+    function pushIONodes(schema, arr, nodeType) {
+        if (!arr) return;
+        for (var i = 0; i < arr.length; i++) {
+            var item = arr[i];
+            var node = {
+                id: item.name, type: nodeType,
+                varType: item.type || "INT",
+                sensor: item.sensor || item.name
+            };
+            if (nodeType === 'input') node.scale = item.scale || null;
+            schema.nodes.push(node);
+        }
+    }
+
+    function handleSchema() {
+        var schema = { nodes: [], edges: [] };
+        var meta = g._program_meta;
+        if (!meta) return jsonResponse(200, schema);
+
+        pushIONodes(schema, meta.inputs, 'input');
+        pushIONodes(schema, meta.outputs, 'output');
+
+        if (meta.globals) {
+            for (var sg = 0; sg < meta.globals.length; sg++) {
+                var gvar = meta.globals[sg];
+                schema.nodes.push({
+                    id: gvar.name, type: "local",
+                    varType: gvar.type || "STRUCT"
+                });
+            }
+        }
+
+        if (meta.fb_instances) {
+            for (var sf = 0; sf < meta.fb_instances.length; sf++) {
+                var fb = meta.fb_instances[sf];
+                var fbObj = g[fb.name];
+                var dmeta = (fbObj && fbObj.constructor) ? fbObj.constructor._debug_meta : null;
+                schema.nodes.push({
+                    id: fb.name, type: "fb",
+                    fbType: fb.type,
+                    display: dmeta ? dmeta.display : null,
+                    args: fb.args || {},
+                    inputs: fb.inputs || null,
+                    outputs: fb.outputs || null
+                });
+            }
+        }
+
+        if (meta.operators) {
+            for (var so = 0; so < meta.operators.length; so++) {
+                var op = meta.operators[so];
+                schema.nodes.push({
+                    id: op.id, type: "fb",
+                    fbType: op.op,
+                    isOperator: true,
+                    inputs: op.inputs || []
+                });
+            }
+        }
+
+        if (meta.connections) schema.edges = meta.connections;
+        if (meta.programs) schema.programs = meta.programs;
+        return jsonResponse(200, schema);
+    }
+
+    function handleObjects() {
+        var objects = [];
+        var meta = g._program_meta;
+        if (meta && meta.fb_instances) {
+            for (var oi = 0; oi < meta.fb_instances.length; oi++) {
+                var fbInfo = meta.fb_instances[oi];
+                var fbObj = g[fbInfo.name];
+                if (!fbObj) continue;
+                var dmeta = fbObj.constructor ? fbObj.constructor._debug_meta : null;
+                var fields = {};
+                if (dmeta && dmeta.fields) {
+                    for (var fname in dmeta.fields) {
+                        var fmeta = dmeta.fields[fname];
+                        fields[fname] = {
+                            value: fbObj[fname],
+                            type: fmeta.type || "unknown",
+                            label: fmeta.label || fname,
+                            unit: fmeta.unit || null,
+                            readonly: fmeta.readonly || false
+                        };
+                    }
+                } else {
+                    for (var ci = 0; ci < COMMON_FB_PROPS.length; ci++) {
+                        if (COMMON_FB_PROPS[ci] in fbObj) {
+                            fields[COMMON_FB_PROPS[ci]] = {
+                                value: fbObj[COMMON_FB_PROPS[ci]],
+                                type: typeof fbObj[COMMON_FB_PROPS[ci]]
+                            };
+                        }
+                    }
+                }
+                objects.push({
+                    name: fbInfo.name,
+                    type: fbInfo.type,
+                    display: dmeta ? dmeta.display : null,
+                    fields: fields
+                });
+            }
+        }
+        return jsonResponse(200, { objects: objects });
+    }
+
+    function handleConfig(req) {
+        var parsed = parseJsonBody(req);
+        if (!parsed.ok) return parsed.response;
+        var body = parsed.value;
+        if ('history_depth' in body) {
+            var newDepth = parseInt(body.history_depth, 10);
+            if (isNaN(newDepth) || newDepth < 1) {
+                return jsonResponse(400, { error: "history_depth must be a positive integer" });
+            }
+            ringResize(newDepth);
+        }
+        if ('trace_enabled' in body) {
+            _config.trace_enabled = !!body.trace_enabled;
+        }
+        return jsonResponse(200, { ok: true });
+    }
+
+    function handleDebugUi() {
+        if (_uiHtml) {
+            return textResponse(200, 'text/html; charset=utf-8', _uiHtml);
+        }
+        return textResponse(200, 'text/html; charset=utf-8', _uiFallbackHtml);
+    }
+
     // ---- HTTP route handler ----
     function handleDebugRequest(req) {
         var method = (req.method || 'GET').toUpperCase();
@@ -363,6 +613,9 @@ var unisetDebugModuleVersion = "v1";
             queryStr = req.query;
         }
         var query = parseQuery(queryStr);
+        if (query._error) {
+            return jsonResponse(400, { error: query._error });
+        }
 
         // Also merge req.query if it's an object (from router)
         if (typeof req.query === 'object' && req.query !== null && !Array.isArray(req.query)) {
@@ -382,225 +635,37 @@ var unisetDebugModuleVersion = "v1";
 
         // ---- Route: GET /debug/history ----
         if (path === '/debug/history' && method === 'GET') {
-            var varName = query['var'] || query.var;
-            if (!varName) {
-                return jsonResponse(400, { error: "missing 'var' parameter" });
-            }
-            var depth = parseInt(query.depth || query['depth'], 10);
-            if (isNaN(depth) || depth <= 0) {
-                depth = _config.history_depth;
-            }
-            var entries = ringEntries(depth);
-            var data = [];
-            for (var hi = 0; hi < entries.length; hi++) {
-                var entry = entries[hi];
-                if (varName in entry.vars) {
-                    data.push([entry.ts, entry.vars[varName]]);
-                }
-            }
-            return jsonResponse(200, {
-                'var': varName,
-                data: data
-            });
+            return handleHistory(query);
         }
 
         // ---- Route: GET /debug/info ----
         if (path === '/debug/info' && method === 'GET') {
-            var programName = '';
-            if (g._program_meta && g._program_meta.name) {
-                programName = g._program_meta.name;
-            }
-            // Count variables (approximate from last scan)
-            var varsCount = 0;
-            var gKeys = Object.keys(g);
-            for (var vi = 0; vi < gKeys.length; vi++) {
-                var gk = gKeys[vi];
-                if (gk.indexOf('in_') === 0 || gk.indexOf('out_') === 0) {
-                    varsCount++;
-                }
-            }
-            varsCount += Object.keys(_watched).length;
-            return jsonResponse(200, {
-                version: unisetDebugModuleVersion,
-                program: programName,
-                cycle_ms: _dtMs,
-                vars_count: varsCount,
-                history_depth: _config.history_depth,
-                uptime_ms: Date.now() - _startTime,
-                cycle: _cycle,
-                trace_enabled: _config.trace_enabled
-            });
+            return handleInfo();
         }
 
         // ---- Route: POST /debug/force ----
         if (path === '/debug/force' && method === 'POST') {
-            var forceBody;
-            try {
-                forceBody = JSON.parse(req.body || '{}');
-            } catch (e) {
-                return jsonResponse(400, { error: "invalid JSON body" });
-            }
-            var forceVar = forceBody['var'];
-            if (!forceVar || typeof forceVar !== 'string') {
-                return jsonResponse(400, { error: "missing 'var' in request body" });
-            }
-            if (!('value' in forceBody)) {
-                return jsonResponse(400, { error: "missing 'value' in request body" });
-            }
-            _forced[forceVar] = forceBody.value;
-            return jsonResponse(200, { ok: true });
+            return handleForce(req);
         }
 
         // ---- Route: POST /debug/unforce ----
         if (path === '/debug/unforce' && method === 'POST') {
-            var unforceBody;
-            try {
-                unforceBody = JSON.parse(req.body || '{}');
-            } catch (e) {
-                return jsonResponse(400, { error: "invalid JSON body" });
-            }
-            var unforceVar = unforceBody['var'];
-            if (!unforceVar || typeof unforceVar !== 'string') {
-                return jsonResponse(400, { error: "missing 'var' in request body" });
-            }
-            delete _forced[unforceVar];
-            return jsonResponse(200, { ok: true });
+            return handleUnforce(req);
         }
 
         // ---- Route: GET /debug/schema ----
         if (path === '/debug/schema' && method === 'GET') {
-            var schema = { nodes: [], edges: [] };
-            var meta = g._program_meta;
-            if (meta) {
-                // Input and output nodes
-                function pushIONodes(arr, nodeType) {
-                    if (!arr) return;
-                    for (var i = 0; i < arr.length; i++) {
-                        var item = arr[i];
-                        var node = {
-                            id: item.name, type: nodeType,
-                            varType: item.type || "INT",
-                            sensor: item.sensor || item.name
-                        };
-                        if (nodeType === 'input') node.scale = item.scale || null;
-                        schema.nodes.push(node);
-                    }
-                }
-                pushIONodes(meta.inputs, 'input');
-                pushIONodes(meta.outputs, 'output');
-                // GVL global variable nodes
-                if (meta.globals) {
-                    for (var sg = 0; sg < meta.globals.length; sg++) {
-                        var gvar = meta.globals[sg];
-                        schema.nodes.push({
-                            id: gvar.name, type: "local",
-                            varType: gvar.type || "STRUCT"
-                        });
-                    }
-                }
-                // FB instance nodes
-                if (meta.fb_instances) {
-                    for (var sf = 0; sf < meta.fb_instances.length; sf++) {
-                        var fb = meta.fb_instances[sf];
-                        var fbObj = g[fb.name];
-                        var dmeta = (fbObj && fbObj.constructor) ? fbObj.constructor._debug_meta : null;
-                        schema.nodes.push({
-                            id: fb.name, type: "fb",
-                            fbType: fb.type,
-                            display: dmeta ? dmeta.display : null,
-                            args: fb.args || {},
-                            inputs: fb.inputs || null,
-                            outputs: fb.outputs || null
-                        });
-                    }
-                }
-                // Operator nodes (virtual FB-like blocks for complex expressions)
-                if (meta.operators) {
-                    for (var so = 0; so < meta.operators.length; so++) {
-                        var op = meta.operators[so];
-                        schema.nodes.push({
-                            id: op.id, type: "fb",
-                            fbType: op.op,
-                            isOperator: true,
-                            inputs: op.inputs || []
-                        });
-                    }
-                }
-                // Edges from connections
-                if (meta.connections) {
-                    schema.edges = meta.connections;
-                }
-                // Program names for filter
-                if (meta.programs) {
-                    schema.programs = meta.programs;
-                }
-            }
-            return jsonResponse(200, schema);
+            return handleSchema();
         }
 
         // ---- Route: GET /debug/objects ----
         if (path === '/debug/objects' && method === 'GET') {
-            var objects = [];
-            var meta = g._program_meta;
-            if (meta && meta.fb_instances) {
-                for (var oi = 0; oi < meta.fb_instances.length; oi++) {
-                    var fbInfo = meta.fb_instances[oi];
-                    var fbObj = g[fbInfo.name];
-                    if (!fbObj) continue;
-                    var dmeta = fbObj.constructor ? fbObj.constructor._debug_meta : null;
-                    var fields = {};
-                    if (dmeta && dmeta.fields) {
-                        for (var fname in dmeta.fields) {
-                            var fmeta = dmeta.fields[fname];
-                            fields[fname] = {
-                                value: fbObj[fname],
-                                type: fmeta.type || "unknown",
-                                label: fmeta.label || fname,
-                                unit: fmeta.unit || null,
-                                readonly: fmeta.readonly || false
-                            };
-                        }
-                    } else {
-                        // Fallback: enumerate common properties
-                        for (var ci = 0; ci < COMMON_FB_PROPS.length; ci++) {
-                            if (COMMON_FB_PROPS[ci] in fbObj) {
-                                fields[COMMON_FB_PROPS[ci]] = {
-                                    value: fbObj[COMMON_FB_PROPS[ci]],
-                                    type: typeof fbObj[COMMON_FB_PROPS[ci]]
-                                };
-                            }
-                        }
-                    }
-                    objects.push({
-                        name: fbInfo.name,
-                        type: fbInfo.type,
-                        display: dmeta ? dmeta.display : null,
-                        fields: fields
-                    });
-                }
-            }
-            return jsonResponse(200, { objects: objects });
+            return handleObjects();
         }
 
         // ---- Route: POST /debug/config ----
         if (path === '/debug/config' && method === 'POST') {
-            var configBody;
-            try {
-                configBody = JSON.parse(req.body || '{}');
-            } catch (e) {
-                return jsonResponse(400, { error: "invalid JSON body" });
-            }
-            if ('history_depth' in configBody) {
-                var newDepth = parseInt(configBody.history_depth, 10);
-                if (isNaN(newDepth) || newDepth < 1) {
-                    return jsonResponse(400, { error: "history_depth must be a positive integer" });
-                }
-                ringResize(newDepth);
-            }
-            if ('trace_enabled' in configBody) {
-                _config.trace_enabled = !!configBody.trace_enabled;
-            }
-            return jsonResponse(200, { ok: true });
+            return handleConfig(req);
         }
 
         // ---- Route: GET /debug/ui ----
@@ -608,10 +673,7 @@ var unisetDebugModuleVersion = "v1";
         // If _debug_ui_html was populated at startup we serve it;
         // otherwise return a minimal redirect/instruction page.
         if (path === '/debug/ui' && method === 'GET') {
-            if (_uiHtml) {
-                return textResponse(200, 'text/html; charset=utf-8', _uiHtml);
-            }
-            return textResponse(200, 'text/html; charset=utf-8', _uiFallbackHtml);
+            return handleDebugUi();
         }
 
         // ---- 404 for anything else under /debug/ ----
@@ -792,7 +854,6 @@ var unisetDebugModuleVersion = "v1";
             _dtMs = 0;
             _started = false;
             _forced = {};
-            _forcedCount = 0;
             _watched = {};
             _trace = [];
             _ringBuffer = [];
