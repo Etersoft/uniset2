@@ -25,12 +25,13 @@ namespace uniset
     // ---------------------------------------------------------------------------
     // "ON" delay element
     // Сбрасывается без задержки.. а срабатывает с задержкой.
+    // с одним входом
     class TDelay:
         public Element
     {
 
         public:
-            TDelay( Element::ElementID id, timeout_t delayMS = 0, size_t inCount = 0 );
+            TDelay( Element::ElementID id, timeout_t delayMS = 0 );
             virtual ~TDelay();
 
             virtual void tick() override;

@@ -954,18 +954,3 @@ services:
       timeout: 5s
       retries: 3
 ```
-
-## Сборка
-
-Launcher собирается как часть расширений UniSet2:
-
-```bash
-./autogen.sh
-make
-make install
-```
-
-Устанавливаются следующие файлы:
-- `/usr/bin/uniset2-launcher` — Основной исполняемый файл
-- `/usr/share/uniset2/launcher.html` — HTML-шаблон Web UI
-- `/usr/share/uniset2/launcher-app.js` — JavaScript Web UI

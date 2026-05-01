@@ -17,6 +17,9 @@
 #include <iostream>
 #include "Configuration.h"
 #include "PassiveLProcessor.h"
+#ifndef DISABLE_REST_API
+#include "ujson.h"
+#endif
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -309,4 +312,154 @@ std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, cons
     dinfo << "(plproc): name = " << name << "(" << ID << ")" << endl;
     return make_shared<PassiveLProcessor>(ID, confnode, shmID, ic, prefix);
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpRequest( const UHttp::HttpRequestContext& ctx )
+{
+    if( ctx.depth() > 0 && ctx[0] == "schema" )
+    {
+        if( ctx.depth() == 1 )
+            return httpSchema();
+
+        const std::string& sub = ctx[1];
+
+        if( sub == "elements" )
+            return httpSchemaElements();
+
+        if( sub == "inputs" )
+            return httpSchemaInputs();
+
+        if( sub == "outputs" )
+            return httpSchemaOutputs();
+
+        if( sub == "connections" )
+            return httpSchemaConnections();
+    }
+
+    return UniSetObject::httpRequest(ctx);
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpHelp( const Poco::URI::QueryParameters& p )
+{
+    uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
+
+    {
+        uniset::json::help::item cmd("schema", "get schema summary (elementCount, inputCount, outputCount, connectionCount, sleepTime)");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("schema/elements", "get all schema elements with id, type, output value");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("schema/inputs", "get external inputs with sensor id, value, target element");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("schema/outputs", "get external outputs with sensor id, source element, output value");
+        myhelp.add(cmd);
+    }
+    {
+        uniset::json::help::item cmd("schema/connections", "get internal connections between elements");
+        myhelp.add(cmd);
+    }
+
+    return myhelp;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpSchema()
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    json->set("schemaFile", fSchema);
+    json->set("elementCount", sch ? sch->size() : 0);
+    json->set("inputCount", (int)extInputs.size());
+    json->set("outputCount", (int)extOuts.size());
+    json->set("connectionCount", sch ? sch->intSize() : 0);
+    json->set("sleepTime", (int)LProcessor::sleepTime);
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpSchemaElements()
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr jarr = uniset::json::make_child_array(json, "elements");
+
+    if( sch )
+    {
+        for( auto it = sch->begin(); it != sch->end(); ++it )
+        {
+            auto& el = it->second;
+            if( !el )
+                continue;
+
+            Poco::JSON::Object::Ptr jel = new Poco::JSON::Object();
+            jel->set("id", el->getId());
+            jel->set("type", el->getType());
+            jel->set("out", el->getOut());
+            jel->set("inCount", (int)el->inCount());
+            jel->set("outCount", (int)el->outCount());
+            jarr->add(jel);
+        }
+    }
+
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpSchemaInputs()
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr jarr = uniset::json::make_child_array(json, "inputs");
+
+    for( const auto& it : extInputs )
+    {
+        Poco::JSON::Object::Ptr jinp = new Poco::JSON::Object();
+        jinp->set("sid", (long)it.sid);
+        jinp->set("value", it.value);
+        jinp->set("elementId", it.el ? it.el->getId() : "");
+        jinp->set("numInput", it.numInput);
+        jarr->add(jinp);
+    }
+
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpSchemaOutputs()
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr jarr = uniset::json::make_child_array(json, "outputs");
+
+    for( const auto& it : extOuts )
+    {
+        Poco::JSON::Object::Ptr jout = new Poco::JSON::Object();
+        jout->set("sid", (long)it.sid);
+        jout->set("elementId", it.el ? it.el->getId() : "");
+        jout->set("outputValue", it.el ? it.el->getOut() : 0);
+        jarr->add(jout);
+    }
+
+    return json;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr PassiveLProcessor::httpSchemaConnections()
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr jarr = uniset::json::make_child_array(json, "connections");
+
+    if( sch )
+    {
+        for( auto it = sch->intBegin(); it != sch->intEnd(); ++it )
+        {
+            Poco::JSON::Object::Ptr jcon = new Poco::JSON::Object();
+            jcon->set("from", it->from ? it->from->getId() : "");
+            jcon->set("to", it->to ? it->to->getId() : "");
+            jcon->set("toInput", it->numInput);
+            jarr->add(jcon);
+        }
+    }
+
+    return json;
+}
+// -----------------------------------------------------------------------------
+#endif
 // -----------------------------------------------------------------------------

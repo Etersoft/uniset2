@@ -24,17 +24,11 @@ namespace uniset
     using namespace std;
     using namespace uniset::extensions;
     // -------------------------------------------------------------------------
-    TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
+    TDelay::TDelay(Element::ElementID id, timeout_t delayMS ):
         Element(id),
         myout(false),
         delay(delayMS)
     {
-        if( inCount != 0 )
-        {
-            // создаём заданное количество входов
-            for( unsigned int i = 1; i <= inCount; i++ )
-                ins.emplace_back(i, false); // addInput(i,st);
-        }
     }
 
     TDelay::~TDelay()

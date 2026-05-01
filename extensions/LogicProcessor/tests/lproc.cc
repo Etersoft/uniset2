@@ -123,7 +123,7 @@ TEST_CASE("Logic processor: elements", "[LogicProcessor][elements]")
 
     SECTION( "TDelay" )
     {
-        TDelay e("1", 50, 1);
+        TDelay e("1", 50);
         CHECK_FALSE( e.getOut() );
 
         // ON DELAY

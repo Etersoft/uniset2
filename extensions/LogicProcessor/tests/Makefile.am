@@ -9,6 +9,12 @@ tests_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/
 	$(top_builddir)/extensions/LogicProcessor/libUniSet2LProcessor.la -lpthread
 tests_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/LogicProcessor
 
+noinst_PROGRAMS += test_http_api
+test_http_api_SOURCES = test_http_api_main.cc test_http_api.cc
+test_http_api_LDADD = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(top_builddir)/extensions/LogicProcessor/libUniSet2LProcessor.la -lpthread
+test_http_api_CPPFLAGS = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/LogicProcessor
+
 $(top_builddir)/extensions/lib/libUniSet2Extensions.la:
 	cd $(top_builddir)/extensions/lib/ && make
 
