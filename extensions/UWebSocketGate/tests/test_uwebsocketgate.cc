@@ -10,6 +10,8 @@
 #include "Poco/Net/WebSocket.h"
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/JSON/Parser.h"
+#include "Poco/JSON/Object.h"
+#include "Poco/JSON/Array.h"
 #include "UniSetTypes.h"
 #include "UInterface.h"
 // -----------------------------------------------------------------------------
