@@ -29,8 +29,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.44.4
-Release: alt2
+Version: 2.45.1
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -803,6 +803,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Fri May 01 2026 Pavel Vainerman <pv@altlinux.ru> 2.45.1-alt1
+- (jscript): supported IEC61131
+- (jscript): jscript): add IEC61131 ST converter and debug UI
+- (launcher): some fixes
+
 * Wed Apr 22 2026 Anton Farygin <rider@altlinux.org> 2.44.4-alt2
 - fixed build with gcc 15 / libstdc++ 15: add missing <sstream> includes
 
