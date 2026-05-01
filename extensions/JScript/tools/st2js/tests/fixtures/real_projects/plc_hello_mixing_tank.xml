@@ -1,0 +1,955 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="" productName="CODESYS" productVersion="CODESYS V3.5 SP16" creationDateTime="2021-03-11T21:02:17.1386427" />
+  <contentHeader name="Hello Mixing tank" version="1.0" modificationDateTime="2021-03-11T20:32:57.2894189" organization="Tk Automation" author="Toni Kucic">
+    <Comment>In industrial automation the "hello world" program is a mixing tank. As a part of my portfolio I have written a simple mixing tank controller and a simulator. The project is meant for begginers and for educational purposes. It is published under MIT license. Written in CODESYS 3.5 and in structured text language.
+
+The project is designed in a way that the user can disable the main program and replace it with his own implementation. Simulator and the HMI sees only the IO and HMI global variables so if the user wishes to create an own implementation those variables should be written. On the simulator side the operator can see if the implementation is working correctly.</Comment>
+    <coordinateInfo>
+      <fbd>
+        <scaling x="1" y="1" />
+      </fbd>
+      <ld>
+        <scaling x="1" y="1" />
+      </ld>
+      <sfc>
+        <scaling x="1" y="1" />
+      </sfc>
+    </coordinateInfo>
+    <addData>
+      <data name="http://www.3s-software.com/plcopenxml/projectinformation" handleUnknown="implementation">
+        <ProjectInformation>
+          <property name="Author" type="string">Toni Kucic</property>
+          <property name="Company" type="string">Tk Automation</property>
+          <property name="CompiledLibraryCompatibilityVersion" type="string">CODESYS V3.5 SP16</property>
+          <property name="Description" type="string">In industrial automation the "hello world" program is a mixing tank. As a part of my portfolio I have written a simple mixing tank controller and a simulator. The project is meant for begginers and for educational purposes. It is published under MIT license. Written in CODESYS 3.5 and in structured text language.
+
+The project is designed in a way that the user can disable the main program and replace it with his own implementation. Simulator and the HMI sees only the IO and HMI global variables so if the user wishes to create an own implementation those variables should be written. On the simulator side the operator can see if the implementation is working correctly.</property>
+          <property name="Project" type="string">plc_hello_mixing_tank</property>
+          <property name="Title" type="string">Hello Mixing tank</property>
+          <property name="Version" type="version">1.0</property>
+        </ProjectInformation>
+      </data>
+    </addData>
+  </contentHeader>
+  <types>
+    <dataTypes />
+    <pous>
+      <pou name="GenericBistableDeviceModel" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="ActivateCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to activate the device</xhtml>
+              </documentation>
+            </variable>
+            <variable name="DeactivateCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to deactivate the device</xhtml>
+              </documentation>
+            </variable>
+            <variable name="cfgActTime">
+              <type>
+                <TIME />
+              </type>
+              <initialValue>
+                <simpleValue value="TIME#1s0ms" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Time needed to activate the device</xhtml>
+              </documentation>
+            </variable>
+            <variable name="cfgDeactTime">
+              <type>
+                <TIME />
+              </type>
+              <initialValue>
+                <simpleValue value="TIME#1s0ms" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Time needed to deactivate the device</xhtml>
+              </documentation>
+            </variable>
+            <variable name="simActFail">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulates activation fail. If deactivated and activate command true.</xhtml>
+              </documentation>
+            </variable>
+            <variable name="simDeactFail">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulates deactivation fail. If activated and deactivate command true.</xhtml>
+              </documentation>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Activated">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Device is activated</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Deactivated">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">TRUE: Device is deactivated</xhtml>
+              </documentation>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="TransitionDelay">
+              <type>
+                <derived name="TON" />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Timer for delaying the commands to change state</xhtml>
+              </documentation>
+            </variable>
+            <variable name="vState">
+              <type>
+                <USINT />
+              </type>
+              <initialValue>
+                <simpleValue value="0" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">State tracking variable</xhtml>
+              </documentation>
+            </variable>
+            <variable name="vStateOld">
+              <type>
+                <USINT />
+              </type>
+              <initialValue>
+                <simpleValue value="3" />
+              </initialValue>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Memory of previous state</xhtml>
+              </documentation>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">CASE vState OF
+	0: (*Deactivated*)
+		(*On entry do:*)
+		IF vState &lt;&gt; vStateOld THEN
+			(*Reset timer*)
+			TransitionDelay(IN:=FALSE);
+			vStateOld := vState;
+		END_IF
+		TransitionDelay(IN:=ActivateCmd AND NOT simActFail, PT:=cfgActTime);
+		IF TransitionDelay.Q THEN
+			vState := 1;
+		END_IF
+	1: (*Activated*)
+		(*On entry do:*)
+		IF vState &lt;&gt; vStateOld THEN
+			(*Reset timer*)
+			TransitionDelay(IN:=FALSE);
+			vStateOld := vState;
+		END_IF
+		TransitionDelay(IN:=DeactivateCmd AND NOT simDeactFail, PT:=cfgDeactTime);
+		IF TransitionDelay.Q THEN
+			vState := 0;
+		END_IF
+END_CASE
+Activated := vState = 1;
+Deactivated := vState = 0;</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>6734a321-abac-4b15-a10b-d0fe6fe7b2f6</ObjectId>
+          </data>
+        </addData>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="SoftPLC">
+        <resource name="Application">
+          <task name="Task" interval="PT0.02S" priority="1">
+            <pouInstance name="main" typeName="">
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml" />
+              </documentation>
+            </pouInstance>
+            <pouInstance name="simulator" typeName="">
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml" />
+              </documentation>
+            </pouInstance>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/tasksettings" handleUnknown="implementation">
+                <TaskSettings KindOfTask="Cyclic" Interval="t#20ms" IntervalUnit="ms" WithinSPSTimeSlicing="true">
+                  <Watchdog Enabled="false" TimeUnit="ms" Sensitivity="1" />
+                </TaskSettings>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>beceec86-d732-4ebb-9202-c45e4231495e</ObjectId>
+              </data>
+            </addData>
+          </task>
+          <task name="VISU_TASK" interval="PT0.02S" priority="31">
+            <pouInstance name="VisuElems.Visu_Prg" typeName="">
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml" />
+              </documentation>
+            </pouInstance>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/tasksettings" handleUnknown="implementation">
+                <TaskSettings KindOfTask="Cyclic" Interval="20" IntervalUnit="ms" WithinSPSTimeSlicing="true">
+                  <Watchdog Enabled="false" TimeUnit="ms" />
+                </TaskSettings>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>f4d8108c-51d6-4cea-9f2f-c80609ef0128</ObjectId>
+              </data>
+            </addData>
+          </task>
+          <globalVars name="IO">
+            <variable name="xDI_LS01_TankLevelFull">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Tank level switch (HIGH) active</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDI_LS02_TankLevelEmpty">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Tank level switch (LOW) active</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDI_VV01_Medium1_Opened">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Medium 1 filling valve open</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDI_VV02_Medium2_Opened">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Medium 2 filling valve open</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDI_VV03_TankDrain_Opened">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Tank draining valve open</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDI_M1_MixerMotorRunning">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Mixer motor running</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDO_VV01_Medium1_OpenCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Medium 1 filling valve open command</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDO_VV02_Medium2_OpenCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Medium 2 filling valve open command</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDO_VV03_TankDrain_OpenCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Tank draining valve open command</xhtml>
+              </documentation>
+            </variable>
+            <variable name="xDO_M1_MixerMotorRunCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Mixer motor run command</xhtml>
+              </documentation>
+            </variable>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/attributes" handleUnknown="implementation">
+                <Attributes>
+                  <Attribute Name="qualified_only" Value="" />
+                </Attributes>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>4c826d48-3338-4934-8c38-ee14b03cf4fe</ObjectId>
+              </data>
+            </addData>
+          </globalVars>
+          <globalVars name="HMI">
+            <variable name="MixerRunCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to start the mixer</xhtml>
+              </documentation>
+            </variable>
+            <variable name="MixerStopCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to stop the mixer</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Medium1OpenCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to open medium 1 valve</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Medium1CloseCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to close medium 1 valve</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Medium2OpenCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to open medium 2 valve</xhtml>
+              </documentation>
+            </variable>
+            <variable name="Medium2CloseCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to close medium 2 valve</xhtml>
+              </documentation>
+            </variable>
+            <variable name="DrainOpenCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to open drain valve</xhtml>
+              </documentation>
+            </variable>
+            <variable name="DrainCloseCmd">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to close drain valve</xhtml>
+              </documentation>
+            </variable>
+            <variable name="SetToAuto">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to set the system to auto mode</xhtml>
+              </documentation>
+            </variable>
+            <variable name="SetToManual">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Command to set the system to manual mode</xhtml>
+              </documentation>
+            </variable>
+            <variable name="MotorRotating">
+              <type>
+                <REAL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">HMI Support variables</xhtml>
+              </documentation>
+            </variable>
+            <variable name="InAuto">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">System in AUTO</xhtml>
+              </documentation>
+            </variable>
+            <variable name="InManual">
+              <type>
+                <BOOL />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">System in MANUAL</xhtml>
+              </documentation>
+            </variable>
+            <variable name="CyclesCompleted">
+              <type>
+                <UINT />
+              </type>
+              <documentation>
+                <xhtml xmlns="http://www.w3.org/1999/xhtml">Cycles completed</xhtml>
+              </documentation>
+            </variable>
+            <addData>
+              <data name="http://www.3s-software.com/plcopenxml/attributes" handleUnknown="implementation">
+                <Attributes>
+                  <Attribute Name="qualified_only" Value="" />
+                </Attributes>
+              </data>
+              <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                <ObjectId>8b80ad5a-efa2-4730-85dc-3d14ccd4ce6d</ObjectId>
+              </data>
+            </addData>
+          </globalVars>
+          <addData>
+            <data name="http://www.3s-software.com/plcopenxml/datatype" handleUnknown="implementation">
+              <dataType name="MODES">
+                <baseType>
+                  <enum>
+                    <values>
+                      <value name="MANUAL" value="0" />
+                      <value name="AUTO" value="1" />
+                    </values>
+                  </enum>
+                </baseType>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/enumvaluedocumentation" handleUnknown="implementation">
+                    <EnumValueDocumentation>
+                      <EnumValue>
+                        <Name>MANUAL</Name>
+                        <Documentation>
+                          <xhtml xmlns="http://www.w3.org/1999/xhtml">System is in manual mode (Operator control)</xhtml>
+                        </Documentation>
+                      </EnumValue>
+                      <EnumValue>
+                        <Name>AUTO</Name>
+                        <Documentation>
+                          <xhtml xmlns="http://www.w3.org/1999/xhtml">System is in auto mode (PLC in control)</xhtml>
+                        </Documentation>
+                      </EnumValue>
+                    </EnumValueDocumentation>
+                  </data>
+                  <data name="http://www.3s-software.com/plcopenxml/attributes" handleUnknown="implementation">
+                    <Attributes>
+                      <Attribute Name="qualified_only" Value="" />
+                      <Attribute Name="strict" Value="" />
+                    </Attributes>
+                  </data>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>4a6bc2e5-291e-411b-9ffe-8051d9f084f6</ObjectId>
+                  </data>
+                </addData>
+              </dataType>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/datatype" handleUnknown="implementation">
+              <dataType name="AUTO_SEQUENCE">
+                <baseType>
+                  <enum>
+                    <values>
+                      <value name="DRAINING" value="0" />
+                      <value name="FILLING" value="1" />
+                      <value name="MIXING" value="2" />
+                    </values>
+                  </enum>
+                </baseType>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/enumvaluedocumentation" handleUnknown="implementation">
+                    <EnumValueDocumentation>
+                      <EnumValue>
+                        <Name>DRAINING</Name>
+                        <Documentation>
+                          <xhtml xmlns="http://www.w3.org/1999/xhtml">Draining state when system is in auto mode</xhtml>
+                        </Documentation>
+                      </EnumValue>
+                      <EnumValue>
+                        <Name>FILLING</Name>
+                        <Documentation>
+                          <xhtml xmlns="http://www.w3.org/1999/xhtml">Filling state when system is in auto mode</xhtml>
+                        </Documentation>
+                      </EnumValue>
+                      <EnumValue>
+                        <Name>MIXING</Name>
+                        <Documentation>
+                          <xhtml xmlns="http://www.w3.org/1999/xhtml">Mixing state when system is in auto mode</xhtml>
+                        </Documentation>
+                      </EnumValue>
+                    </EnumValueDocumentation>
+                  </data>
+                  <data name="http://www.3s-software.com/plcopenxml/attributes" handleUnknown="implementation">
+                    <Attributes>
+                      <Attribute Name="qualified_only" Value="" />
+                      <Attribute Name="strict" Value="" />
+                    </Attributes>
+                  </data>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>4262d74e-130e-42b9-a9fa-3b5e1b07bfe7</ObjectId>
+                  </data>
+                </addData>
+              </dataType>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/pou" handleUnknown="implementation">
+              <pou name="simulator" pouType="program">
+                <interface>
+                  <localVars>
+                    <variable name="vTankLevel">
+                      <type>
+                        <REAL />
+                      </type>
+                      <initialValue>
+                        <simpleValue value="25" />
+                      </initialValue>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulated tank level, intialized to 25%</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="MixerMotor">
+                      <type>
+                        <derived name="GenericBistableDeviceModel" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulated mixer motor</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="MediumValve1">
+                      <type>
+                        <derived name="GenericBistableDeviceModel" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulated valve that fills medium 1</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="MediumValve2">
+                      <type>
+                        <derived name="GenericBistableDeviceModel" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulated valve that fills medium 2</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="DrainValve">
+                      <type>
+                        <derived name="GenericBistableDeviceModel" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Simulated valve that drains the tank</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vMotorRotating">
+                      <type>
+                        <REAL />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Motor activated for HMI</xhtml>
+                      </documentation>
+                    </variable>
+                  </localVars>
+                </interface>
+                <body>
+                  <ST>
+                    <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Motor and valve simulation*)
+MixerMotor(
+	ActivateCmd := IO.xDO_M1_MixerMotorRunCmd,
+	DeactivateCmd := NOT IO.xDO_M1_MixerMotorRunCmd,
+	cfgActTime := T#2S,
+	cfgDeactTime := T#0S,
+	Activated =&gt; IO.xDI_M1_MixerMotorRunning);
+
+MediumValve1(
+	ActivateCmd := IO.xDO_VV01_Medium1_OpenCmd,
+	DeactivateCmd := NOT IO.xDO_VV01_Medium1_OpenCmd,
+	cfgActTime := T#1S,
+	cfgDeactTime := T#1S,
+	Activated =&gt; IO.xDI_VV01_Medium1_Opened);
+
+MediumValve2(
+	ActivateCmd := IO.xDO_VV02_Medium2_OpenCmd,
+	DeactivateCmd := NOT IO.xDO_VV02_Medium2_OpenCmd,
+	cfgActTime := T#1S,
+	cfgDeactTime := T#1S,
+	Activated =&gt; IO.xDI_VV02_Medium2_Opened);
+
+DrainValve(
+	ActivateCmd := IO.xDO_VV03_TankDrain_OpenCmd,
+	DeactivateCmd := NOT IO.xDO_VV03_TankDrain_OpenCmd,
+	cfgActTime := T#1S,
+	cfgDeactTime := T#1S,
+	Activated =&gt; IO.xDI_VV03_TankDrain_Opened);
+	
+(*Tank filling simulation*)
+(*Tank fills if either filling valves are open and drains if the drain is open,
+if the program overfills it, the tank spills to the spill way*)
+vTankLevel :=  vTankLevel
+			 + 0.1 * BOOL_TO_REAL(MediumValve1.Activated)
+			 + 0.1 * BOOL_TO_REAL(MediumValve2.Activated)
+			 - 0.2 * BOOL_TO_REAL(DrainValve.Activated);
+vTankLevel := LIMIT(0, vTankLevel, 100);
+
+(*Limit switch simulation*)
+IO.xDI_LS01_TankLevelFull := vTankLevel &gt;= 85;
+IO.xDI_LS02_TankLevelEmpty := vTankLevel &lt;= 5;
+
+(*HMI *)
+vMotorRotating := vMotorRotating + 1 * BOOL_TO_REAL(MixerMotor.Activated);
+IF vMotorRotating &gt;= 360 THEN vMotorRotating := 0; END_IF
+</xhtml>
+                  </ST>
+                </body>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>0c49e400-ee18-44bb-9c02-11f51c58f352</ObjectId>
+                  </data>
+                </addData>
+              </pou>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/pou" handleUnknown="implementation">
+              <pou name="main" pouType="program">
+                <interface>
+                  <localVars>
+                    <variable name="vMode">
+                      <type>
+                        <derived name="MODES" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Variable to keep track of system mode Manual/Auto</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vModeOld">
+                      <type>
+                        <derived name="MODES" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Memory of last mode</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="vAutoState">
+                      <type>
+                        <derived name="AUTO_SEQUENCE" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Variable to track the automatic sequence</xhtml>
+                      </documentation>
+                    </variable>
+                    <variable name="MixingTimer">
+                      <type>
+                        <derived name="TON" />
+                      </type>
+                      <documentation>
+                        <xhtml xmlns="http://www.w3.org/1999/xhtml">Timer to control the mixing duration</xhtml>
+                      </documentation>
+                    </variable>
+                  </localVars>
+                </interface>
+                <body>
+                  <ST>
+                    <xhtml xmlns="http://www.w3.org/1999/xhtml">(*Functional description:
+There are two ways of operation:
+	- Manual
+	- Automatic
+Manual:
+	- Operator is able to operate each valve manually
+	- Operator is able to operate the mixer motor manually
+	- Overfill protections are disabled
+	- Operator is able to put the system to auto
+	
+Automatic:
+	- Program will automatically control the valves and the mixing motor if system is in auto
+	- If the tanks level is undefined it assumes draining state
+	- In draining state, drains the tank until LS02 activates (tank is empty)
+	- When tank is empty, it activates the medium 1 and 2 valves, closes the drain valve and the tank is filling up
+	- Filling state is until LS01 is activated (Tank is full)
+	- Then the mixer motor is mixing for 10 seconds
+	- After mixing is completed, drain the whole contents
+	- Repeats as long as auto is activated
+	
+HMI Requirements:
+	- Manual / Auto needs to be correctly controlled and displayed
+	- If manual, clicking on devices activates or stops them
+	- If auto, clicking is not doing anything
+	- If auto, system is counting number of cycles completed
+	- Devices must clearly display if they are activated or deactivated*)
+
+(*Enabling operator to select auto or manual mode*)
+CASE vMode OF
+	MODES.AUTO:
+		IF HMI.SetToManual THEN
+			vMode := Modes.MANUAL;
+			HMI.SetToManual := FALSE;
+		END_IF
+		
+	MODES.MANUAL:
+		IF HMI.SetToAuto THEN
+			vMode := Modes.AUTO;
+			HMI.SetToAuto := FALSE;
+		END_IF
+END_CASE
+
+(*Control of the system*)
+CASE vMode OF
+	MODES.MANUAL: (*Manual*)
+		(*On entry do:*)
+		IF vMode &lt;&gt; vModeOld THEN
+			vAutoState := AUTO_SEQUENCE.DRAINING;
+			vModeOld := vMode;
+		END_IF
+		
+		(*In manual, HMI commands are connected to the IO for starting and stopping the devices*)
+		(*Commands are implemented with a latch*)
+		IO.xDO_M1_MixerMotorRunCmd := (HMI.MixerRunCmd OR IO.xDI_M1_MixerMotorRunning) AND NOT (HMI.MixerStopCmd);
+		IO.xDO_VV01_Medium1_OpenCmd := (HMI.Medium1OpenCmd OR IO.xDI_VV01_Medium1_Opened) AND NOT (HMI.Medium1CloseCmd);
+		IO.xDO_VV02_Medium2_OpenCmd := (HMI.Medium2OpenCmd OR IO.xDI_VV02_Medium2_Opened) AND NOT (HMI.Medium2CloseCmd);
+		IO.xDO_VV03_TankDrain_OpenCmd := (HMI.DrainOpenCmd OR IO.xDI_VV03_TankDrain_Opened) AND NOT (HMI.DrainCloseCmd);
+	
+	MODES.AUTO: (*Automatic*)
+		(*On entry do:*)
+		IF vMode &lt;&gt; vModeOld THEN
+			vAutoState := AUTO_SEQUENCE.DRAINING;
+			vModeOld := vMode;
+		END_IF
+		CASE vAutoState OF
+			AUTO_SEQUENCE.FILLING:
+				(*Make sure other devices are not working*)
+				IO.xDO_M1_MixerMotorRunCmd := FALSE;
+				IO.xDO_VV03_TankDrain_OpenCmd := FALSE;
+				
+				(*Open both medium valves and start filling the tank*)
+				IO.xDO_VV01_Medium1_OpenCmd := NOT IO.xDI_LS01_TankLevelFull;
+				IO.xDO_VV02_Medium2_OpenCmd := NOT IO.xDI_LS01_TankLevelFull;
+				
+				(*When tank is full, wait for the filling valves to close and then go to mixing state*)
+				IF IO.xDI_LS01_TankLevelFull AND NOT (IO.xDI_VV01_Medium1_Opened OR IO.xDI_VV02_Medium2_Opened) THEN
+					vAutoState := AUTO_SEQUENCE.MIXING;
+				END_IF
+			AUTO_SEQUENCE.MIXING:
+				(*Make sure other devices are not working*)
+				IO.xDO_VV01_Medium1_OpenCmd := FALSE;
+				IO.xDO_VV02_Medium2_OpenCmd := FALSE;
+				IO.xDO_VV03_TankDrain_OpenCmd := FALSE;
+				
+				(*Start the mixer motor and mix for 10s*)
+				IO.xDO_M1_MixerMotorRunCmd := TRUE;
+				MixingTimer(IN:=IO.xDI_M1_MixerMotorRunning, PT:=T#10S);
+				
+				(*When timer has elapsed 10s, wait for motor to stop running, then go to draining*)
+				IF MixingTimer.Q THEN
+					IO.xDO_M1_MixerMotorRunCmd := FALSE;
+					vAutoState := AUTO_SEQUENCE.DRAINING;
+				END_IF
+				
+			AUTO_SEQUENCE.DRAINING:
+				(*Make sure other devices are not working*)
+				IO.xDO_M1_MixerMotorRunCmd := FALSE;
+				IO.xDO_VV01_Medium1_OpenCmd := FALSE;
+				IO.xDO_VV02_Medium2_OpenCmd := FALSE;
+				
+				(*Open the drain valve and start draining the tank*)
+				IO.xDO_VV03_TankDrain_OpenCmd := NOT IO.xDI_LS02_TankLevelEmpty;
+				
+				(*When the tank is empty, wait for the drain valve to close,then go to filling*)
+				IF IO.xDI_LS02_TankLevelEmpty AND NOT IO.xDI_VV03_TankDrain_Opened THEN
+					vAutoState := AUTO_SEQUENCE.FILLING;
+					HMI.CyclesCompleted := HMI.CyclesCompleted + 1;
+				END_IF
+		END_CASE
+END_CASE
+
+(*Command sanity reset*)
+IF IO.xDI_M1_MixerMotorRunning THEN
+	HMI.MixerRunCmd := FALSE;
+ELSE
+	HMI.MixerStopCmd := FALSE;
+END_IF
+IF IO.xDI_VV01_Medium1_Opened THEN
+	HMI.Medium1OpenCmd := FALSE;
+ELSE
+	HMI.Medium1CloseCmd := FALSE;
+END_IF
+IF IO.xDI_VV02_Medium2_Opened THEN
+	HMI.Medium2OpenCmd := FALSE;
+ELSE
+	HMI.Medium2CloseCmd := FALSE;
+END_IF
+IF IO.xDI_VV03_TankDrain_Opened THEN
+	HMI.DrainOpenCmd := FALSE;
+ELSE
+	HMI.DrainCloseCmd := FALSE;
+END_IF
+
+(*HMI *)
+HMI.MotorRotating := HMI.MotorRotating + 2 * BOOL_TO_REAL(IO.xDI_M1_MixerMotorRunning);
+IF HMI.MotorRotating &gt;= 360 THEN HMI.MotorRotating := 0; END_IF
+HMI.InAuto := vMode = MODES.AUTO;
+HMI.InManual := vMode = MODES.MANUAL;</xhtml>
+                  </ST>
+                </body>
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>8869c018-8ab4-43df-b928-63c28bd929f1</ObjectId>
+                  </data>
+                </addData>
+              </pou>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/libraries" handleUnknown="implementation">
+              <Libraries>
+                <Library Name="#IoStandard" Namespace="IoStandard" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="true" DefaultResolution="IoStandard, 3.5.16.0 (System)" />
+                <Library Name="#3SLicense" Namespace="_3S_LICENSE" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="3SLicense, 0.0.0.0 (3S - Smart Software Solutions GmbH)" ResolverGuid="97c3b452-d9fa-4ac2-9d0c-3d420aa6d95b" />
+                <Library Name="#CAA Device Diagnosis" Namespace="DED" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="CAA Device Diagnosis, 3.5.15.0 (CAA Technical Workgroup)" />
+                <Library Name="#BreakpointLogging" Namespace="BPLog" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="Breakpoint Logging Functions, 3.5.5.0 (3S - Smart Software Solutions GmbH)" />
+                <Library Name="#Standard" Namespace="Standard" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="Standard, * (System)" />
+                <Library Name="#System_VisuElems" Namespace="VisuElems" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElems, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemMeter" Namespace="VisuElemMeter" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemMeter, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemsSpecialControls" Namespace="VisuElemsSpecialControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsSpecialControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemsWinControls" Namespace="VisuElemsWinControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsWinControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemTextEditor" Namespace="VisuElemTextEditor" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTextEditor, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemTrace" Namespace="VisuElemTrace" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTrace, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuNativeControl" Namespace="VisuNativeControl" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuNativeControl, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemsAlarm" Namespace="VisuElemsAlarm" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsAlarm, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemCamDisplayer" Namespace="VisuElemCamDisplayer" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemCamDisplayer, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+                  <Parameters>
+                    <Parameter Name="GC_POINTS_PER_CAM" Value="100" />
+                  </Parameters>
+                </Library>
+                <Library Name="#System_VisuElem3DPath" Namespace="VisuElem3DPath" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElem3DPath, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+                  <Parameters>
+                    <Parameter Name="GC_POINTS_PER_POLYGON" Value="100" />
+                  </Parameters>
+                </Library>
+                <Library Name="#System_VisuElemsDateTime" Namespace="VisuElemsDateTime" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsDateTime, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#System_VisuElemXYChart" Namespace="VisuElemXYChart" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemXYChart, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#system_visuinputs" Namespace="visuinputs" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="visuinputs, 3.5.16.0 (system)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+                <Library Name="#VisuDialogs" Namespace="VisuDialogs" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="VisuDialogs, * (System)" />
+                <addData>
+                  <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+                    <ObjectId>b53d2a89-2d9a-449f-912e-ef96124649aa</ObjectId>
+                  </data>
+                </addData>
+              </Libraries>
+            </data>
+            <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+              <ObjectId>2cd7d21e-651a-4ec5-a43e-df613e90f329</ObjectId>
+            </data>
+          </addData>
+        </resource>
+        <addData>
+          <data name="Device" handleUnknown="discard">
+            <Device xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="">
+              <DeviceType>
+                <DeviceIdentification>
+                  <Type>4097</Type>
+                  <Id>0000 000a</Id>
+                  <Version>3.5.16.0</Version>
+                </DeviceIdentification>
+                <Connector moduleType="256" interface="Common.PCI" connectorId="0">
+                  <HostParameterSet />
+                </Connector>
+                <Connector moduleType="769" interface="SafetyInterface" connectorId="1">
+                  <HostParameterSet />
+                </Connector>
+                <DeviceParameterSet />
+              </DeviceType>
+            </Device>
+          </data>
+          <data name="configurations" handleUnknown="discard">
+            <configurations />
+          </data>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>b35dca5f-b573-4ffb-9b22-eeb1ff6bfaa7</ObjectId>
+          </data>
+        </addData>
+      </configuration>
+    </configurations>
+  </instances>
+  <addData>
+    <data name="http://www.3s-software.com/plcopenxml/libraries" handleUnknown="implementation">
+      <Libraries>
+        <Library Name="VisuSymbols, 3.5.10.0 (System)" Namespace="VisuSymbols" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" />
+        <Library Name="#System_VisuElems" Namespace="VisuElems" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElems, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemMeter" Namespace="VisuElemMeter" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemMeter, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemsSpecialControls" Namespace="VisuElemsSpecialControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsSpecialControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemsWinControls" Namespace="VisuElemsWinControls" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsWinControls, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemTextEditor" Namespace="VisuElemTextEditor" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTextEditor, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemTrace" Namespace="VisuElemTrace" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemTrace, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuNativeControl" Namespace="VisuNativeControl" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuNativeControl, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemsAlarm" Namespace="VisuElemsAlarm" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsAlarm, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemCamDisplayer" Namespace="VisuElemCamDisplayer" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemCamDisplayer, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+          <Parameters>
+            <Parameter Name="GC_POINTS_PER_CAM" Value="100" />
+          </Parameters>
+        </Library>
+        <Library Name="#System_VisuElem3DPath" Namespace="VisuElem3DPath" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElem3DPath, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae">
+          <Parameters>
+            <Parameter Name="GC_POINTS_PER_POLYGON" Value="100" />
+          </Parameters>
+        </Library>
+        <Library Name="#System_VisuElemsDateTime" Namespace="VisuElemsDateTime" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemsDateTime, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#System_VisuElemXYChart" Namespace="VisuElemXYChart" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="VisuElemXYChart, 3.5.16.0 (System)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#system_visuinputs" Namespace="visuinputs" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="true" LinkAllContent="false" DefaultResolution="visuinputs, 3.5.16.0 (system)" ResolverGuid="2717eb6a-dd07-4c66-8d8d-cacebd7b18ae" />
+        <Library Name="#CmpBitmapPool" Namespace="CmpBitmapPool" HideWhenReferencedAsDependency="false" PublishSymbolsInContainer="false" SystemLibrary="false" LinkAllContent="false" DefaultResolution="CmpBitmapPool, * (System)" />
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>544019e4-b229-46bf-8470-c1031904343b</ObjectId>
+          </data>
+        </addData>
+      </Libraries>
+    </data>
+    <data name="http://www.3s-software.com/plcopenxml/projectstructure" handleUnknown="discard">
+      <ProjectStructure>
+        <Object Name="Project Information" ObjectId="11c0fc3a-9bcf-4dd8-ac38-efb93363e521" />
+        <Object Name="GenericBistableDeviceModel" ObjectId="6734a321-abac-4b15-a10b-d0fe6fe7b2f6" />
+        <Object Name="SoftPLC" ObjectId="b35dca5f-b573-4ffb-9b22-eeb1ff6bfaa7">
+          <Object Name="Application" ObjectId="2cd7d21e-651a-4ec5-a43e-df613e90f329">
+            <Object Name="Task" ObjectId="beceec86-d732-4ebb-9202-c45e4231495e" />
+            <Object Name="VISU_TASK" ObjectId="f4d8108c-51d6-4cea-9f2f-c80609ef0128" />
+            <Object Name="IO" ObjectId="4c826d48-3338-4934-8c38-ee14b03cf4fe" />
+            <Object Name="MODES" ObjectId="4a6bc2e5-291e-411b-9ffe-8051d9f084f6" />
+            <Object Name="AUTO_SEQUENCE" ObjectId="4262d74e-130e-42b9-a9fa-3b5e1b07bfe7" />
+            <Object Name="simulator" ObjectId="0c49e400-ee18-44bb-9c02-11f51c58f352" />
+            <Object Name="main" ObjectId="8869c018-8ab4-43df-b928-63c28bd929f1" />
+            <Object Name="Library Manager" ObjectId="b53d2a89-2d9a-449f-912e-ef96124649aa" />
+            <Object Name="HMI" ObjectId="8b80ad5a-efa2-4730-85dc-3d14ccd4ce6d" />
+          </Object>
+        </Object>
+        <Object Name="Library Manager" ObjectId="544019e4-b229-46bf-8470-c1031904343b" />
+      </ProjectStructure>
+    </data>
+  </addData>
+</project>

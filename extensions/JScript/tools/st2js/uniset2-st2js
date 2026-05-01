@@ -1,0 +1,8 @@
+#!/bin/sh
+# Wrapper script for st2js (IEC 61131-3 ST to JS converter)
+ST2JS_DIR=$(dirname "$0")/../share/uniset2/st2js
+if [ -d "$ST2JS_DIR" ]; then
+    PYTHONPATH="$ST2JS_DIR:$PYTHONPATH" exec python3 -m st2js "$@"
+else
+    exec python3 -m st2js "$@"
+fi

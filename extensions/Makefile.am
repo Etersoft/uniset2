@@ -10,7 +10,8 @@ SUBDIRS = lib include SharedMemory SharedMemory/tests IOControl IOControl/tests 
 	Backend-OpenTSDB Backend-ClickHouse Backend-ClickHouse/tests HttpResolver HttpResolver/tests UWebSocketGate UWebSocketGate/tests \
 	OPCUAServer OPCUAServer/tests OPCUAExchange OPCUAExchange/tests JScript JScript/tests \
 	Launcher Launcher/tests \
-	uno uno/tests
+	uno uno/tests \
+	JScript/tools/st2js
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2Extensions.pc

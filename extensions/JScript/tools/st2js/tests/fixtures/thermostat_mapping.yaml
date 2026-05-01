@@ -1,0 +1,17 @@
+inputs:
+  CurrentTemp:
+    sensor: AI_Temperature_S
+    type: REAL
+    scale: 100
+  Enable:
+    sensor: DI_Enable_S
+  Reset:
+    sensor: DI_Reset_S
+
+outputs:
+  HeaterOn:
+    sensor: DO_Heater_C
+  AlarmHigh:
+    sensor: DO_AlarmHigh_C
+  CycleCount:
+    sensor: AO_CycleCount_C

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uniset2-st2js"
+version = "0.1.0"
+description = "IEC 61131-3 Structured Text to JavaScript converter for UniSet2 JScript"
+requires-python = ">=3.10"
+license = {text = "LGPL-2.1-or-later"}
+dependencies = [
+    "blark",
+    "lark",
+    "PyYAML",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+]
+
+[project.scripts]
+st2js = "st2js.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["st2js*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -428,15 +428,9 @@ namespace uniset
             return found_path;
         }
         // -------------------------------------------------------------------------
-        JSValue js_load_file_with_data( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv )
+        // Common: resolve filename using search_paths from global scope
+        static std::string resolve_file_path(JSContext* ctx, const char* filename)
         {
-            if (argc != 1) return JS_UNDEFINED;
-
-            const char* filename = JS_ToCString(ctx, argv[0]);
-
-            if (!filename) return JS_UNDEFINED;
-
-            JSRuntime* rt = JS_GetRuntime(ctx);
             JSValue global = JS_GetGlobalObject(ctx);
             JSValue search_paths_val = JS_GetPropertyStr(ctx, global, js_search_paths_object.c_str());
             JS_FreeValue(ctx, global);
@@ -444,25 +438,31 @@ namespace uniset
             auto paths = get_search_paths(ctx, search_paths_val);
             JS_FreeValue(ctx, search_paths_val);
 
-            std::string found_path;
+            // Direct path (absolute, relative with ./ or ../)
+            if( uniset::file_exist(filename) || filename[0] == '.' || filename[0] == '/' )
+                return std::string(filename);
 
-            if( uniset::file_exist(filename)  || filename[0] == '.' || filename[0] == '/' )
+            // Search in configured paths
+            const std::string fname(filename);
+            for (const auto& p : paths)
             {
-                found_path = filename;
+                std::string candidate = p + "/" + fname;
+                if (uniset::file_exist(candidate))
+                    return candidate;
             }
-            else
-            {
-                const std::string fname(filename);
 
-                for (const auto& p : paths)
-                {
-                    if (uniset::file_exist(p + "/" + fname))
-                    {
-                        found_path = p + "/" + fname;
-                        break;
-                    }
-                }
-            }
+            return {};  // not found
+        }
+
+        // load("file.js") — load and eval JS file
+        JSValue js_load_file_with_data( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv )
+        {
+            if (argc != 1) return JS_UNDEFINED;
+
+            const char* filename = JS_ToCString(ctx, argv[0]);
+            if (!filename) return JS_UNDEFINED;
+
+            std::string found_path = resolve_file_path(ctx, filename);
 
             if( found_path.empty() )
             {
@@ -470,9 +470,10 @@ namespace uniset
                 return JS_UNDEFINED;
             }
 
+            JSRuntime* rt = JS_GetRuntime(ctx);
+
             if( ModuleRegistry::is_module_loaded(rt, filename) )
             {
-                //                printf("Module '%s' already loaded in registry\n", filename);
                 JS_FreeCString(ctx, filename);
                 return JS_UNDEFINED;
             }
@@ -488,6 +489,31 @@ namespace uniset
 
             if( !JS_IsException(result) )
                 ModuleRegistry::mark_module_loaded(rt, filename);
+
+            return result;
+        }
+
+        // loadFile("file.txt") — read file contents as string (from search_paths only)
+        JSValue js_read_text_file( JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv )
+        {
+            if (argc != 1) return JS_UNDEFINED;
+
+            const char* filename = JS_ToCString(ctx, argv[0]);
+            if (!filename) return JS_UNDEFINED;
+
+            std::string found_path = resolve_file_path(ctx, filename);
+            JS_FreeCString(ctx, filename);
+
+            if( found_path.empty() )
+                return JS_UNDEFINED;
+
+            size_t buf_len;
+            uint8_t* buf = js_load_file(ctx, &buf_len, found_path.c_str());
+
+            if (!buf) return JS_UNDEFINED;
+
+            JSValue result = JS_NewStringLen(ctx, (const char*)buf, buf_len);
+            js_free(ctx, buf);
 
             return result;
         }

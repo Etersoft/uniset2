@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="CODESYS GmbH" productName="CODESYS V3.5 SP19" />
+  <types>
+    <dataTypes>
+      <dataType name="MotorState">
+        <baseType>
+          <enum>
+            <values>
+              <value name="Stopped" value="0" />
+              <value name="Running" value="1" />
+            </values>
+          </enum>
+        </baseType>
+      </dataType>
+    </dataTypes>
+    <pous>
+      <pou name="Main" pouType="program">
+        <body>
+          <ST><![CDATA[
+PROGRAM Main
+VAR
+    Started : BOOL := TRUE;
+END_VAR
+END_PROGRAM
+]]></ST>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="CfgMain">
+        <resource name="ResMain" type="CPU">
+          <task name="CyclicTask" interval="T#100ms" priority="1" />
+          <program name="MainInstance" typeName="Main" task="CyclicTask" />
+        </resource>
+      </configuration>
+    </configurations>
+  </instances>
+</project>

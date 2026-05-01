@@ -299,6 +299,38 @@ function runUiTest(testCommand) {
             break;
         }
 
+        case 15:
+        {
+            testLog.info("Test 15: IEC 61131-3 function blocks");
+            load("tests-uniset2-iec61131.js");
+
+            const iecResults = runIEC61131Tests();
+            if (iecResults.failed === 0) {
+                out_UI_TestResult_C = 1;
+                testLog.info("Test 15: All IEC 61131-3 tests passed");
+            } else {
+                out_UI_TestResult_C = 0;
+                testLog.warn("Test 15: IEC 61131-3 tests failed: " + iecResults.failed);
+            }
+            break;
+        }
+
+        case 16:
+        {
+            testLog.info("Test 16: Codesys Util function blocks");
+            load("tests-uniset2-iec61131-codesys.js");
+
+            const codesysResults = runCodesysTests();
+            if (codesysResults.failed === 0) {
+                out_UI_TestResult_C = 1;
+                testLog.info("Test 16: All Codesys Util tests passed");
+            } else {
+                out_UI_TestResult_C = 0;
+                testLog.warn("Test 16: Codesys Util tests failed: " + codesysResults.failed);
+            }
+            break;
+        }
+
         default:
             testLog.warn("Unknown test command:", testCommand);
             break;

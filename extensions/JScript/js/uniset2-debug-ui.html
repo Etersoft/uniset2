@@ -1,0 +1,3596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniSet2 Debug Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-primary:#181b1f;--bg-secondary:#212529;--bg-canvas:#111217;
+  --border:#2c3235;--text-primary:#d8d9da;--text-secondary:#8e8e8e;--text-disabled:#6e6e6e;--text-wire-label:#cacaca;
+  --accent-blue:#3274d9;--accent-green:#73bf69;--accent-red:#f2495c;
+  --accent-orange:#ff9830;--accent-purple:#b877d9;--accent-yellow:#fade2a;
+}
+html,body{height:100%;background:var(--bg-primary);color:var(--text-primary);font-family:'Segoe UI',sans-serif;font-size:14px}
+#app{display:grid;grid-template-columns:1fr 0px 300px;grid-template-rows:auto 1fr;height:100vh;gap:0;background:var(--border)}
+#control-bar{grid-column:1/-1;grid-row:1;background:var(--bg-secondary);padding:8px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+#control-bar .status{display:flex;align-items:center;gap:6px}
+#control-bar .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+#control-bar .dot.ok{background:var(--accent-green)}
+#control-bar .dot.err{background:var(--accent-red)}
+#control-bar .info{font-family:monospace;font-size:13px;color:var(--text-secondary)}
+#control-bar button{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:4px 12px;cursor:pointer;border-radius:3px;font-size:13px}
+#control-bar button:hover{background:var(--accent-blue);color:#fff}
+#control-bar select{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 6px;font-size:13px;border-radius:3px}
+#main-area{grid-column:1;grid-row:2;background:var(--bg-primary);display:flex;flex-direction:column;overflow:hidden}
+#splitter{grid-column:2;grid-row:2;width:5px;background:var(--border);cursor:col-resize;transition:background .15s}
+#splitter:hover,#splitter.dragging{background:var(--accent-blue)}
+#right-panel{grid-column:3;grid-row:2;background:var(--bg-primary);display:flex;flex-direction:column;overflow:hidden;border-left:1px solid var(--border)}
+#tab-bar{display:flex;background:var(--bg-secondary);border-bottom:1px solid var(--border)}
+.tab-btn{padding:8px 20px;cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:600;border:none;background:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tab-btn:hover{color:var(--text-primary)}
+.tab-btn.active{color:var(--accent-blue);border-bottom-color:var(--accent-blue)}
+.tab-content{display:none;flex:1;overflow:hidden;min-height:0}
+.tab-content.active{display:flex;flex-direction:column;flex:1}
+#tab-schema{overflow:auto;position:relative}
+#fb-panel{padding:8px;flex:1;display:flex;flex-direction:column;min-height:0}
+#fb-panel .panel-title{flex-shrink:0}
+#fb-search{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 6px;border-radius:3px;font-size:11px;margin-bottom:6px;flex-shrink:0}
+#fb-content{overflow-y:auto;flex:1;min-height:0}
+.fb-card.fb-hidden{display:none}
+.fb-card{cursor:pointer}
+.fb-card:hover{border-color:var(--accent-blue)}
+.panel-title{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+/* Schema tab */
+#schema-container{flex:1;background:var(--bg-canvas);overflow:auto;position:relative;cursor:grab;user-select:none}
+#schema-container.panning{cursor:grabbing}
+#schema-container svg{display:block;transform-origin:0 0;pointer-events:none}
+#schema-container svg [data-node-id].search-match rect{stroke:var(--accent-orange)!important;stroke-width:3!important}
+#schema-container svg [data-node-id].search-dim{opacity:0.25}
+#schema-container.no-wires svg path[data-edge-from]{display:none}
+/* When a node is click-highlighted, keep its edges visible even if the Wires
+   toggle hides everything else. */
+#schema-container.no-wires svg path.hi-edge{display:block !important}
+#schema-container.no-values svg .port-value{display:none}
+#schema-container.no-port-labels svg .port-label{display:none}
+#schema-container.no-backgrounds svg g.program-group{display:none}
+/* View settings dropdown */
+#view-settings-popup{display:none;position:absolute;top:100%;left:0;margin-top:2px;min-width:160px;background:var(--bg-primary);border:1px solid var(--border);border-radius:3px;padding:4px;z-index:120;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+#view-settings-popup.visible{display:block}
+#view-settings-popup label{display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:12px;color:var(--text-primary);cursor:pointer;border-radius:2px;white-space:nowrap}
+#view-settings-popup label:hover{background:var(--bg-secondary)}
+#view-settings-popup label span{flex:1;display:flex;justify-content:space-between;align-items:center}
+#view-settings-popup .view-hint{color:var(--text-secondary);font-size:10px;font-family:monospace;margin-left:12px}
+#view-settings-popup input[type=checkbox]{accent-color:var(--accent-orange);cursor:pointer}
+/* Click-to-highlight: FB and operator nodes are clickable */
+#schema-container svg g[data-node-id]{pointer-events:auto;cursor:pointer}
+#schema-container svg path[data-edge-from]{pointer-events:stroke;cursor:help}
+/* When highlight is active, dim everything that isn't selected/neighbor */
+#schema-container svg.hi-active [data-node-id]:not(.hi-selected):not(.hi-neighbor){opacity:0.2}
+#schema-container svg.hi-active path[data-edge-from]:not(.hi-edge){opacity:0.15}
+#schema-container svg [data-node-id].hi-neighbor rect{stroke:var(--accent-orange)!important;stroke-width:2.5!important}
+#schema-container svg [data-node-id].hi-selected rect{stroke:var(--accent-orange)!important;stroke-width:4!important}
+#schema-container svg path.hi-edge{stroke:var(--accent-orange)!important;stroke-width:2.5!important}
+#schema-breadcrumb{color:var(--text-secondary);font-size:11px;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40%;flex:1}
+#schema-breadcrumb .bc-program{color:var(--accent-orange);cursor:pointer}
+#schema-breadcrumb .bc-program:hover{text-decoration:underline}
+#schema-breadcrumb .bc-fb{color:var(--text-primary);cursor:pointer}
+#schema-breadcrumb .bc-fb:hover{text-decoration:underline}
+#schema-breadcrumb .bc-sep{color:var(--border);padding:0 4px}
+/* Pulse animation on port value change — orange halo that fades out */
+@keyframes port-pulse-halo{
+  0%  {filter:drop-shadow(0 0 0 transparent)}
+  30% {filter:drop-shadow(0 0 6px #ff9830) drop-shadow(0 0 3px #ff9830)}
+  100%{filter:drop-shadow(0 0 0 transparent)}
+}
+#schema-container svg circle[data-port-lamp].pulse{animation:port-pulse-halo 0.45s ease-out 1}
+#btn-toggle-wires.off,#btn-toggle-values.off{background:var(--bg-secondary)!important;color:var(--text-secondary)!important}
+/* Program combobox */
+#program-combo-list{position:absolute;top:100%;left:0;margin-top:2px;min-width:160px;max-height:260px;overflow-y:auto;background:var(--bg-primary);border:1px solid var(--border);border-radius:3px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+/* FBD tooltip */
+#fbd-tooltip{position:fixed;display:none;max-width:360px;max-height:280px;overflow-y:auto;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:3px;padding:6px 8px;font-size:11px;font-family:monospace;box-shadow:0 2px 10px rgba(0,0,0,0.5);z-index:2000;pointer-events:none;line-height:1.4}
+#fbd-tooltip .ftt-title{color:var(--accent-orange);font-weight:bold;margin-bottom:4px;border-bottom:1px solid var(--border);padding-bottom:3px}
+#fbd-tooltip .ftt-item{color:var(--text-primary);white-space:nowrap}
+#fbd-tooltip .ftt-item .ftt-prog{color:var(--text-secondary);font-size:10px}
+/* Port sparkline tooltip (shown on port hover) */
+#port-sparkline-tt{position:fixed;display:none;background:var(--bg-primary);border:1px solid var(--border);border-radius:3px;padding:6px 8px;box-shadow:0 2px 10px rgba(0,0,0,0.5);z-index:2100;pointer-events:none;font-family:monospace;font-size:11px;color:var(--text-primary)}
+#port-sparkline-tt .pst-title{color:var(--accent-orange);font-weight:bold;border-bottom:1px solid var(--border);padding-bottom:3px;margin-bottom:4px}
+#port-sparkline-tt .pst-canvas{display:block;background:var(--bg-secondary);border:1px solid var(--border);border-radius:2px}
+#port-sparkline-tt .pst-info{color:var(--text-secondary);font-size:10px;margin-top:3px;display:flex;justify-content:space-between;gap:10px}
+#port-sparkline-tt .pst-info .pst-cur{color:var(--text-primary)}
+#schema-container svg [data-edge-group] rect.edge-badge{cursor:pointer;pointer-events:auto}
+/* Schema minimap (floating in lower-right corner) */
+#schema-minimap{position:absolute;right:12px;bottom:12px;width:220px;height:160px;background:rgba(33,37,41,0.88);border:1px solid var(--border);border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,0.5);z-index:50;pointer-events:auto;padding:2px}
+#schema-minimap.hidden{display:none}
+#schema-minimap-svg{display:block;width:100%;height:100%;cursor:pointer}
+#schema-minimap-svg .mm-node{fill:#3274d9;stroke:none}
+#schema-minimap-svg .mm-viewport{fill:rgba(255,152,48,0.18);stroke:var(--accent-orange);stroke-width:1.5;cursor:move;pointer-events:auto}
+#schema-minimap-close{position:absolute;top:0;right:2px;background:transparent;color:var(--text-secondary);border:none;font-size:16px;line-height:1;cursor:pointer;padding:2px 6px;z-index:51}
+#schema-minimap-close:hover{color:var(--accent-red)}
+#schema-minimap-open{position:absolute;right:12px;bottom:12px;width:28px;height:28px;background:rgba(33,37,41,0.88);color:var(--text-secondary);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:14px;display:none;z-index:50;padding:0}
+#schema-minimap-open.visible{display:block}
+#schema-minimap-open:hover{color:var(--accent-orange)}
+/* Hotkeys help overlay */
+#hotkeys-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center}
+#hotkeys-overlay.visible{display:flex}
+#hotkeys-dialog{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:18px 22px;min-width:360px;max-width:520px;box-shadow:0 4px 20px rgba(0,0,0,0.6)}
+#hotkeys-dialog .hk-title{color:var(--accent-orange);font-size:14px;font-weight:bold;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+#hotkeys-dialog .hk-table{width:100%;border-collapse:collapse;font-size:12px}
+#hotkeys-dialog .hk-table td{padding:3px 6px;vertical-align:top}
+#hotkeys-dialog .hk-table td:first-child{width:30%;text-align:right;white-space:nowrap}
+#hotkeys-dialog kbd{display:inline-block;background:var(--bg-secondary);border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-family:monospace;font-size:11px;color:var(--text-primary);box-shadow:0 1px 0 rgba(0,0,0,0.3)}
+#hotkeys-dialog .hk-hint{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);color:var(--text-secondary);font-size:11px;line-height:1.4}
+.combo-item{padding:4px 8px;font-size:12px;color:var(--text-primary);cursor:pointer;white-space:nowrap}
+.combo-item:hover,.combo-item.combo-highlight{background:var(--bg-secondary)}
+.combo-item.combo-hidden{display:none}
+.combo-item.combo-selected{color:var(--accent-orange)}
+#schema-placeholder{display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-secondary);font-size:13px}
+/* Variables tab */
+#vars-content{padding:8px;overflow-y:auto;flex:1}
+.section{margin-bottom:8px}
+.section-header{background:var(--bg-secondary);padding:6px 10px;cursor:pointer;user-select:none;border-radius:3px;display:flex;align-items:center;gap:6px;font-weight:bold;font-size:13px}
+.section-header:hover{background:var(--border)}
+.section-header .arrow{transition:transform .2s;font-size:10px}
+.section-header .arrow.collapsed{transform:rotate(-90deg)}
+.section-header .count{color:var(--text-secondary);font-weight:normal;font-size:12px;margin-left:auto}
+.var-table{width:100%;border-collapse:collapse;font-family:monospace;font-size:13px}
+.var-table th{text-align:left;padding:3px 6px;color:var(--text-secondary);font-size:11px;border-bottom:1px solid var(--border);font-weight:normal}
+.var-table td{padding:3px 6px;border-bottom:1px solid rgba(44,50,53,.3);white-space:nowrap}
+.var-table tr{cursor:pointer}
+.var-table tr:hover{background:rgba(50,116,217,.08)}
+.var-table tr.selected-trend{background:rgba(50,116,217,.12)}
+.var-table tr.selected-trend:hover{background:rgba(50,116,217,.18)}
+.val-cell{transition:background .15s}
+.val-cell.flash-up{background:rgba(115,191,105,.35)}
+.val-cell.flash-down{background:rgba(242,73,92,.35)}
+.bool-true{color:var(--accent-green)}
+.bool-false{color:var(--text-secondary)}
+.type-col{color:var(--text-secondary);font-size:11px}
+.forced-indicator{color:var(--accent-orange);font-size:10px;margin-left:4px}
+.var-table tr.forced-row{background:rgba(255,152,48,.08)}
+.var-table tr.forced-row:hover{background:rgba(255,152,48,.15)}
+/* Trend tab */
+#trend-tab-content{padding:8px;display:flex;flex-direction:column}
+#trend-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+#trend-toolbar button,#trend-toolbar select{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border);padding:3px 8px;cursor:pointer;border-radius:3px;font-size:12px}
+#trend-toolbar button:hover{background:var(--accent-blue);color:#fff}
+#trend-charts-scroll{flex:1;overflow-y:auto;min-height:0}
+#trend-charts-list{display:flex;flex-direction:column}
+.trend-chart-panel{display:flex;flex-direction:column;min-height:150px;height:200px;border-bottom:1px solid var(--border)}
+.trend-chart-header{display:flex;align-items:center;gap:8px;padding:3px 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border);flex-shrink:0}
+.trend-chart-header .trend-var-name{font-size:12px;font-family:monospace;font-weight:bold;flex:1}
+.trend-chart-header .trend-var-value{font-size:12px;font-family:monospace;color:var(--text-secondary)}
+.trend-chart-header .trend-chart-close{font-size:12px;color:var(--text-secondary);cursor:pointer;background:none;border:none;padding:2px 6px;line-height:1}
+.trend-chart-header .trend-chart-close:hover{color:var(--accent-red)}
+.trend-chart-canvas-wrap{flex:1;min-height:0}
+.trend-chart-canvas-wrap canvas{width:100%;height:100%;display:block}
+.trend-splitter{height:5px;background:var(--border);cursor:row-resize;flex-shrink:0}
+.trend-splitter:hover,.trend-splitter.dragging{background:var(--accent-blue)}
+#trend-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;font-size:12px;font-family:monospace}
+.legend-item{display:flex;align-items:center;gap:4px;cursor:pointer;padding:1px 4px;border-radius:2px}
+.legend-item:hover{background:rgba(255,255,255,0.1)}
+.legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block}
+#trend-placeholder{display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-secondary);font-size:13px}
+/* FB cards */
+.fb-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:8px}
+.fb-card-title{font-weight:bold;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.fb-card-title .fb-type{color:var(--accent-blue);font-size:11px}
+.fb-field{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-family:monospace;font-size:13px}
+.fb-field .label{color:var(--text-secondary);min-width:60px}
+.progress-wrap{flex:1;background:var(--bg-primary);height:16px;border-radius:2px;overflow:hidden;border:1px solid var(--border)}
+.progress-bar{height:100%;background:var(--accent-blue);transition:width .2s}
+.progress-text{position:absolute;width:100%;text-align:center;font-size:11px;line-height:16px;color:var(--text-primary)}
+.progress-container{position:relative}
+.lamp{width:14px;height:14px;border-radius:50%;border:1px solid var(--border);display:inline-block}
+.lamp.on{background:var(--accent-green);box-shadow:0 0 6px var(--accent-green)}
+.lamp.off{background:#333}
+.gauge-val{font-size:15px;font-weight:bold}
+.gauge-max{color:var(--text-secondary);font-size:12px}
+/* Trace */
+/* Force dialog */
+#force-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
+#force-overlay.visible{display:flex}
+#force-dialog{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:20px;min-width:320px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+#force-dialog h3{margin:0 0 12px 0;font-size:15px;color:var(--accent-blue)}
+#force-dialog .fd-varname{font-family:monospace;font-size:14px;color:var(--text-primary);margin-bottom:12px;word-break:break-all}
+#force-dialog .fd-current{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
+#force-dialog .fd-input-row{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+#force-dialog .fd-input-row input{flex:1;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:6px 10px;border-radius:3px;font-family:monospace;font-size:13px}
+#force-dialog .fd-input-row input:focus{outline:none;border-color:var(--accent-blue)}
+#force-dialog .fd-bool-row{display:flex;gap:8px;margin-bottom:14px}
+#force-dialog .fd-bool-row button{flex:1;padding:8px 12px;border-radius:3px;cursor:pointer;font-size:13px;font-weight:bold;border:1px solid var(--border)}
+#force-dialog .fd-bool-row .btn-true{background:#2e4a2e;color:var(--accent-green)}#force-dialog .fd-bool-row .btn-true:hover{background:#3a6a3a}
+#force-dialog .fd-bool-row .btn-false{background:#4a2e2e;color:var(--accent-red)}#force-dialog .fd-bool-row .btn-false:hover{background:#6a3a3a}
+#force-dialog .fd-buttons{display:flex;gap:8px;justify-content:flex-end}
+#force-dialog .fd-buttons button{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:6px 16px;cursor:pointer;border-radius:3px;font-size:13px}
+#force-dialog .fd-buttons button:hover{background:var(--accent-blue);color:#fff}
+#force-dialog .fd-buttons .btn-force{background:var(--accent-orange);color:#000;font-weight:bold}#force-dialog .fd-buttons .btn-force:hover{background:#ffb74d}
+#force-dialog .fd-buttons .btn-unforce{background:var(--accent-red);color:#fff}#force-dialog .fd-buttons .btn-unforce:hover{background:#e57373}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="control-bar">
+    <div class="status"><span class="dot err" id="conn-dot"></span><span id="conn-text">Connecting...</span></div>
+    <span class="info" id="cycle-info">#0</span>
+    <span class="info" id="dt-info">--ms</span>
+    <span class="info" id="missed-info">0 missed</span>
+    <button id="btn-pause">Pause</button>
+    <label style="color:var(--text-secondary);font-size:12px">Poll:
+      <select id="sel-interval">
+        <option value="100">100ms</option>
+        <option value="200">200ms</option>
+        <option value="300" selected>300ms</option>
+        <option value="500">500ms</option>
+        <option value="1000">1s</option>
+      </select>
+    </label>
+    <span class="info" id="program-name"></span>
+  </div>
+  <div id="main-area">
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="schema">Schema</button>
+      <button class="tab-btn" data-tab="variables">Variables</button>
+      <button class="tab-btn" data-tab="trends">Trends</button>
+    </div>
+    <div id="tab-schema" class="tab-content active">
+      <div id="schema-toolbar" style="padding:4px 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div id="program-combo" style="position:relative">
+          <input id="program-combo-input" type="text" placeholder="All programs" autocomplete="off" spellcheck="false" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 6px;border-radius:3px;font-size:12px;width:160px" />
+          <div id="program-combo-list" style="display:none"></div>
+        </div>
+        <span style="color:var(--border)">|</span>
+        <button id="btn-zoom-in" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 8px;cursor:pointer;border-radius:3px;font-size:12px">+</button>
+        <button id="btn-zoom-out" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 8px;cursor:pointer;border-radius:3px;font-size:12px">&minus;</button>
+        <button id="btn-zoom-fit" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 8px;cursor:pointer;border-radius:3px;font-size:12px">Fit</button>
+        <span id="zoom-level" style="color:var(--text-secondary);font-size:11px;font-family:monospace;min-width:40px">100%</span>
+        <span style="color:var(--border)">|</span>
+        <div id="view-settings" style="position:relative">
+          <button id="btn-view-settings" title="View settings" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 10px;cursor:pointer;border-radius:3px;font-size:12px">View &#9662;</button>
+          <div id="view-settings-popup">
+            <label><input type="checkbox" data-view-toggle="wires" checked><span>Wires <span class="view-hint">W</span></span></label>
+            <label><input type="checkbox" data-view-toggle="values" checked><span>Values <span class="view-hint">V</span></span></label>
+            <label><input type="checkbox" data-view-toggle="backgrounds" checked><span>Backgrounds <span class="view-hint">G</span></span></label>
+            <label><input type="checkbox" data-view-toggle="minimap" checked><span>Minimap <span class="view-hint">M</span></span></label>
+          </div>
+        </div>
+        <span style="color:var(--border)">|</span>
+        <input id="schema-search" type="text" placeholder="Search (:type for FB type)" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 8px;border-radius:3px;font-size:12px;width:180px" />
+        <span id="search-count" style="color:var(--text-secondary);font-size:11px;font-family:monospace">&nbsp;</span>
+        <span style="color:var(--border)">|</span>
+        <button id="btn-export-svg" title="Download schema as SVG" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:3px 8px;cursor:pointer;border-radius:3px;font-size:12px">SVG</button>
+        <span id="schema-breadcrumb" title="Click program to filter, click block to highlight"></span>
+      </div>
+      <div id="schema-container">
+        <div id="schema-placeholder">Loading schema... (requires /debug/schema endpoint)</div>
+      </div>
+      <div id="schema-minimap">
+        <button id="schema-minimap-close" title="Minimize">&times;</button>
+        <svg id="schema-minimap-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <button id="schema-minimap-open" title="Show minimap">&#9632;</button>
+    </div>
+    <div id="tab-variables" class="tab-content">
+      <div id="vars-content"></div>
+    </div>
+    <div id="tab-trends" class="tab-content">
+      <div id="trend-tab-content">
+        <div id="trend-toolbar">
+          <label style="font-size:12px;color:var(--text-secondary)">Window:
+            <select id="sel-timewindow">
+              <option value="30">30s</option>
+              <option value="60" selected>1m</option>
+              <option value="300">5m</option>
+              <option value="0">All</option>
+            </select>
+          </label>
+          <button id="btn-clear-trend">Clear</button>
+          <button id="btn-export-csv">Export CSV</button>
+        </div>
+        <div id="trend-charts-scroll">
+          <div id="trend-charts-list"></div>
+        </div>
+        <div id="trend-placeholder">Click a variable row to add to trend</div>
+      </div>
+    </div>
+  </div>
+  <div id="splitter"></div>
+  <div id="right-panel">
+    <div id="fb-panel">
+      <div class="panel-title">FB Status</div>
+      <input id="fb-search" type="text" placeholder="Filter FB..." autocomplete="off" spellcheck="false" />
+      <div id="fb-content"></div>
+    </div>
+  </div>
+</div>
+<div id="force-overlay">
+  <div id="force-dialog">
+    <h3>Force Variable</h3>
+    <div class="fd-varname" id="fd-varname"></div>
+    <div class="fd-current" id="fd-current"></div>
+    <div class="fd-input-row" id="fd-input-row">
+      <input type="text" id="fd-value-input" placeholder="Enter value">
+    </div>
+    <div class="fd-bool-row" id="fd-bool-row" style="display:none">
+      <button class="btn-true" id="fd-btn-true">Force TRUE</button>
+      <button class="btn-false" id="fd-btn-false">Force FALSE</button>
+    </div>
+    <div class="fd-buttons">
+      <button class="btn-unforce" id="fd-btn-unforce" style="display:none">Unforce</button>
+      <button id="fd-btn-cancel">Cancel</button>
+      <button class="btn-force" id="fd-btn-force">Force</button>
+    </div>
+  </div>
+</div>
+<div id="fbd-tooltip"></div>
+<div id="port-sparkline-tt">
+  <div class="pst-title"></div>
+  <canvas class="pst-canvas" width="200" height="40"></canvas>
+  <div class="pst-info"></div>
+</div>
+<div id="hotkeys-overlay">
+  <div id="hotkeys-dialog">
+    <div class="hk-title">Keyboard shortcuts</div>
+    <table class="hk-table">
+      <tr><td><kbd>F</kbd></td><td>Fit schema to view</td></tr>
+      <tr><td><kbd>+</kbd> / <kbd>=</kbd></td><td>Zoom in</td></tr>
+      <tr><td><kbd>-</kbd></td><td>Zoom out</td></tr>
+      <tr><td><kbd>0</kbd></td><td>Reset zoom to 100%</td></tr>
+      <tr><td><kbd>Home</kbd></td><td>Scroll to top-left</td></tr>
+      <tr><td><kbd>W</kbd></td><td>Toggle wires</td></tr>
+      <tr><td><kbd>V</kbd></td><td>Toggle live values</td></tr>
+      <tr><td><kbd>G</kbd></td><td>Toggle program backgrounds</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Toggle minimap</td></tr>
+      <tr><td><kbd>/</kbd></td><td>Focus schema search (prefix <kbd>:</kbd> to search FB type)</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Focus program filter</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Clear selection / close popups / blur input</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Wheel</kbd></td><td>Zoom around cursor (in progress)</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Show/hide this help</td></tr>
+    </table>
+    <div class="hk-hint">Hotkeys work on the Schema tab. They are ignored while typing in a text field (except <kbd>Esc</kbd>).</div>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+
+// ---- State ----
+var pollInterval = 300;
+var polling = true;
+var prevVars = {};
+var collapsedGroups = {};
+var programMeta = null;
+var connected = false;
+var lastSnapshot = null;
+var activeTab = 'schema';
+var schemaData = null;
+var schemaLoaded = false;
+// Schema always shows in "Connected" mode (only FB/operator/local nodes;
+// I/O and GVL appear as CODESYS-style stub labels on edges, not as separate
+// nodes). The old Full mode toggle has been removed.
+var schemaProgramFilter = '__all__'; // program scope filter (__all__ or program name)
+
+// ---- DOM refs ----
+var connDot = document.getElementById('conn-dot');
+var connText = document.getElementById('conn-text');
+var cycleInfo = document.getElementById('cycle-info');
+var dtInfo = document.getElementById('dt-info');
+var missedInfo = document.getElementById('missed-info');
+var btnPause = document.getElementById('btn-pause');
+var selInterval = document.getElementById('sel-interval');
+var varsContent = document.getElementById('vars-content');
+var fbContent = document.getElementById('fb-content');
+var fbSearchInput = document.getElementById('fb-search');
+var programNameEl = document.getElementById('program-name');
+var schemaContainer = document.getElementById('schema-container');
+var schemaPlaceholder = document.getElementById('schema-placeholder');
+
+// ---- Helpers ----
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function getMetaForVar(name) {
+    if (!programMeta) return null;
+    var lists = ['inputs','outputs','locals','fb_instances'];
+    for (var li = 0; li < lists.length; li++) {
+        var arr = programMeta[lists[li]];
+        if (!arr) continue;
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].name === name || arr[i].sensor === name ||
+                'in_' + arr[i].sensor === name || 'out_' + arr[i].sensor === name) {
+                return arr[i];
+            }
+        }
+    }
+    return null;
+}
+
+function formatValue(name, raw) {
+    var meta = getMetaForVar(name);
+    if (meta) {
+        if (meta.scale && typeof raw === 'number') {
+            return (raw / meta.scale).toFixed(2) + (meta.unit ? ' ' + meta.unit : '');
+        }
+        if (meta.enum && meta.enum[raw] !== undefined) {
+            return meta.enum[raw] + ' (' + raw + ')';
+        }
+        if (meta.unit && typeof raw === 'number') {
+            return raw + ' ' + meta.unit;
+        }
+    }
+    if (typeof raw === 'boolean' || (guessType(name) === 'BOOL' && (raw === 0 || raw === 1))) {
+        return raw ? '<span class="bool-true">&#9679; true</span>' : '<span class="bool-false">&#9675; false</span>';
+    }
+    if (raw === null || raw === undefined) return '<span style="color:var(--text-disabled)">null</span>';
+    return escHtml(String(raw));
+}
+
+function guessType(name) {
+    var meta = getMetaForVar(name);
+    if (meta && meta.type) return meta.type;
+    if (name.indexOf('DI_') >= 0 || name.indexOf('DO_') >= 0) return 'BOOL';
+    return '';
+}
+
+function detectType(val) {
+    if (typeof val === 'boolean') return 'BOOL';
+    if (typeof val === 'number') return Number.isInteger(val) ? 'INT' : 'REAL';
+    if (typeof val === 'string') return 'STRING';
+    return typeof val;
+}
+
+// ---- Tab switching ----
+function switchTab(tabName) {
+    activeTab = tabName;
+    var btns = document.querySelectorAll('.tab-btn');
+    var contents = document.querySelectorAll('.tab-content');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.toggle('active', btns[i].getAttribute('data-tab') === tabName);
+    }
+    for (var j = 0; j < contents.length; j++) {
+        contents[j].classList.toggle('active', contents[j].id === 'tab-' + tabName);
+    }
+    if (tabName === 'schema' && !schemaLoaded) {
+        fetchSchema();
+    }
+    if (tabName === 'trends') {
+        scheduleChartRedraw();
+    }
+    if (tabName === 'schema' && schemaData && lastSnapshot) {
+        updateSchemaValues(lastSnapshot.vars);
+    }
+    scheduleSaveViewState();
+}
+
+var tabBtns = document.querySelectorAll('.tab-btn');
+for (var ti = 0; ti < tabBtns.length; ti++) {
+    tabBtns[ti].addEventListener('click', function() { switchTab(this.getAttribute('data-tab')); });
+}
+
+// ---- Schema Tab: SVG connection graph ----
+var SVG_NS = 'http://www.w3.org/2000/svg';
+var schemaNodeMap = {};
+var schemaNodeProgram = {};  // nodeId -> program name, populated in renderSchema
+var schemaValuesUserOff = false;  // user toggled Values off via View settings
+
+function fetchSchema() {
+    schemaPlaceholder.textContent = 'Loading schema...';
+    fetch('/debug/schema')
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (!data) {
+                schemaPlaceholder.textContent = 'Schema endpoint not available';
+                return;
+            }
+            schemaData = data;
+            schemaLoaded = true;
+            renderSchema(data);
+            if (lastSnapshot) updateSchemaValues(lastSnapshot.vars);
+            // Apply zoom/scroll from saved state (only on first render)
+            if (pendingViewState) {
+                applyViewStateAfterRender(pendingViewState);
+                pendingViewState = null;
+                viewStateRestored = true;
+            } else if (!viewStateRestored) {
+                viewStateRestored = true;
+            }
+        })
+        .catch(function() {
+            schemaPlaceholder.textContent = 'Failed to load schema';
+        });
+}
+
+// ---- FBD Schema Renderer ----
+// Dimensions
+var FBD_FB_W = 230, FBD_FB_MIN_H = 70;
+var FBD_FB_PORT_SPACING = 36;  // vertical spacing per port (name + value line)
+var FBD_FB_HEADER_H = 40;     // space for name + type labels
+var FBD_IO_W = 140, FBD_IO_H = 50;
+var FBD_PORT_R = 6;
+var FBD_GAP_X = 300, FBD_GAP_Y = 20;
+var FBD_PAD = 35;
+var FBD_PORT_LABEL_PAD = 6;    // gap between port circle and port-name label
+var FBD_PORT_VALUE_DY = 12;    // vertical gap from port name to value line below
+var FBD_WIRE_LABEL_PAD = 18;   // gap between FB edge and wire source-name label
+var TOOLTIP_PAD = 12;          // offset from cursor for FBD hover tooltip
+var BREADCRUMB_THROTTLE_MS = 120;    // scroll-triggered breadcrumb update debounce
+var VIEW_STATE_SAVE_DEBOUNCE_MS = 300;  // localStorage save debounce
+var FBD_PORT_LABEL_DY = 3;     // vertical offset for port label baseline
+var FBD_NAME_Y = 18;           // Y offset for FB name label
+var FBD_TYPE_Y = 32;           // Y offset for FB type label
+var FBD_IO_NAME_Y = 16;        // Y offset for IO node name label
+var FBD_IO_VALUE_Y = 32;       // Y offset for IO node value text
+var FBD_IO_MARKER_R = 5;       // IO node colored marker radius
+var FBD_IO_CONN_R = 4;         // IO node connection point radius
+var FBD_BEZIER_FACTOR = 0.4;   // bezier curve control point factor
+var FBD_UNCONNECTED_GAP = 10;  // extra spacing for unconnected nodes
+var TREND_MAX_POINTS = 30000;  // max data points per trend variable
+var TREND_PANEL_MIN_H = 80;   // min trend chart panel height (px)
+var TREND_PANEL_MAX_H = 600;  // max trend chart panel height (px)
+var MIN_POLL_INTERVAL = 100;   // minimum poll interval for history depth calc
+// Chart padding and layout
+var CHART_PAD_LEFT = 55, CHART_PAD_RIGHT = 12, CHART_PAD_TOP = 10, CHART_PAD_BOTTOM = 28;
+var CHART_TEXT_OFFSET = 4;     // gap between axis line and label text
+var CHART_X_STEP_MAX = 6;     // max X-axis grid lines
+var CHART_X_STEP_WIDTH = 80;  // min pixels per X-axis step
+// Splitter constraints
+var RIGHT_PANEL_MIN_W = 200;
+var RIGHT_PANEL_MAX_W_RATIO = 0.6;
+
+// Colors from CSS variables (for use in JS/SVG)
+var CLR_GREEN = '#73bf69';
+var CLR_INACTIVE = '#6e6e6e';
+var CLR_NODE_BG = '#212529';
+var CLR_NODE_BORDER = '#d8d9da';
+var CLR_TEXT_PRI = '#e8e8e8';
+var CLR_TEXT_SEC = '#8e8e8e';
+var CLR_WIRE_LABEL = '#cacaca';  // lighter than CLR_TEXT_SEC so wire labels
+
+// ---- Helpers ----
+function setLampColors(lamp, fill, stroke) {
+    lamp.setAttribute('fill', fill);
+    lamp.setAttribute('stroke', stroke);
+}
+
+// Compact value formatting for port value chips (short forms to save space)
+function formatPortValue(val) {
+    if (val === undefined || val === null) return '';
+    if (typeof val === 'object') return '';  // structs / arrays not displayable as a single chip
+    if (typeof val === 'boolean') return val ? 'T' : 'F';
+    if (typeof val === 'number') {
+        if (Number.isInteger(val)) return String(val);
+        // 2 significant digits for floats
+        var abs = Math.abs(val);
+        if (abs >= 100) return val.toFixed(0);
+        if (abs >= 10) return val.toFixed(1);
+        return val.toFixed(2);
+    }
+    var s = String(val);
+    return s.length > 8 ? s.slice(0, 7) + '\u2026' : s;
+}
+
+function formatTime(dt) {
+    return [dt.getHours(), dt.getMinutes(), dt.getSeconds()]
+        .map(function(v) { return ('0' + v).slice(-2); }).join(':');
+}
+
+// ---- FBD hover tooltip for collapsed edge groups ----
+var fbdTooltip = null;
+function getFbdTooltip() {
+    if (!fbdTooltip) fbdTooltip = document.getElementById('fbd-tooltip');
+    return fbdTooltip;
+}
+function formatEdgeGroupTooltip(group, toNodeId, toParam) {
+    var kind = group[0].kind;
+    var title, lines = [];
+    if (kind === 'assign') {
+        title = (group[0].from || '?') + ' \u2192 ' + toNodeId + ' (' + group.length + ' writes)';
+        for (var i = 0; i < group.length; i++) {
+            var e = group[i];
+            var src = (e.fromField ? e.from + '.' + e.fromField : e.from) || '?';
+            var dst = e.toField ? (toNodeId + '.' + e.toField) : toNodeId;
+            var prog = e.program ? ' <span class="ftt-prog">[' + escHtml(e.program) + ']</span>' : '';
+            lines.push('<div class="ftt-item">' + escHtml(src) + ' \u2192 ' + escHtml(dst) + prog + '</div>');
+        }
+    } else {
+        title = toNodeId + '.' + (toParam || '?') + ' (' + group.length + ' sources)';
+        for (var j = 0; j < group.length; j++) {
+            var ej = group[j];
+            var srcj = (ej.fromField ? ej.from + '.' + ej.fromField : ej.from) || '?';
+            var progj = ej.program ? ' <span class="ftt-prog">[' + escHtml(ej.program) + ']</span>' : '';
+            lines.push('<div class="ftt-item">' + escHtml(srcj) + progj + '</div>');
+        }
+    }
+    return '<div class="ftt-title">' + escHtml(title) + '</div>' + lines.join('');
+}
+// Position a tooltip next to the cursor, flipping sides to stay inside the
+// viewport. Used by both showFbdTooltip() and the badge mousemove tracker.
+function positionTooltipAt(tt, clientX, clientY) {
+    var tw = tt.offsetWidth, th = tt.offsetHeight;
+    var x = clientX + TOOLTIP_PAD, y = clientY + TOOLTIP_PAD;
+    if (x + tw > window.innerWidth) x = clientX - tw - TOOLTIP_PAD;
+    if (y + th > window.innerHeight) y = clientY - th - TOOLTIP_PAD;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    tt.style.left = x + 'px';
+    tt.style.top = y + 'px';
+}
+
+function showFbdTooltip(html, clientX, clientY) {
+    var tt = getFbdTooltip();
+    if (!tt) return;
+    tt.innerHTML = html;
+    tt.style.display = 'block';
+    positionTooltipAt(tt, clientX, clientY);
+}
+function hideFbdTooltip() {
+    var tt = getFbdTooltip();
+    if (tt) tt.style.display = 'none';
+}
+
+// ---- Port sparkline tooltip ----
+var portSparklineTt = null;
+var portSparklineHoverTimer = null;
+var PORT_SPARKLINE_HOVER_DELAY_MS = 250;
+function getPortSparklineTt() {
+    if (!portSparklineTt) portSparklineTt = document.getElementById('port-sparkline-tt');
+    return portSparklineTt;
+}
+function drawSparkline(canvas, data, isBool) {
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    if (!data || data.length === 0) return;
+    var pad = 2;
+    var plotW = w - 2 * pad, plotH = h - 2 * pad;
+    var n = data.length;
+    var minV, maxV;
+    if (isBool) { minV = 0; maxV = 1; }
+    else {
+        minV = Infinity; maxV = -Infinity;
+        for (var i = 0; i < n; i++) { if (data[i] < minV) minV = data[i]; if (data[i] > maxV) maxV = data[i]; }
+        if (minV === maxV) { minV -= 1; maxV += 1; }
+    }
+    var range = maxV - minV;
+    function tx(idx) { return pad + (n <= 1 ? plotW / 2 : (idx / (n - 1)) * plotW); }
+    function ty(val) { return pad + plotH - ((val - minV) / range) * plotH; }
+    // Baseline (only for numeric, marks zero if in range)
+    if (!isBool && minV < 0 && maxV > 0) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad, ty(0));
+        ctx.lineTo(pad + plotW, ty(0));
+        ctx.stroke();
+    }
+    // Signal line
+    ctx.strokeStyle = '#ff9830';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (isBool) {
+        // Step (digital) line
+        for (var j = 0; j < n; j++) {
+            var x = tx(j), y = ty(data[j]);
+            if (j === 0) ctx.moveTo(x, y);
+            else {
+                // Horizontal segment at previous level, then vertical to new
+                var py = ty(data[j - 1]);
+                ctx.lineTo(x, py);
+                ctx.lineTo(x, y);
+            }
+        }
+    } else {
+        for (var k = 0; k < n; k++) {
+            var xk = tx(k), yk = ty(data[k]);
+            if (k === 0) ctx.moveTo(xk, yk);
+            else ctx.lineTo(xk, yk);
+        }
+    }
+    ctx.stroke();
+}
+function showPortSparkline(portKey, clientX, clientY) {
+    var tt = getPortSparklineTt();
+    if (!tt) return;
+    var hist = portHistory[portKey];
+    if (!hist || hist.length === 0) return;
+    // Determine bool vs numeric from the value range
+    var isBool = true;
+    for (var i = 0; i < hist.length; i++) {
+        if (hist[i] !== 0 && hist[i] !== 1) { isBool = false; break; }
+    }
+    tt.querySelector('.pst-title').textContent = portKey;
+    drawSparkline(tt.querySelector('.pst-canvas'), hist, isBool);
+    var cur = hist[hist.length - 1];
+    var minV = Infinity, maxV = -Infinity;
+    for (var j = 0; j < hist.length; j++) {
+        if (hist[j] < minV) minV = hist[j];
+        if (hist[j] > maxV) maxV = hist[j];
+    }
+    var info = tt.querySelector('.pst-info');
+    if (isBool) {
+        info.innerHTML = '<span class="pst-cur">' + (cur ? 'TRUE' : 'FALSE') + '</span><span>' + hist.length + ' samples</span>';
+    } else {
+        info.innerHTML = '<span class="pst-cur">' + formatPortValue(cur) + '</span><span>' + formatPortValue(minV) + ' … ' + formatPortValue(maxV) + '</span>';
+    }
+    tt.style.display = 'block';
+    positionTooltipAt(tt, clientX, clientY);
+}
+function hidePortSparkline() {
+    if (portSparklineHoverTimer) {
+        clearTimeout(portSparklineHoverTimer);
+        portSparklineHoverTimer = null;
+    }
+    var tt = getPortSparklineTt();
+    if (tt) tt.style.display = 'none';
+}
+
+// Known FB input/output port definitions
+var FB_PORT_DEFS = {
+    'TON':    { inputs: ['IN','PT'], outputs: ['Q','ET'] },
+    'TOF':    { inputs: ['IN','PT'], outputs: ['Q','ET'] },
+    'TP':     { inputs: ['IN','PT'], outputs: ['Q','ET'] },
+    'CTU':    { inputs: ['CU','RESET','PV'], outputs: ['Q','CV'] },
+    'CTD':    { inputs: ['CD','LOAD','PV'], outputs: ['Q','CV'] },
+    'CTUD':   { inputs: ['CU','CD','RESET','LOAD','PV'], outputs: ['QU','QD','CV'] },
+    'R_TRIG': { inputs: ['CLK'], outputs: ['Q'] },
+    'F_TRIG': { inputs: ['CLK'], outputs: ['Q'] },
+    'RS':     { inputs: ['R','S1'], outputs: ['Q1'] },
+    'SR':     { inputs: ['S','R1'], outputs: ['Q1'] },
+    'PID':    { inputs: ['SP','PV','KP','KI','KD'], outputs: ['Y'] },
+    'BLINK':  { inputs: ['EN','CYCLE'], outputs: ['OUT'] },
+    'HYSTERESIS': { inputs: ['IN','HIGH','LOW'], outputs: ['OUT'] }
+};
+
+function getFBPorts(fbType, node) {
+    // Operator nodes have dynamic inputs
+    if (node && node.isOperator) {
+        return { inputs: node.inputs || ['IN'], outputs: ['OUT'] };
+    }
+    // Prefer codegen-emitted ports from the FB instance metadata
+    if (node && (node.inputs || node.outputs)) {
+        return {
+            inputs: node.inputs || [],
+            outputs: (node.outputs && node.outputs.length) ? node.outputs : ['Q']
+        };
+    }
+    var t = (fbType || '').toUpperCase();
+    if (FB_PORT_DEFS[t]) return FB_PORT_DEFS[t];
+    return { inputs: [], outputs: ['Q'] };
+}
+
+function calcFBHeight(fbType, node) {
+    var ports = getFBPorts(fbType, node);
+    var maxPorts = Math.max(ports.inputs.length, ports.outputs.length, 1);
+    return Math.max(FBD_FB_MIN_H, FBD_FB_HEADER_H + maxPorts * FBD_FB_PORT_SPACING);
+}
+
+// Lookup a port index in an input/output list, defaulting to 0 on miss.
+function findPortIndex(portList, name) {
+    var i = portList.indexOf(name);
+    return i < 0 ? 0 : i;
+}
+
+// Compose an edge endpoint label as "node.field" or just "node" if no field.
+function formatEdgeEndpoint(nodeId, field) {
+    return field ? (nodeId + '.' + field) : nodeId;
+}
+
+function resolveVarName(node) {
+    if (node.type === 'input') return 'in_' + (node.sensor || node.id);
+    if (node.type === 'output') return 'out_' + (node.sensor || node.id);
+    return node.id;
+}
+
+function populateProgramFilter(programs) {
+    var list = document.getElementById('program-combo-list');
+    var input = document.getElementById('program-combo-input');
+    if (!list || !input || !programs) return;
+    var items = [{ value: '__all__', label: 'All programs' }];
+    for (var i = 0; i < programs.length; i++) {
+        items.push({ value: programs[i], label: programs[i] });
+    }
+    list.innerHTML = '';
+    for (var j = 0; j < items.length; j++) {
+        var div = document.createElement('div');
+        div.className = 'combo-item';
+        div.setAttribute('data-value', items[j].value);
+        div.textContent = items[j].label;
+        if (items[j].value === schemaProgramFilter) div.classList.add('combo-selected');
+        list.appendChild(div);
+    }
+    // Sync input display text with current selection (only if not being edited)
+    if (document.activeElement !== input) {
+        var cur = items.find(function(it) { return it.value === schemaProgramFilter; });
+        input.value = (cur && cur.value !== '__all__') ? cur.label : '';
+    }
+}
+
+function renderSchema(data) {
+    var nodes = data.nodes || [];
+    var edges = data.edges || [];
+    if (nodes.length === 0) {
+        schemaPlaceholder.textContent = 'No schema nodes';
+        return;
+    }
+
+    // Reset per-port state so entries from a previous render (different
+    // program filter, mode toggle, reconnect) don't persist as orphans.
+    portHistory = {};
+    prevPortValues = {};
+    prevPortInitialized = false;
+    buildEdgeLookup(edges);
+
+    // Populate program filter dropdown from schema metadata
+    if (data.programs) populateProgramFilter(data.programs);
+
+    // Filter by program scope (if not "all")
+    if (schemaProgramFilter !== '__all__') {
+        edges = edges.filter(function(e) {
+            return !e.program || e.program === schemaProgramFilter;
+        });
+    }
+
+    // Augment FB ports with observed usage from edges.
+    // Some FB types have declarations missing from codegen (e.g. VAR_IN_OUT is
+    // currently not captured by the transformer, so SwitchOn_In etc. are dropped).
+    // Any toParam / fromField referenced in edges is guaranteed to be a real pin,
+    // so we merge it into the node's port lists before rendering.
+    (function augmentPorts() {
+        var fbPortAdds = {}; // id -> { inputs: Set, outputs: Set }
+        function ensureEntry(id) {
+            if (!fbPortAdds[id]) fbPortAdds[id] = { inputs: {}, outputs: {} };
+            return fbPortAdds[id];
+        }
+        for (var aei = 0; aei < edges.length; aei++) {
+            var ae = edges[aei];
+            if (ae.kind !== 'call') continue;
+            if (ae.to) ensureEntry(ae.to).inputs[ae.toParam || 'IN'] = 1;
+            if (ae.from && ae.fromField) ensureEntry(ae.from).outputs[ae.fromField] = 1;
+        }
+        for (var ani = 0; ani < nodes.length; ani++) {
+            var an = nodes[ani];
+            if (an.type !== 'fb' || an.isOperator) continue;
+            var add = fbPortAdds[an.id];
+            if (!add) continue;
+            // Work on a shallow clone so we never mutate schemaData.nodes
+            // (otherwise repeated renderSchema calls accumulate duplicates).
+            an = Object.assign({}, an);
+            nodes[ani] = an;
+            var cur = an.inputs ? an.inputs.slice() : [];
+            var curSet = {};
+            for (var ci = 0; ci < cur.length; ci++) curSet[cur[ci]] = 1;
+            for (var k in add.inputs) if (!curSet[k]) cur.push(k);
+            an.inputs = cur;
+            var curO = an.outputs ? an.outputs.slice() : [];
+            var curOSet = {};
+            for (var coi = 0; coi < curO.length; coi++) curOSet[curO[coi]] = 1;
+            for (var ko in add.outputs) if (!curOSet[ko]) curO.push(ko);
+            an.outputs = curO;
+        }
+    })();
+
+    // Connected mode: keep only FB/local nodes that participate in edges.
+    // I/O and GVL variables appear as CODESYS-style stub labels on edges.
+    var connIds = {};
+    for (var ei = 0; ei < edges.length; ei++) {
+        connIds[edges[ei].from] = true;
+        connIds[edges[ei].to] = true;
+    }
+    nodes = nodes.filter(function(n) {
+        if (n.type === 'input' || n.type === 'output') return false;
+        return connIds[n.id];
+    });
+
+    if (nodes.length === 0) {
+        schemaPlaceholder.textContent = 'No connected nodes';
+        schemaPlaceholder.style.display = '';
+        schemaContainer.querySelector('svg') && schemaContainer.removeChild(schemaContainer.querySelector('svg'));
+        return;
+    }
+    schemaPlaceholder.style.display = 'none';
+
+    // Build node map
+    schemaNodeMap = {};
+    var inputs = [], fbs = [], outputs = [];
+    for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        schemaNodeMap[n.id] = n;
+        if (n.type === 'input') inputs.push(n);
+        else if (n.type === 'output') outputs.push(n);
+        else fbs.push(n);
+    }
+
+    // Build adjacency: incoming and outgoing edges per node
+    var outEdges = {}, inEdges = {};
+    for (var ei = 0; ei < edges.length; ei++) {
+        var e = edges[ei];
+        if (!outEdges[e.from]) outEdges[e.from] = [];
+        outEdges[e.from].push(e);
+        if (!inEdges[e.to]) inEdges[e.to] = [];
+        inEdges[e.to].push(e);
+    }
+
+    // --- Sugiyama-style topological layering ---
+    // Step 1: Assign each node to a column (layer) based on dependency depth
+    var allIds = {};
+    for (var ni = 0; ni < nodes.length; ni++) allIds[nodes[ni].id] = true;
+
+    var nodeCol = {};  // node id -> column index
+    function getCol(nid, visiting) {
+        if (nid in nodeCol) return nodeCol[nid];
+        if (!visiting) visiting = {};
+        if (visiting[nid]) return 0;  // cycle guard
+        visiting[nid] = true;
+        var maxDep = -1;
+        var ins = inEdges[nid] || [];
+        for (var ii = 0; ii < ins.length; ii++) {
+            maxDep = Math.max(maxDep, getCol(ins[ii].from, visiting));
+        }
+        nodeCol[nid] = maxDep + 1;
+        return nodeCol[nid];
+    }
+    for (var nid in allIds) getCol(nid);
+
+    // Step 2: Group nodes by column
+    var colGroups = {};
+    var maxColIdx = 0;
+    for (var cid in nodeCol) {
+        var c = nodeCol[cid];
+        if (!colGroups[c]) colGroups[c] = [];
+        colGroups[c].push(cid);
+        if (c > maxColIdx) maxColIdx = c;
+    }
+
+    // Step 3: Within each column, order nodes to minimize edge crossings
+    // Heuristic: sort by median position of connected nodes in previous column
+    for (var col = 1; col <= maxColIdx; col++) {
+        var grp = colGroups[col];
+        if (!grp || grp.length <= 1) continue;
+        // Calculate barycenter for each node
+        var bary = {};
+        for (var gi = 0; gi < grp.length; gi++) {
+            var gid = grp[gi];
+            var ins2 = inEdges[gid] || [];
+            var positions = [];
+            for (var pi = 0; pi < ins2.length; pi++) {
+                var fromId = ins2[pi].from;
+                var prevGrp = colGroups[nodeCol[fromId]] || [];
+                var idx = prevGrp.indexOf(fromId);
+                if (idx >= 0) positions.push(idx);
+            }
+            bary[gid] = positions.length > 0
+                ? positions.reduce(function(a,b){return a+b;},0) / positions.length
+                : gi;
+        }
+        grp.sort(function(a, b) { return bary[a] - bary[b]; });
+    }
+
+    // Step 4: Separate connected vs unconnected nodes
+    var edgedNodes = {};
+    for (var ei2 = 0; ei2 < edges.length; ei2++) {
+        edgedNodes[edges[ei2].from] = true;
+        edgedNodes[edges[ei2].to] = true;
+    }
+
+    // Step 5: Assign rows — two-pass barycenter to minimize crossings
+    // Pass 1 (forward): assign rows to later columns based on predecessors
+    // Pass 2 (backward): adjust earlier columns based on successors
+    var nodeRow = {};
+    var nextRow = 0;
+
+    // First: assign rows to the LAST column (rightmost), then work backwards
+    // This ensures downstream FB get sequential rows, then inputs align to them.
+
+    // Assign rows right-to-left: start from max column
+    for (var rcol = maxColIdx; rcol >= 0; rcol--) {
+        var rgrp = colGroups[rcol] || [];
+        var connected = [];
+        for (var rgi = 0; rgi < rgrp.length; rgi++) {
+            if (edgedNodes[rgrp[rgi]]) connected.push(rgrp[rgi]);
+        }
+
+        if (rcol === maxColIdx) {
+            // Rightmost column: sequential rows
+            for (var ri = 0; ri < connected.length; ri++) {
+                nodeRow[connected[ri]] = ri;
+            }
+            if (connected.length > nextRow) nextRow = connected.length;
+        } else {
+            // Calculate ideal row from outgoing edges (barycenter of successors)
+            var idealRows = [];
+            for (var ci = 0; ci < connected.length; ci++) {
+                var cid2 = connected[ci];
+                var outs2 = outEdges[cid2] || [];
+                var targetRows = [];
+                for (var oi = 0; oi < outs2.length; oi++) {
+                    if (nodeRow[outs2[oi].to] !== undefined) {
+                        targetRows.push(nodeRow[outs2[oi].to]);
+                    }
+                }
+                var ideal;
+                if (targetRows.length > 0) {
+                    targetRows.sort(function(a,b){return a-b;});
+                    // Use the FIRST (topmost) target — keeps input close to its primary consumer
+                    ideal = targetRows[0];
+                } else {
+                    // No successors with rows — use incoming edge barycenter
+                    var ins3 = inEdges[cid2] || [];
+                    var srcRows2 = [];
+                    for (var si = 0; si < ins3.length; si++) {
+                        if (nodeRow[ins3[si].from] !== undefined) srcRows2.push(nodeRow[ins3[si].from]);
+                    }
+                    if (srcRows2.length > 0) {
+                        srcRows2.sort(function(a,b){return a-b;});
+                        ideal = srcRows2[Math.floor(srcRows2.length / 2)];
+                    } else {
+                        ideal = nextRow++;
+                    }
+                }
+                idealRows.push({ id: cid2, ideal: ideal });
+            }
+
+            // Sort by ideal row and assign, resolving conflicts
+            idealRows.sort(function(a,b) { return a.ideal - b.ideal; });
+            var usedInCol = {};
+            for (var ii2 = 0; ii2 < idealRows.length; ii2++) {
+                var r2 = idealRows[ii2].ideal;
+                while (usedInCol[r2]) r2++;
+                nodeRow[idealRows[ii2].id] = r2;
+                usedInCol[r2] = true;
+                if (r2 >= nextRow) nextRow = r2 + 1;
+            }
+        }
+    }
+
+    // Forward pass: fix any remaining unassigned
+    for (var fcol = 0; fcol <= maxColIdx; fcol++) {
+        var fgrp = colGroups[fcol] || [];
+        for (var fi = 0; fi < fgrp.length; fi++) {
+            if (edgedNodes[fgrp[fi]] && nodeRow[fgrp[fi]] === undefined) {
+                nodeRow[fgrp[fi]] = nextRow++;
+            }
+        }
+    }
+
+    // Step 6: Assign pixel positions
+    var nodePositions = {};
+    var cellW = Math.max(FBD_FB_W, FBD_IO_W) + FBD_GAP_X;
+
+    for (var col2 = 0; col2 <= maxColIdx; col2++) {
+        var grp2 = colGroups[col2] || [];
+        for (var gi2 = 0; gi2 < grp2.length; gi2++) {
+            var gid2 = grp2[gi2];
+            if (!edgedNodes[gid2]) continue;
+            var nd = schemaNodeMap[gid2];
+            if (!nd) continue;
+            var isIO = (nd.type === 'input' || nd.type === 'output');
+            var row = nodeRow[gid2] !== undefined ? nodeRow[gid2] : 0;
+            var ndH = isIO ? FBD_IO_H : (nd.type === 'fb' ? calcFBHeight(nd.fbType, nd) : FBD_FB_MIN_H);
+            nodePositions[gid2] = { col: col2, row: row, w: isIO ? FBD_IO_W : FBD_FB_W, h: ndH };
+        }
+    }
+
+    // Per-row max height + cumulative Y. Replaces a uniform global cellH
+    // which wasted vertical space: a single tall FB (e.g. 17-port Q_Control)
+    // used to force all 100+ rows to the same 400px spacing, producing a
+    // 40000px-tall schema. With per-row heights the bbox shrinks 3–4×.
+    var rowHeights = {};
+    var maxRowIdx = 0;
+    for (var pr in nodePositions) {
+        var pp = nodePositions[pr];
+        if (pp._directPos) continue;
+        if (rowHeights[pp.row] === undefined || pp.h > rowHeights[pp.row]) {
+            rowHeights[pp.row] = pp.h;
+        }
+        if (pp.row > maxRowIdx) maxRowIdx = pp.row;
+    }
+    var rowY = {};
+    var cumY = FBD_PAD;
+    for (var rr = 0; rr <= maxRowIdx; rr++) {
+        rowY[rr] = cumY;
+        cumY += (rowHeights[rr] || FBD_FB_MIN_H) + FBD_GAP_Y;
+    }
+
+    // Place unconnected nodes vertically, one per row, in column 0
+    var maxUsedRow = 0;
+    for (var mrid in nodeRow) {
+        if (nodeRow[mrid] > maxUsedRow) maxUsedRow = nodeRow[mrid];
+    }
+    // Collect unconnected nodes
+    var unconnectedList = [];
+    for (var col3 = 0; col3 <= maxColIdx; col3++) {
+        var grp3 = colGroups[col3] || [];
+        for (var gi3 = 0; gi3 < grp3.length; gi3++) {
+            if (!edgedNodes[grp3[gi3]]) unconnectedList.push(grp3[gi3]);
+        }
+    }
+
+    // Place unconnected nodes compactly below connected, using smaller spacing
+    if (unconnectedList.length > 0) {
+        // Calculate Y start: below last connected row
+        var maxConnY = FBD_PAD;
+        for (var mcy in nodePositions) {
+            var mp = nodePositions[mcy];
+            if (mp._directPos) continue;
+            var rowTopY = rowY[mp.row] !== undefined ? rowY[mp.row] : FBD_PAD;
+            var bottom = rowTopY + mp.h;
+            if (bottom > maxConnY) maxConnY = bottom;
+        }
+        var uncStartY = maxConnY + FBD_GAP_Y;
+        var uncSpacing = FBD_IO_H + FBD_UNCONNECTED_GAP;
+
+        for (var ui2 = 0; ui2 < unconnectedList.length; ui2++) {
+            var uid2 = unconnectedList[ui2];
+            var und = schemaNodeMap[uid2];
+            if (!und) continue;
+            var isIOu = (und.type === 'input' || und.type === 'output');
+            var uw = isIOu ? FBD_IO_W : FBD_FB_W;
+            var uh = isIOu ? FBD_IO_H : (und.type === 'fb' ? calcFBHeight(und.fbType, und) : FBD_FB_MIN_H);
+            // Direct pixel position — align X with column 0 center
+            und._x = FBD_PAD + (cellW - uw) / 2;
+            und._y = uncStartY + ui2 * uncSpacing;
+            und._w = uw;
+            und._h = uh;
+            nodePositions[uid2] = { col: 0, row: 0, w: uw, h: uh, _directPos: true };
+        }
+    }
+
+    // Step 6: Calculate actual pixel positions (skip nodes with direct positioning)
+    for (var pid in nodePositions) {
+        var pos = nodePositions[pid];
+        if (pos._directPos) continue;  // already positioned (unconnected)
+        var nd2 = schemaNodeMap[pid];
+        if (!nd2) continue;
+        var rY = rowY[pos.row] !== undefined ? rowY[pos.row] : FBD_PAD;
+        var rH = rowHeights[pos.row] || FBD_FB_MIN_H;
+        nd2._x = FBD_PAD + pos.col * cellW + (cellW - pos.w) / 2;
+        nd2._y = rY + (rH - pos.h) / 2;
+        nd2._w = pos.w;
+        nd2._h = pos.h;
+    }
+
+    // Compute port Y position for FB nodes
+    function getPortY(node, portIndex, totalPorts) {
+        if (totalPorts <= 0) return node._y + node._h / 2;
+        var spacing = node._h / (totalPorts + 1);
+        return node._y + spacing * (portIndex + 1);
+    }
+
+    // Calculate SVG bounds
+    var svgW = FBD_PAD * 2;
+    var svgH = FBD_PAD * 2;
+    for (var bid in nodePositions) {
+        var bnd = schemaNodeMap[bid];
+        if (!bnd) continue;
+        var right = bnd._x + bnd._w + FBD_PAD;
+        var bottom = bnd._y + bnd._h + FBD_PAD;
+        if (right > svgW) svgW = right;
+        if (bottom > svgH) svgH = bottom;
+    }
+    svgW = Math.max(svgW, 400);
+    svgH = Math.max(svgH, 200);
+
+    // Create SVG — 1:1 pixel size, scrollable container
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('width', svgW + 'px');
+    svg.setAttribute('height', svgH + 'px');
+    svg.setAttribute('viewBox', '0 0 ' + svgW + ' ' + svgH);
+
+    // Defs: arrow markers for active and inactive
+    var defs = document.createElementNS(SVG_NS, 'defs');
+
+    function createArrowMarker(id, color) {
+        var m = document.createElementNS(SVG_NS, 'marker');
+        m.setAttribute('id', id);
+        m.setAttribute('markerWidth', '5');
+        m.setAttribute('markerHeight', '4');
+        m.setAttribute('refX', '5');
+        m.setAttribute('refY', '2');
+        m.setAttribute('orient', 'auto');
+        var p = document.createElementNS(SVG_NS, 'path');
+        p.setAttribute('d', 'M0,0 L5,2 L0,4 Z');
+        p.setAttribute('fill', color);
+        m.appendChild(p);
+        return m;
+    }
+
+    defs.appendChild(createArrowMarker('arrow-active', CLR_GREEN));
+    defs.appendChild(createArrowMarker('arrow-inactive', CLR_INACTIVE));
+    svg.appendChild(defs);
+
+    // ---- Draw program group backgrounds (behind edges and nodes) ----
+    // Assign each FB node to the first program where it appears in a
+    // call-edge. Compute a tight bbox for all FBs in the same program
+    // and draw a translucent rect with a header label. The nodeProgram
+    // map is also published to the outer scope for the breadcrumb.
+    schemaNodeProgram = {};
+    (function drawProgramGroups() {
+        var nodeProgram = schemaNodeProgram;
+        for (var gei = 0; gei < edges.length; gei++) {
+            var ge = edges[gei];
+            if (!ge.program) continue;
+            if (ge.from && !nodeProgram[ge.from]) {
+                var sn = schemaNodeMap[ge.from];
+                if (sn && sn.type === 'fb') nodeProgram[ge.from] = ge.program;
+            }
+            if (ge.to && !nodeProgram[ge.to]) {
+                var tn = schemaNodeMap[ge.to];
+                if (tn && tn.type === 'fb') nodeProgram[ge.to] = ge.program;
+            }
+        }
+        // Group FBs by program and compute bbox
+        var groups = {};
+        for (var nid in nodeProgram) {
+            var pname = nodeProgram[nid];
+            var n = schemaNodeMap[nid];
+            if (!n || n._x === undefined) continue;
+            if (!groups[pname]) groups[pname] = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity, count: 0 };
+            var g = groups[pname];
+            if (n._x < g.minX) g.minX = n._x;
+            if (n._y < g.minY) g.minY = n._y;
+            if (n._x + n._w > g.maxX) g.maxX = n._x + n._w;
+            if (n._y + n._h > g.maxY) g.maxY = n._y + n._h;
+            g.count++;
+        }
+        // Skip groups of 1 (single-FB groups are noise)
+        var groupNames = Object.keys(groups).filter(function(k) { return groups[k].count >= 2; });
+        if (groupNames.length === 0) return;
+        // Stable hue from program name for consistent colours between reloads
+        function hueFromName(s) {
+            var h = 0;
+            for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffff;
+            return h % 360;
+        }
+        var PAD = 18;
+        var HEADER_H = 18;
+        // Sort groups by count descending so bigger groups are drawn first (bottom),
+        // smaller ones on top — avoids a giant group covering a small one.
+        groupNames.sort(function(a, b) { return groups[b].count - groups[a].count; });
+        for (var gi = 0; gi < groupNames.length; gi++) {
+            var gn = groupNames[gi];
+            var gb = groups[gn];
+            var hue = hueFromName(gn);
+            var x = gb.minX - PAD;
+            var y = gb.minY - PAD - HEADER_H;
+            var w = (gb.maxX - gb.minX) + 2 * PAD;
+            var h = (gb.maxY - gb.minY) + 2 * PAD + HEADER_H;
+            var grp = document.createElementNS(SVG_NS, 'g');
+            grp.setAttribute('class', 'program-group');
+            grp.setAttribute('data-program', gn);
+            var rect = document.createElementNS(SVG_NS, 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', w);
+            rect.setAttribute('height', h);
+            rect.setAttribute('rx', 6);
+            rect.setAttribute('ry', 6);
+            rect.setAttribute('fill', 'hsla(' + hue + ',50%,55%,0.05)');
+            rect.setAttribute('stroke', 'hsla(' + hue + ',50%,55%,0.35)');
+            rect.setAttribute('stroke-width', 1.5);
+            rect.setAttribute('stroke-dasharray', '6,4');
+            grp.appendChild(rect);
+            var label = document.createElementNS(SVG_NS, 'text');
+            label.setAttribute('x', x + 10);
+            label.setAttribute('y', y + 13);
+            label.setAttribute('fill', 'hsla(' + hue + ',60%,75%,0.9)');
+            label.setAttribute('font-size', 12);
+            label.setAttribute('font-family', 'monospace');
+            label.setAttribute('font-weight', 'bold');
+            label.textContent = gn + ' (' + gb.count + ')';
+            grp.appendChild(label);
+            svg.appendChild(grp);
+        }
+    })();
+
+    // Draw edges (behind nodes)
+    var EDGE_LABEL_OFFSET = 12;   // stub length for missing I/O endpoint
+
+    // Pre-filter edges that would actually be rendered (skip invisible ones)
+    var drawableEdges = [];
+    for (var defi = 0; defi < edges.length; defi++) {
+        var dfe = edges[defi];
+        var sN = schemaNodeMap[dfe.from];
+        var tN = schemaNodeMap[dfe.to];
+        // In Connected mode, skip assign edges unless the source is an FB
+        // (keeps FB-output→GVL writes, drops GVL→GVL noise).
+        if (dfe.kind === 'assign' && (!sN || sN.type !== 'fb')) continue;
+        if (!sN && !tN) continue;
+        if (sN && tN && (sN._x === undefined || tN._x === undefined)) continue;
+        drawableEdges.push(dfe);
+    }
+
+    // Group edges by destination pin — collapse only when multiple edges truly
+    // target the SAME pin:
+    //   - call edges: (to, toParam)
+    //   - assign edges with toField: (to, toField) — distinct target fields stay separate
+    //   - assign edges without toField: (from, to) — fallback (no field info, merge by src-dst pair)
+    var edgeGroups = {};
+    for (var dgi = 0; dgi < drawableEdges.length; dgi++) {
+        var ge = drawableEdges[dgi];
+        var key;
+        if (ge.kind === 'assign') {
+            if (ge.toField) key = 'AF:' + ge.to + '\x00' + ge.toField;
+            else key = 'A:' + ge.from + '\x00' + ge.to;
+        } else {
+            key = 'C:' + ge.to + '\x00' + (ge.toParam || '');
+        }
+        if (!edgeGroups[key]) edgeGroups[key] = [];
+        edgeGroups[key].push(ge);
+    }
+    // Build render list: for each group, keep first edge as representative, mark group size
+    var edgesToDraw = [];
+    for (var gk in edgeGroups) {
+        var grp = edgeGroups[gk];
+        var rep = grp[0];
+        if (grp.length > 1) {
+            // Clone representative and attach group data
+            var cloned = Object.assign({}, rep);
+            cloned._group = grp;
+            edgesToDraw.push(cloned);
+        } else {
+            edgesToDraw.push(rep);
+        }
+    }
+
+    for (var dei = 0; dei < edgesToDraw.length; dei++) {
+        var de = edgesToDraw[dei];
+        var srcN = schemaNodeMap[de.from];
+        var dstN = schemaNodeMap[de.to];
+
+        // Both missing — skip
+        if (!srcN && !dstN) continue;
+        // Both present but unpositioned — skip
+        if (srcN && dstN && (srcN._x === undefined || dstN._x === undefined)) continue;
+
+        // Source point
+        var x1, y1, srcLabel = null;
+        if (srcN && srcN._x !== undefined) {
+            if (srcN.type === 'fb') {
+                var srcPorts = getFBPorts(srcN.fbType, srcN);
+                var srcIdx = findPortIndex(srcPorts.outputs, de.fromField || 'Q');
+                x1 = srcN._x + srcN._w;
+                y1 = getPortY(srcN, srcIdx, srcPorts.outputs.length);
+            } else {
+                x1 = srcN._x + srcN._w;
+                y1 = srcN._y + srcN._h / 2;
+            }
+        } else if (dstN && dstN._x !== undefined) {
+            // Source is filtered I/O — draw stub from left
+            if (dstN.type === 'fb') {
+                var dstPorts2 = getFBPorts(dstN.fbType, dstN);
+                var dstParam2 = de.toParam || dstPorts2.inputs[0] || 'IN';
+                y1 = getPortY(dstN, findPortIndex(dstPorts2.inputs, dstParam2), dstPorts2.inputs.length);
+            } else {
+                y1 = dstN._y + dstN._h / 2;
+            }
+            x1 = dstN._x - EDGE_LABEL_OFFSET;
+            // Show "node.field" if fromField is present (disambiguates multiple
+            // fields read from the same GVL), otherwise just the node name.
+            srcLabel = formatEdgeEndpoint(de.from, de.fromField);
+        } else {
+            continue;
+        }
+
+        // Destination point
+        var x2, y2, dstLabel = null;
+        if (dstN && dstN._x !== undefined) {
+            if (dstN.type === 'fb') {
+                var dstPorts = getFBPorts(dstN.fbType, dstN);
+                var dstParam = de.toParam || dstPorts.inputs[0] || 'IN';
+                x2 = dstN._x;
+                y2 = getPortY(dstN, findPortIndex(dstPorts.inputs, dstParam), dstPorts.inputs.length);
+            } else {
+                x2 = dstN._x;
+                y2 = dstN._y + dstN._h / 2;
+            }
+        } else if (srcN && srcN._x !== undefined) {
+            // Dest is filtered I/O — draw stub to right
+            if (srcN.type === 'fb') {
+                var srcPorts2 = getFBPorts(srcN.fbType, srcN);
+                y2 = getPortY(srcN, findPortIndex(srcPorts2.outputs, de.fromField || 'Q'), srcPorts2.outputs.length);
+            } else {
+                y2 = srcN._y + srcN._h / 2;
+            }
+            x2 = srcN._x + srcN._w + EDGE_LABEL_OFFSET;
+            // Show "node.field" if toField is present (for assign edges that
+            // write to a specific GVL field), otherwise just the node name.
+            dstLabel = formatEdgeEndpoint(de.to, de.toField);
+        } else {
+            continue;
+        }
+
+        // Bezier curve
+        var dx = Math.abs(x2 - x1) * FBD_BEZIER_FACTOR;
+        var cx1 = x1 + dx, cx2 = x2 - dx;
+
+        var path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', 'M' + x1 + ',' + y1 + ' C' + cx1 + ',' + y1 + ' ' + cx2 + ',' + y2 + ' ' + x2 + ',' + y2);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', CLR_INACTIVE);
+        path.setAttribute('stroke-width', de.kind === 'assign' ? '1' : '1.5');
+        if (de.kind === 'assign') path.setAttribute('stroke-dasharray', '6,3');
+        path.setAttribute('marker-end', 'url(#arrow-inactive)');
+        path.setAttribute('data-edge-from', de.from);
+        path.setAttribute('data-edge-to', de.to);
+        path.setAttribute('data-edge-kind', de.kind || 'call');
+        if (de.fromField) path.setAttribute('data-edge-from-field', de.fromField);
+        svg.appendChild(path);
+
+        // CODESYS-style labels: source var name above wire at stub start
+        if (srcLabel) {
+            var lt = document.createElementNS(SVG_NS, 'text');
+            lt.setAttribute('x', x1 - 3);
+            lt.setAttribute('y', y1 - 3);
+            lt.setAttribute('fill', CLR_WIRE_LABEL);
+            lt.setAttribute('font-size', '9');
+            lt.setAttribute('text-anchor', 'end');
+            lt.setAttribute('font-family', 'monospace');
+            lt.textContent = srcLabel;
+            svg.appendChild(lt);
+        }
+        // Dest label (I/O var name above wire at stub end)
+        if (dstLabel) {
+            var lt2 = document.createElementNS(SVG_NS, 'text');
+            lt2.setAttribute('x', x2 + 3);
+            lt2.setAttribute('y', y2 - 3);
+            lt2.setAttribute('fill', CLR_WIRE_LABEL);
+            lt2.setAttribute('font-size', '9');
+            lt2.setAttribute('font-family', 'monospace');
+            lt2.textContent = dstLabel;
+            svg.appendChild(lt2);
+        }
+        // CODESYS-style: source variable name near destination input port (only for FB call edges)
+        if (!srcLabel && !de._group && dstN && dstN.type === 'fb' && de.kind === 'call' && de.from) {
+            // Operators have generic "OUT" field — show the operator id instead
+            // so multiple converging operator outputs are distinguishable.
+            var srcName;
+            if (srcN && srcN.isOperator) {
+                srcName = de.from;   // e.g. __op9_AND (the operator id)
+            } else if (de.fromField && srcN && srcN.type === 'fb' && !srcN.isOperator) {
+                // Regular FB with single visible port — fromField alone is enough
+                srcName = de.fromField;
+            } else {
+                srcName = de.fromField ? (de.from + '.' + de.fromField) : de.from;
+            }
+            var lbl = document.createElementNS(SVG_NS, 'text');
+            lbl.setAttribute('x', x2 - FBD_WIRE_LABEL_PAD);
+            lbl.setAttribute('y', y2 - 2);
+            lbl.setAttribute('fill', CLR_WIRE_LABEL);
+            lbl.setAttribute('font-size', '8');
+            lbl.setAttribute('text-anchor', 'end');
+            lbl.setAttribute('font-family', 'monospace');
+            lbl.textContent = srcName.length > 22 ? srcName.slice(0, 21) + '\u2026' : srcName;
+            svg.appendChild(lbl);
+        }
+        // Collapsed-edge badge: "…N" at destination end with tooltip listing all sources
+        if (de._group) {
+            var badgeG = document.createElementNS(SVG_NS, 'g');
+            badgeG.setAttribute('data-edge-group', '1');
+            var badgeW = 22, badgeH = 12;
+            var bx = x2 - badgeW - 3, by = y2 - badgeH / 2;
+            var brect = document.createElementNS(SVG_NS, 'rect');
+            brect.setAttribute('class', 'edge-badge');
+            brect.setAttribute('x', bx);
+            brect.setAttribute('y', by);
+            brect.setAttribute('width', badgeW);
+            brect.setAttribute('height', badgeH);
+            brect.setAttribute('rx', 2);
+            brect.setAttribute('ry', 2);
+            brect.setAttribute('fill', CLR_NODE_BG);
+            brect.setAttribute('stroke', 'var(--accent-orange)');
+            brect.setAttribute('stroke-width', '1');
+            badgeG.appendChild(brect);
+            var btxt = document.createElementNS(SVG_NS, 'text');
+            btxt.setAttribute('x', bx + badgeW / 2);
+            btxt.setAttribute('y', by + badgeH - 3);
+            btxt.setAttribute('text-anchor', 'middle');
+            btxt.setAttribute('font-size', '9');
+            btxt.setAttribute('font-family', 'monospace');
+            btxt.setAttribute('fill', 'var(--accent-orange)');
+            btxt.setAttribute('font-weight', 'bold');
+            btxt.setAttribute('pointer-events', 'none');
+            btxt.textContent = '\u2026' + de._group.length;
+            badgeG.appendChild(btxt);
+            // Attach group data to rect for tooltip handlers
+            brect._edgeGroup = de._group;
+            brect._edgeKind = de.kind;
+            brect._edgeTo = de.to;
+            brect._edgeToParam = de.toParam;
+            svg.appendChild(badgeG);
+        }
+    }
+
+    // Draw nodes
+    function drawFBNode(n) {
+        var g = document.createElementNS(SVG_NS, 'g');
+        g.setAttribute('data-node-id', n.id);
+
+        // Main rectangle
+        var rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', n._x);
+        rect.setAttribute('y', n._y);
+        rect.setAttribute('width', n._w);
+        rect.setAttribute('height', n._h);
+        rect.setAttribute('rx', '3');
+        rect.setAttribute('ry', '3');
+        rect.setAttribute('fill', CLR_NODE_BG);
+        rect.setAttribute('stroke', '#3274d9');
+        rect.setAttribute('stroke-width', '1.5');
+        g.appendChild(rect);
+
+        // Name label (top center)
+        var nameT = document.createElementNS(SVG_NS, 'text');
+        nameT.setAttribute('x', n._x + n._w / 2);
+        nameT.setAttribute('y', n._y + FBD_NAME_Y);
+        nameT.setAttribute('fill', CLR_NODE_BORDER);
+        nameT.setAttribute('font-size', '12');
+        nameT.setAttribute('text-anchor', 'middle');
+        nameT.setAttribute('font-family', 'monospace');
+        nameT.setAttribute('font-weight', 'bold');
+        nameT.textContent = n.id;
+        g.appendChild(nameT);
+
+        // Type label (below name)
+        var fbType = n.fbType || '';
+        if (fbType) {
+            var typeT = document.createElementNS(SVG_NS, 'text');
+            typeT.setAttribute('x', n._x + n._w / 2);
+            typeT.setAttribute('y', n._y + FBD_TYPE_Y);
+            typeT.setAttribute('fill', CLR_TEXT_SEC);
+            typeT.setAttribute('font-size', '10');
+            typeT.setAttribute('text-anchor', 'middle');
+            typeT.setAttribute('font-family', 'monospace');
+            typeT.textContent = fbType;
+            g.appendChild(typeT);
+        }
+
+        // Draw ports (input on left, output on right)
+        var ports = getFBPorts(fbType, n);
+        function drawPort(portName, portIdx, totalPorts, isOutput) {
+            var py = getPortY(n, portIdx, totalPorts);
+            var cx = isOutput ? n._x + n._w : n._x;
+            var lampKey = isOutput ? n.id + '.' + portName : n.id + '._in.' + portName;
+
+            var circ = document.createElementNS(SVG_NS, 'circle');
+            circ.setAttribute('cx', cx);
+            circ.setAttribute('cy', py);
+            circ.setAttribute('r', FBD_PORT_R);
+            circ.setAttribute('fill', CLR_NODE_BG);
+            circ.setAttribute('stroke', CLR_NODE_BORDER);
+            circ.setAttribute('stroke-width', '1');
+            circ.setAttribute('data-port-lamp', lampKey);
+            g.appendChild(circ);
+
+            var lbl = document.createElementNS(SVG_NS, 'text');
+            lbl.setAttribute('class', 'port-label');
+            lbl.setAttribute('x', isOutput ? cx - FBD_PORT_R - FBD_PORT_LABEL_PAD : cx + FBD_PORT_R + FBD_PORT_LABEL_PAD);
+            lbl.setAttribute('y', py + FBD_PORT_LABEL_DY);
+            lbl.setAttribute('fill', CLR_TEXT_SEC);
+            lbl.setAttribute('font-size', '9');
+            lbl.setAttribute('font-family', 'monospace');
+            if (isOutput) lbl.setAttribute('text-anchor', 'end');
+            lbl.textContent = portName;
+            g.appendChild(lbl);
+
+            // Live value chip below the port name (separate line inside the block)
+            var valT = document.createElementNS(SVG_NS, 'text');
+            valT.setAttribute('class', 'port-value');
+            valT.setAttribute('data-port-value', lampKey);
+            // Same X alignment as the port name label, one line below
+            valT.setAttribute('x', isOutput
+                ? cx - FBD_PORT_R - FBD_PORT_LABEL_PAD
+                : cx + FBD_PORT_R + FBD_PORT_LABEL_PAD);
+            if (isOutput) valT.setAttribute('text-anchor', 'end');
+            valT.setAttribute('y', py + FBD_PORT_LABEL_DY + FBD_PORT_VALUE_DY);
+            valT.setAttribute('fill', CLR_GREEN);
+            valT.setAttribute('font-size', '10');
+            valT.setAttribute('font-family', 'monospace');
+            g.appendChild(valT);
+        }
+        for (var ip = 0; ip < ports.inputs.length; ip++) drawPort(ports.inputs[ip], ip, ports.inputs.length, false);
+        for (var op = 0; op < ports.outputs.length; op++) drawPort(ports.outputs[op], op, ports.outputs.length, true);
+
+        svg.appendChild(g);
+    }
+
+    function drawIONode(n) {
+        var g = document.createElementNS(SVG_NS, 'g');
+        g.setAttribute('data-node-id', n.id);
+
+        var isInput = (n.type === 'input');
+        var isLocal = (n.type === 'local');
+        var markerColor = isLocal ? '#b877d9' : (isInput ? CLR_GREEN : '#f2495c');
+
+        // Small colored marker dot (not for local/GVL nodes)
+        if (!isLocal) {
+            var dot = document.createElementNS(SVG_NS, 'circle');
+            dot.setAttribute('cx', isInput ? n._x + n._w + FBD_IO_MARKER_R : n._x - FBD_IO_MARKER_R);
+            dot.setAttribute('cy', n._y + n._h / 2);
+            dot.setAttribute('r', FBD_IO_MARKER_R);
+            dot.setAttribute('fill', markerColor);
+            g.appendChild(dot);
+        }
+
+        // Compact background pill
+        var rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('x', n._x);
+        rect.setAttribute('y', n._y);
+        rect.setAttribute('width', n._w);
+        rect.setAttribute('height', n._h);
+        rect.setAttribute('rx', '8');
+        rect.setAttribute('ry', '8');
+        rect.setAttribute('fill', '#1a1d21');
+        rect.setAttribute('stroke', markerColor);
+        rect.setAttribute('stroke-width', '1');
+        rect.setAttribute('stroke-dasharray', '4,2');
+        rect.setAttribute('opacity', '0.7');
+        g.appendChild(rect);
+
+        // Name label (bold)
+        var nameT = document.createElementNS(SVG_NS, 'text');
+        nameT.setAttribute('x', n._x + n._w / 2);
+        nameT.setAttribute('y', n._y + FBD_IO_NAME_Y);
+        nameT.setAttribute('fill', markerColor);
+        nameT.setAttribute('font-size', '11');
+        nameT.setAttribute('text-anchor', 'middle');
+        nameT.setAttribute('font-family', 'monospace');
+        nameT.setAttribute('font-weight', 'bold');
+        nameT.textContent = n.id;
+        g.appendChild(nameT);
+
+        // Value text (updated live)
+        var valT = document.createElementNS(SVG_NS, 'text');
+        valT.setAttribute('x', n._x + n._w / 2);
+        valT.setAttribute('y', n._y + FBD_IO_VALUE_Y);
+        valT.setAttribute('fill', CLR_NODE_BORDER);
+        valT.setAttribute('font-size', '11');
+        valT.setAttribute('text-anchor', 'middle');
+        valT.setAttribute('font-family', 'monospace');
+        valT.setAttribute('data-value-for', n.id);
+        valT.textContent = '--';
+        g.appendChild(valT);
+
+        // Connection points
+        if (isLocal) {
+            // Local/GVL nodes: both sides (can be source and target)
+            var cpL = document.createElementNS(SVG_NS, 'circle');
+            cpL.setAttribute('cx', n._x);
+            cpL.setAttribute('cy', n._y + n._h / 2);
+            cpL.setAttribute('r', FBD_IO_CONN_R);
+            cpL.setAttribute('fill', CLR_NODE_BORDER);
+            g.appendChild(cpL);
+            var cpR = document.createElementNS(SVG_NS, 'circle');
+            cpR.setAttribute('cx', n._x + n._w);
+            cpR.setAttribute('cy', n._y + n._h / 2);
+            cpR.setAttribute('r', FBD_IO_CONN_R);
+            cpR.setAttribute('fill', CLR_NODE_BORDER);
+            g.appendChild(cpR);
+        } else {
+            // Input: right side; Output: left side
+            var cp = document.createElementNS(SVG_NS, 'circle');
+            cp.setAttribute('cx', isInput ? n._x + n._w : n._x);
+            cp.setAttribute('cy', n._y + n._h / 2);
+            cp.setAttribute('r', FBD_IO_CONN_R);
+            cp.setAttribute('fill', CLR_NODE_BORDER);
+            g.appendChild(cp);
+        }
+
+        svg.appendChild(g);
+    }
+
+    // Render all nodes (on top of edges)
+    for (var ndi = 0; ndi < nodes.length; ndi++) {
+        var nd3 = nodes[ndi];
+        if (nd3._x === undefined) continue;
+        if (nd3.type === 'fb') {
+            drawFBNode(nd3);
+        } else {
+            drawIONode(nd3);
+        }
+    }
+
+    // Remove previous main svg and placeholder; minimap lives outside this
+    // container now and is not affected.
+    var oldSvg = schemaContainer.querySelector(':scope > svg');
+    if (oldSvg) schemaContainer.removeChild(oldSvg);
+    var ph = document.getElementById('schema-placeholder');
+    if (ph && ph.parentNode === schemaContainer) ph.parentNode.removeChild(ph);
+    schemaContainer.appendChild(svg);
+    buildMinimap(svg, svgW, svgH);
+    updateMinimapViewport();
+    updateBreadcrumbNow();
+}
+
+// ---- Click-to-highlight connections ----
+var schemaSelectedNodeId = null;
+
+function clearHighlight() {
+    schemaSelectedNodeId = null;
+    var svg = schemaContainer.querySelector(':scope > svg');
+    if (!svg) return;
+    svg.classList.remove('hi-active');
+    var marked = svg.querySelectorAll('.hi-selected, .hi-neighbor, .hi-edge');
+    for (var i = 0; i < marked.length; i++) {
+        marked[i].classList.remove('hi-selected', 'hi-neighbor', 'hi-edge');
+    }
+}
+
+function highlightNode(nodeId) {
+    var svg = schemaContainer.querySelector(':scope > svg');
+    if (!svg || !schemaData) return;
+    // Toggle: clicking the same node clears
+    if (schemaSelectedNodeId === nodeId) {
+        clearHighlight();
+        return;
+    }
+    clearHighlight();
+    schemaSelectedNodeId = nodeId;
+    svg.classList.add('hi-active');
+
+    var selectedG = svg.querySelector('g[data-node-id="' + cssEscape(nodeId) + '"]');
+    if (selectedG) selectedG.classList.add('hi-selected');
+
+    // Mark all directly-connected neighbors and their edges
+    var edges = schemaData.edges || [];
+    var neighbors = {};
+    var edgePaths = svg.querySelectorAll('path[data-edge-from]');
+    for (var ei = 0; ei < edgePaths.length; ei++) {
+        var p = edgePaths[ei];
+        var from = p.getAttribute('data-edge-from');
+        var to = p.getAttribute('data-edge-to');
+        if (from === nodeId || to === nodeId) {
+            p.classList.add('hi-edge');
+            var other = (from === nodeId) ? to : from;
+            neighbors[other] = 1;
+        }
+    }
+    for (var nid in neighbors) {
+        var ng = svg.querySelector('g[data-node-id="' + cssEscape(nid) + '"]');
+        if (ng) ng.classList.add('hi-neighbor');
+    }
+}
+
+// CSS.escape polyfill — escape characters special in CSS attribute selectors.
+// Needed because FB instance names can contain dots, brackets, etc.
+function cssEscape(s) {
+    if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/([^\w-])/g, '\\$1');
+}
+
+// ---- Breadcrumb: nearest FB + its program in viewport centre ----
+var breadcrumbEl = document.getElementById('schema-breadcrumb');
+var breadcrumbTimer = null;
+function updateBreadcrumbNow() {
+    if (!breadcrumbEl || !schemaData) return;
+    var z = (typeof schemaZoom === 'number' && schemaZoom > 0) ? schemaZoom : 1;
+    // Viewport centre in main-SVG coordinates (pre-zoom)
+    var cx = (schemaContainer.scrollLeft + schemaContainer.clientWidth / 2) / z;
+    var cy = (schemaContainer.scrollTop + schemaContainer.clientHeight / 2) / z;
+    // Find nearest FB node by centre distance
+    var best = null;
+    var bestDist = Infinity;
+    var nodes = schemaData.nodes || [];
+    for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n.type !== 'fb' || n._x === undefined) continue;
+        var ncx = n._x + n._w / 2;
+        var ncy = n._y + n._h / 2;
+        var dx = ncx - cx, dy = ncy - cy;
+        var d = dx * dx + dy * dy;
+        if (d < bestDist) { bestDist = d; best = n; }
+    }
+    if (!best) { breadcrumbEl.innerHTML = ''; return; }
+    var program = schemaNodeProgram[best.id] || '';
+    var html = '';
+    if (program) {
+        html += '<span class="bc-program" data-bc-program="' + escHtml(program) + '">' + escHtml(program) + '</span>';
+        html += '<span class="bc-sep">&gt;</span>';
+    }
+    html += '<span class="bc-fb" data-bc-fb="' + escHtml(best.id) + '">' + escHtml(best.id) + '</span>';
+    breadcrumbEl.innerHTML = html;
+}
+function scheduleBreadcrumbUpdate() {
+    if (breadcrumbTimer) return;
+    breadcrumbTimer = setTimeout(function() {
+        breadcrumbTimer = null;
+        updateBreadcrumbNow();
+    }, BREADCRUMB_THROTTLE_MS);
+}
+schemaContainer.addEventListener('scroll', scheduleBreadcrumbUpdate);
+if (breadcrumbEl) {
+    breadcrumbEl.addEventListener('click', function(e) {
+        var p = e.target.closest('[data-bc-program]');
+        if (p) {
+            selectProgram(p.getAttribute('data-bc-program'));
+            return;
+        }
+        var f = e.target.closest('[data-bc-fb]');
+        if (f) {
+            var id = f.getAttribute('data-bc-fb');
+            var svg = schemaContainer.querySelector(':scope > svg');
+            if (!svg) return;
+            var g = svg.querySelector('g[data-node-id="' + cssEscape(id) + '"]');
+            if (g) g.scrollIntoView({ block: 'center', inline: 'center' });
+            highlightNode(id);
+        }
+    });
+}
+
+// ---- Minimap overview ----
+// State for mapping between minimap SVG and the full schema.
+var minimapState = { scale: 1, svgW: 0, svgH: 0 };
+
+function buildMinimap(mainSvg, svgW, svgH) {
+    var mmSvg = document.getElementById('schema-minimap-svg');
+    if (!mmSvg || !schemaData) return;
+    mmSvg.innerHTML = '';
+
+    // Compute tight bounding box of FB nodes (avoids empty padding areas)
+    var nodes = schemaData._renderedNodes || schemaData.nodes || [];
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    var hasFb = false;
+    for (var bi = 0; bi < nodes.length; bi++) {
+        var bn = nodes[bi];
+        if (bn.type !== 'fb' || bn._x === undefined) continue;
+        hasFb = true;
+        if (bn._x < minX) minX = bn._x;
+        if (bn._y < minY) minY = bn._y;
+        if (bn._x + bn._w > maxX) maxX = bn._x + bn._w;
+        if (bn._y + bn._h > maxY) maxY = bn._y + bn._h;
+    }
+    if (!hasFb) {
+        minX = 0; minY = 0; maxX = svgW; maxY = svgH;
+    }
+    // Small margin around bbox
+    var bboxPad = 30;
+    minX -= bboxPad; minY -= bboxPad;
+    maxX += bboxPad; maxY += bboxPad;
+    var bboxW = maxX - minX;
+    var bboxH = maxY - minY;
+
+    mmSvg.setAttribute('viewBox', minX + ' ' + minY + ' ' + bboxW + ' ' + bboxH);
+    mmSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    minimapState.bboxX = minX;
+    minimapState.bboxY = minY;
+    minimapState.bboxW = bboxW;
+    minimapState.bboxH = bboxH;
+
+    // Dynamically size the minimap div to match schema aspect ratio
+    // within strict max/min bounds. For extreme aspect ratios (e.g. 1:7
+    // tall schemas), the SVG preserveAspectRatio="meet" will show the
+    // schema as a centered strip inside the box.
+    var mmDiv = document.getElementById('schema-minimap');
+    if (mmDiv) {
+        var MM_MAX_W = 280, MM_MAX_H = 280;
+        var MM_MIN_W = 100, MM_MIN_H = 100;
+        var aspect = bboxW / bboxH;
+        var mmW, mmH;
+        if (aspect >= 1) {
+            mmW = MM_MAX_W;
+            mmH = mmW / aspect;
+        } else {
+            mmH = MM_MAX_H;
+            mmW = mmH * aspect;
+        }
+        mmW = Math.max(MM_MIN_W, Math.min(MM_MAX_W, mmW));
+        mmH = Math.max(MM_MIN_H, Math.min(MM_MAX_H, mmH));
+        mmDiv.style.width = Math.round(mmW) + 'px';
+        mmDiv.style.height = Math.round(mmH) + 'px';
+    }
+
+    // Draw FB nodes only (keeps minimap readable)
+    for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n.type !== 'fb' || n._x === undefined) continue;
+        var rect = document.createElementNS(SVG_NS, 'rect');
+        rect.setAttribute('class', 'mm-node');
+        rect.setAttribute('x', n._x);
+        rect.setAttribute('y', n._y);
+        rect.setAttribute('width', n._w);
+        rect.setAttribute('height', n._h);
+        if (n.isOperator) rect.setAttribute('fill', '#8e8e8e');
+        mmSvg.appendChild(rect);
+    }
+
+    // Viewport frame — populated by updateMinimapViewport()
+    var frame = document.createElementNS(SVG_NS, 'rect');
+    frame.setAttribute('class', 'mm-viewport');
+    frame.setAttribute('id', 'mm-viewport-frame');
+    mmSvg.appendChild(frame);
+}
+
+function updateMinimapViewport() {
+    var frame = document.getElementById('mm-viewport-frame');
+    if (!frame) return;
+    var svg = schemaContainer.querySelector(':scope > svg');
+    if (!svg) return;
+    // Visible portion of the main SVG in its own coordinates
+    // (scrollLeft is in the transformed space, so divide by zoom)
+    var z = (typeof schemaZoom === 'number' && schemaZoom > 0) ? schemaZoom : 1;
+    var vx = schemaContainer.scrollLeft / z;
+    var vy = schemaContainer.scrollTop / z;
+    var vw = schemaContainer.clientWidth / z;
+    var vh = schemaContainer.clientHeight / z;
+    frame.setAttribute('x', vx);
+    frame.setAttribute('y', vy);
+    frame.setAttribute('width', vw);
+    frame.setAttribute('height', vh);
+}
+
+// Compute main-svg coordinates from a minimap client event.
+// preserveAspectRatio="xMidYMid meet" — uniform scale, centered.
+function minimapCoordsFromEvent(ev) {
+    var mmSvg = document.getElementById('schema-minimap-svg');
+    var rect = mmSvg.getBoundingClientRect();
+    var bboxW = minimapState.bboxW || 1;
+    var bboxH = minimapState.bboxH || 1;
+    var scale = Math.min(rect.width / bboxW, rect.height / bboxH);
+    var dispW = bboxW * scale;
+    var dispH = bboxH * scale;
+    var offX = (rect.width - dispW) / 2;
+    var offY = (rect.height - dispH) / 2;
+    var px = (ev.clientX - rect.left - offX) / scale;
+    var py = (ev.clientY - rect.top - offY) / scale;
+    return {
+        x: minimapState.bboxX + px,
+        y: minimapState.bboxY + py,
+    };
+}
+
+function scrollSchemaToCenter(cx, cy) {
+    var z = (typeof schemaZoom === 'number' && schemaZoom > 0) ? schemaZoom : 1;
+    schemaContainer.scrollLeft = cx * z - schemaContainer.clientWidth / 2;
+    schemaContainer.scrollTop = cy * z - schemaContainer.clientHeight / 2;
+}
+
+// Track last observed port values so we can briefly pulse the lamp when a
+// value changes between snapshot polls.
+var prevPortValues = {};
+var prevPortInitialized = false;
+
+// Per-port ring buffer of recent values for the sparkline hover tooltip.
+// Only ports that ever resolve to a non-undefined value are stored.
+var portHistory = {};
+var PORT_HISTORY_MAX = 60;
+
+function triggerPulse(el) {
+    el.classList.remove('pulse');
+    // Force reflow so the animation restarts even if the class is already applied.
+    void el.getBoundingClientRect().width;
+    el.classList.add('pulse');
+}
+
+// Reverse lookup: "fbId\0paramName" → edge, built once per render in
+// renderSchema and used by resolvePortValue to avoid O(N×M) scans on
+// every poll (previously iterated all edges for every input lamp).
+var edgeLookup = {};
+
+function buildEdgeLookup(edges) {
+    edgeLookup = {};
+    for (var i = 0; i < edges.length; i++) {
+        var e = edges[i];
+        if (e.to && e.toParam) {
+            edgeLookup[e.to + '\x00' + e.toParam] = e;
+        }
+    }
+}
+
+// Resolve the current value of a port identified by a lamp/chip key like
+// "FB.Q" (output) or "FB._in.IN" (input, traced back to the source edge).
+// Mirrors the runtime's port binding semantics so lamps and value chips
+// both see the same values. Uses edgeLookup for O(1) input-port resolution.
+function resolvePortValue(portKey, vars) {
+    if (portKey.indexOf('._in.') < 0) {
+        // Output port: direct lookup
+        return vars[portKey];
+    }
+    // Input port: find the incoming edge via pre-built lookup
+    var parts = portKey.split('._in.');
+    var fbId = parts[0], paramName = parts[1];
+    var edge = edgeLookup[fbId + '\x00' + paramName];
+    if (edge) {
+        var srcNode = schemaNodeMap[edge.from];
+        if (srcNode && srcNode.type === 'fb') {
+            var ev = vars[edge.from + '.' + (edge.fromField || 'Q')];
+            if (ev !== undefined) return ev;
+        } else if (srcNode) {
+            var sv = vars[resolveVarName(srcNode)];
+            if (sv !== undefined) return sv;
+        } else {
+            var v = vars[edge.from];
+            if (v !== undefined) return v;
+            v = vars['in_' + edge.from];
+            if (v !== undefined) return v;
+        }
+    }
+    // Fallback: for user FBs with _debug_meta, the input field is directly
+    // readable as vars["FB.paramName"] (set by uniset_debug_watch).
+    return vars[fbId + '.' + paramName];
+}
+
+function updateSchemaValues(vars) {
+    if (!schemaData || activeTab !== 'schema') return;
+    var svg = schemaContainer.querySelector('svg');
+    if (!svg) return;
+
+    // Update IO node value texts
+    var valTexts = svg.querySelectorAll('[data-value-for]');
+    for (var i = 0; i < valTexts.length; i++) {
+        var el = valTexts[i];
+        var nodeId = el.getAttribute('data-value-for');
+        var node = schemaNodeMap[nodeId];
+        if (!node) continue;
+        var varName = resolveVarName(node);
+        var val = vars[varName];
+        if (val === undefined) {
+            // Try direct lookup by id
+            val = vars[nodeId];
+        }
+        if (val !== undefined) {
+            if (typeof val === 'boolean') {
+                el.textContent = val ? '\u25CF true' : '\u25CB false';
+                el.setAttribute('fill', val ? CLR_GREEN : CLR_TEXT_SEC);
+            } else {
+                el.textContent = String(val);
+                el.setAttribute('fill', CLR_NODE_BORDER);
+            }
+        }
+    }
+
+    // Update FB port lamps (fill green when value is true/nonzero)
+    var portLamps = svg.querySelectorAll('[data-port-lamp]');
+    for (var li = 0; li < portLamps.length; li++) {
+        var lamp = portLamps[li];
+        var portKey = lamp.getAttribute('data-port-lamp');
+        var portVal = resolvePortValue(portKey, vars);
+
+        if (portVal === undefined) continue;
+        if (portVal) {
+            setLampColors(lamp, CLR_GREEN, CLR_GREEN);
+        } else {
+            setLampColors(lamp, CLR_NODE_BG, CLR_NODE_BORDER);
+        }
+        // Pulse halo on change. Serialize to a string so struct-valued ports
+        // (e.g. Q_Control.State) don't pulse every poll on reference-inequality.
+        // Skip the very first poll to avoid an initial flood.
+        var cur = (portVal !== null && typeof portVal === 'object') ? JSON.stringify(portVal) : String(portVal);
+        var prev = prevPortValues[portKey];
+        if (prevPortInitialized && prev !== undefined && prev !== cur) {
+            triggerPulse(lamp);
+        }
+        prevPortValues[portKey] = cur;
+        // Ring-buffer for the sparkline tooltip: skip structs (not plottable),
+        // store numeric or boolean values only.
+        if (typeof portVal === 'number' || typeof portVal === 'boolean') {
+            var hist = portHistory[portKey];
+            if (!hist) { hist = []; portHistory[portKey] = hist; }
+            hist.push(typeof portVal === 'boolean' ? (portVal ? 1 : 0) : portVal);
+            if (hist.length > PORT_HISTORY_MAX) hist.shift();
+        }
+    }
+    prevPortInitialized = true;
+
+    // Update port value chips (uses the same lamp keys / resolution logic)
+    var portVals = svg.querySelectorAll('[data-port-value]');
+    for (var pvi = 0; pvi < portVals.length; pvi++) {
+        var vEl = portVals[pvi];
+        var vVal = resolvePortValue(vEl.getAttribute('data-port-value'), vars);
+        var formatted = formatPortValue(vVal);
+        if (vEl.textContent !== formatted) vEl.textContent = formatted;
+    }
+
+    // Update edge colors based on source value
+    var edgePaths = svg.querySelectorAll('[data-edge-from]');
+    for (var ei = 0; ei < edgePaths.length; ei++) {
+        var ep = edgePaths[ei];
+        var fromId = ep.getAttribute('data-edge-from');
+        var fromField = ep.getAttribute('data-edge-from-field');
+        var srcNode = schemaNodeMap[fromId];
+        if (!srcNode) continue;
+
+        var srcVar;
+        if (srcNode.type === 'fb') {
+            srcVar = srcNode.id + '.' + (fromField || 'Q');
+        } else {
+            srcVar = resolveVarName(srcNode);
+            if (vars[srcVar] === undefined) srcVar = fromId;
+        }
+
+        var srcVal = vars[srcVar];
+        var isActive = srcVal !== undefined &&
+            (srcVal === true || srcVal === 1 || (typeof srcVal === 'number' && srcVal !== 0));
+        ep.setAttribute('stroke', isActive ? CLR_GREEN : CLR_INACTIVE);
+        ep.setAttribute('stroke-width', isActive ? '2' : '1.5');
+        ep.setAttribute('marker-end', isActive ? 'url(#arrow-active)' : 'url(#arrow-inactive)');
+    }
+}
+
+// ---- Group variables ----
+function groupVars(vars, forcedList) {
+    var groups = {inputs: [], outputs: [], locals: [], fb_instances: []};
+    var forcedSet = {};
+    if (forcedList) {
+        for (var fi = 0; fi < forcedList.length; fi++) forcedSet[forcedList[fi]] = true;
+    }
+    var keys = Object.keys(vars).sort();
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        var entry = {name: k, value: vars[k], forced: !!forcedSet[k]};
+        if (k.indexOf('in_') === 0) groups.inputs.push(entry);
+        else if (k.indexOf('out_') === 0) groups.outputs.push(entry);
+        else if (k.indexOf('.') >= 0) groups.fb_instances.push(entry);
+        else groups.locals.push(entry);
+    }
+    return groups;
+}
+
+// ---- Render variables panel ----
+function renderVarsPanel(vars, forcedList) {
+    var groups = groupVars(vars, forcedList);
+    var groupDefs = [
+        {key: 'inputs', label: 'Inputs (in_*)'},
+        {key: 'outputs', label: 'Outputs (out_*)'},
+        {key: 'locals', label: 'Locals'},
+        {key: 'fb_instances', label: 'FB Instances'}
+    ];
+    var html = '';
+    for (var gi = 0; gi < groupDefs.length; gi++) {
+        var gd = groupDefs[gi];
+        var items = groups[gd.key];
+        if (items.length === 0) continue;
+        var collapsed = !!collapsedGroups[gd.key];
+        html += '<div class="section">';
+        html += '<div class="section-header" onclick="toggleGroup(\'' + gd.key + '\')">';
+        html += '<span class="arrow' + (collapsed ? ' collapsed' : '') + '">&#9660;</span>';
+        html += escHtml(gd.label);
+        html += '<span class="count">' + items.length + '</span></div>';
+        if (!collapsed) {
+            html += '<table class="var-table"><thead><tr><th>Name</th><th>Value</th><th>Type</th><th>Changed</th></tr></thead><tbody>';
+            for (var vi = 0; vi < items.length; vi++) {
+                var it = items[vi];
+                var prev = prevVars[it.name];
+                var changed = prev !== undefined && prev !== it.value;
+                var flashClass = '';
+                if (changed && typeof it.value === 'number' && typeof prev === 'number') {
+                    flashClass = it.value > prev ? ' flash-up' : ' flash-down';
+                } else if (changed) {
+                    flashClass = ' flash-up';
+                }
+                var cellId = 'val-' + it.name.replace(/[^a-zA-Z0-9_]/g, '_');
+                var escapedName = it.name.replace(/'/g, "\\'");
+                var trendInfo = trendSelected[it.name];
+                var selClass = trendInfo ? ' selected-trend' : '';
+                var forcedClass = it.forced ? ' forced-row' : '';
+                html += '<tr class="' + selClass + forcedClass + '" onclick="onVarRowClick(\'' + escapedName + '\')" oncontextmenu="onVarRowContext(event,\'' + escapedName + '\')">';
+                html += '<td>' + escHtml(it.name);
+                if (it.forced) html += '<span class="forced-indicator" title="FORCED">&#128274; F</span>';
+                if (trendInfo) html += '<span style="color:' + trendInfo.color + ';margin-left:4px;font-size:10px">&#9679;</span>';
+                html += '</td>';
+                html += '<td class="val-cell' + flashClass + '" id="' + cellId + '">' + formatValue(it.name, it.value) + '</td>';
+                html += '<td class="type-col">' + escHtml(detectType(it.value)) + '</td>';
+                html += '<td>' + (changed ? '&#8226;' : '') + '</td></tr>';
+            }
+            html += '</tbody></table>';
+        }
+        html += '</div>';
+    }
+    varsContent.innerHTML = html;
+    var flashCells = varsContent.querySelectorAll('.flash-up,.flash-down');
+    for (var fc = 0; fc < flashCells.length; fc++) {
+        (function(el) { setTimeout(function() { el.classList.remove('flash-up', 'flash-down'); }, 500); })(flashCells[fc]);
+    }
+}
+
+window.toggleGroup = function(key) { collapsedGroups[key] = !collapsedGroups[key]; };
+window.onVarRowClick = function(varName) { toggleTrendVar(varName); };
+
+// ---- FB instances detection and rendering ----
+function detectFBInstances(vars) {
+    var fbMap = {};
+    var keys = Object.keys(vars);
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        var dot = k.indexOf('.');
+        if (dot < 0) continue;
+        var instName = k.substring(0, dot);
+        var field = k.substring(dot + 1);
+        if (!fbMap[instName]) fbMap[instName] = {};
+        fbMap[instName][field] = vars[k];
+    }
+    return fbMap;
+}
+
+function guessFBType(instName, fields) {
+    if (programMeta && programMeta.fb_instances) {
+        for (var i = 0; i < programMeta.fb_instances.length; i++) {
+            var m = programMeta.fb_instances[i];
+            if (m.name === instName) return m.type || '';
+        }
+    }
+    if ('ET' in fields && 'PT' in fields && 'Q' in fields) return 'TON';
+    if ('CV' in fields && 'PV' in fields) return 'CTU';
+    if ('Q1' in fields) return 'RS';
+    if ('Q' in fields && Object.keys(fields).length <= 3) return 'R_TRIG';
+    return '';
+}
+
+function renderLamp(val, label) {
+    return '<span class="fb-field"><span class="label">' + escHtml(label) + '</span><span class="lamp ' + (val ? 'on' : 'off') + '"></span><span style="margin-left:4px">' + (val ? 'ON' : 'OFF') + '</span></span>';
+}
+function renderProgress(current, max, label) {
+    var pct = max > 0 ? Math.min(100, (current / max) * 100) : 0;
+    return '<div class="fb-field"><span class="label">' + escHtml(label) + '</span><div class="progress-container" style="flex:1;position:relative"><div class="progress-wrap"><div class="progress-bar" style="width:' + pct.toFixed(1) + '%"></div></div><div class="progress-text">' + current + ' / ' + max + '</div></div></div>';
+}
+function renderGauge(current, max, label) {
+    return '<div class="fb-field"><span class="label">' + escHtml(label) + '</span><span class="gauge-val">' + current + '</span>' + (max !== undefined ? '<span class="gauge-max"> / ' + max + '</span>' : '') + '</div>';
+}
+
+function renderFBCard(instName, fields, fbType) {
+    var type = fbType.toUpperCase();
+    var html = '<div class="fb-card" data-fb-name="' + escHtml(instName) + '" title="Double-click to locate on schema">';
+    html += '<div class="fb-card-title">' + escHtml(instName) + ' <span class="fb-type">' + escHtml(type) + '</span></div>';
+    if (type === 'TON' || type === 'TOF' || type === 'TP') {
+        html += renderProgress(fields.ET || 0, fields.PT || 1, 'ET/PT');
+        html += renderLamp(fields.Q, 'Q');
+    } else if (type === 'CTU' || type === 'CTD' || type === 'CTUD') {
+        html += renderGauge(fields.CV || 0, fields.PV !== undefined ? fields.PV : '?', 'CV/PV');
+        html += renderLamp(fields.Q, 'Q');
+    } else if (type === 'RS' || type === 'SR') {
+        html += renderLamp(fields.Q1, 'Q1');
+    } else if (type === 'R_TRIG' || type === 'F_TRIG') {
+        html += renderLamp(fields.Q, 'Q');
+    } else if (type === 'PID') {
+        html += renderGauge(typeof fields.Y === 'number' ? fields.Y.toFixed(2) : fields.Y, undefined, 'Y');
+        if ('LIMITS_ACTIVE' in fields) html += renderLamp(fields.LIMITS_ACTIVE, 'LIMITS');
+        if ('OVERFLOW' in fields) html += renderLamp(fields.OVERFLOW, 'OVERFLOW');
+    } else if (type === 'BLINK') {
+        html += renderLamp(fields.OUT, 'OUT');
+    } else if (type === 'HYSTERESIS') {
+        html += renderLamp(fields.OUT, 'OUT');
+    } else {
+        var fkeys = Object.keys(fields);
+        for (var fi = 0; fi < fkeys.length; fi++) {
+            var fk = fkeys[fi], fv = fields[fk];
+            if (typeof fv === 'boolean' || fv === 0 || fv === 1) {
+                html += renderLamp(fv, fk);
+            } else {
+                html += '<div class="fb-field"><span class="label">' + escHtml(fk) + '</span><span>' + escHtml(String(fv)) + '</span></div>';
+            }
+        }
+    }
+    html += '</div>';
+    return html;
+}
+
+function renderFBPanel(vars) {
+    var fbMap = detectFBInstances(vars);
+    var names = Object.keys(fbMap).sort();
+    if (names.length === 0) {
+        fbContent.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px">No FB instances detected</div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < names.length; i++) {
+        html += renderFBCard(names[i], fbMap[names[i]], guessFBType(names[i], fbMap[names[i]]));
+    }
+    fbContent.innerHTML = html;
+    applyFbSearchFilter();
+}
+
+// ---- FB Status panel search + navigation ----
+var fbSearchQuery = '';
+
+function applyFbSearchFilter() {
+    var q = fbSearchQuery;
+    var cards = fbContent.querySelectorAll('.fb-card');
+    for (var i = 0; i < cards.length; i++) {
+        var name = cards[i].getAttribute('data-fb-name') || '';
+        var hide = q && name.toLowerCase().indexOf(q) < 0;
+        cards[i].classList.toggle('fb-hidden', !!hide);
+    }
+}
+
+fbSearchInput.addEventListener('input', function() {
+    fbSearchQuery = fbSearchInput.value.trim().toLowerCase();
+    applyFbSearchFilter();
+});
+
+// Double-click FB card → jump to the block on the schema
+fbContent.addEventListener('dblclick', function(e) {
+    var card = e.target.closest('.fb-card');
+    if (!card) return;
+    var name = card.getAttribute('data-fb-name');
+    if (!name) return;
+    // Switch to schema tab if needed
+    if (activeTab !== 'schema') switchTab('schema');
+    // Locate and scroll into view after a tick so layout settles
+    setTimeout(function() {
+        var svg = schemaContainer.querySelector(':scope > svg');
+        if (!svg) return;
+        var g = svg.querySelector('g[data-node-id="' + cssEscape(name) + '"]');
+        if (!g) return;
+        g.scrollIntoView({ block: 'center', inline: 'center' });
+        // Flash highlight via click-to-highlight system
+        highlightNode(name);
+    }, 50);
+});
+
+// ---- Control bar ----
+function updateControlBar(snapshot) {
+    cycleInfo.textContent = '#' + snapshot.cycle;
+    dtInfo.textContent = snapshot.dt_ms + 'ms';
+    var missed = snapshot.cycles_missed || 0;
+    missedInfo.textContent = missed + ' missed';
+    missedInfo.style.color = missed > 0 ? 'var(--accent-orange)' : 'var(--text-secondary)';
+}
+
+function showConnected(info) {
+    connected = true;
+    connDot.className = 'dot ok';
+    connText.textContent = 'Connected to ' + location.origin;
+    if (info && info.program) programNameEl.textContent = info.program;
+}
+
+function showDisconnected() {
+    connected = false;
+    connDot.className = 'dot err';
+    connText.textContent = 'Disconnected';
+}
+
+// ---- Main update ----
+function updateUI(snapshot) {
+    lastSnapshot = snapshot;
+    renderVarsPanel(snapshot.vars, snapshot.forced);
+    renderFBPanel(snapshot.vars);
+    // Trace panel removed (was showing raw IF @line/CASE @line — unreadable).
+    // _dbg_if / _dbg_case instrumentation still runs in codegen for potential
+    // future use; snapshot.trace data is simply ignored here.
+    updateControlBar(snapshot);
+    updateSchemaValues(snapshot.vars);
+    appendTrendData(snapshot.vars);
+    if (trendVarCount() > 0 && activeTab === 'trends') scheduleChartRedraw();
+    prevVars = {};
+    var keys = Object.keys(snapshot.vars);
+    for (var i = 0; i < keys.length; i++) prevVars[keys[i]] = snapshot.vars[keys[i]];
+}
+
+// ---- Splitter drag ----
+function attachSplitterDrag(splitterEl, onMove) {
+    var dragging = false;
+    splitterEl.addEventListener('mousedown', function(e) {
+        dragging = true;
+        splitterEl.classList.add('dragging');
+        e.preventDefault();
+        var startY = e.clientY;
+        function moveHandler(ev) {
+            if (!dragging) return;
+            onMove(ev, startY);
+        }
+        function upHandler() {
+            dragging = false;
+            splitterEl.classList.remove('dragging');
+            document.removeEventListener('mousemove', moveHandler);
+            document.removeEventListener('mouseup', upHandler);
+        }
+        document.addEventListener('mousemove', moveHandler);
+        document.addEventListener('mouseup', upHandler);
+    });
+}
+
+(function() {
+    var splitter = document.getElementById('splitter');
+    var app = document.getElementById('app');
+    attachSplitterDrag(splitter, function(e) {
+        var appRect = app.getBoundingClientRect();
+        var rightW = appRect.right - e.clientX;
+        if (rightW < RIGHT_PANEL_MIN_W) rightW = RIGHT_PANEL_MIN_W;
+        if (rightW > appRect.width * RIGHT_PANEL_MAX_W_RATIO) rightW = appRect.width * RIGHT_PANEL_MAX_W_RATIO;
+        app.style.gridTemplateColumns = '1fr 5px ' + rightW + 'px';
+    });
+})();
+
+// ---- Polling loop ----
+async function pollLoop() {
+    while (true) {
+        if (polling) {
+            try {
+                var resp = await fetch('/debug/snapshot');
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                var snapshot = await resp.json();
+                if (!connected) showConnected(null);
+                updateUI(snapshot);
+            } catch (e) {
+                showDisconnected();
+            }
+        }
+        await new Promise(function(r) { setTimeout(r, pollInterval); });
+    }
+}
+
+// ---- Persist view state ----
+// Save UI state (zoom, filters, toggles, tab) to localStorage per project
+// so the next page load restores the same view.
+var viewStateProgramName = null;
+var viewStateRestored = false;
+var viewStateSaveTimer = null;
+var VIEW_STATE_VERSION = 1;
+
+function viewStateKey() {
+    return 'uniset2-debug:state:' + (viewStateProgramName || 'default');
+}
+
+function loadViewState() {
+    try {
+        var raw = localStorage.getItem(viewStateKey());
+        if (!raw) return null;
+        var obj = JSON.parse(raw);
+        if (obj && obj.version === VIEW_STATE_VERSION) return obj;
+    } catch (e) { /* corrupt state — ignore */ }
+    return null;
+}
+
+function saveViewStateNow() {
+    if (!viewStateProgramName) return;
+    var state = {
+        version: VIEW_STATE_VERSION,
+        activeTab: activeTab,
+        // schemaMode removed — always Connected now
+        programFilter: schemaProgramFilter,
+        zoom: schemaZoom,
+        scrollLeft: schemaContainer.scrollLeft,
+        scrollTop: schemaContainer.scrollTop,
+        wiresOff: schemaContainer.classList.contains('no-wires'),
+        valuesUserOff: schemaValuesUserOff,
+        backgroundsOff: schemaContainer.classList.contains('no-backgrounds'),
+        minimapHidden: (function() {
+            var m = document.getElementById('schema-minimap');
+            return m ? m.classList.contains('hidden') : false;
+        })(),
+    };
+    try {
+        localStorage.setItem(viewStateKey(), JSON.stringify(state));
+    } catch (e) { /* storage full / disabled — ignore */ }
+}
+
+function scheduleSaveViewState() {
+    if (!viewStateRestored) return;  // don't save while restoring
+    if (viewStateSaveTimer) clearTimeout(viewStateSaveTimer);
+    viewStateSaveTimer = setTimeout(saveViewStateNow, VIEW_STATE_SAVE_DEBOUNCE_MS);
+}
+
+function applyViewStateEarly(state) {
+    if (!state) return;
+    // Program filter (value, display synced after schema loads via populate)
+    if (typeof state.programFilter === 'string') {
+        schemaProgramFilter = state.programFilter;
+    }
+    // Wires toggle
+    if (state.wiresOff) {
+        schemaContainer.classList.add('no-wires');
+    }
+    // Values toggle
+    if (state.valuesUserOff) {
+        schemaValuesUserOff = true;
+        schemaContainer.classList.add('no-values');
+    }
+    // Backgrounds toggle
+    if (state.backgroundsOff) {
+        schemaContainer.classList.add('no-backgrounds');
+    }
+    // Minimap collapsed
+    if (state.minimapHidden) {
+        var m = document.getElementById('schema-minimap');
+        var mOpen = document.getElementById('schema-minimap-open');
+        if (m) m.classList.add('hidden');
+        if (mOpen) mOpen.classList.add('visible');
+    }
+    // Active tab (switch only if not the default 'schema')
+    if (state.activeTab && state.activeTab !== 'schema') {
+        switchTab(state.activeTab);
+    }
+}
+
+function applyViewStateAfterRender(state) {
+    if (!state) return;
+    if (typeof state.zoom === 'number' && state.zoom > 0) {
+        schemaZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, state.zoom));
+        applySchemaZoom();
+    }
+    if (typeof state.scrollLeft === 'number') schemaContainer.scrollLeft = state.scrollLeft;
+    if (typeof state.scrollTop === 'number') schemaContainer.scrollTop = state.scrollTop;
+}
+
+// Save on various state changes (debounced). Also force-save on unload.
+window.addEventListener('beforeunload', function() {
+    if (viewStateRestored) saveViewStateNow();
+});
+schemaContainer.addEventListener('scroll', scheduleSaveViewState);
+
+// ---- Init ----
+var pendingViewState = null;
+async function init() {
+    try {
+        var resp = await fetch('/debug/info');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var info = await resp.json();
+        showConnected(info);
+        if (info.program) programNameEl.textContent = info.program;
+        viewStateProgramName = info.program || 'default';
+        pendingViewState = loadViewState();
+        applyViewStateEarly(pendingViewState);
+    } catch (e) {
+        showDisconnected();
+    }
+    fetchSchema();
+    pollLoop();
+}
+
+// ---- Trend Chart State ----
+var TREND_COLORS = ['#73bf69','#ff9830','#3274d9','#f2495c','#fade2a','#b877d9','#66ffcc','#ff9999'];
+var trendSelected = {};  // varName -> {color, data, panelEl, canvas}
+var trendColorIdx = 0;
+var trendTimeWindow = 60;
+var trendChartsList = document.getElementById('trend-charts-list');
+var trendPlaceholder = document.getElementById('trend-placeholder');
+var selTimeWindow = document.getElementById('sel-timewindow');
+var btnClearTrend = document.getElementById('btn-clear-trend');
+var btnExportCsv = document.getElementById('btn-export-csv');
+var trendAnimId = null;
+
+function trendVarCount() { return Object.keys(trendSelected).length; }
+
+function updateTrendVisibility() {
+    var hasVars = trendVarCount() > 0;
+    trendPlaceholder.style.display = hasVars ? 'none' : 'flex';
+    document.getElementById('trend-charts-scroll').style.display = hasVars ? 'block' : 'none';
+}
+
+function createTrendPanel(varName, color) {
+    var panel = document.createElement('div');
+    panel.className = 'trend-chart-panel';
+    panel.setAttribute('data-trend-var', varName);
+
+    // Header bar with name, value, close
+    var header = document.createElement('div');
+    header.className = 'trend-chart-header';
+
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'trend-var-name';
+    nameSpan.style.color = color;
+    nameSpan.textContent = varName;
+    header.appendChild(nameSpan);
+
+    var valueSpan = document.createElement('span');
+    valueSpan.className = 'trend-var-value';
+    valueSpan.setAttribute('data-trend-value', varName);
+    valueSpan.textContent = '—';
+    header.appendChild(valueSpan);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'trend-chart-close';
+    closeBtn.textContent = '✕';
+    closeBtn.onclick = function() { toggleTrendVar(varName); };
+    header.appendChild(closeBtn);
+
+    panel.appendChild(header);
+
+    // Canvas wrapper
+    var wrap = document.createElement('div');
+    wrap.className = 'trend-chart-canvas-wrap';
+    var canvas = document.createElement('canvas');
+    wrap.appendChild(canvas);
+    panel.appendChild(wrap);
+
+    // Splitter between panels
+    var splitter = document.createElement('div');
+    splitter.className = 'trend-splitter';
+
+    // Splitter drag
+    var startH;
+    splitter.addEventListener('mousedown', function() { startH = panel.offsetHeight; });
+    attachSplitterDrag(splitter, function(ev, startY) {
+        var newH = startH + (ev.clientY - startY);
+        if (newH < TREND_PANEL_MIN_H) newH = TREND_PANEL_MIN_H;
+        if (newH > TREND_PANEL_MAX_H) newH = TREND_PANEL_MAX_H;
+        panel.style.height = newH + 'px';
+        scheduleChartRedraw();
+    });
+
+    trendChartsList.appendChild(panel);
+    trendChartsList.appendChild(splitter);
+
+    return { panelEl: panel, canvas: canvas, splitterEl: splitter };
+}
+
+function removeTrendPanel(varName) {
+    var info = trendSelected[varName];
+    if (info && info.panelEl) {
+        if (info.splitterEl && info.splitterEl.parentNode) info.splitterEl.parentNode.removeChild(info.splitterEl);
+        if (info.panelEl.parentNode) info.panelEl.parentNode.removeChild(info.panelEl);
+    }
+}
+
+function toggleTrendVar(varName) {
+    if (trendSelected[varName]) {
+        removeTrendPanel(varName);
+        delete trendSelected[varName];
+    } else {
+        var color = TREND_COLORS[trendColorIdx % TREND_COLORS.length];
+        trendColorIdx++;
+        var panel = createTrendPanel(varName, color);
+        trendSelected[varName] = { color: color, data: [], panelEl: panel.panelEl, canvas: panel.canvas, splitterEl: panel.splitterEl };
+        fetchHistory(varName);
+    }
+    updateTrendVisibility();
+    scheduleChartRedraw();
+}
+
+function fetchHistory(varName) {
+    var depth = trendTimeWindow > 0 ? Math.ceil(trendTimeWindow * 1000 / Math.max(pollInterval, MIN_POLL_INTERVAL)) : 1000;
+    fetch('/debug/history?var=' + encodeURIComponent(varName) + '&depth=' + depth)
+        .then(function(resp) { return resp.ok ? resp.json() : null; })
+        .then(function(json) {
+            if (!json || !json.data || !trendSelected[varName]) return;
+            var existing = trendSelected[varName].data;
+            var existingTs = {};
+            for (var i = 0; i < existing.length; i++) existingTs[existing[i][0]] = true;
+            var merged = [];
+            for (var h = 0; h < json.data.length; h++) {
+                if (!existingTs[json.data[h][0]]) merged.push(json.data[h]);
+            }
+            trendSelected[varName].data = merged.concat(existing);
+            trendSelected[varName].data.sort(function(a, b) { return a[0] - b[0]; });
+            scheduleChartRedraw();
+        })
+        .catch(function() {});
+}
+
+function appendTrendData(vars) {
+    var now = Date.now();
+    var names = Object.keys(trendSelected);
+    for (var i = 0; i < names.length; i++) {
+        var name = names[i];
+        if (name in vars) {
+            var val = vars[name];
+            if (typeof val === 'boolean') val = val ? 1 : 0;
+            if (typeof val !== 'number') continue;
+            var buf = trendSelected[name].data;
+            if (buf.length > 0 && buf[buf.length - 1][0] === now) continue;
+            buf.push([now, val]);
+            if (buf.length > TREND_MAX_POINTS) trendSelected[name].data = buf.slice(buf.length - TREND_MAX_POINTS);
+            // Update live value in header
+            var valEl = document.querySelector('[data-trend-value="' + name + '"]');
+            if (valEl) valEl.textContent = val;
+        }
+    }
+}
+
+window.toggleTrendVar = toggleTrendVar;
+
+// ---- Force Dialog ----
+var forceOverlay = document.getElementById('force-overlay');
+var fdVarname = document.getElementById('fd-varname');
+var fdCurrent = document.getElementById('fd-current');
+var fdInputRow = document.getElementById('fd-input-row');
+var fdBoolRow = document.getElementById('fd-bool-row');
+var fdValueInput = document.getElementById('fd-value-input');
+var fdBtnForce = document.getElementById('fd-btn-force');
+var fdBtnUnforce = document.getElementById('fd-btn-unforce');
+var fdBtnCancel = document.getElementById('fd-btn-cancel');
+var fdBtnTrue = document.getElementById('fd-btn-true');
+var fdBtnFalse = document.getElementById('fd-btn-false');
+var forceDialogVar = null;
+
+function isVarForced(varName) {
+    if (!lastSnapshot || !lastSnapshot.forced) return false;
+    return lastSnapshot.forced.indexOf(varName) >= 0;
+}
+
+function getCurrentValue(varName) {
+    if (!lastSnapshot || !lastSnapshot.vars) return undefined;
+    return lastSnapshot.vars[varName];
+}
+
+function isBoolVar(varName) {
+    if (guessType(varName) === 'BOOL') return true;
+    return typeof getCurrentValue(varName) === 'boolean';
+}
+
+function openForceDialog(varName) {
+    forceDialogVar = varName;
+    fdVarname.textContent = varName;
+    var curVal = getCurrentValue(varName);
+    fdCurrent.textContent = 'Current value: ' + (curVal !== undefined ? String(curVal) : 'unknown');
+    fdBtnUnforce.style.display = isVarForced(varName) ? 'inline-block' : 'none';
+    if (isBoolVar(varName)) {
+        fdInputRow.style.display = 'none';
+        fdBoolRow.style.display = 'flex';
+        fdBtnForce.style.display = 'none';
+    } else {
+        fdInputRow.style.display = 'flex';
+        fdBoolRow.style.display = 'none';
+        fdBtnForce.style.display = 'inline-block';
+        fdValueInput.value = '';
+        fdValueInput.placeholder = curVal !== undefined ? String(curVal) : 'Enter value';
+        setTimeout(function() { fdValueInput.focus(); }, 50);
+    }
+    forceOverlay.classList.add('visible');
+}
+
+function closeForceDialog() {
+    forceOverlay.classList.remove('visible');
+    forceDialogVar = null;
+}
+
+function sendForce(varName, value) {
+    fetch('/debug/force', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({'var': varName, value: value})
+    }).catch(function(e) { console.error('Force failed:', e); });
+    closeForceDialog();
+}
+
+function sendUnforce(varName) {
+    fetch('/debug/unforce', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({'var': varName})
+    }).catch(function(e) { console.error('Unforce failed:', e); });
+    closeForceDialog();
+}
+
+fdBtnForce.addEventListener('click', function() {
+    if (!forceDialogVar) return;
+    var raw = fdValueInput.value.trim(); if (raw === '') return;
+    var val = Number(raw); if (isNaN(val)) val = raw;
+    sendForce(forceDialogVar, val);
+});
+fdValueInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') fdBtnForce.click(); if (e.key === 'Escape') closeForceDialog(); });
+fdBtnTrue.addEventListener('click', function() { if (forceDialogVar) sendForce(forceDialogVar, 1); });
+fdBtnFalse.addEventListener('click', function() { if (forceDialogVar) sendForce(forceDialogVar, 0); });
+fdBtnUnforce.addEventListener('click', function() { if (forceDialogVar) sendUnforce(forceDialogVar); });
+fdBtnCancel.addEventListener('click', closeForceDialog);
+forceOverlay.addEventListener('click', function(e) { if (e.target === forceOverlay) closeForceDialog(); });
+window.onVarRowContext = function(e, varName) { e.preventDefault(); openForceDialog(varName); };
+
+// ---- Chart drawing ----
+function drawChart(canvas, series, timeWindowSec) {
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.parentElement.getBoundingClientRect();
+    var w = rect.width, h = rect.height;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#111217';
+    ctx.fillRect(0, 0, w, h);
+    if (series.length === 0) return;
+
+    var padLeft = CHART_PAD_LEFT, padRight = CHART_PAD_RIGHT, padTop = CHART_PAD_TOP, padBottom = CHART_PAD_BOTTOM;
+    var plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
+    if (plotW < 20 || plotH < 20) return;
+
+    var now = Date.now();
+    var tMin, tMax;
+    if (timeWindowSec > 0) {
+        tMax = now; tMin = now - timeWindowSec * 1000;
+    } else {
+        tMin = Infinity; tMax = -Infinity;
+        for (var i = 0; i < series.length; i++) {
+            var d = series[i].data;
+            if (d.length > 0) {
+                if (d[0][0] < tMin) tMin = d[0][0];
+                if (d[d.length - 1][0] > tMax) tMax = d[d.length - 1][0];
+            }
+        }
+        if (tMin === Infinity) return;
+        if (tMax === tMin) { tMin -= 1000; tMax += 1000; }
+    }
+
+    var vMin = Infinity, vMax = -Infinity;
+    for (var i = 0; i < series.length; i++) {
+        var d2 = series[i].data;
+        for (var di = 0; di < d2.length; di++) {
+            var pt = d2[di];
+            if (pt[0] < tMin || pt[0] > tMax) continue;
+            if (pt[1] < vMin) vMin = pt[1];
+            if (pt[1] > vMax) vMax = pt[1];
+        }
+    }
+    if (vMin === Infinity) { vMin = 0; vMax = 1; }
+    if (vMin === vMax) { vMin -= 1; vMax += 1; }
+    var vPad = (vMax - vMin) * 0.05;
+    vMin -= vPad; vMax += vPad;
+
+    function tx(t) { return padLeft + (t - tMin) / (tMax - tMin) * plotW; }
+    function ty(v) { return padTop + plotH - (v - vMin) / (vMax - vMin) * plotH; }
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.font = '10px monospace';
+    ctx.fillStyle = CLR_INACTIVE;
+
+    var ySteps = 5;
+    for (var yi = 0; yi <= ySteps; yi++) {
+        var yVal = vMin + (vMax - vMin) * yi / ySteps;
+        var yy = ty(yVal);
+        ctx.beginPath(); ctx.moveTo(padLeft, yy); ctx.lineTo(w - padRight, yy); ctx.stroke();
+        var label = Math.abs(yVal) >= 1000 ? yVal.toExponential(1) : (Number.isInteger(yVal) ? String(yVal) : yVal.toFixed(2));
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText(label, padLeft - CHART_TEXT_OFFSET, yy);
+    }
+
+    var xSteps = Math.min(CHART_X_STEP_MAX, Math.floor(plotW / CHART_X_STEP_WIDTH));
+    if (xSteps < 2) xSteps = 2;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (var xi = 0; xi <= xSteps; xi++) {
+        var tVal = tMin + (tMax - tMin) * xi / xSteps;
+        var xx = tx(tVal);
+        ctx.beginPath(); ctx.moveTo(xx, padTop); ctx.lineTo(xx, padTop + plotH); ctx.stroke();
+        var dt = new Date(tVal);
+        ctx.fillText(formatTime(dt), xx, padTop + plotH + CHART_TEXT_OFFSET);
+    }
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.strokeRect(padLeft, padTop, plotW, plotH);
+
+    for (var i = 0; i < series.length; i++) {
+        var s = series[i];
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        var started = false;
+        for (var pi = 0; pi < s.data.length; pi++) {
+            var p = s.data[pi];
+            if (p[0] < tMin || p[0] > tMax) continue;
+            if (!started) { ctx.moveTo(tx(p[0]), ty(p[1])); started = true; }
+            else { ctx.lineTo(tx(p[0]), ty(p[1])); }
+        }
+        ctx.stroke();
+    }
+}
+
+function scheduleChartRedraw() {
+    if (trendAnimId) return;
+    trendAnimId = requestAnimationFrame(function() {
+        trendAnimId = null;
+        var names = Object.keys(trendSelected);
+        for (var i = 0; i < names.length; i++) {
+            var name = names[i];
+            var info = trendSelected[name];
+            if (!info.canvas) continue;
+            var series = [{ color: info.color, data: info.data }];
+            drawChart(info.canvas, series, trendTimeWindow);
+        }
+    });
+}
+
+// ---- CSV Export ----
+function exportCSV() {
+    var names = Object.keys(trendSelected);
+    if (names.length === 0) return;
+    var tsSet = {};
+    for (var i = 0; i < names.length; i++) {
+        var pts = trendSelected[names[i]].data;
+        for (var j = 0; j < pts.length; j++) tsSet[pts[j][0]] = true;
+    }
+    var allTs = Object.keys(tsSet).map(Number).sort(function(a, b) { return a - b; });
+    var lookups = names.map(function(n) {
+        var map = {}, d = trendSelected[n].data;
+        for (var k = 0; k < d.length; k++) map[d[k][0]] = d[k][1];
+        return map;
+    });
+    var csv = 'timestamp,datetime,' + names.join(',') + '\n';
+    for (var ri = 0; ri < allTs.length; ri++) {
+        var ts = allTs[ri], row = ts + ',' + new Date(ts).toISOString();
+        for (var ci = 0; ci < names.length; ci++) { var v = lookups[ci][ts]; row += ',' + (v !== undefined ? v : ''); }
+        csv += row + '\n';
+    }
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url;
+    a.download = 'trend_' + new Date().toISOString().replace(/[:.]/g, '-') + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ---- Event handlers ----
+btnPause.addEventListener('click', function() {
+    polling = !polling;
+    btnPause.textContent = polling ? 'Pause' : 'Resume';
+    btnPause.style.background = polling ? '' : 'var(--accent-orange)';
+});
+// Program filter combobox (searchable dropdown)
+var programCombo = document.getElementById('program-combo');
+var programComboInput = document.getElementById('program-combo-input');
+var programComboList = document.getElementById('program-combo-list');
+
+function openProgramCombo() {
+    programComboList.style.display = 'block';
+    // On open: clear any stale filter so user sees full list; they type to narrow
+    programComboInput.value = '';
+    filterProgramCombo('');
+}
+function closeProgramCombo() {
+    programComboList.style.display = 'none';
+    // Restore input text to current selection label
+    var cur = programComboList.querySelector('.combo-item.combo-selected');
+    programComboInput.value = (cur && cur.getAttribute('data-value') !== '__all__') ? cur.textContent : '';
+    clearComboHighlight();
+    // Re-show all items so next open is clean
+    var items = programComboList.querySelectorAll('.combo-item.combo-hidden');
+    for (var i = 0; i < items.length; i++) items[i].classList.remove('combo-hidden');
+}
+function filterProgramCombo(query) {
+    var q = (query || '').trim().toLowerCase();
+    var items = programComboList.querySelectorAll('.combo-item');
+    var firstVisible = null;
+    for (var i = 0; i < items.length; i++) {
+        var text = items[i].textContent.toLowerCase();
+        var match = !q || text.indexOf(q) !== -1;
+        items[i].classList.toggle('combo-hidden', !match);
+        if (match && !firstVisible) firstVisible = items[i];
+    }
+    clearComboHighlight();
+    if (firstVisible) firstVisible.classList.add('combo-highlight');
+}
+function clearComboHighlight() {
+    var hi = programComboList.querySelectorAll('.combo-item.combo-highlight');
+    for (var i = 0; i < hi.length; i++) hi[i].classList.remove('combo-highlight');
+}
+function moveComboHighlight(dir) {
+    var visible = Array.prototype.filter.call(
+        programComboList.querySelectorAll('.combo-item'),
+        function(el) { return !el.classList.contains('combo-hidden'); }
+    );
+    if (!visible.length) return;
+    var curIdx = -1;
+    for (var i = 0; i < visible.length; i++) {
+        if (visible[i].classList.contains('combo-highlight')) { curIdx = i; break; }
+    }
+    clearComboHighlight();
+    var next = (curIdx + dir + visible.length) % visible.length;
+    if (curIdx === -1) next = dir > 0 ? 0 : visible.length - 1;
+    visible[next].classList.add('combo-highlight');
+    visible[next].scrollIntoView({ block: 'nearest' });
+}
+function selectProgram(value) {
+    schemaProgramFilter = value;
+    // Mark selection in list
+    var items = programComboList.querySelectorAll('.combo-item');
+    for (var i = 0; i < items.length; i++) {
+        items[i].classList.toggle('combo-selected', items[i].getAttribute('data-value') === value);
+    }
+    programComboList.style.display = 'none';
+    programComboInput.value = (value !== '__all__') ? value : '';
+    programComboInput.blur();
+    schemaZoom = 1;
+    if (schemaData) renderSchema(schemaData);
+    if (schemaData && lastSnapshot) updateSchemaValues(lastSnapshot.vars);
+    applySchemaZoom();
+    scheduleSaveViewState();
+}
+
+programComboInput.addEventListener('focus', function() {
+    if (programComboList.style.display !== 'block') openProgramCombo();
+});
+programComboInput.addEventListener('click', function() {
+    if (programComboList.style.display !== 'block') openProgramCombo();
+});
+programComboInput.addEventListener('input', function() {
+    if (programComboList.style.display !== 'block') programComboList.style.display = 'block';
+    filterProgramCombo(programComboInput.value);
+});
+programComboInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (programComboList.style.display !== 'block') openProgramCombo(); moveComboHighlight(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveComboHighlight(-1); }
+    else if (e.key === 'Enter') {
+        e.preventDefault();
+        var hi = programComboList.querySelector('.combo-item.combo-highlight:not(.combo-hidden)');
+        if (hi) selectProgram(hi.getAttribute('data-value'));
+    }
+    else if (e.key === 'Escape') { e.preventDefault(); closeProgramCombo(); programComboInput.blur(); }
+});
+programComboList.addEventListener('mousedown', function(e) {
+    var item = e.target.closest('.combo-item');
+    if (!item || item.classList.contains('combo-hidden')) return;
+    e.preventDefault(); // keep focus handling controlled
+    selectProgram(item.getAttribute('data-value'));
+});
+document.addEventListener('click', function(e) {
+    if (!programCombo.contains(e.target) && programComboList.style.display === 'block') {
+        closeProgramCombo();
+    }
+});
+
+// Schema search
+var schemaSearchInput = document.getElementById('schema-search');
+var searchCountEl = document.getElementById('search-count');
+schemaSearchInput.addEventListener('input', function() {
+    var query = schemaSearchInput.value.trim().toLowerCase();
+    var svg = schemaContainer.querySelector('svg');
+    if (!svg) return;
+    var allNodes = svg.querySelectorAll('[data-node-id]');
+    if (!query) {
+        for (var i = 0; i < allNodes.length; i++) {
+            allNodes[i].classList.remove('search-match', 'search-dim');
+        }
+        searchCountEl.textContent = '\u00A0';
+        return;
+    }
+    // Prefix ":" — match by FB type instead of node id (e.g. ":TON" finds all TON instances)
+    var searchByType = query.charAt(0) === ':';
+    var term = searchByType ? query.slice(1) : query;
+    var matches = [];
+    for (var j = 0; j < allNodes.length; j++) {
+        var id = allNodes[j].getAttribute('data-node-id');
+        var hit = false;
+        if (searchByType) {
+            var node = schemaNodeMap[id];
+            if (node && node.fbType && node.fbType.toLowerCase().indexOf(term) >= 0) hit = true;
+        } else {
+            if (id.toLowerCase().indexOf(term) >= 0) hit = true;
+        }
+        if (hit) {
+            allNodes[j].classList.add('search-match');
+            allNodes[j].classList.remove('search-dim');
+            matches.push(allNodes[j]);
+        } else {
+            allNodes[j].classList.remove('search-match');
+            allNodes[j].classList.add('search-dim');
+        }
+    }
+    searchCountEl.textContent = matches.length + ' found';
+    // Scroll to first match
+    if (matches.length > 0) {
+        var first = matches[0];
+        var bbox = first.getBBox();
+        var scale = schemaZoom;
+        schemaContainer.scrollLeft = bbox.x * scale - schemaContainer.clientWidth / 2 + bbox.width * scale / 2;
+        schemaContainer.scrollTop = bbox.y * scale - schemaContainer.clientHeight / 2 + bbox.height * scale / 2;
+    }
+});
+
+// ---- Schema zoom ----
+var schemaZoom = 1;
+var ZOOM_MIN = 0.1, ZOOM_MAX = 3, ZOOM_STEP = 0.15;
+var zoomLevelEl = document.getElementById('zoom-level');
+
+var ZOOM_VALUES_THRESHOLD = 0.7;   // hide port value chips when zoomed out below this
+var ZOOM_LABELS_THRESHOLD = 0.5;   // hide port name labels when zoomed out below this
+function applySchemaZoom() {
+    var svg = schemaContainer.querySelector('svg');
+    if (!svg) return;
+    svg.style.transform = 'scale(' + schemaZoom + ')';
+    svg.style.width = svg.getAttribute('width');
+    svg.style.height = svg.getAttribute('height');
+    zoomLevelEl.textContent = Math.round(schemaZoom * 100) + '%';
+    // LOD: at small zoom, port labels and value chips are unreadable — auto-hide.
+    schemaContainer.classList.toggle('no-port-labels', schemaZoom < ZOOM_LABELS_THRESHOLD);
+    if (!schemaValuesUserOff) {
+        schemaContainer.classList.toggle('no-values', schemaZoom < ZOOM_VALUES_THRESHOLD);
+    }
+    updateMinimapViewport();
+    scheduleBreadcrumbUpdate();
+    scheduleSaveViewState();
+}
+
+function zoomFit() {
+    var svg = schemaContainer.querySelector('svg');
+    if (!svg) return;
+    var svgW = parseFloat(svg.getAttribute('width'));
+    var svgH = parseFloat(svg.getAttribute('height'));
+    var contW = schemaContainer.clientWidth;
+    var contH = schemaContainer.clientHeight;
+    if (svgW > 0 && svgH > 0) {
+        schemaZoom = Math.min(contW / svgW, contH / svgH, ZOOM_MAX);
+        schemaZoom = Math.max(schemaZoom, ZOOM_MIN);
+    }
+    applySchemaZoom();
+}
+
+document.getElementById('btn-zoom-in').addEventListener('click', function() {
+    schemaZoom = Math.min(schemaZoom + ZOOM_STEP, ZOOM_MAX);
+    applySchemaZoom();
+});
+document.getElementById('btn-zoom-out').addEventListener('click', function() {
+    schemaZoom = Math.max(schemaZoom - ZOOM_STEP, ZOOM_MIN);
+    applySchemaZoom();
+});
+document.getElementById('btn-zoom-fit').addEventListener('click', zoomFit);
+
+// Export schema as SVG file download
+document.getElementById('btn-export-svg').addEventListener('click', function() {
+    var svg = schemaContainer.querySelector(':scope > svg');
+    if (!svg) return;
+    var clone = svg.cloneNode(true);
+    // Remove transform so the exported SVG is at 1:1 scale
+    clone.style.transform = '';
+    // Embed a minimal dark background style
+    var style = document.createElementNS(SVG_NS, 'style');
+    style.textContent = 'svg{background:#181b1e}';
+    clone.insertBefore(style, clone.firstChild);
+    var blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'schema-' + (viewStateProgramName || 'export') + '.svg';
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+// ---- View settings dropdown ----
+// Consolidates all visibility toggles (wires, values, backgrounds, minimap)
+// into a single popup with checkboxes. Individual hotkeys (W/V/G/M) stay
+// as shortcuts for the same state.
+var btnViewSettings = document.getElementById('btn-view-settings');
+var viewSettingsPopup = document.getElementById('view-settings-popup');
+
+function setViewToggle(name, enabled) {
+    switch (name) {
+        case 'wires':
+            schemaContainer.classList.toggle('no-wires', !enabled);
+            break;
+        case 'values':
+            schemaValuesUserOff = !enabled;
+            if (!enabled) {
+                schemaContainer.classList.add('no-values');
+            } else {
+                // Respect LOD when re-enabling
+                schemaContainer.classList.toggle('no-values', schemaZoom < ZOOM_VALUES_THRESHOLD);
+            }
+            break;
+        case 'backgrounds':
+            schemaContainer.classList.toggle('no-backgrounds', !enabled);
+            break;
+        case 'minimap':
+            var mmDiv = document.getElementById('schema-minimap');
+            var mmOpen = document.getElementById('schema-minimap-open');
+            if (!enabled) {
+                mmDiv.classList.add('hidden');
+                mmOpen.classList.add('visible');
+            } else {
+                mmDiv.classList.remove('hidden');
+                mmOpen.classList.remove('visible');
+                updateMinimapViewport();
+            }
+            break;
+    }
+    syncViewSettingsCheckboxes();
+    scheduleSaveViewState();
+}
+
+function isViewToggleEnabled(name) {
+    switch (name) {
+        case 'wires': return !schemaContainer.classList.contains('no-wires');
+        case 'values': return !schemaValuesUserOff;
+        case 'backgrounds': return !schemaContainer.classList.contains('no-backgrounds');
+        case 'minimap': return !document.getElementById('schema-minimap').classList.contains('hidden');
+    }
+    return true;
+}
+
+function syncViewSettingsCheckboxes() {
+    var boxes = viewSettingsPopup.querySelectorAll('input[data-view-toggle]');
+    for (var i = 0; i < boxes.length; i++) {
+        var name = boxes[i].getAttribute('data-view-toggle');
+        boxes[i].checked = isViewToggleEnabled(name);
+    }
+}
+
+btnViewSettings.addEventListener('click', function(e) {
+    e.stopPropagation();
+    syncViewSettingsCheckboxes();
+    viewSettingsPopup.classList.toggle('visible');
+});
+viewSettingsPopup.addEventListener('change', function(e) {
+    var cb = e.target;
+    if (!cb || !cb.hasAttribute('data-view-toggle')) return;
+    setViewToggle(cb.getAttribute('data-view-toggle'), cb.checked);
+});
+// Close on outside click
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#view-settings') && viewSettingsPopup.classList.contains('visible')) {
+        viewSettingsPopup.classList.remove('visible');
+    }
+});
+
+// ---- Minimap interaction ----
+(function initMinimap() {
+    var mmDiv = document.getElementById('schema-minimap');
+    var mmSvg = document.getElementById('schema-minimap-svg');
+    var closeBtn = document.getElementById('schema-minimap-close');
+    var openBtn = document.getElementById('schema-minimap-open');
+
+    // Live-update viewport frame on scroll
+    schemaContainer.addEventListener('scroll', updateMinimapViewport);
+
+    // Click on background → center schema on that point
+    // Mousedown on the viewport frame → drag to pan
+    var dragging = false, dragOffsetX = 0, dragOffsetY = 0;
+
+    mmSvg.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var pt = minimapCoordsFromEvent(e);
+        var frame = document.getElementById('mm-viewport-frame');
+        var fx = parseFloat(frame.getAttribute('x') || 0);
+        var fy = parseFloat(frame.getAttribute('y') || 0);
+        var fw = parseFloat(frame.getAttribute('width') || 0);
+        var fh = parseFloat(frame.getAttribute('height') || 0);
+        // If click inside viewport frame → start drag (keep relative offset)
+        if (pt.x >= fx && pt.x <= fx + fw && pt.y >= fy && pt.y <= fy + fh) {
+            dragging = true;
+            dragOffsetX = pt.x - (fx + fw / 2);
+            dragOffsetY = pt.y - (fy + fh / 2);
+        } else {
+            // Click outside frame → jump center to that point
+            scrollSchemaToCenter(pt.x, pt.y);
+        }
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        var pt = minimapCoordsFromEvent(e);
+        scrollSchemaToCenter(pt.x - dragOffsetX, pt.y - dragOffsetY);
+    });
+    document.addEventListener('mouseup', function() { dragging = false; });
+
+    closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        mmDiv.classList.add('hidden');
+        openBtn.classList.add('visible');
+        scheduleSaveViewState();
+    });
+    openBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        mmDiv.classList.remove('hidden');
+        openBtn.classList.remove('visible');
+        updateMinimapViewport();
+        scheduleSaveViewState();
+    });
+})();
+
+// Live port values: LOD auto-hide still applies at low zoom.
+// User-off state is driven by the View settings dropdown (setViewToggle).
+// (schemaValuesUserOff is declared near top with other schema state variables.)
+
+schemaContainer.addEventListener('wheel', function(e) {
+    if (!schemaContainer.querySelector('svg')) return;
+    // Only zoom when Ctrl is held (otherwise let browser handle native scroll)
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    // Anchor the zoom around the cursor so the point under the mouse stays put.
+    var oldZoom = schemaZoom;
+    var delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+    var newZoom = Math.min(Math.max(oldZoom + delta, ZOOM_MIN), ZOOM_MAX);
+    if (newZoom === oldZoom) return;
+    var rect = schemaContainer.getBoundingClientRect();
+    var cursorX = e.clientX - rect.left;
+    var cursorY = e.clientY - rect.top;
+    // World coordinates (pre-zoom) of the point under the cursor
+    var worldX = (cursorX + schemaContainer.scrollLeft) / oldZoom;
+    var worldY = (cursorY + schemaContainer.scrollTop) / oldZoom;
+    schemaZoom = newZoom;
+    applySchemaZoom();
+    // Restore the same world point under the cursor
+    schemaContainer.scrollLeft = worldX * newZoom - cursorX;
+    schemaContainer.scrollTop = worldY * newZoom - cursorY;
+}, { passive: false });
+
+// ---- Collapsed edge badge tooltip + port sparkline ----
+// We track the last lamp that received a mouseover. On every mouseover we
+// compare against it: if we're moving to a different element (lamp or not),
+// any pending or shown sparkline for the previous lamp is cancelled.
+var hoveredLamp = null;
+schemaContainer.addEventListener('mouseover', function(e) {
+    var t = e.target;
+    var isLamp = t && t.tagName === 'circle' && t.hasAttribute('data-port-lamp');
+    // If we switch targets, cancel any pending or shown sparkline
+    if (hoveredLamp && hoveredLamp !== t) {
+        hidePortSparkline();
+        hoveredLamp = null;
+    }
+    if (isLamp) {
+        hoveredLamp = t;
+        var portKey = t.getAttribute('data-port-lamp');
+        if (portHistory[portKey] && portHistory[portKey].length > 0) {
+            if (portSparklineHoverTimer) clearTimeout(portSparklineHoverTimer);
+            var cx = e.clientX, cy = e.clientY;
+            portSparklineHoverTimer = setTimeout(function() {
+                // Only show if still the active lamp
+                if (hoveredLamp === t) showPortSparkline(portKey, cx, cy);
+            }, PORT_SPARKLINE_HOVER_DELAY_MS);
+        }
+        return;
+    }
+    if (!t || t.tagName !== 'rect' || !t.classList || !t.classList.contains('edge-badge')) return;
+    if (!t._edgeGroup) return;
+    var html = formatEdgeGroupTooltip(t._edgeGroup, t._edgeTo, t._edgeToParam);
+    showFbdTooltip(html, e.clientX, e.clientY);
+});
+schemaContainer.addEventListener('mousemove', function(e) {
+    var t = e.target;
+    // Edge badge tooltip: track cursor while hovering
+    var tt = getFbdTooltip();
+    if (tt && tt.style.display === 'block' &&
+        t && t.classList && t.classList.contains('edge-badge')) {
+        positionTooltipAt(tt, e.clientX, e.clientY);
+    }
+});
+schemaContainer.addEventListener('mouseout', function(e) {
+    var t = e.target;
+    // Port sparkline: hide when leaving the currently hovered lamp and the
+    // pointer is moving to something OUTSIDE any lamp (covered by mouseover
+    // comparison above) or beyond the SVG.
+    if (t && t === hoveredLamp) {
+        hidePortSparkline();
+        hoveredLamp = null;
+        return;
+    }
+    if (!t || !t.classList || !t.classList.contains('edge-badge')) return;
+    hideFbdTooltip();
+});
+// Safety net: cursor leaves the schema entirely
+schemaContainer.addEventListener('mouseleave', function() {
+    hidePortSparkline();
+    hoveredLamp = null;
+    hideFbdTooltip();
+});
+
+// Click-to-highlight: delegate click events to find the enclosing node group.
+// Uses 'click' (not 'mousedown') so panning drags don't trigger selection —
+// the browser only fires 'click' when mousedown/mouseup happened without drag.
+schemaContainer.addEventListener('click', function(e) {
+    // Dismiss a pinned dblclick edge tooltip on any click that isn't on the
+    // edge that spawned it.
+    if (!e.target.closest('path[data-edge-from]')) hideFbdTooltip();
+    var g = e.target.closest('g[data-node-id]');
+    if (!g) return;
+    e.stopPropagation();
+    var id = g.getAttribute('data-node-id');
+    highlightNode(id);
+});
+
+// Double-click on an edge path → show a signal-info tooltip with source,
+// destination, kind, program and current value(s).
+schemaContainer.addEventListener('dblclick', function(e) {
+    var p = e.target.closest('path[data-edge-from]');
+    if (!p) return;
+    e.stopPropagation();
+    var from = p.getAttribute('data-edge-from');
+    var to = p.getAttribute('data-edge-to');
+    var kind = p.getAttribute('data-edge-kind') || 'call';
+    var fromField = p.getAttribute('data-edge-from-field');
+    // Find matching edge in schemaData to get toParam / toField / program
+    var match = null;
+    if (schemaData && schemaData.edges) {
+        for (var ei = 0; ei < schemaData.edges.length; ei++) {
+            var ed = schemaData.edges[ei];
+            if (ed.from === from && ed.to === to && ed.kind === kind &&
+                (ed.fromField || '') === (fromField || '')) {
+                match = ed;
+                break;
+            }
+        }
+    }
+    // Resolve current value of the signal (prefer source-side)
+    var vars = lastSnapshot ? lastSnapshot.vars : {};
+    var signalVal;
+    var srcNode = schemaNodeMap[from];
+    if (srcNode && srcNode.type === 'fb') {
+        signalVal = vars[from + '.' + (fromField || 'Q')];
+    } else if (srcNode) {
+        signalVal = vars[resolveVarName(srcNode)];
+        if (signalVal === undefined) signalVal = vars[from];
+    } else {
+        signalVal = vars[from];
+        if (signalVal === undefined) signalVal = vars['in_' + from];
+    }
+    var srcLbl = fromField ? (from + '.' + fromField) : from;
+    var dstParam = match && (match.toField || match.toParam);
+    var dstLbl = dstParam ? (to + '.' + dstParam) : to;
+    var program = match && match.program ? match.program : '';
+    var valueStr = signalVal === undefined ? '<span class="ftt-prog">(no value)</span>' : escHtml(formatPortValue(signalVal));
+    var html = '<div class="ftt-title">' + escHtml(kind === 'assign' ? 'assign' : 'call') + (program ? ' [' + escHtml(program) + ']' : '') + '</div>' +
+        '<div class="ftt-item">src: ' + escHtml(srcLbl) + '</div>' +
+        '<div class="ftt-item">dst: ' + escHtml(dstLbl) + '</div>' +
+        '<div class="ftt-item">value: ' + valueStr + '</div>';
+    showFbdTooltip(html, e.clientX, e.clientY);
+});
+
+// ---- Global hotkeys ----
+(function initHotkeys() {
+    var overlay = document.getElementById('hotkeys-overlay');
+
+    function isTyping(el) {
+        if (!el) return false;
+        var tag = el.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
+        if (el.isContentEditable) return true;
+        return false;
+    }
+
+    function toggleHotkeysOverlay() {
+        overlay.classList.toggle('visible');
+    }
+
+    // Click on backdrop closes the overlay (click on dialog content doesn't)
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.classList.remove('visible');
+    });
+
+    document.addEventListener('keydown', function(e) {
+        // Esc: priority — works even inside inputs. Closes overlay → blurs input →
+        // clears program combo → clears highlight → clears search → nothing.
+        if (e.key === 'Escape') {
+            if (overlay.classList.contains('visible')) {
+                overlay.classList.remove('visible');
+                e.preventDefault();
+                return;
+            }
+            if (isTyping(document.activeElement)) {
+                document.activeElement.blur();
+                e.preventDefault();
+                return;
+            }
+            if (schemaSelectedNodeId) {
+                clearHighlight();
+                e.preventDefault();
+                return;
+            }
+            if (schemaSearchInput && schemaSearchInput.value) {
+                schemaSearchInput.value = '';
+                schemaSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                e.preventDefault();
+                return;
+            }
+            return;
+        }
+
+        // Skip other hotkeys while typing
+        if (isTyping(document.activeElement)) return;
+
+        // Hotkeys below only work when the Schema tab is active (except help overlay)
+        var schemaTabActive = (typeof activeTab !== 'undefined' && activeTab === 'schema');
+
+        // ?/help overlay — works from any tab
+        if (e.key === '?') {
+            e.preventDefault();
+            toggleHotkeysOverlay();
+            return;
+        }
+
+        if (!schemaTabActive) return;
+
+        // Zoom
+        if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            zoomFit();
+            return;
+        }
+        if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            document.getElementById('btn-zoom-in').click();
+            return;
+        }
+        if (e.key === '-' || e.key === '_') {
+            e.preventDefault();
+            document.getElementById('btn-zoom-out').click();
+            return;
+        }
+        if (e.key === '0') {
+            e.preventDefault();
+            schemaZoom = 1;
+            applySchemaZoom();
+            return;
+        }
+        if (e.key === 'Home') {
+            e.preventDefault();
+            schemaContainer.scrollLeft = 0;
+            schemaContainer.scrollTop = 0;
+            return;
+        }
+
+        // View toggles
+        if (e.key === 'w' || e.key === 'W') {
+            e.preventDefault();
+            setViewToggle('wires', !isViewToggleEnabled('wires'));
+            return;
+        }
+        if (e.key === 'v' || e.key === 'V') {
+            e.preventDefault();
+            setViewToggle('values', !isViewToggleEnabled('values'));
+            return;
+        }
+        if (e.key === 'g' || e.key === 'G') {
+            e.preventDefault();
+            setViewToggle('backgrounds', !isViewToggleEnabled('backgrounds'));
+            return;
+        }
+        if (e.key === 'm' || e.key === 'M') {
+            e.preventDefault();
+            setViewToggle('minimap', !isViewToggleEnabled('minimap'));
+            return;
+        }
+
+        // Focus controls
+        if (e.key === '/') {
+            e.preventDefault();
+            schemaSearchInput.focus();
+            schemaSearchInput.select();
+            return;
+        }
+        if (e.key === 'p' || e.key === 'P') {
+            e.preventDefault();
+            programComboInput.focus();
+            return;
+        }
+    });
+})();
+
+// ---- Schema pan (drag to scroll) ----
+(function() {
+    var panning = false, startX, startY, scrollX, scrollY;
+
+    function onPanStart(e) {
+        if (e.button !== 0) return;
+        // Only pan on background/SVG, not on toolbar buttons or minimap
+        if (e.target.closest('#schema-toolbar')) return;
+        if (e.target.closest('#schema-minimap')) return;
+        if (e.target.closest('#schema-minimap-open')) return;
+        panning = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        scrollX = schemaContainer.scrollLeft;
+        scrollY = schemaContainer.scrollTop;
+        schemaContainer.classList.add('panning');
+    }
+
+    function onPanMove(e) {
+        if (!panning) return;
+        e.preventDefault();
+        schemaContainer.scrollLeft = scrollX - (e.clientX - startX);
+        schemaContainer.scrollTop = scrollY - (e.clientY - startY);
+    }
+
+    function onPanEnd() {
+        if (panning) {
+            panning = false;
+            schemaContainer.classList.remove('panning');
+        }
+    }
+
+    // Listen on the whole tab area to catch events through SVG
+    var tabSchema = document.getElementById('tab-schema');
+    tabSchema.addEventListener('mousedown', onPanStart);
+    document.addEventListener('mousemove', onPanMove);
+    document.addEventListener('mouseup', onPanEnd);
+})();
+selInterval.addEventListener('change', function() { pollInterval = parseInt(selInterval.value, 10) || 300; });
+selTimeWindow.addEventListener('change', function() {
+    trendTimeWindow = parseInt(selTimeWindow.value, 10) || 0;
+    scheduleChartRedraw();
+});
+btnClearTrend.addEventListener('click', function() {
+    trendSelected = {};
+    trendColorIdx = 0;
+    trendChartsList.innerHTML = '';
+    updateTrendVisibility();
+    scheduleChartRedraw();
+    var rows = varsContent.querySelectorAll('tr.selected-trend');
+    for (var i = 0; i < rows.length; i++) rows[i].classList.remove('selected-trend');
+});
+btnExportCsv.addEventListener('click', exportCSV);
+window.addEventListener('resize', function() { scheduleChartRedraw(); });
+
+// ---- Start ----
+updateTrendVisibility();
+init();
+
+})();
+</script>
+</body>
+</html>
