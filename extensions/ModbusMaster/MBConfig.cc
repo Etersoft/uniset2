@@ -402,12 +402,6 @@ namespace uniset
             }
         }
 
-        if( p.nbit > 0 && ( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO ) )
-        {
-            mbwarn << "(initRSProperty): (ignore) incorrect param`s nbit!=0(" << p.nbit << ")"
-                   << " for iotype=" << p.stype << " for " << it.getProp("name") << endl;
-        }
-
         const string sbyte = IOBase::initProp(it, "nbyte", prop_prefix, false);
 
         if( !sbyte.empty() )
@@ -747,6 +741,15 @@ namespace uniset
                 if(bad_status)
                     break;
 
+                // Для i==0 RegID совпадает с основным rID. Несколько bit/mask-датчиков
+                // на одном регистре с fn=16 — легитимный паттерн (один Modbus-write,
+                // разные биты), а не дубликат. Конфликты внутри регистра ловятся в
+                // блоке isWriteFunction(ri->mbfunc) ниже, а пересечение с другими pollmap
+                // уже проверено в основной проверке rID. Эта же проверка с rmap=nullptr
+                // пометила бы такое разделение как конфликт.
+                if( i == 0 )
+                    continue;
+
                 rID2 = ModbusRTU::genRegID(mbreg + i, ModbusRTU::fnWriteOutputRegisters);
                 bad_status = checkDuplicationRegID( rID2, dev, nullptr );
 
@@ -820,19 +823,20 @@ namespace uniset
                 throw uniset::SystemError(err.str());
             }
 
-            if( p.nbit >= 0 && ri->slst.size() == 1 )
+            if( p.nbit >= 0 && !ri->slst.empty() )
             {
-                auto it2 = ri->slst.begin();
-
-                if( it2->nbit < 0 )
+                for( const auto& it2 : ri->slst )
                 {
-                    ostringstream err;
-                    err << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
-                        << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ") already used)!"
-                        << " IGNORE --> " << it.getProp("name");
+                    if( it2.nbit < 0 )
+                    {
+                        ostringstream err;
+                        err << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
+                            << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ") already used)!"
+                            << " IGNORE --> " << it.getProp("name");
 
-                    mbcrit  << err.str() << endl;
-                    throw uniset::SystemError(err.str());
+                        mbcrit  << err.str() << endl;
+                        throw uniset::SystemError(err.str());
+                    }
                 }
             }
 
