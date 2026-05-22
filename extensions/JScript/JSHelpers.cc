@@ -345,7 +345,7 @@ namespace uniset
             {
                 std::string full_path = path + "/" + module_name;
 
-                JSModuleDef* module = js_module_loader(ctx, full_path.c_str(), nullptr);
+                JSModuleDef* module = js_module_loader(ctx, full_path.c_str(), nullptr, JS_UNDEFINED);
 
                 if( module )
                 {
@@ -355,7 +355,7 @@ namespace uniset
 
                 // Пробуем с расширением .js
                 full_path = path + "/" + module_name + ".js";
-                module = js_module_loader(ctx, full_path.c_str(), nullptr);
+                module = js_module_loader(ctx, full_path.c_str(), nullptr, JS_UNDEFINED);
 
                 if( module )
                 {
