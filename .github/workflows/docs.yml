@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 # Keep deployments atomic and cancel older runs if a new commit arrives.
 concurrency:
