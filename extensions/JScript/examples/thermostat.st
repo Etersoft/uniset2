@@ -8,10 +8,10 @@
  * - Alarm monitoring
  *
  * Convert to JS:
- *   python -m st2js thermostat.st -m thermostat_mapping.yaml --debug -o main-plc.js
+ *   uniset2-st2js thermostat.st -m thermostat_mapping.yaml --debug -o main-plc.js
  *
  * Run with debug:
- *   uniset2-jscript --js-file main-plc.js --confile configure.xml --js-name JSProxy1
+ *   uniset2-jscript --js-file main-plc.js --confile test.xml --js-name TestProc --js-confnode JSProxy
  *   Open http://host:8088/debug/ui in browser
  *)
 

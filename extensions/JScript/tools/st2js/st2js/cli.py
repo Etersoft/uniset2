@@ -5,10 +5,10 @@ Provides main() function that wires the full pipeline:
   read ST file -> parse_st() -> transform() -> check_types() -> generate() -> write output
 
 Usage:
-  python -m st2js input.st -m mapping.yaml -o output.js
-  python -m st2js input.st -m mapping.yaml          # output to stdout
-  python -m st2js input.st -m mapping.yaml --strict
-  python -m st2js input.st -m mapping.yaml --struct-flatten
+  uniset2-st2js input.st -m mapping.yaml -o output.js
+  uniset2-st2js input.st -m mapping.yaml          # output to stdout
+  uniset2-st2js input.st -m mapping.yaml --strict
+  uniset2-st2js input.st -m mapping.yaml --struct-flatten
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from st2js.errors import STError
 def _build_parser() -> argparse.ArgumentParser:
     """Build and return the argument parser."""
     parser = argparse.ArgumentParser(
-        prog="st2js",
+        prog="uniset2-st2js",
         description="Convert IEC 61131-3 Structured Text to JavaScript for UniSet2 JScript runtime.",
     )
     parser.add_argument(
@@ -72,7 +72,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Emit debug trace instrumentation (_dbg_if, _dbg_case, _program_meta)",
+        help="Emit debug visualizer initialization and _program_meta",
     )
     parser.add_argument(
         "--load-head",

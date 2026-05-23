@@ -1,5 +1,8 @@
 /*
  * HVAC process imitator — two-zone temperature simulation
+ *
+ * Optional helper for custom simulations. Load it from a wrapper script and
+ * call imitator.update() once per PLC cycle.
  */
 var imitator = (function() {
     var outdoor = 10.0;
