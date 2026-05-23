@@ -9,7 +9,7 @@
 | Файл | Описание |
 |------|----------|
 | `thermostat.st` | Исходная ST-программа (IEC 61131-3) |
-| `thermostat_mapping.yaml` | Маппинг ST-переменных ��а датчики UniSet |
+| `thermostat_mapping.yaml` | Маппинг ST-переменных на датчики UniSet |
 | `main-plc.js` | Сгенерированный JS с отладочной инструментацией |
 
 ### Датчики (в test.xml)
@@ -27,7 +27,7 @@
 
 ```bash
 cd extensions/JScript/tools/st2js
-python -m st2js ../../examples/thermostat.st \
+uniset2-st2js ../../examples/thermostat.st \
     -m ../../examples/thermostat_mapping.yaml \
     --debug \
     -o ../../examples/main-plc.js
@@ -40,7 +40,8 @@ cd extensions/JScript
 uniset2-jscript \
     --confile test.xml \
     --js-file examples/main-plc.js \
-    --js-name JSProxy1 \
+    --js-name TestProc \
+    --js-confnode JSProxy \
     --js-sleep-msec 150
 ```
 
@@ -49,9 +50,9 @@ uniset2-jscript \
 Открыть в браузере: `http://localhost:8088/debug/ui`
 
 Что видно:
-- **Variables**: `AI_Temperature_S`, `DO_Heater_C`, `state` и др.
+- **Variables**: `AI_Temperature_S`, `DO_Heater_C`, `onDelay.Q` и др.
 - **FB Status**: TON (onDelay), CTU (cycleCounter), R_TRIG (startEdge)
-- **Trace**: какие IF/CASE сработали в текущем цикле
+- **Schema**: схема программы и связи между FB
 - **Trends**: клик по переменной → график
 
 ### Тестирование вручную

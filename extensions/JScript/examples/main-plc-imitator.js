@@ -6,7 +6,8 @@
  * - Enable button press at start
  * - Periodic reset to test alarm recovery
  *
- * Loaded from main-plc.js, called from uniset_on_step().
+ * Optional helper for custom simulations. Load it from a wrapper script and
+ * call imitator.update() once per PLC cycle.
  */
 
 var imitator = (function() {

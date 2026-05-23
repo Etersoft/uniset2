@@ -18,6 +18,7 @@ uniset_inputs = [{ name: "AI_Temp_S" }];
 uniset_outputs = [{ name: "DO_Heater_C" }];
 
 const myTimer = new TON(3000);
+globalThis.myTimer = myTimer;
 
 function uniset_on_step() {
     myTimer.update(!!in_AI_Temp_S);
@@ -31,7 +32,7 @@ function uniset_on_step() {
 http://<host>:8088/debug/ui
 ```
 
-Готово — в браузере отобразятся переменные, состояние FB, трасса и тренды.
+Готово — в браузере отобразятся переменные, состояние FB, схема и тренды.
 
 ## Возможности
 
@@ -40,8 +41,8 @@ http://<host>:8088/debug/ui
 Панель Variables автоматически обнаруживает:
 - **Входы** (`in_*`) — значения датчиков
 - **Выходы** (`out_*`) — управляющие воздействия
-- **Локальные переменные** — состояние алгоритма
-- **FB instances** (TON, CTU, RS, ...) — таймеры, счётчики, триггеры
+- **Watch-переменные**, зарегистрированные через `uniset_debug_watch()`
+- **FB instances** (TON, CTU, RS, ...) — если инстансы доступны через `globalThis`
 
 Изменения подсвечиваются: зелёная вспышка при увеличении, красная при уменьшении.
 Boolean-значения отображаются как цветные индикаторы (● зелёный / ○ серый).
@@ -59,17 +60,16 @@ Boolean-значения отображаются как цветные инди
 | PID | Значение Y, индикатор насыщения |
 | BLINK | Индикатор OUT |
 
-### Execution Trace (трасса выполнения)
+### Schema (схема программы)
 
-Показывает какие ветки IF/CASE сработали в текущем цикле:
-```
-IF @42: ✓     (условие TRUE, зелёный)
-CASE @55: → 1 (выбрана ветка 1)
-IF @60: ✗     (условие FALSE, красный)
-```
+Вкладка Schema показывает граф программы по метаданным `_program_meta`:
+- входы и выходы UniSet;
+- локальные и глобальные переменные;
+- FB-инстансы и операторы;
+- связи между узлами, если они есть в метаданных.
 
-Для работы трассы нужен код с инструментацией (`--debug` флаг st2js)
-или ручные вызовы `_dbg_if()` / `_dbg_case()`.
+Для JS, сгенерированного через `st2js --debug`, метаданные создаются автоматически.
+В обычном JS-скрипте их можно задать вручную через `globalThis._program_meta`.
 
 ### Trend Charts (графики трендов)
 
@@ -101,28 +101,21 @@ uniset_debug_start(8088);
 ```
 
 Доступно: live переменные, FB status, тренды, force override.
-Не доступно: execution trace (нет `_dbg_if`/`_dbg_case` вызовов).
+Schema будет пустой или минимальной, если в скрипте нет `_program_meta`.
+Для пользовательских переменных и FB-инстансов экспортируйте значения в
+`globalThis` или регистрируйте их через `uniset_debug_watch()`.
 
 ### Режим 2: st2js с флагом --debug
 
 ```bash
-python -m st2js thermostat.st --debug -o thermostat.js
+uniset2-st2js thermostat.st --debug -o thermostat.js
 ```
 
 Сгенерированный JS содержит:
-- `_dbg_if(LINE, condition)` — обёртки для IF
-- `_dbg_case(LINE, selector)` — обёртки для CASE
-- `_dbg_begin_cycle()` / `_dbg_end_cycle()` — границы цикла
-- `globalThis._program_meta` — метаданные программы (типы, scale, enum)
+- загрузку `uniset2-debug.js` и запуск `uniset_debug_start(8088)`;
+- `globalThis._program_meta` — метаданные программы (типы, scale, enum, FB и связи).
 
-Доступно: всё из режима 1 + execution trace + smart display (масштабирование, enum-метки).
-
-Загрузка отладчика в скрипт:
-```javascript
-// В начале сгенерированного JS добавить:
-load("uniset2-debug.js");
-uniset_debug_start(8088);
-```
+Доступно: всё из режима 1 + Schema + smart display (масштабирование, enum-метки).
 
 ### Режим 3: Ручная трасса
 
@@ -140,6 +133,7 @@ function uniset_on_step() {
 ```
 
 Выборочная инструментация конкретных ветвей.
+Данные трассы попадают в `/debug/snapshot`, но текущий веб-интерфейс их не отображает.
 
 ## API
 
@@ -150,7 +144,7 @@ function uniset_on_step() {
 ```javascript
 uniset_debug_start(8088, {
     history_depth: 1000,   // размер ring buffer (циклов)
-    trace_enabled: true,   // сбор трассы
+    trace_enabled: true,   // сбор ручной трассы
 });
 ```
 
@@ -158,7 +152,7 @@ uniset_debug_start(8088, {
 |----------|-------------|----------|
 | `port` | 8088 | HTTP порт |
 | `history_depth` | 1000 | Глубина ring buffer для трендов |
-| `trace_enabled` | true | Сбор execution trace |
+| `trace_enabled` | true | Сбор данных ручной трассы в `/debug/snapshot` |
 
 ### uniset_debug_watch(name, getter)
 
@@ -174,7 +168,7 @@ uniset_debug_watch("tempCelsius", () => in_AI_Temp_S / 100);
 
 ### _program_meta (опционально)
 
-Метаданные программы для улучшенного отображения. Генерируется st2js `--debug`
+Метаданные программы для схемы и улучшенного отображения. Генерируется st2js `--debug`
 или задаётся вручную:
 
 ```javascript
@@ -199,8 +193,10 @@ globalThis._program_meta = {
 
 Эффект:
 - `in_AI_Temp_S = 2350` → отображается как `23.50 °C` (scale + unit)
-- `state = 1` → отображается как `Running` (enum)
 - TON progress bar: `ET / PT = 2500 / 5000`
+
+Для live-значений пользовательских переменных используйте `uniset_debug_watch()`;
+`_program_meta.locals` сам по себе описывает переменные для схемы и подписей.
 
 ### _debug_meta на FB классах
 
@@ -228,9 +224,11 @@ MyController._debug_meta = {
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
 | `/debug/ui` | GET | HTML-страница отладчика |
-| `/debug/snapshot` | GET | Текущее состояние: переменные, трасса, форсировка |
+| `/debug/snapshot` | GET | Текущее состояние: переменные, ручная трасса, форсировка |
 | `/debug/history?var=X&depth=N` | GET | Ring buffer для трендов |
 | `/debug/info` | GET | Метаданные сервера |
+| `/debug/schema` | GET | Граф схемы из `_program_meta` |
+| `/debug/objects` | GET | Список FB-объектов и их полей |
 | `/debug/force` | POST | Форсировать переменную: `{"var":"name","value":123}` |
 | `/debug/unforce` | POST | Снять форсировку: `{"var":"name"}` |
 | `/debug/config` | POST | Изменить настройки: `{"history_depth":2000}` |
@@ -270,22 +268,18 @@ uniset_debug_start(8088, {
 });
 ```
 
-### Через st2js mapping YAML
-
-```yaml
-options:
-  debug_port: 8088
-```
+Для JS, сгенерированного `st2js --debug`, порт сейчас фиксирован в генераторе:
+`uniset_debug_start(8088)`.
 
 ## Производительность
 
 | Компонент | Overhead | Когда |
 |-----------|----------|-------|
 | Ring buffer (snapshot) | ~0.5ms/цикл | Всегда когда debug.js загружен |
-| Trace collection | ~0.05ms/ветка | Только с `--debug` кодом |
+| Trace collection | ~0.05ms/ветка | Только при ручных вызовах `_dbg_*` |
 | HTTP snapshot response | ~1ms/запрос | Только при подключённом браузере |
 | Ring buffer memory | ~400KB | 50 vars × 1000 циклов |
-| Без debug.js | 0 | `_dbg_*` stubs — no-op |
+| Без debug.js | 0 | Отладочный сервер не загружен |
 
 Для типичных PLC-программ (10-50 переменных, <100 ветвей) суммарный overhead
 дебагера <1ms на 150ms цикл (~0.7%).
@@ -300,15 +294,15 @@ options:
 
 ### Переменные не отображаются
 
-1. Переменные должны быть глобальными (`in_*`, `out_*`, `let` на верхнем уровне)
-2. Для переменных в замыканиях: `uniset_debug_watch("name", () => value)`
-3. FB instances должны быть глобальными `const`
+1. `in_*` и `out_*` обнаруживаются автоматически через `globalThis`
+2. Для пользовательских переменных: `uniset_debug_watch("name", () => value)`
+3. Для FB instances: `globalThis.myTimer = myTimer` или metadata от `st2js --debug`
 
-### Трасса пустая
+### Schema пустая
 
-1. Код должен быть сгенерирован с `--debug`: `python -m st2js program.st --debug -o output.js`
-2. Или вручную добавить `_dbg_if()` / `_dbg_case()` вызовы
-3. Проверить `trace_enabled: true` в настройках
+1. Код должен быть сгенерирован с `--debug`: `uniset2-st2js program.st --debug -o output.js`
+2. Или вручную задать `globalThis._program_meta`
+3. Проверить `/debug/schema`: он должен возвращать узлы и связи
 
 ### Force не работает
 
